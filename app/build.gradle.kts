@@ -3,10 +3,12 @@ import com.dhkim139.wheretogo.Versions
 import com.dhkim139.wheretogo.Kotlin
 import com.dhkim139.wheretogo.UnitTest
 import com.dhkim139.wheretogo.AndroidTest
+import com.dhkim139.wheretogo.Google
 
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("com.google.dagger.hilt.android")
     id("kotlin-kapt")
 }
 
@@ -68,6 +70,8 @@ dependencies {
     implementation(AndroidX.COMPOSE_UI_TOOL_PREVIEW)
     implementation(AndroidX.COMPOSE_MATERIAL3)
 
+    implementation(Google.HILT_ANDROID)
+    kapt (Google.HILT_COMPILER)
 
     testImplementation(UnitTest.JUNIT)
 
@@ -78,4 +82,8 @@ dependencies {
 
     debugImplementation(AndroidX.COMPOSE_UI_TOOL)
     debugImplementation(AndroidX.COMPOSE_UI_TEST_MANIFEST)
+}
+
+kapt {
+    correctErrorTypes = true
 }
