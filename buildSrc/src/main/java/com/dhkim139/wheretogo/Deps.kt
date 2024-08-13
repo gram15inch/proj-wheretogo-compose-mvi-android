@@ -9,7 +9,7 @@ object Versions {
     const val VERSION_CODE        = 1
     const val VERSION_NAME        = "1.0"
 
-    const val KOTLIN_COMPILER_EXTENSION_VERSION = "1.3.2"
+    const val KOTLIN_COMPILER_EXTENSION_VERSION = "1.5.15"
 
 
     const val KOTLIN_VERSION     = "1.8.0"
@@ -28,7 +28,7 @@ object Versions {
     const val NAVIGATION = "2.5.3"
 
     const val COMPOSE = "1.9.1"
-    const val BOM = "2022.10.00"
+    const val BOM = "2024.06.00"
 
     const val CONSTRAINT_LAYOUT = "2.1.4"
     const val LEGACY            = "1.0.0"
