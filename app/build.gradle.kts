@@ -1,18 +1,25 @@
+import com.dhkim139.wheretogo.AndroidX
+import com.dhkim139.wheretogo.Versions
+import com.dhkim139.wheretogo.Kotlin
+import com.dhkim139.wheretogo.UnitTest
+import com.dhkim139.wheretogo.AndroidTest
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("kotlin-kapt")
 }
 
 android {
     namespace = "com.dhkim139.wheretogo"
-    compileSdk = 33
+    compileSdk = Versions.COMPILE_SDK_VERSION
 
     defaultConfig {
         applicationId = "com.dhkim139.wheretogo"
-        minSdk = 24
-        targetSdk = 33
-        versionCode = 1
-        versionName = "1.0"
+        minSdk = Versions.MIN_SDK_VERSION
+        targetSdk = Versions.TARGET_SDK_VERSION
+        versionCode = Versions.VERSION_CODE
+        versionName = Versions.VERSION_NAME
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -40,7 +47,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.3.2"
+        kotlinCompilerExtensionVersion = Versions.KOTLIN_COMPILER_EXTENSION_VERSION
     }
     packagingOptions {
         resources {
@@ -51,20 +58,24 @@ android {
 
 dependencies {
 
-    implementation("androidx.core:core-ktx:1.8.0")
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.8.0"))
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.3.1")
-    implementation("androidx.activity:activity-compose:1.5.1")
-    implementation(platform("androidx.compose:compose-bom:2022.10.00"))
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.ui:ui-graphics")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3")
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2022.10.00"))
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    debugImplementation("androidx.compose.ui:ui-tooling")
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
+    implementation(AndroidX.CORE_KTX)
+    implementation(platform(Kotlin.KOTLIN_BOM))
+    implementation(AndroidX.LIFECYCLE_RUNTIME_KTX)
+    implementation(AndroidX.ACTIVITY_COMPOSE)
+    implementation(platform(AndroidX.COMPOSE_BOM))
+    implementation(AndroidX.COMPOSE_UI)
+    implementation(AndroidX.COMPOSE_UI_GRAPHICS)
+    implementation(AndroidX.COMPOSE_UI_TOOL_PREVIEW)
+    implementation(AndroidX.COMPOSE_MATERIAL3)
+
+
+    testImplementation(UnitTest.JUNIT)
+
+    androidTestImplementation(AndroidTest.ANDROID_JUNIT)
+    androidTestImplementation(AndroidTest.ESPRESSO_CORE)
+    androidTestImplementation(platform(AndroidX.COMPOSE_BOM))
+    androidTestImplementation(AndroidX.COMPOSE_UI_TEST_JUNIT4)
+
+    debugImplementation(AndroidX.COMPOSE_UI_TOOL)
+    debugImplementation(AndroidX.COMPOSE_UI_TEST_MANIFEST)
 }
