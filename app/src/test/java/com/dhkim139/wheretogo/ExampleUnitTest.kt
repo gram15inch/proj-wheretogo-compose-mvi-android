@@ -1,7 +1,7 @@
 package com.dhkim139.wheretogo
 
-import org.junit.Test
 
+import org.junit.jupiter.api.Test
 import org.junit.Assert.*
 
 /**

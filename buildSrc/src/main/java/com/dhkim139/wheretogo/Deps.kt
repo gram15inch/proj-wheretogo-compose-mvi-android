@@ -55,8 +55,8 @@ object Versions {
 
 
     const val JUNIT         = "4.13.2"
-    const val JUPITER       = "5.9.0"
-    const val JUNIT5        = "1.3.0"
+    const val JUPITER       = "5.10.2"
+    const val JUNIT5        = "1.4.0"
     const val ANDROID_JUNIT = "1.1.5"
     const val ESPRESSO_CORE = "3.5.1"
 }
@@ -148,6 +148,7 @@ object Libraries {
 
 object UnitTest {
     const val JUNIT                     = "junit:junit:${Versions.JUNIT}"
+    const val JUNIT_VINTAGE_ENGINE      = "org.junit.vintage:junit-vintage-engine:${Versions.JUPITER}"
     const val JUNIT_JUPITER_API         = "org.junit.jupiter:junit-jupiter-api:${Versions.JUPITER}"
     const val JUNIT_JUPITER_ENGINE      = "org.junit.jupiter:junit-jupiter-engine:${Versions.JUPITER}"
     const val JUNIT_JUPITER_PARAMS      = "org.junit.jupiter:junit-jupiter-params:${Versions.JUPITER}"
