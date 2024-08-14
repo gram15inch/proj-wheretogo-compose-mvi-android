@@ -12,7 +12,8 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.dagger.hilt.android")
     id("de.mannodermaus.android-junit5")
-    id("kotlin-kapt")
+    id("org.jetbrains.kotlin.plugin.compose")
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -81,15 +82,15 @@ dependencies {
     implementation(AndroidX.COMPOSE_MATERIAL3)
 
     implementation(Google.HILT_ANDROID)
-    kapt (Google.HILT_COMPILER)
+    ksp(Google.HILT_COMPILER)
 
     testImplementation (Google.HILT_ANDROID_TESTING)
 
-    kaptTest (Google.HILT_ANDROID_COMPILER)
+    kspTest (Google.HILT_ANDROID_COMPILER)
 
     androidTestImplementation (Google.HILT_ANDROID_TESTING)
 
-    kaptAndroidTest (Google.HILT_ANDROID_COMPILER)
+    kspAndroidTest (Google.HILT_ANDROID_COMPILER)
     testImplementation(Libraries.MOCKK)
 
 
@@ -114,10 +115,6 @@ dependencies {
 
     debugImplementation(AndroidX.COMPOSE_UI_TOOL)
     debugImplementation(AndroidX.COMPOSE_UI_TEST_MANIFEST)
-}
-
-kapt {
-    correctErrorTypes = true
 }
 
 tasks.withType(Test::class) {

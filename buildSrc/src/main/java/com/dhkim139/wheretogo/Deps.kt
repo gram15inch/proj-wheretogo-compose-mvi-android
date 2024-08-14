@@ -12,7 +12,7 @@ object Versions {
     const val KOTLIN_COMPILER_EXTENSION_VERSION = "1.5.15"
 
 
-    const val KOTLIN_VERSION     = "1.8.0"
+    const val KOTLIN_VERSION     = "2.0.0"
     const val KOTLINX_COROUTINES = "1.6.1"
     const val BUILD_GRADLE       = "4.2.1"
     const val APP_COMPAT         = "1.6.1"
@@ -34,7 +34,7 @@ object Versions {
     const val LEGACY            = "1.0.0"
     const val ANNOTATION        = "1.5.0"
 
-    const val HILT     = "2.44"
+    const val HILT     = "2.52"
     const val MATERIAL = "1.8.0"
 
     const val RETROFIT             = "2.9.0"
@@ -48,15 +48,13 @@ object Versions {
 
 
     const val MOCKK      = "1.10.5"
-    const val TIMBER     = "5.0.1"
-    const val AMARJAIN07 = "1.0.3"
     const val GLIDE      = "4.11.0"
 
 
 
     const val JUNIT         = "4.13.2"
     const val JUPITER       = "5.10.2"
-    const val JUNIT5        = "1.4.0"
+    const val JUNIT5_TEST        = "1.4.0"
     const val ANDROID_JUNIT = "1.1.5"
     const val ESPRESSO_CORE = "3.5.1"
 }
@@ -153,8 +151,8 @@ object UnitTest {
     const val JUNIT_JUPITER_ENGINE      = "org.junit.jupiter:junit-jupiter-engine:${Versions.JUPITER}"
     const val JUNIT_JUPITER_PARAMS      = "org.junit.jupiter:junit-jupiter-params:${Versions.JUPITER}"
 
-    const val JUNIT5_TEST_CORE          = "de.mannodermaus.junit5:android-test-core:${Versions.JUNIT5}"
-    const val JUNIT5_TEST_RUNNER        = "de.mannodermaus.junit5:android-test-runner:${Versions.JUNIT5}"
+    const val JUNIT5_TEST_CORE          = "de.mannodermaus.junit5:android-test-core:${Versions.JUNIT5_TEST}"
+    const val JUNIT5_TEST_RUNNER        = "de.mannodermaus.junit5:android-test-runner:${Versions.JUNIT5_TEST}"
 }
 
 object AndroidTest {
