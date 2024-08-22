@@ -12,5 +12,7 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
+
 rootProject.name = "WhereTogo"
-include ':app'
+include(":app")
+

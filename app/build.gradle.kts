@@ -1,10 +1,10 @@
-import com.dhkim139.wheretogo.AndroidX
-import com.dhkim139.wheretogo.Versions
-import com.dhkim139.wheretogo.Kotlin
-import com.dhkim139.wheretogo.UnitTest
-import com.dhkim139.wheretogo.AndroidTest
-import com.dhkim139.wheretogo.Google
-import com.dhkim139.wheretogo.Libraries
+import wheretogo.AndroidX
+import wheretogo.Versions
+import wheretogo.Kotlin
+import wheretogo.UnitTest
+import wheretogo.AndroidTest
+import wheretogo.Google
+import wheretogo.Libraries
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
@@ -18,14 +18,14 @@ plugins {
 
 android {
     namespace = "com.dhkim139.wheretogo"
-    compileSdk = Versions.COMPILE_SDK_VERSION
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.dhkim139.wheretogo"
-        minSdk = Versions.MIN_SDK_VERSION
-        targetSdk = Versions.TARGET_SDK_VERSION
-        versionCode = Versions.VERSION_CODE
-        versionName = Versions.VERSION_NAME
+        minSdk = 24
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         testInstrumentationRunnerArguments["runnerBuilder"] = "de.mannodermaus.junit5.AndroidJUnit5Builder"
@@ -70,29 +70,37 @@ android {
 }
 
 dependencies {
-
     implementation(AndroidX.CORE_KTX)
     implementation(platform(Kotlin.KOTLIN_BOM))
     implementation(AndroidX.LIFECYCLE_RUNTIME_KTX)
     implementation(AndroidX.ACTIVITY_COMPOSE)
     implementation(platform(AndroidX.COMPOSE_BOM))
+
+
+    //compose
     implementation(AndroidX.COMPOSE_UI)
     implementation(AndroidX.COMPOSE_UI_GRAPHICS)
     implementation(AndroidX.COMPOSE_UI_TOOL_PREVIEW)
     implementation(AndroidX.COMPOSE_MATERIAL3)
 
+    androidTestImplementation(AndroidX.COMPOSE_UI_TEST_JUNIT4)
+    androidTestImplementation(platform(AndroidX.COMPOSE_BOM))
+
+    debugImplementation(AndroidX.COMPOSE_UI_TOOL)
+    debugImplementation(AndroidX.COMPOSE_UI_TEST_MANIFEST)
+
+
+    //hilt
     implementation(Google.HILT_ANDROID)
-    ksp(Google.HILT_COMPILER)
 
     testImplementation (Google.HILT_ANDROID_TESTING)
-
-    kspTest (Google.HILT_ANDROID_COMPILER)
+    testImplementation(Libraries.MOCKK)
 
     androidTestImplementation (Google.HILT_ANDROID_TESTING)
 
+    ksp(Google.HILT_COMPILER)
+    kspTest (Google.HILT_ANDROID_COMPILER)
     kspAndroidTest (Google.HILT_ANDROID_COMPILER)
-    testImplementation(Libraries.MOCKK)
-
 
     // junit5
     testImplementation (UnitTest.JUNIT_JUPITER_API)
@@ -111,10 +119,6 @@ dependencies {
     androidTestImplementation(AndroidTest.ANDROID_JUNIT)
     androidTestImplementation(AndroidTest.ESPRESSO_CORE)
     androidTestImplementation(platform(AndroidX.COMPOSE_BOM))
-    androidTestImplementation(AndroidX.COMPOSE_UI_TEST_JUNIT4)
-
-    debugImplementation(AndroidX.COMPOSE_UI_TOOL)
-    debugImplementation(AndroidX.COMPOSE_UI_TEST_MANIFEST)
 }
 
 tasks.withType(Test::class) {
