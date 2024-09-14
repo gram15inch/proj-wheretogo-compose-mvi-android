@@ -21,6 +21,7 @@ android {
     compileSdk = 34
 
     defaultConfig {
+        testInstrumentationRunnerArguments += mapOf()
         applicationId = "com.dhkim139.wheretogo"
         minSdk = 24
         targetSdk = 34
@@ -82,9 +83,18 @@ dependencies {
     implementation(AndroidX.COMPOSE_UI_GRAPHICS)
     implementation(AndroidX.COMPOSE_UI_TOOL_PREVIEW)
     implementation(AndroidX.COMPOSE_MATERIAL3)
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
+    implementation("androidx.activity:activity-compose:1.9.1")
+    implementation(platform("androidx.compose:compose-bom:2024.04.01"))
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui-graphics")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.material3:material3")
 
     androidTestImplementation(AndroidX.COMPOSE_UI_TEST_JUNIT4)
     androidTestImplementation(platform(AndroidX.COMPOSE_BOM))
+    androidTestImplementation(platform("androidx.compose:compose-bom:2024.04.01"))
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
 
     debugImplementation(AndroidX.COMPOSE_UI_TOOL)
     debugImplementation(AndroidX.COMPOSE_UI_TEST_MANIFEST)
@@ -97,6 +107,8 @@ dependencies {
     testImplementation(Libraries.MOCKK)
 
     androidTestImplementation (Google.HILT_ANDROID_TESTING)
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
 
     ksp(Google.HILT_COMPILER)
     kspTest (Google.HILT_ANDROID_COMPILER)
