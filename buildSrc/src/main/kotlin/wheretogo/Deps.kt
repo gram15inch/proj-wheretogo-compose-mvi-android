@@ -8,17 +8,18 @@ object Versions {
     const val KOTLIN_VERSION     = "2.0.0"
     const val CORE      = "1.8.0"
 
-    const val LIFECYCLE = "2.8.4"
+    const val LIFECYCLE = "2.8.5"
 
     const val TEST = "1.5.2"
 
-    const val ACTIVITY = "1.9.1"
-    const val BOM = "2024.06.00"
+    const val ACTIVITY = "1.9.2"
+    const val BOM = "2024.09.01"
 
     const val HILT     = "2.52"
 
 
     const val MOCKK      = "1.10.5"
+    const val Lottie      = "6.5.2"
 
 
 
@@ -66,6 +67,7 @@ object Google {
 
 object Libraries {
     const val MOCKK = "io.mockk:mockk:${Versions.MOCKK}"
+    const val LOTTIE_COMPOSE = "com.airbnb.android:lottie-compose:${Versions.Lottie}"
 
 }
 
