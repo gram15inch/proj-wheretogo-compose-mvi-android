@@ -296,8 +296,13 @@ fun TopBarPreview() {
 
 @Preview
 @Composable
-fun BannerPreview() {
-    ContentBanner(stringResource(R.string.banner_main), stringResource(R.string.banner_sub))
+fun GrindBannerPreview() {
+    GridButton(4,2,400.dp, content = {
+        ContentBanner(
+            stringResource(R.string.banner_main),
+            stringResource(R.string.banner_sub)
+        )
+    }, click = {} )
 }
 
 @Preview(showBackground = true)
