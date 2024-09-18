@@ -26,6 +26,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -72,17 +75,10 @@ class MainActivity : ComponentActivity() {
                             .padding(16.dp)
                     ) {
                         val displayMaxWidth = min(400.dp, maxWidth)
-                        val scrollState = rememberScrollState()
-                        Column(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .verticalScroll(scrollState),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            TopBar(displayMaxWidth)
-                            Body(displayMaxWidth)
-                            Spacer(modifier = Modifier.weight(1f))
-                            BottomBar(displayMaxWidth)
+                        var contentIdx by remember { mutableIntStateOf(0) }
+                        when (contentIdx) {
+                            0 -> HomeContent(displayMaxWidth) { contentIdx = 1 }
+                            1 -> DriveContent(displayMaxWidth) { contentIdx = 0 }
                         }
                     }
                 }
@@ -91,6 +87,37 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@Composable
+fun DriveContent(displayMaxWidth: Dp, click: () -> Unit) {
+    val scrollState = rememberScrollState()
+    Column(
+        modifier = Modifier
+            .fillMaxHeight()
+            .verticalScroll(scrollState)
+            .clickable { click.invoke() },
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        TopBar(displayMaxWidth)
+        BottomBar(displayMaxWidth)
+    }
+}
+
+
+@Composable
+fun HomeContent(displayMaxWidth: Dp, driveClick: () -> Unit) {
+    val scrollState = rememberScrollState()
+    Column(
+        modifier = Modifier
+            .fillMaxHeight()
+            .verticalScroll(scrollState),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        TopBar(displayMaxWidth)
+        Body(displayMaxWidth, driveClick)
+        Spacer(modifier = Modifier.weight(1f))
+        BottomBar(displayMaxWidth)
+    }
+}
 
 @Composable
 fun TopBar(maxWidth: Dp) {
@@ -117,7 +144,7 @@ fun TopBar(maxWidth: Dp) {
 
 
 @Composable
-fun Body(bodyMaxWidth: Dp) {
+fun Body(bodyMaxWidth: Dp, driveClick: () -> Unit) {
     val gridGap = 12.dp
     Column(verticalArrangement = Arrangement.spacedBy(gridGap)) {
         GridButton(
@@ -132,7 +159,8 @@ fun Body(bodyMaxWidth: Dp) {
                     R.raw.lt_togeter
                 )
             },
-            click = {})
+            click = driveClick
+        )
 
         val rowWidth = bodyMaxWidth - gridGap
         Row(horizontalArrangement = Arrangement.spacedBy(gridGap)) {
@@ -175,7 +203,12 @@ fun Body(bodyMaxWidth: Dp) {
         GridButton(
             5, 2,
             maxWidth = bodyMaxWidth,
-            content = { ContentBanner(stringResource(R.string.banner_main),stringResource(R.string.banner_sub)) },
+            content = {
+                ContentBanner(
+                    stringResource(R.string.banner_main),
+                    stringResource(R.string.banner_sub)
+                )
+            },
             click = {})
     }
 }
@@ -297,12 +330,12 @@ fun TopBarPreview() {
 @Preview
 @Composable
 fun GrindBannerPreview() {
-    GridButton(4,2,400.dp, content = {
+    GridButton(4, 2, 400.dp, content = {
         ContentBanner(
             stringResource(R.string.banner_main),
             stringResource(R.string.banner_sub)
         )
-    }, click = {} )
+    }, click = {})
 }
 
 @Preview(showBackground = true)
@@ -325,6 +358,6 @@ fun GridButtonPreview() {
 @Preview(showBackground = true)
 @Composable
 fun BodyPreview() {
-    Body(400.dp)
+    Body(400.dp, {})
 }
 
