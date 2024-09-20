@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">WhereTogo</string>
+    <string name="app_name">Wheretogo</string>
     <string name="where_to_go">어디갈까</string>
     <string name="drive_main">드라이브</string>
     <string name="drive_sub">가족, 연인, 친구 함께 떠나요</string>
@@ -14,4 +14,5 @@
 
     <string name="contact_banner">비즈니스 / 광고문의</string>
     <string name="dev_gmail">wherecarhelp@gmail.com</string>
+    <string name="title_activity_test">TestActivity</string>
 </resources>
