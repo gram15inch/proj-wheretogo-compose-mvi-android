@@ -6,6 +6,7 @@ import wheretogo.AndroidTest
 import wheretogo.Google
 import wheretogo.Libraries
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import java.util.Properties
 
 plugins {
     id("com.android.application")
@@ -34,9 +35,16 @@ android {
             useSupportLibrary = true
         }
 
-
     }
-
+    signingConfigs {
+        val keystoreProperties = Properties().apply { load(project.rootProject.file("keystore.properties").inputStream()) }
+        create("release") {
+            keyAlias = keystoreProperties["keyAlias"] as String
+            keyPassword = keystoreProperties["keyPassword"] as String
+            storeFile = file(keystoreProperties["storeFile"] as String)
+            storePassword = keystoreProperties["storePassword"] as String
+        }
+    }
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -44,6 +52,7 @@ android {
                     getDefaultProguardFile("proguard-android-optimize.txt"),
                     "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
@@ -59,7 +68,7 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = Versions.KOTLIN_COMPILER_EXTENSION_VERSION
     }
-    packagingOptions {
+    packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
