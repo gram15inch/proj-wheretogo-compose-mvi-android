@@ -1,3 +1,4 @@
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import wheretogo.AndroidX
 import wheretogo.Versions
 import wheretogo.Kotlin
@@ -54,6 +55,11 @@ android {
             )
             signingConfig = signingConfigs.getByName("release")
         }
+    }
+    defaultConfig {
+        buildConfigField( "String", "KAKAO_NATIVE_APP_KEY", getAppKey("kakaoNativeApp"))
+        buildConfigField( "String", "KAKAO_REST_API_KEY", getAppKey("kakaoNativeApp"))
+        buildConfigField( "String", "KAKAO_ADMIN_KEY", getAppKey("kakaoNativeApp"))
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -132,6 +138,11 @@ dependencies {
     androidTestImplementation(AndroidTest.ANDROID_JUNIT)
     androidTestImplementation(AndroidTest.ESPRESSO_CORE)
     androidTestImplementation(platform(AndroidX.COMPOSE_BOM))
+
+
+
+    //Map
+    implementation("com.kakao.maps.open:android:2.11.9")
 }
 
 tasks.withType(Test::class) {
@@ -139,5 +150,9 @@ tasks.withType(Test::class) {
     testLogging {
         events.addAll(arrayOf(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED))
     }
+}
+
+fun getAppKey(propertyKey: String): String {
+    return gradleLocalProperties(rootDir, providers).getProperty(propertyKey)
 }
 
