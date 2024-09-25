@@ -143,6 +143,7 @@ dependencies {
 
     //Map
     implementation("com.kakao.maps.open:android:2.11.9")
+    implementation("com.naver.maps:map-sdk:3.19.1")
 }
 
 tasks.withType(Test::class) {

@@ -44,10 +44,10 @@ class MainActivity : ComponentActivity() {
                             .padding(16.dp)
                     ) {
                         val displayMaxWidth = min(400.dp, maxWidth)
-                        var contentIdx by remember { mutableIntStateOf(0) }
+                        var contentIdx by remember { mutableIntStateOf(1) }
                         when (contentIdx) {
                             0 -> HomeContent(displayMaxWidth) { contentIdx = 1 }
-                            1 -> DriveContent(displayMaxWidth) { contentIdx = 0 }
+                            1 -> DriveContent(displayMaxWidth)
                         }
                     }
                 }
@@ -55,7 +55,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
 
 
 
