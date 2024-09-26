@@ -60,6 +60,9 @@ android {
         buildConfigField( "String", "KAKAO_NATIVE_APP_KEY", getAppKey("kakaoNativeApp"))
         buildConfigField( "String", "KAKAO_REST_API_KEY", getAppKey("kakaoNativeApp"))
         buildConfigField( "String", "KAKAO_ADMIN_KEY", getAppKey("kakaoNativeApp"))
+
+        buildConfigField( "String", "NAVER_CLIENT_ID_KEY", getAppKey("naverClientId"))
+        buildConfigField( "String", "NAVER_CLIENT_SECRET_KEY", getAppKey("naverClientSecret"))
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -144,6 +147,11 @@ dependencies {
     //Map
     implementation("com.kakao.maps.open:android:2.11.9")
     implementation("com.naver.maps:map-sdk:3.19.1")
+
+    //retrofit
+    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation ("com.squareup.retrofit2:converter-moshi:2.9.0")
+    implementation("com.squareup.moshi:moshi-kotlin:1.13.0")
 }
 
 tasks.withType(Test::class) {
