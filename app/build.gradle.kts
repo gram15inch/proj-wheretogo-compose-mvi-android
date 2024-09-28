@@ -92,6 +92,7 @@ dependencies {
     implementation(AndroidX.CORE_KTX)
     implementation(platform(Kotlin.KOTLIN_BOM))
     implementation(AndroidX.LIFECYCLE_RUNTIME_KTX)
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
     implementation(AndroidX.ACTIVITY_COMPOSE)
     implementation(platform(AndroidX.COMPOSE_BOM))
 
@@ -114,6 +115,7 @@ dependencies {
 
     //hilt
     implementation(Google.HILT_ANDROID)
+    implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
 
     testImplementation (Google.HILT_ANDROID_TESTING)
     testImplementation(Libraries.MOCKK)
