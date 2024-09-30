@@ -7,6 +7,7 @@ import wheretogo.AndroidTest
 import wheretogo.Google
 import wheretogo.Libraries
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import wheretogo.Squareup
 import java.util.Properties
 
 plugins {
@@ -92,7 +93,7 @@ dependencies {
     implementation(AndroidX.CORE_KTX)
     implementation(platform(Kotlin.KOTLIN_BOM))
     implementation(AndroidX.LIFECYCLE_RUNTIME_KTX)
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
+    implementation(AndroidX.LIFECYCLE_VIEWMODEL_COMPOSE)
     implementation(AndroidX.ACTIVITY_COMPOSE)
     implementation(platform(AndroidX.COMPOSE_BOM))
 
@@ -115,7 +116,7 @@ dependencies {
 
     //hilt
     implementation(Google.HILT_ANDROID)
-    implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
+    implementation(AndroidX.HILT_NAVIGATION_COMPOSE)
 
     testImplementation (Google.HILT_ANDROID_TESTING)
     testImplementation(Libraries.MOCKK)
@@ -145,15 +146,14 @@ dependencies {
     androidTestImplementation(platform(AndroidX.COMPOSE_BOM))
 
 
-
     //Map
     implementation("com.kakao.maps.open:android:2.11.9")
     implementation("com.naver.maps:map-sdk:3.19.1")
 
     //retrofit
-    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation ("com.squareup.retrofit2:converter-moshi:2.9.0")
-    implementation("com.squareup.moshi:moshi-kotlin:1.13.0")
+    implementation (Squareup.RETROFIT)
+    implementation (Squareup.RETROFIT_CONVERTER_MOSHI)
+    implementation(Squareup.MOSHI_KOTLIN)
 }
 
 tasks.withType(Test::class) {

@@ -17,6 +17,9 @@ object Versions {
 
     const val HILT     = "2.52"
 
+    const val RETROFIT     = "2.9.0"
+    const val MOSHI     = "1.13.0"
+
 
     const val MOCKK      = "1.10.5"
     const val Lottie      = "6.5.2"
@@ -39,6 +42,7 @@ object AndroidX {
 
 
     const val LIFECYCLE_RUNTIME_KTX   = "androidx.lifecycle:lifecycle-runtime-ktx:${Versions.LIFECYCLE}"
+    const val LIFECYCLE_VIEWMODEL_COMPOSE   = "androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0"
 
 
 
@@ -53,16 +57,23 @@ object AndroidX {
     const val COMPOSE_UI_TEST_MANIFEST = "androidx.compose.ui:ui-test-manifest"
     const val COMPOSE_MATERIAL3        = "androidx.compose.material3:material3"
 
-    const val TEST_RUNNER       ="androidx.test:runner:${Versions.TEST}"//
+    const val HILT_NAVIGATION_COMPOSE = "androidx.hilt:hilt-navigation-compose:1.0.0"
 
+    const val TEST_RUNNER       ="androidx.test:runner:${Versions.TEST}"
 }
 
 object Google {
-    const val HILT_ANDROID          = "com.google.dagger:hilt-android:${Versions.HILT}"//
-    const val HILT_COMPILER         = "com.google.dagger:hilt-compiler:${Versions.HILT}"//
-    const val HILT_ANDROID_COMPILER = "com.google.dagger:hilt-android-compiler:${Versions.HILT}"//
-    const val HILT_ANDROID_TESTING  = "com.google.dagger:hilt-android-testing:${Versions.HILT}"//
+    const val HILT_ANDROID          = "com.google.dagger:hilt-android:${Versions.HILT}"
+    const val HILT_COMPILER         = "com.google.dagger:hilt-compiler:${Versions.HILT}"
+    const val HILT_ANDROID_COMPILER = "com.google.dagger:hilt-android-compiler:${Versions.HILT}"
+    const val HILT_ANDROID_TESTING  = "com.google.dagger:hilt-android-testing:${Versions.HILT}"
 
+}
+
+object Squareup {
+    const val RETROFIT                 = "com.squareup.retrofit2:retrofit:${Versions.RETROFIT}"
+    const val RETROFIT_CONVERTER_MOSHI = "com.squareup.retrofit2:converter-moshi:${Versions.RETROFIT}"
+    const val MOSHI_KOTLIN             = "com.squareup.moshi:moshi-kotlin:${Versions.MOSHI}"
 }
 
 object Libraries {
