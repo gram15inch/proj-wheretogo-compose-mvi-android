@@ -15,11 +15,13 @@ class DriveViewModel @Inject constructor(private val naverMapApiService : NaverM
         val msg=naverMapApiService.getRouteWayPoint(
             BuildConfig.NAVER_CLIENT_ID_KEY,
             BuildConfig.NAVER_CLIENT_SECRET_KEY,
-            start = convertLatLng("37.24029064395548, 127.10127100051095"),
-            goal = convertLatLng("37.255513946627794, 127.09415649509319"),
-            waypoint =
-            convertLatLng("37.221355259513686, 127.09719910417634")+"|"
+            start = convertLatLng("37.24049254419747, 127.10069878544695"),
+           // goal = convertLatLng("37.279593663738545, 127.11749212526078"),
+            goal = convertLatLng("37.24022338235744, 127.10061868739378"),
+            waypoints =
+            convertLatLng("37.22248268378388, 127.09011137932174")
         )
+
 
         if(msg.body()?.currentDateTime!=null){
             val r= msg.body()!!.route.traoptimal.map { it.path }.first().map { LatLng(it[1],it[0]) }

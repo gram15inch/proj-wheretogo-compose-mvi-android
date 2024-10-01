@@ -1,7 +1,7 @@
 package com.dhkim139.wheretogo.ui.composable
 
 import android.os.Bundle
-import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
@@ -29,8 +29,10 @@ import com.dhkim139.wheretogo.viewmodel.DriveViewModel
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.MapView
+import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.PathOverlay
 import kotlinx.coroutines.launch
+
 
 @Composable
 fun NaverScreen(displayMaxWidth: Dp, viewModel: DriveViewModel = hiltViewModel()) {
@@ -44,7 +46,8 @@ fun NaverScreen(displayMaxWidth: Dp, viewModel: DriveViewModel = hiltViewModel()
         NaverMapComposable(data)
         Text(
             text = data.size.toString(),
-            modifier = Modifier.padding(start = 8.dp)
+            modifier = Modifier
+                .padding(start = 8.dp)
         )
     }
 
@@ -61,10 +64,12 @@ fun NaverMapComposable(data: List<LatLng>) {
                 getMapAsync { naverMap ->
                     val cameraUpdate = CameraUpdate.scrollTo(data[data.size/2])
                     naverMap.moveCamera(cameraUpdate)
+                    val marker= Marker()
+                    marker.position = data[0]
+                    marker.map = naverMap
                     val path = PathOverlay()
                     path.coords = data
                     path.map = naverMap
-
                 }
             }
         }
