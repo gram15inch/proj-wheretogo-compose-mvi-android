@@ -22,6 +22,6 @@ interface NaverMapApiService {
         @Header("X-NCP-APIGW-API-KEY") clientSecret: String,
         @Query("start") start:String,
         @Query("goal") goal:String,
-        @Query("waypoint") waypoint:String,
+        @Query("waypoints") waypoints:String,
     ): Response<NaverRouteWaypointResponse>
 }
