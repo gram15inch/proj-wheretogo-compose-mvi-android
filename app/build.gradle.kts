@@ -64,6 +64,8 @@ android {
 
         buildConfigField( "String", "NAVER_CLIENT_ID_KEY", getAppKey("naverClientId"))
         buildConfigField( "String", "NAVER_CLIENT_SECRET_KEY", getAppKey("naverClientSecret"))
+
+        buildConfigField( "String", "TMAP_APP_KEY", getAppKey("tmapApp"))
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -149,6 +151,7 @@ dependencies {
     //Map
     implementation("com.kakao.maps.open:android:2.11.9")
     implementation("com.naver.maps:map-sdk:3.19.1")
+    implementation(files("libs/com.skt.Tmap_1.76.jar"))
 
     //retrofit
     implementation (Squareup.RETROFIT)

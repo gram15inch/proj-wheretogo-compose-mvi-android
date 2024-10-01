@@ -19,7 +19,7 @@ fun DriveContent(displayMaxWidth: Dp) {
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         TopBar(displayMaxWidth)
-        NaverScreen(displayMaxWidth)
+        SKTScreen(displayMaxWidth)
         BottomBar(displayMaxWidth)
     }
 }
