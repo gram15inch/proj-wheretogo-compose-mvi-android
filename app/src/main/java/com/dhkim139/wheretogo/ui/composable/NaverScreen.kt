@@ -1,6 +1,10 @@
 package com.dhkim139.wheretogo.ui.composable
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,17 +24,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.dhkim139.wheretogo.BuildConfig
+import com.dhkim139.wheretogo.data.model.map.Course
+import com.dhkim139.wheretogo.data.repository.*
 import com.dhkim139.wheretogo.viewmodel.DriveViewModel
 import com.naver.maps.geometry.LatLng
+import com.naver.maps.map.CameraPosition
 import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.MapView
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.PathOverlay
+import com.skt.Tmap.TMapTapi
 import kotlinx.coroutines.launch
 
 
@@ -38,7 +48,7 @@ import kotlinx.coroutines.launch
 fun NaverScreen(displayMaxWidth: Dp, viewModel: DriveViewModel = hiltViewModel()) {
     var data by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     LaunchedEffect(Unit) {
-        data = viewModel.callApi()
+        data = viewModel.callApi(c2)
     }
     Column(
         modifier = Modifier.width(displayMaxWidth), verticalArrangement = Arrangement.spacedBy(8.dp)

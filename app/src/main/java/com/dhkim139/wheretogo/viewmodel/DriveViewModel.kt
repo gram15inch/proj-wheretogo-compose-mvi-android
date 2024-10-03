@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.dhkim139.wheretogo.BuildConfig
 import com.dhkim139.wheretogo.data.datasource.service.NaverMapApiService
+import com.dhkim139.wheretogo.data.model.map.Course
 import com.naver.maps.geometry.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -11,15 +12,13 @@ import javax.inject.Inject
 @HiltViewModel
 class DriveViewModel @Inject constructor(private val naverMapApiService : NaverMapApiService) :ViewModel() {
 
-    suspend fun callApi():List<LatLng>{
+    suspend fun callApi(course: Course):List<LatLng>{
         val msg=naverMapApiService.getRouteWayPoint(
             BuildConfig.NAVER_CLIENT_ID_KEY,
             BuildConfig.NAVER_CLIENT_SECRET_KEY,
-            start = convertLatLng("37.24049254419747, 127.10069878544695"),
-           // goal = convertLatLng("37.279593663738545, 127.11749212526078"),
-            goal = convertLatLng("37.24022338235744, 127.10061868739378"),
-            waypoints =
-            convertLatLng("37.22248268378388, 127.09011137932174")
+            start = convertLatLng(course.start),
+            goal = convertLatLng(course.goal),
+            waypoints = convertWaypoints(course.waypoints)
         )
 
 
@@ -35,5 +34,16 @@ class DriveViewModel @Inject constructor(private val naverMapApiService : NaverM
     }
 
 
-    private fun convertLatLng(str:String):String=str.split(",").run { "${this[1]}, ${this[0]}" }
+    private fun convertLatLng(latlng:com.dhkim139.wheretogo.domain.model.LatLng):String =  "${latlng.longitude}, ${latlng.latitude}"
+    private fun convertWaypoints(waypoints:List<com.dhkim139.wheretogo.domain.model.LatLng>):String {
+        var str = ""
+        waypoints.forEach {
+            str+= convertLatLng(it)+"|"
+        }
+        return str
+    }
+
+
+
+
 }
