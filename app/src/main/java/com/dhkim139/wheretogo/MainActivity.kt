@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
+import com.dhkim139.wheretogo.data.model.map.Course
 import com.dhkim139.wheretogo.ui.composable.DriveContent
 import com.dhkim139.wheretogo.ui.composable.HomeContent
 import com.dhkim139.wheretogo.ui.theme.WhereTogoTheme
@@ -39,9 +40,7 @@ class MainActivity : ComponentActivity() {
                 Box(
                     modifier = Modifier
                         .background(Color.Gray)
-                        .fillMaxSize().clickable {
-                            startNaverMap()
-                        },
+                        .fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
                     BoxWithConstraints(
@@ -60,18 +59,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-    }
-    fun ComponentActivity.startNaverMap(start:LatLng= LatLng(37.24049254419747, 127.10069878544695),end:LatLng= LatLng(37.24022338235744, 127.10061868739378),waypoint:LatLng= LatLng(37.22248268378388, 127.09011137932174)){
-        // val url = "nmap://actionPath?parameter=value&appname={wheretogo}"
-        //val url = "nmap://route/car?slat=${start.latitude}&slng=${start.longitude}&sname=start&dlat=${end.latitude}&dlng=${end.longitude}&dname=end&appname=com.dhkim139.wheretogo"
-        val url = "nmap://route/car?slat=${start.latitude}&slng=${start.longitude}&sname=start" +
-                "&dlat=${end.latitude}&dlng=${end.longitude}&dname=end" +
-                "&v1lat=${waypoint.latitude}&v1lng=${waypoint.longitude}&v1name=v1" +
-                "&appname=com.dhkim139.wheretogo"
-        //val url="nmap://map?lat=37.4979502&lng=127.0276368&zoom=20&appname=com.dhkim139.wheretogo"
-        //val url="nmap://map?&com.dhkim139.wheretogo"
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-        startActivity(intent)
     }
 }
 

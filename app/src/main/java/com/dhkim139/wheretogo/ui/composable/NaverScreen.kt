@@ -47,6 +47,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun NaverScreen(displayMaxWidth: Dp, viewModel: DriveViewModel = hiltViewModel()) {
     var data by remember { mutableStateOf<List<LatLng>>(emptyList()) }
+    val context = LocalContext.current
     LaunchedEffect(Unit) {
         data = viewModel.callApi(c2)
     }
@@ -58,6 +59,18 @@ fun NaverScreen(displayMaxWidth: Dp, viewModel: DriveViewModel = hiltViewModel()
             text = data.size.toString(),
             modifier = Modifier
                 .padding(start = 8.dp)
+        )
+        Text(
+            modifier = Modifier.clickable {
+                context.searchNaverMap(c2)
+            },
+            text = "네이버지도에서 찾기", fontSize = 20.sp
+        )
+        Text(
+            modifier = Modifier.clickable {
+                context.searchTMap(c2)
+            },
+            text = "티맵에서 찾기", fontSize = 20.sp
         )
     }
 
@@ -72,14 +85,10 @@ fun NaverMapComposable(data: List<LatLng>) {
         val mapView = remember {
             MapView(context).apply {
                 getMapAsync { naverMap ->
-                    val cameraUpdate = CameraUpdate.scrollTo(data[data.size/2])
-                    naverMap.moveCamera(cameraUpdate)
-                    val marker= Marker()
-                    marker.position = data[0]
-                    marker.map = naverMap
-                    val path = PathOverlay()
-                    path.coords = data
-                    path.map = naverMap
+                    naverMap.cameraPosition = CameraPosition(
+                        LatLng(37.5666102, 126.9783881),
+                        12.0,
+                    )
                 }
             }
         }
@@ -108,6 +117,82 @@ fun NaverMapComposable(data: List<LatLng>) {
             }
         }
 
-        AndroidView(modifier = Modifier.height(400.dp), factory = { mapView })
+        AndroidView(modifier = Modifier.height(400.dp), factory = { mapView },
+            update = {
+                it.getMapAsync { naverMap ->
+                    val cameraUpdate = CameraUpdate.scrollTo(data[0])
+                    naverMap.moveCamera(cameraUpdate)
+                    val marker = Marker()
+                    marker.position = data[0]
+                    marker.map = naverMap
+                    val path = PathOverlay()
+                    path.coords = data
+                    path.map = naverMap
+                }
+            })
+    }
+}
+
+fun Context.searchNaverMap(course: Course) {
+    val url = "nmap://route/car?slat=${course.start.latitude}&slng=${course.start.longitude}&sname=start" +
+                "&dlat=${course.goal.latitude}&dlng=${course.goal.longitude}&dname=end" +
+                course.waypoints.run {
+                    var str=""
+                    this.forEachIndexed {idx,latlng->
+                        str += "&v${idx+1}lat=${latlng.latitude}&v${idx+1}lng=${latlng.longitude}&v${idx+1}name=v${idx+1}"
+                    }
+                    str
+                } +
+                "&appname=com.dhkim139.wheretogo"
+    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+    startActivity(intent)
+}
+
+fun Context.searchTMap(course: Course) {
+    val api = TMapTapi(this)
+    api.setSKTMapAuthentication(BuildConfig.TMAP_APP_KEY)
+    val routeMap = HashMap<String, String>()
+
+    course.start.apply {
+        routeMap["rStName"] = "출발지"
+        routeMap["rStX"] = longitude.toString()
+        routeMap["rStY"] = latitude.toString()
+    }
+
+    course.goal.apply {
+        routeMap["rGoName"] = "목적지"
+        routeMap["rGoX"] = longitude.toString()
+        routeMap["rGoY"] = latitude.toString()
+    }
+
+    course.waypoints.forEachIndexed { idx, latlng ->
+        routeMap["rV${idx + 1}Name"] = "경유지 ${idx + 1}"
+        routeMap["rV${idx + 1}X"] = latlng.latitude.toString()
+        routeMap["rV${idx + 1}Y"] = latlng.longitude.toString()
+    }
+
+    if(!api.isTmapApplicationInstalled)
+        openPlayStore(api.tMapDownUrl[0])
+    else{
+        api.invokeRoute(routeMap)
+
+        api.invokeTmap()
+    }
+    Log.d("tst","${ api.isTmapApplicationInstalled}")
+    Log.d("tst","${ api.tMapDownUrl}")
+
+}
+
+private fun Context.openPlayStore(url:String) {
+
+    val intent = Intent(Intent.ACTION_VIEW).apply {
+        data = Uri.parse(url)
+        setPackage("com.android.vending")
+    }
+    if (intent.resolveActivity(packageManager) != null) {
+        startActivity(intent)
+    } else {
+        val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        startActivity(webIntent)
     }
 }
