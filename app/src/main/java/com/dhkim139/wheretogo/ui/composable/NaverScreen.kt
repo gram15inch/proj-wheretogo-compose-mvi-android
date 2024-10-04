@@ -33,8 +33,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.dhkim139.wheretogo.BuildConfig
-import com.dhkim139.wheretogo.data.datasource.dummy.c1
-import com.dhkim139.wheretogo.data.datasource.dummy.c2
+import com.dhkim139.wheretogo.data.datasource.dummy.*
 import com.dhkim139.wheretogo.data.model.map.Course
 import com.dhkim139.wheretogo.domain.toNaver
 import com.dhkim139.wheretogo.viewmodel.DriveViewModel
@@ -45,7 +44,6 @@ import com.naver.maps.map.MapView
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.PathOverlay
 import com.skt.Tmap.TMapTapi
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -57,6 +55,11 @@ fun NaverScreen(displayMaxWidth: Dp, viewModel: DriveViewModel = hiltViewModel()
     LaunchedEffect(Dispatchers.Default) {
         data = viewModel.getMap(c1).points.toNaver()
         data = viewModel.getMap(c2).points.toNaver()
+        data = viewModel.getMap(c3).points.toNaver()
+        data = viewModel.getMap(c4).points.toNaver()
+        data = viewModel.getMap(c5).points.toNaver()
+        data = viewModel.getMap(c6).points.toNaver()
+        data = viewModel.getMap(c7).points.toNaver()
     }
     Column(
         modifier = Modifier.width(displayMaxWidth), verticalArrangement = Arrangement.spacedBy(8.dp)

@@ -34,6 +34,7 @@ class MapRepositoryImpl @Inject constructor(private val mapApiService: NaverMapA
     }
 
    private suspend fun getPoints(course: Course):List<LatLng>{
+       Log.d("tst","course${course.code} start")
         val msg=mapApiService.getRouteWayPoint(
             BuildConfig.NAVER_CLIENT_ID_KEY,
             BuildConfig.NAVER_CLIENT_SECRET_KEY,
@@ -44,7 +45,7 @@ class MapRepositoryImpl @Inject constructor(private val mapApiService: NaverMapA
 
         if(msg.body()?.currentDateTime!=null){
             val r= msg.body()!!.route.traoptimal.map { it.path }.first().map { LatLng(it[1],it[0]) }
-            Log.d("tst","size: ${r.size}\n")
+            Log.d("tst","course${course.code} size: ${r.size}\n")
             return r
         }else{
             Log.d("tst","${msg}")
