@@ -22,7 +22,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.dhkim139.wheretogo.BuildConfig
-import com.dhkim139.wheretogo.data.repository.c1
+import com.dhkim139.wheretogo.data.datasource.dummy.c1
+import com.dhkim139.wheretogo.domain.toNaver
 import com.dhkim139.wheretogo.viewmodel.DriveViewModel
 import com.naver.maps.geometry.LatLng
 import com.skt.Tmap.TMapPoint
@@ -34,7 +35,7 @@ import kotlinx.coroutines.launch
 fun SKTScreen(displayMaxWidth: Dp, viewModel: DriveViewModel = hiltViewModel()) {
     var data by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     LaunchedEffect(Unit) {
-        data = viewModel.callApi(c1)
+        data = viewModel.getMap(c1).points.toNaver()
     }
     Column(
         modifier = Modifier.width(displayMaxWidth),

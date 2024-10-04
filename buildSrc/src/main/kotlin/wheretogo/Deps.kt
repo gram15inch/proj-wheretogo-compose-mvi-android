@@ -17,12 +17,14 @@ object Versions {
 
     const val HILT     = "2.52"
 
+    const val ROOM     = "2.6.1"
+
     const val RETROFIT     = "2.9.0"
     const val MOSHI     = "1.13.0"
 
 
     const val MOCKK      = "1.10.5"
-    const val Lottie      = "6.5.2"
+    const val LOTTIE      = "6.5.2"
 
 
 
@@ -59,6 +61,11 @@ object AndroidX {
 
     const val HILT_NAVIGATION_COMPOSE = "androidx.hilt:hilt-navigation-compose:1.0.0"
 
+    const val ROOM_RUNTIME="androidx.room:room-runtime:${Versions.ROOM}"
+    const val ROOM_KTX="androidx.room:room-ktx:${Versions.ROOM}"
+    const val ROOM_COMPILER="androidx.room:room-compiler:${Versions.ROOM}"
+    const val ROOM_TESTING="androidx.room:room-testing:${Versions.ROOM}"
+
     const val TEST_RUNNER       ="androidx.test:runner:${Versions.TEST}"
 }
 
@@ -78,7 +85,7 @@ object Squareup {
 
 object Libraries {
     const val MOCKK = "io.mockk:mockk:${Versions.MOCKK}"
-    const val LOTTIE_COMPOSE = "com.airbnb.android:lottie-compose:${Versions.Lottie}"
+    const val LOTTIE_COMPOSE = "com.airbnb.android:lottie-compose:${Versions.LOTTIE}"
 
 }
 

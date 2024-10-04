@@ -1,9 +1,10 @@
-package com.dhkim139.wheretogo.data.repository
+package com.dhkim139.wheretogo.data.datasource.dummy
 
 import com.dhkim139.wheretogo.data.model.map.Course
 import com.dhkim139.wheretogo.domain.model.LatLng
 
 val c1= Course( // 기흥호수공원
+    code=1001,
     start = LatLng(37.24049254419747, 127.10069878544695),
     goal = LatLng(37.24022338235744, 127.10061868739378),
     waypoints = listOf(
@@ -12,6 +13,7 @@ val c1= Course( // 기흥호수공원
 )
 
 val c2 = Course(// 광교호수공원
+    code=1002,
     start=LatLng(37.27671532173225, 127.06655325086643),
     goal = LatLng(37.27657246721216, 127.06654706022783),
     waypoints = listOf(

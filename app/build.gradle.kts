@@ -66,6 +66,12 @@ android {
         buildConfigField( "String", "NAVER_CLIENT_SECRET_KEY", getAppKey("naverClientSecret"))
 
         buildConfigField( "String", "TMAP_APP_KEY", getAppKey("tmapApp"))
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments["room.schemaLocation"] = "$projectDir/schemas"
+            }
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -157,6 +163,13 @@ dependencies {
     implementation (Squareup.RETROFIT)
     implementation (Squareup.RETROFIT_CONVERTER_MOSHI)
     implementation(Squareup.MOSHI_KOTLIN)
+
+    //Room
+    implementation(AndroidX.ROOM_RUNTIME)
+    implementation(AndroidX.ROOM_KTX)
+    annotationProcessor(AndroidX.ROOM_COMPILER)
+    testImplementation(AndroidX.ROOM_TESTING)
+    ksp(AndroidX.ROOM_COMPILER)
 }
 
 tasks.withType(Test::class) {

@@ -31,8 +31,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.dhkim139.wheretogo.BuildConfig
+import com.dhkim139.wheretogo.data.datasource.dummy.c2
 import com.dhkim139.wheretogo.data.model.map.Course
-import com.dhkim139.wheretogo.data.repository.*
+import com.dhkim139.wheretogo.domain.toNaver
 import com.dhkim139.wheretogo.viewmodel.DriveViewModel
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.CameraPosition
@@ -49,7 +50,7 @@ fun NaverScreen(displayMaxWidth: Dp, viewModel: DriveViewModel = hiltViewModel()
     var data by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     val context = LocalContext.current
     LaunchedEffect(Unit) {
-        data = viewModel.callApi(c2)
+        data = viewModel.getMap(c2).points.toNaver()
     }
     Column(
         modifier = Modifier.width(displayMaxWidth), verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -172,10 +173,11 @@ fun Context.searchTMap(course: Course) {
     }
 
     if(!api.isTmapApplicationInstalled)
-        openPlayStore(api.tMapDownUrl[0])
+        api.tMapDownUrl?.let {
+            openPlayStore(it[0])
+        }
     else{
         api.invokeRoute(routeMap)
-
         api.invokeTmap()
     }
     Log.d("tst","${ api.isTmapApplicationInstalled}")
