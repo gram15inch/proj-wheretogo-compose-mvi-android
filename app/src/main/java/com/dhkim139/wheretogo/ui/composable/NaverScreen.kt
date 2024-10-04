@@ -1,5 +1,7 @@
 package com.dhkim139.wheretogo.ui.composable
 
+import android.accounts.Account
+import android.accounts.OnAccountsUpdateListener
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -31,6 +33,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.dhkim139.wheretogo.BuildConfig
+import com.dhkim139.wheretogo.data.datasource.dummy.c1
 import com.dhkim139.wheretogo.data.datasource.dummy.c2
 import com.dhkim139.wheretogo.data.model.map.Course
 import com.dhkim139.wheretogo.domain.toNaver
@@ -42,6 +45,8 @@ import com.naver.maps.map.MapView
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.PathOverlay
 import com.skt.Tmap.TMapTapi
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
@@ -49,7 +54,8 @@ import kotlinx.coroutines.launch
 fun NaverScreen(displayMaxWidth: Dp, viewModel: DriveViewModel = hiltViewModel()) {
     var data by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     val context = LocalContext.current
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Dispatchers.Default) {
+        data = viewModel.getMap(c1).points.toNaver()
         data = viewModel.getMap(c2).points.toNaver()
     }
     Column(
@@ -152,36 +158,49 @@ fun Context.searchNaverMap(course: Course) {
 fun Context.searchTMap(course: Course) {
     val api = TMapTapi(this)
     api.setSKTMapAuthentication(BuildConfig.TMAP_APP_KEY)
-    val routeMap = HashMap<String, String>()
 
-    course.start.apply {
-        routeMap["rStName"] = "출발지"
-        routeMap["rStX"] = longitude.toString()
-        routeMap["rStY"] = latitude.toString()
-    }
+    api.setOnAuthenticationListener(object :OnAccountsUpdateListener,
+        TMapTapi.OnAuthenticationListenerCallback {
+        override fun onAccountsUpdated(p0: Array<out Account>?) {
 
-    course.goal.apply {
-        routeMap["rGoName"] = "목적지"
-        routeMap["rGoX"] = longitude.toString()
-        routeMap["rGoY"] = latitude.toString()
-    }
-
-    course.waypoints.forEachIndexed { idx, latlng ->
-        routeMap["rV${idx + 1}Name"] = "경유지 ${idx + 1}"
-        routeMap["rV${idx + 1}X"] = latlng.latitude.toString()
-        routeMap["rV${idx + 1}Y"] = latlng.longitude.toString()
-    }
-
-    if(!api.isTmapApplicationInstalled)
-        api.tMapDownUrl?.let {
-            openPlayStore(it[0])
         }
-    else{
-        api.invokeRoute(routeMap)
-        api.invokeTmap()
-    }
-    Log.d("tst","${ api.isTmapApplicationInstalled}")
-    Log.d("tst","${ api.tMapDownUrl}")
+
+        override fun SKTMapApikeySucceed() {
+            val routeMap = HashMap<String, String>()
+
+            course.start.apply {
+                routeMap["rStName"] = "출발지"
+                routeMap["rStX"] = longitude.toString()
+                routeMap["rStY"] = latitude.toString()
+            }
+
+            course.goal.apply {
+                routeMap["rGoName"] = "목적지"
+                routeMap["rGoX"] = longitude.toString()
+                routeMap["rGoY"] = latitude.toString()
+            }
+
+            course.waypoints.forEachIndexed { idx, latlng ->
+                routeMap["rV${idx + 1}Name"] = "경유지 ${idx + 1}"
+                routeMap["rV${idx + 1}X"] = latlng.longitude.toString()
+                routeMap["rV${idx + 1}Y"] = latlng.latitude.toString()
+            }
+
+            if(!api.isTmapApplicationInstalled){
+                api.tMapDownUrl?.let {
+                    openPlayStore(it[0])
+                    Log.d("tst","${ api.tMapDownUrl}")
+                }
+            } else{
+                api.invokeRoute(routeMap)
+            }
+        }
+
+        override fun SKTMapApikeyFailed(p0: String?) {
+        }
+    })
+
+
 
 }
 

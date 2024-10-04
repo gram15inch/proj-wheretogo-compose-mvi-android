@@ -3,7 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
-
+    <queries>
+        <package android:name="com.skt.skaf.l001mtm091"/>
+        <package android:name="com.skt.tmap.ku"/>
+    </queries>
     <application
         android:name=".BaseApplication"
         android:allowBackup="true"
