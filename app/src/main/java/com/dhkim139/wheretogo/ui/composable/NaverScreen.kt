@@ -7,12 +7,16 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -23,8 +27,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -33,25 +37,31 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.dhkim139.wheretogo.BuildConfig
-import com.dhkim139.wheretogo.data.datasource.dummy.*
+import com.dhkim139.wheretogo.data.datasource.dummy.c1
+import com.dhkim139.wheretogo.data.datasource.dummy.c2
+import com.dhkim139.wheretogo.data.datasource.dummy.c3
+import com.dhkim139.wheretogo.data.datasource.dummy.c4
+import com.dhkim139.wheretogo.data.datasource.dummy.c5
+import com.dhkim139.wheretogo.data.datasource.dummy.c6
+import com.dhkim139.wheretogo.data.datasource.dummy.c7
 import com.dhkim139.wheretogo.data.model.map.Course
 import com.dhkim139.wheretogo.domain.toNaver
 import com.dhkim139.wheretogo.viewmodel.DriveViewModel
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.CameraPosition
-import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.MapView
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.PathOverlay
 import com.skt.Tmap.TMapTapi
+import com.valentinilk.shimmer.shimmer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-
 @Composable
-fun NaverScreen(displayMaxWidth: Dp, viewModel: DriveViewModel = hiltViewModel()) {
+fun NaverScreen(viewModel: DriveViewModel = hiltViewModel()) {
     var data by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     val context = LocalContext.current
+
     LaunchedEffect(Dispatchers.Default) {
         data = viewModel.getMap(c1).points.toNaver()
         data = viewModel.getMap(c2).points.toNaver()
@@ -62,30 +72,46 @@ fun NaverScreen(displayMaxWidth: Dp, viewModel: DriveViewModel = hiltViewModel()
         data = viewModel.getMap(c7).points.toNaver()
     }
     Column(
-        modifier = Modifier.width(displayMaxWidth), verticalArrangement = Arrangement.spacedBy(8.dp)
+        modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        NaverMapComposable(data)
-        Text(
-            text = data.size.toString(),
+        Box(modifier =  Modifier.height(400.dp)){
+            if(data.isEmpty())
+                ShimmeringPlaceholder()
+            NaverMapComposable(data)
+        }
+        Column(Modifier.padding(horizontal = 16.dp),verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Text(
+                modifier = Modifier
+                    .clickable {
+                        context.searchNaverMap(c2)
+                    },
+                text = "네이버지도에서 찾기", fontSize = 20.sp
+            )
+            Text(
+                modifier = Modifier
+                    .clickable {
+                        context.searchTMap(c2)
+                    },
+                text = "티맵에서 찾기", fontSize = 20.sp
+            )
+        }
+    }
+}
+@Composable
+fun ShimmeringPlaceholder() {
+    Row(
+        modifier = Modifier.shimmer()
+            .fillMaxWidth()
+            .height(400.dp)
+    ) {
+        Box(
             modifier = Modifier
-                .padding(start = 8.dp)
-        )
-        Text(
-            modifier = Modifier.clickable {
-                context.searchNaverMap(c2)
-            },
-            text = "네이버지도에서 찾기", fontSize = 20.sp
-        )
-        Text(
-            modifier = Modifier.clickable {
-                context.searchTMap(c2)
-            },
-            text = "티맵에서 찾기", fontSize = 20.sp
+                .fillMaxSize()
+                .padding(16.dp)
+                .background(Color.LightGray),
         )
     }
-
 }
-
 @Composable
 fun NaverMapComposable(data: List<LatLng>) {
     val context = LocalContext.current
@@ -96,8 +122,8 @@ fun NaverMapComposable(data: List<LatLng>) {
             MapView(context).apply {
                 getMapAsync { naverMap ->
                     naverMap.cameraPosition = CameraPosition(
-                        LatLng(37.5666102, 126.9783881),
-                        12.0,
+                        LatLng(c5.start.latitude,c5.start.longitude),
+                        11.0,
                     )
                 }
             }
@@ -126,12 +152,9 @@ fun NaverMapComposable(data: List<LatLng>) {
                 lifecycleOwner.lifecycle.removeObserver(lifecycleObserver)
             }
         }
-
-        AndroidView(modifier = Modifier.height(400.dp), factory = { mapView },
+        AndroidView(factory = { mapView },
             update = {
                 it.getMapAsync { naverMap ->
-                    val cameraUpdate = CameraUpdate.scrollTo(data[0])
-                    naverMap.moveCamera(cameraUpdate)
                     val marker = Marker()
                     marker.position = data[0]
                     marker.map = naverMap

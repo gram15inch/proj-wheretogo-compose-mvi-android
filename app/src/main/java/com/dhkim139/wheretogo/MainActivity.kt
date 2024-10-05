@@ -47,7 +47,6 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier
                             .fillMaxHeight()
                             .background(White100)
-                            .padding(16.dp)
                     ) {
                         val displayMaxWidth = min(400.dp, maxWidth)
                         var contentIdx by remember { mutableIntStateOf(1) }

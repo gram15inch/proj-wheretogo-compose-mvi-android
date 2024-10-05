@@ -153,12 +153,6 @@ dependencies {
     androidTestImplementation(AndroidTest.ESPRESSO_CORE)
     androidTestImplementation(platform(AndroidX.COMPOSE_BOM))
 
-
-    //Map
-    implementation("com.kakao.maps.open:android:2.11.9")
-    implementation("com.naver.maps:map-sdk:3.19.1")
-    implementation(files("libs/com.skt.Tmap_1.76.jar"))
-
     //retrofit
     implementation (Squareup.RETROFIT)
     implementation (Squareup.RETROFIT_CONVERTER_MOSHI)
@@ -170,6 +164,14 @@ dependencies {
     annotationProcessor(AndroidX.ROOM_COMPILER)
     testImplementation(AndroidX.ROOM_TESTING)
     ksp(AndroidX.ROOM_COMPILER)
+
+    //Map
+    implementation("com.kakao.maps.open:android:2.11.9")
+    implementation("com.naver.maps:map-sdk:3.19.1")
+    implementation(files("libs/com.skt.Tmap_1.76.jar"))
+
+    //etc
+    implementation("com.valentinilk.shimmer:compose-shimmer:1.3.1")
 }
 
 tasks.withType(Test::class) {
