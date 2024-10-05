@@ -121,11 +121,12 @@ dependencies {
     debugImplementation(AndroidX.COMPOSE_UI_TOOL)
     debugImplementation(AndroidX.COMPOSE_UI_TEST_MANIFEST)
 
+    //navigation
+    implementation("androidx.navigation:navigation-compose:2.8.0")
 
     //hilt
     implementation(Google.HILT_ANDROID)
     implementation(AndroidX.HILT_NAVIGATION_COMPOSE)
-
     testImplementation (Google.HILT_ANDROID_TESTING)
     testImplementation(Libraries.MOCKK)
 

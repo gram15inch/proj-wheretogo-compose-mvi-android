@@ -59,7 +59,7 @@ object AndroidX {
     const val COMPOSE_UI_TEST_MANIFEST = "androidx.compose.ui:ui-test-manifest"
     const val COMPOSE_MATERIAL3        = "androidx.compose.material3:material3"
 
-    const val HILT_NAVIGATION_COMPOSE = "androidx.hilt:hilt-navigation-compose:1.0.0"
+    const val HILT_NAVIGATION_COMPOSE = "androidx.hilt:hilt-navigation-compose:1.2.0"
 
     const val ROOM_RUNTIME="androidx.room:room-runtime:${Versions.ROOM}"
     const val ROOM_KTX="androidx.room:room-ktx:${Versions.ROOM}"

@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
+import androidx.navigation.NavController
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
@@ -42,21 +43,26 @@ import com.dhkim139.wheretogo.ui.theme.Blue100
 import com.dhkim139.wheretogo.ui.theme.Gray100
 import com.dhkim139.wheretogo.ui.theme.Gray200
 import com.dhkim139.wheretogo.ui.theme.Gray300
+import com.dhkim139.wheretogo.ui.theme.White100
 import com.dhkim139.wheretogo.ui.theme.hancomMalangFontFamily
 import com.dhkim139.wheretogo.ui.theme.hancomSansFontFamily
 import com.dhkim139.wheretogo.ui.theme.meslolgsFontFamily
 
 @Composable
-fun HomeContent(displayMaxWidth: Dp, driveClick: () -> Unit) {
+fun HomeContent(displayMaxWidth: Dp, navController: NavController) {
     val scrollState = rememberScrollState()
     Column(
         modifier = Modifier
             .fillMaxHeight()
+            .width(displayMaxWidth)
+            .background(White100)
             .verticalScroll(scrollState),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         TopBar(displayMaxWidth)
-        Body(displayMaxWidth, driveClick)
+        Body(displayMaxWidth){screen->
+            navController.navigate(screen)
+        }
         Spacer(modifier = Modifier.weight(1f))
         BottomBar(displayMaxWidth)
     }
@@ -88,7 +94,7 @@ fun TopBar(maxWidth: Dp) {
 }
 
 @Composable
-fun Body(bodyMaxWidth: Dp, driveClick: () -> Unit) {
+fun Body(bodyMaxWidth: Dp, navigate : (String)->Unit) {
     val gridGap = 12.dp
     Column(verticalArrangement = Arrangement.spacedBy(gridGap)) {
         GridButton(
@@ -102,8 +108,8 @@ fun Body(bodyMaxWidth: Dp, driveClick: () -> Unit) {
                     130.dp,
                     R.raw.lt_togeter
                 )
-            },
-            click = driveClick
+        },
+            click = {navigate("drive")}
         )
 
         val rowWidth = bodyMaxWidth - gridGap
@@ -267,7 +273,7 @@ fun BottomBar(maxWidth: Dp) {
 @Preview(showBackground = true)
 @Composable
 fun BodyPreview() {
-    Body(400.dp, {})
+    Body(400.dp){}
 }
 
 @Preview
