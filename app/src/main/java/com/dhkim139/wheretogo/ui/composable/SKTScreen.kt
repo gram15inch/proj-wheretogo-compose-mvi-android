@@ -24,7 +24,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.dhkim139.wheretogo.BuildConfig
 import com.dhkim139.wheretogo.data.datasource.dummy.c1
 import com.dhkim139.wheretogo.domain.toNaver
-import com.dhkim139.wheretogo.viewmodel.DriveViewModel
+import com.dhkim139.wheretogo.ui.viewmodel.DriveViewModel
 import com.naver.maps.geometry.LatLng
 import com.skt.Tmap.TMapPoint
 import com.skt.Tmap.TMapPolyLine

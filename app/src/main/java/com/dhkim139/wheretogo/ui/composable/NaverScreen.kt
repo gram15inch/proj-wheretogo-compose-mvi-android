@@ -46,7 +46,7 @@ import com.dhkim139.wheretogo.data.datasource.dummy.c6
 import com.dhkim139.wheretogo.data.datasource.dummy.c7
 import com.dhkim139.wheretogo.data.model.map.Course
 import com.dhkim139.wheretogo.domain.toNaver
-import com.dhkim139.wheretogo.viewmodel.DriveViewModel
+import com.dhkim139.wheretogo.ui.viewmodel.DriveViewModel
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.CameraPosition
 import com.naver.maps.map.MapView

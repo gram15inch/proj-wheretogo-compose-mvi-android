@@ -1,4 +1,4 @@
-package com.dhkim139.wheretogo.viewmodel
+package com.dhkim139.wheretogo.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.dhkim139.wheretogo.data.model.map.Course
