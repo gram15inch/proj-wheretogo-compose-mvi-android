@@ -17,4 +17,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "WhereTogo"
 include(":app")
-
+include ':data'
+include ':domain'
+include ':presentation'

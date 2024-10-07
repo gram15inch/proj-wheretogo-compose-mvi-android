@@ -1,17 +1,15 @@
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
-import wheretogo.AndroidX
-import wheretogo.Versions
-import wheretogo.Kotlin
-import wheretogo.UnitTest
-import wheretogo.AndroidTest
-import wheretogo.Google
-import wheretogo.Libraries
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import wheretogo.AndroidTest
+import wheretogo.AndroidX
+import wheretogo.Google
+import wheretogo.Kotlin
+import wheretogo.Libraries
 import wheretogo.Squareup
-import java.util.Properties
+import wheretogo.UnitTest
 
 plugins {
-    id("com.android.application")
+    id("com.android.library")
     id("org.jetbrains.kotlin.android")
     id("com.google.dagger.hilt.android")
     id("de.mannodermaus.android-junit5")
@@ -20,43 +18,36 @@ plugins {
 }
 
 android {
-    namespace = "com.dhkim139.wheretogo"
+    namespace = "com.wheretogo.data"
     compileSdk = 34
 
     defaultConfig {
-        testInstrumentationRunnerArguments += mapOf()
-        applicationId = "com.dhkim139.wheretogo"
         minSdk = 24
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        testInstrumentationRunnerArguments["runnerBuilder"] = "de.mannodermaus.junit5.AndroidJUnit5Builder"
-        vectorDrawables {
-            useSupportLibrary = true
-        }
+    }
 
-    }
-    signingConfigs {
-        val keystoreProperties = Properties().apply { load(project.rootProject.file("keystore.properties").inputStream()) }
-        create("release") {
-            keyAlias = keystoreProperties["keyAlias"] as String
-            keyPassword = keystoreProperties["keyPassword"] as String
-            storeFile = file(keystoreProperties["storeFile"] as String)
-            storePassword = keystoreProperties["storePassword"] as String
-        }
-    }
     buildTypes {
         release {
             isMinifyEnabled = false
             proguardFiles(
-                    getDefaultProguardFile("proguard-android-optimize.txt"),
-                    "proguard-rules.pro"
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("release")
         }
     }
+
+    defaultConfig {
+        buildConfigField( "String", "NAVER_CLIENT_ID_KEY", getAppKey("naverClientId"))
+        buildConfigField( "String", "NAVER_CLIENT_SECRET_KEY", getAppKey("naverClientSecret"))
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments["room.schemaLocation"] = "$projectDir/schemas"
+            }
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -64,26 +55,9 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
-    buildFeatures {
-        compose = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = Versions.KOTLIN_COMPILER_EXTENSION_VERSION
-    }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
-    junitPlatform {
-        instrumentationTests.includeExtensions.set(true)
-    }
-
 }
 
 dependencies {
-    implementation(project(mapOf("path" to ":presentation")))
-    implementation(project(mapOf("path" to ":data")))
     implementation(project(mapOf("path" to ":domain")))
 
     implementation(AndroidX.CORE_KTX)
@@ -109,6 +83,8 @@ dependencies {
     debugImplementation(AndroidX.COMPOSE_UI_TOOL)
     debugImplementation(AndroidX.COMPOSE_UI_TEST_MANIFEST)
 
+    //navigation
+    implementation("androidx.navigation:navigation-compose:2.8.0")
 
     //hilt
     implementation(Google.HILT_ANDROID)
@@ -139,6 +115,25 @@ dependencies {
     androidTestImplementation(AndroidTest.ANDROID_JUNIT)
     androidTestImplementation(AndroidTest.ESPRESSO_CORE)
     androidTestImplementation(platform(AndroidX.COMPOSE_BOM))
+
+    //retrofit
+    implementation (Squareup.RETROFIT)
+    implementation (Squareup.RETROFIT_CONVERTER_MOSHI)
+    implementation(Squareup.MOSHI_KOTLIN)
+
+    //Room
+    implementation(AndroidX.ROOM_RUNTIME)
+    implementation(AndroidX.ROOM_KTX)
+    annotationProcessor(AndroidX.ROOM_COMPILER)
+    testImplementation(AndroidX.ROOM_TESTING)
+    ksp(AndroidX.ROOM_COMPILER)
+
+    //Map
+    implementation("com.kakao.maps.open:android:2.11.9")
+    implementation("com.naver.maps:map-sdk:3.19.1")
+
+    //etc
+    implementation("com.valentinilk.shimmer:compose-shimmer:1.3.1")
 }
 
 tasks.withType(Test::class) {
@@ -146,4 +141,8 @@ tasks.withType(Test::class) {
     testLogging {
         events.addAll(arrayOf(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED))
     }
+}
+
+fun getAppKey(propertyKey: String): String {
+    return gradleLocalProperties(rootDir, providers).getProperty(propertyKey)
 }
