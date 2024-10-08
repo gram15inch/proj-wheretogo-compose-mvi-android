@@ -3,6 +3,7 @@ package com.dhkim139.wheretogo
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import com.dhkim139.permission.locationRequest
 import com.wheretogo.presentation.composable.MainScreen
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -14,6 +15,8 @@ class MainActivity : ComponentActivity() {
         setContent {
            MainScreen()
         }
+
+        locationRequest{ }
     }
 }
 

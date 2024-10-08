@@ -1,4 +1,3 @@
-import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import wheretogo.AndroidX
 import wheretogo.Versions
 import wheretogo.Kotlin
@@ -7,7 +6,6 @@ import wheretogo.AndroidTest
 import wheretogo.Google
 import wheretogo.Libraries
 import org.gradle.api.tasks.testing.logging.TestLogEvent
-import wheretogo.Squareup
 import java.util.Properties
 
 plugins {
@@ -85,6 +83,7 @@ dependencies {
     implementation(project(mapOf("path" to ":presentation")))
     implementation(project(mapOf("path" to ":data")))
     implementation(project(mapOf("path" to ":domain")))
+    implementation(project(mapOf("path" to ":permission")))
 
     implementation(AndroidX.CORE_KTX)
     implementation(platform(Kotlin.KOTLIN_BOM))

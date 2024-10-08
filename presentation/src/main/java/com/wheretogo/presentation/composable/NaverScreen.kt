@@ -7,6 +7,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -36,17 +37,16 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-
-import com.wheretogo.presentation.viewmodel.DriveViewModel
 import com.naver.maps.geometry.LatLng
-import com.naver.maps.map.CameraPosition
+import com.naver.maps.map.LocationSource
+import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapView
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.PathOverlay
+import com.naver.maps.map.util.FusedLocationSource
 import com.skt.Tmap.TMapTapi
 import com.valentinilk.shimmer.shimmer
 import com.wheretogo.domain.model.Course
-import com.wheretogo.presentation.model.toNaver
 import com.wheretogo.presentation.BuildConfig
 import com.wheretogo.presentation.c1
 import com.wheretogo.presentation.c2
@@ -55,6 +55,8 @@ import com.wheretogo.presentation.c4
 import com.wheretogo.presentation.c5
 import com.wheretogo.presentation.c6
 import com.wheretogo.presentation.c7
+import com.wheretogo.presentation.model.toNaver
+import com.wheretogo.presentation.viewmodel.DriveViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -75,12 +77,15 @@ fun NaverScreen(viewModel: DriveViewModel = hiltViewModel()) {
     Column(
         modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Box(modifier =  Modifier.height(400.dp)){
-            if(data.isEmpty())
+        Box(modifier = Modifier.height(400.dp)) {
+            if (data.isEmpty())
                 ShimmeringPlaceholder()
             NaverMapComposable(data)
         }
-        Column(Modifier.padding(horizontal = 16.dp),verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Column(
+            Modifier.padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
             Text(
                 modifier = Modifier
                     .clickable {
@@ -98,10 +103,12 @@ fun NaverScreen(viewModel: DriveViewModel = hiltViewModel()) {
         }
     }
 }
+
 @Composable
 fun ShimmeringPlaceholder() {
     Row(
-        modifier = Modifier.shimmer()
+        modifier = Modifier
+            .shimmer()
             .fillMaxWidth()
             .height(400.dp)
     ) {
@@ -113,19 +120,23 @@ fun ShimmeringPlaceholder() {
         )
     }
 }
+
 @Composable
 fun NaverMapComposable(data: List<LatLng>) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val coroutineScope = rememberCoroutineScope()
+
     if (data.size > 2) {
         val mapView = remember {
             MapView(context).apply {
                 getMapAsync { naverMap ->
-                    naverMap.cameraPosition = CameraPosition(
-                        LatLng(c5.start.latitude, c5.start.longitude),
-                        11.0,
-                    )
+                    naverMap.uiSettings.apply {
+                        isLocationButtonEnabled = true
+                        isZoomControlEnabled = false
+                    }
+                    naverMap.locationSource = context.getMyLocationSource()
+                    naverMap.locationTrackingMode = LocationTrackingMode.Follow
                 }
             }
         }
@@ -153,6 +164,7 @@ fun NaverMapComposable(data: List<LatLng>) {
                 lifecycleOwner.lifecycle.removeObserver(lifecycleObserver)
             }
         }
+
         AndroidView(factory = { mapView },
             update = {
                 it.getMapAsync { naverMap ->
@@ -164,16 +176,18 @@ fun NaverMapComposable(data: List<LatLng>) {
                     path.map = naverMap
                 }
             })
+
     }
 }
 
-fun Context.searchNaverMap(course: Course) {
-    val url = "nmap://route/car?slat=${course.start.latitude}&slng=${course.start.longitude}&sname=start" +
+private fun Context.searchNaverMap(course: Course) {
+    val url =
+        "nmap://route/car?slat=${course.start.latitude}&slng=${course.start.longitude}&sname=start" +
                 "&dlat=${course.goal.latitude}&dlng=${course.goal.longitude}&dname=end" +
                 course.waypoints.run {
-                    var str=""
-                    this.forEachIndexed {idx,latlng->
-                        str += "&v${idx+1}lat=${latlng.latitude}&v${idx+1}lng=${latlng.longitude}&v${idx+1}name=v${idx+1}"
+                    var str = ""
+                    this.forEachIndexed { idx, latlng ->
+                        str += "&v${idx + 1}lat=${latlng.latitude}&v${idx + 1}lng=${latlng.longitude}&v${idx + 1}name=v${idx + 1}"
                     }
                     str
                 } +
@@ -182,11 +196,11 @@ fun Context.searchNaverMap(course: Course) {
     startActivity(intent)
 }
 
-fun Context.searchTMap(course: Course) {
+private fun Context.searchTMap(course: Course) {
     val api = TMapTapi(this)
     api.setSKTMapAuthentication(BuildConfig.TMAP_APP_KEY)
 
-    api.setOnAuthenticationListener(object :OnAccountsUpdateListener,
+    api.setOnAuthenticationListener(object : OnAccountsUpdateListener,
         TMapTapi.OnAuthenticationListenerCallback {
         override fun onAccountsUpdated(p0: Array<out Account>?) {
 
@@ -213,12 +227,12 @@ fun Context.searchTMap(course: Course) {
                 routeMap["rV${idx + 1}Y"] = latlng.latitude.toString()
             }
 
-            if(!api.isTmapApplicationInstalled){
+            if (!api.isTmapApplicationInstalled) {
                 api.tMapDownUrl?.let {
                     openPlayStore(it[0])
-                    Log.d("tst","${ api.tMapDownUrl}")
+                    Log.d("tst", "${api.tMapDownUrl}")
                 }
-            } else{
+            } else {
                 api.invokeRoute(routeMap)
             }
         }
@@ -228,10 +242,9 @@ fun Context.searchTMap(course: Course) {
     })
 
 
-
 }
 
-private fun Context.openPlayStore(url:String) {
+private fun Context.openPlayStore(url: String) {
 
     val intent = Intent(Intent.ACTION_VIEW).apply {
         data = Uri.parse(url)
@@ -243,4 +256,8 @@ private fun Context.openPlayStore(url:String) {
         val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
         startActivity(webIntent)
     }
+}
+
+private fun Context.getMyLocationSource():LocationSource{
+   return FusedLocationSource(this as ComponentActivity, 1000)
 }
