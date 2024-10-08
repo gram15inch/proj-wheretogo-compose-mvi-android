@@ -65,14 +65,10 @@ fun NaverScreen(viewModel: DriveViewModel = hiltViewModel()) {
     var data by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     val context = LocalContext.current
 
-    LaunchedEffect(Dispatchers.Default) {
-        data = viewModel.getJourney(c1).points.toNaver()
-        data = viewModel.getJourney(c2).points.toNaver()
-        data = viewModel.getJourney(c3).points.toNaver()
-        data = viewModel.getJourney(c4).points.toNaver()
-        data = viewModel.getJourney(c5).points.toNaver()
-        data = viewModel.getJourney(c6).points.toNaver()
-        data = viewModel.getJourney(c7).points.toNaver()
+    LaunchedEffect(Dispatchers.IO) {
+        listOf(c1,c2,c3,c4,c5,c6,c7).forEach {
+            data = viewModel.getJourney(it).points.toNaver()
+        }
     }
     Column(
         modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -126,48 +122,45 @@ fun NaverMapComposable(data: List<LatLng>) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val coroutineScope = rememberCoroutineScope()
+    val mapView = remember {
+        MapView(context).apply {
+            getMapAsync { naverMap ->
+                naverMap.uiSettings.apply {
+                    isLocationButtonEnabled = true
+                    isZoomControlEnabled = false
+                }
+                naverMap.locationSource = context.getMyLocationSource()
+                naverMap.locationTrackingMode = LocationTrackingMode.Follow
+            }
+        }
+    }
+    val lifecycleObserver = remember {
+        LifecycleEventObserver { source, event ->
 
-    if (data.size > 2) {
-        val mapView = remember {
-            MapView(context).apply {
-                getMapAsync { naverMap ->
-                    naverMap.uiSettings.apply {
-                        isLocationButtonEnabled = true
-                        isZoomControlEnabled = false
-                    }
-                    naverMap.locationSource = context.getMyLocationSource()
-                    naverMap.locationTrackingMode = LocationTrackingMode.Follow
+            coroutineScope.launch {
+                when (event) {
+                    Lifecycle.Event.ON_CREATE -> mapView.onCreate(Bundle())
+                    Lifecycle.Event.ON_START -> mapView.onStart()
+                    Lifecycle.Event.ON_RESUME -> mapView.onResume()
+                    Lifecycle.Event.ON_PAUSE -> mapView.onPause()
+                    Lifecycle.Event.ON_STOP -> mapView.onStop()
+                    Lifecycle.Event.ON_DESTROY -> mapView.onDestroy()
+                    Lifecycle.Event.ON_ANY -> {}
                 }
             }
         }
-
-        val lifecycleObserver = remember {
-            LifecycleEventObserver { source, event ->
-
-                coroutineScope.launch {
-                    when (event) {
-                        Lifecycle.Event.ON_CREATE -> mapView.onCreate(Bundle())
-                        Lifecycle.Event.ON_START -> mapView.onStart()
-                        Lifecycle.Event.ON_RESUME -> mapView.onResume()
-                        Lifecycle.Event.ON_PAUSE -> mapView.onPause()
-                        Lifecycle.Event.ON_STOP -> mapView.onStop()
-                        Lifecycle.Event.ON_DESTROY -> mapView.onDestroy()
-                        Lifecycle.Event.ON_ANY -> {}
-                    }
-                }
-            }
+    }
+    DisposableEffect(true) {
+        lifecycleOwner.lifecycle.addObserver(lifecycleObserver)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(lifecycleObserver)
         }
+    }
 
-        DisposableEffect(true) {
-            lifecycleOwner.lifecycle.addObserver(lifecycleObserver)
-            onDispose {
-                lifecycleOwner.lifecycle.removeObserver(lifecycleObserver)
-            }
-        }
-
-        AndroidView(factory = { mapView },
-            update = {
-                it.getMapAsync { naverMap ->
+    AndroidView(factory = { mapView },
+        update = {
+            it.getMapAsync { naverMap ->
+                if (data.isNotEmpty()) {
                     val marker = Marker()
                     marker.position = data[0]
                     marker.map = naverMap
@@ -175,9 +168,8 @@ fun NaverMapComposable(data: List<LatLng>) {
                     path.coords = data
                     path.map = naverMap
                 }
-            })
-
-    }
+            }
+        })
 }
 
 private fun Context.searchNaverMap(course: Course) {
