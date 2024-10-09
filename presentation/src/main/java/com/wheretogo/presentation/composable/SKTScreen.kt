@@ -36,7 +36,7 @@ import kotlinx.coroutines.launch
 fun SKTScreen(displayMaxWidth: Dp, viewModel: DriveViewModel = hiltViewModel()) {
     var data by remember { mutableStateOf<List<LatLng>>(emptyList()) }
     LaunchedEffect(Unit) {
-        data = viewModel.getJourney(c1).points.toNaver()
+
     }
     Column(
         modifier = Modifier.width(displayMaxWidth),

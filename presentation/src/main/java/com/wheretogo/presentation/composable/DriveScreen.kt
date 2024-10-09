@@ -2,32 +2,57 @@ package com.wheretogo.presentation.composable
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.wheretogo.domain.model.Journey
 import com.wheretogo.presentation.R
+import com.wheretogo.presentation.c1
+import com.wheretogo.presentation.c2
+import com.wheretogo.presentation.c3
+import com.wheretogo.presentation.c4
+import com.wheretogo.presentation.c5
+import com.wheretogo.presentation.c6
+import com.wheretogo.presentation.c7
 import com.wheretogo.presentation.theme.Gray100
 import com.wheretogo.presentation.theme.hancomMalangFontFamily
+import com.wheretogo.presentation.viewmodel.DriveViewModel
+import kotlinx.coroutines.Dispatchers
 
 @Composable
-fun DriveContent(navController: NavController) {
+fun DriveContent(navController: NavController,viewModel: DriveViewModel = hiltViewModel()) {
     var visible by remember { mutableStateOf(true) }
+    val data = viewModel.journeyGroup.collectAsState()
+    LaunchedEffect(Dispatchers.IO) {
+        if(viewModel.journeyGroup.value.isEmpty())
+            listOf(c1,c2,c3,c4,c5,c6,c7).forEach {
+                viewModel.refreshJourney(it)
+            }
+    }
     BackHandler {
         visible=false
         navController.navigateUp()
@@ -37,12 +62,13 @@ fun DriveContent(navController: NavController) {
     ){
         Column(
             modifier = Modifier
-                .wrapContentSize()
-                .fillMaxHeight(),
+                .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             DriveTopBar()
-            NaverScreen()
+            Box(modifier = Modifier.fillMaxSize()){
+                NaverScreen(data)
+            }
         }
     }
 }

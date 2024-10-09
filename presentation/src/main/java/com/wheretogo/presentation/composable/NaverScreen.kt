@@ -18,26 +18,23 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.State
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.LocationSource
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapView
@@ -47,34 +44,21 @@ import com.naver.maps.map.util.FusedLocationSource
 import com.skt.Tmap.TMapTapi
 import com.valentinilk.shimmer.shimmer
 import com.wheretogo.domain.model.Course
+import com.wheretogo.domain.model.Journey
 import com.wheretogo.presentation.BuildConfig
-import com.wheretogo.presentation.c1
 import com.wheretogo.presentation.c2
-import com.wheretogo.presentation.c3
-import com.wheretogo.presentation.c4
-import com.wheretogo.presentation.c5
-import com.wheretogo.presentation.c6
-import com.wheretogo.presentation.c7
 import com.wheretogo.presentation.model.toNaver
-import com.wheretogo.presentation.viewmodel.DriveViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Composable
-fun NaverScreen(viewModel: DriveViewModel = hiltViewModel()) {
-    var data by remember { mutableStateOf<List<LatLng>>(emptyList()) }
+fun NaverScreen(data: State<List<Journey>>) {
     val context = LocalContext.current
 
-    LaunchedEffect(Dispatchers.IO) {
-        listOf(c1,c2,c3,c4,c5,c6,c7).forEach {
-            data = viewModel.getJourney(it).points.toNaver()
-        }
-    }
     Column(
-        modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)
+        modifier = Modifier.wrapContentSize(), verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Box(modifier = Modifier.height(400.dp)) {
-            if (data.isEmpty())
+        Box(modifier = Modifier.fillMaxSize()) {
+            if (data.value.isEmpty())
                 ShimmeringPlaceholder()
             NaverMapComposable(data)
         }
@@ -118,7 +102,7 @@ fun ShimmeringPlaceholder() {
 }
 
 @Composable
-fun NaverMapComposable(data: List<LatLng>) {
+fun NaverMapComposable(data: State<List<Journey>>) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val coroutineScope = rememberCoroutineScope()
@@ -129,8 +113,6 @@ fun NaverMapComposable(data: List<LatLng>) {
                     isLocationButtonEnabled = true
                     isZoomControlEnabled = false
                 }
-                naverMap.locationSource = context.getMyLocationSource()
-                naverMap.locationTrackingMode = LocationTrackingMode.Follow
             }
         }
     }
@@ -141,7 +123,13 @@ fun NaverMapComposable(data: List<LatLng>) {
                 when (event) {
                     Lifecycle.Event.ON_CREATE -> mapView.onCreate(Bundle())
                     Lifecycle.Event.ON_START -> mapView.onStart()
-                    Lifecycle.Event.ON_RESUME -> mapView.onResume()
+                    Lifecycle.Event.ON_RESUME -> {
+                        mapView.onResume()
+                        mapView.getMapAsync {
+                            it.locationSource = context.getMyLocationSource()
+                            it.locationTrackingMode=LocationTrackingMode.Follow
+                        }
+                    }
                     Lifecycle.Event.ON_PAUSE -> mapView.onPause()
                     Lifecycle.Event.ON_STOP -> mapView.onStop()
                     Lifecycle.Event.ON_DESTROY -> mapView.onDestroy()
@@ -150,6 +138,7 @@ fun NaverMapComposable(data: List<LatLng>) {
             }
         }
     }
+
     DisposableEffect(true) {
         lifecycleOwner.lifecycle.addObserver(lifecycleObserver)
         onDispose {
@@ -157,19 +146,23 @@ fun NaverMapComposable(data: List<LatLng>) {
         }
     }
 
-    AndroidView(factory = { mapView },
-        update = {
-            it.getMapAsync { naverMap ->
-                if (data.isNotEmpty()) {
-                    val marker = Marker()
-                    marker.position = data[0]
-                    marker.map = naverMap
-                    val path = PathOverlay()
-                    path.coords = data
-                    path.map = naverMap
-                }
+    mapView.getMapAsync { naverMap ->
+        if (data.value.isNotEmpty()) {
+            data.value.forEach {item->
+                Log.d("tst","${item.code}")
+                val naverPoints = item.points.toNaver()
+                val marker = Marker()
+                marker.position = naverPoints[0]
+                marker.map = naverMap
+                val path = PathOverlay()
+                path.coords = naverPoints
+                path.map = naverMap
             }
-        })
+        }
+    }
+
+    AndroidView(factory = { mapView })
+    Text("${data.value.size}", fontSize = 50.sp)
 }
 
 private fun Context.searchNaverMap(course: Course) {
