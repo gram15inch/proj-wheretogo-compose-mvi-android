@@ -62,29 +62,6 @@ dependencies {
 
     implementation(AndroidX.CORE_KTX)
     implementation(platform(Kotlin.KOTLIN_BOM))
-    implementation(AndroidX.LIFECYCLE_RUNTIME_KTX)
-    implementation(AndroidX.LIFECYCLE_VIEWMODEL_COMPOSE)
-    implementation(AndroidX.ACTIVITY_COMPOSE)
-    implementation(platform(AndroidX.COMPOSE_BOM))
-
-
-    //compose
-    implementation(AndroidX.COMPOSE_UI)
-    implementation(AndroidX.COMPOSE_UI_GRAPHICS)
-    implementation(AndroidX.COMPOSE_UI_TOOL_PREVIEW)
-    implementation(AndroidX.COMPOSE_MATERIAL3)
-
-    implementation(Libraries.LOTTIE_COMPOSE)
-
-    androidTestImplementation(AndroidX.COMPOSE_UI_TEST_JUNIT4)
-    androidTestImplementation(platform(AndroidX.COMPOSE_BOM))
-    androidTestImplementation(Libraries.LOTTIE_COMPOSE)
-
-    debugImplementation(AndroidX.COMPOSE_UI_TOOL)
-    debugImplementation(AndroidX.COMPOSE_UI_TEST_MANIFEST)
-
-    //navigation
-    implementation("androidx.navigation:navigation-compose:2.8.0")
 
     //hilt
     implementation(Google.HILT_ANDROID)
@@ -128,12 +105,6 @@ dependencies {
     testImplementation(AndroidX.ROOM_TESTING)
     ksp(AndroidX.ROOM_COMPILER)
 
-    //Map
-    implementation("com.kakao.maps.open:android:2.11.9")
-    implementation("com.naver.maps:map-sdk:3.19.1")
-
-    //etc
-    implementation("com.valentinilk.shimmer:compose-shimmer:1.3.1")
 }
 
 tasks.withType(Test::class) {
