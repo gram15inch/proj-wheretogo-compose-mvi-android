@@ -25,7 +25,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -35,7 +34,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.naver.maps.map.LocationSource
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapView
 import com.naver.maps.map.overlay.Marker
@@ -126,8 +124,11 @@ fun NaverMapComposable(data: State<List<Journey>>) {
                     Lifecycle.Event.ON_RESUME -> {
                         mapView.onResume()
                         mapView.getMapAsync {
-                            it.locationSource = context.getMyLocationSource()
+                            context.getMyLocationSource().apply {
+                                it.locationSource = this
+                            }
                             it.locationTrackingMode=LocationTrackingMode.Follow
+
                         }
                     }
                     Lifecycle.Event.ON_PAUSE -> mapView.onPause()
@@ -243,6 +244,6 @@ private fun Context.openPlayStore(url: String) {
     }
 }
 
-private fun Context.getMyLocationSource():LocationSource{
+private fun Context.getMyLocationSource():FusedLocationSource{
    return FusedLocationSource(this as ComponentActivity, 1000)
 }

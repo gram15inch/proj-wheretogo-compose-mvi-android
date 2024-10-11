@@ -38,7 +38,8 @@ fun List<LocalLatLng>.toLatlngList():List<LatLng>{
 fun Journey.toLocalJourney():LocalJourney{
     return LocalJourney(
         id=this.id,
-        code=this.code,
+        latitude =this.course.start.latitude,
+        longitude =this.course.start.longitude,
         course = this.course.toLocalCourse(),
         points = this.points.toLocalLatlngList(),
     )

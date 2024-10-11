@@ -17,18 +17,26 @@ import com.wheretogo.data.model.journey.LocalLatLng
 import java.lang.reflect.Type
 
 @TypeConverters(JourneyJsonConverters::class)
-@Database(entities = [LocalJourney::class], version = 1, exportSchema = true)
+@Database(entities = [LocalJourney::class], version = 2, exportSchema = true)
 abstract class JourneyDatabase : RoomDatabase() {
     abstract fun journeyDao(): JourneyDao
 }
 
 @Dao
-interface JourneyDao{
+interface JourneyDao {
     @Query("SELECT * FROM LocalJourney")
     suspend fun selectAll(): List<LocalJourney>
 
     @Query("SELECT * FROM LocalJourney WHERE code = :code")
-    suspend fun select(code:Int): LocalJourney?
+    suspend fun select(code: Int): LocalJourney?
+
+    @Query("SELECT * FROM LocalJourney WHERE latitude BETWEEN :minLatitude AND :maxLatitude AND longitude BETWEEN :minLongitude AND :maxLongitude")
+    suspend fun selectInViewPort(
+        minLatitude: Double,
+        maxLatitude: Double,
+        minLongitude: Double,
+        maxLongitude: Double
+    ): List<LocalJourney>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(entity: LocalJourney)
@@ -41,7 +49,8 @@ class JourneyJsonConverters {
         .add(KotlinJsonAdapterFactory())
         .build()
 
-    private val latLngListType: Type = Types.newParameterizedType(List::class.java, LocalLatLng::class.java)
+    private val latLngListType: Type =
+        Types.newParameterizedType(List::class.java, LocalLatLng::class.java)
     private val latLngAdapter = moshi.adapter<List<LocalLatLng>>(latLngListType)
     private val courseAdapter = moshi.adapter(LocalCourse::class.java)
 
