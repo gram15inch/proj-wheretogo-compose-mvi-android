@@ -34,22 +34,34 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.naver.maps.map.CameraAnimation
+import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapView
+import com.naver.maps.map.NaverMap
 import com.naver.maps.map.overlay.Marker
+import com.naver.maps.map.overlay.Overlay
 import com.naver.maps.map.overlay.PathOverlay
 import com.naver.maps.map.util.FusedLocationSource
 import com.skt.Tmap.TMapTapi
 import com.valentinilk.shimmer.shimmer
 import com.wheretogo.domain.model.Course
 import com.wheretogo.domain.model.Journey
+import com.wheretogo.domain.model.LatLng
+import com.wheretogo.domain.model.Viewport
 import com.wheretogo.presentation.BuildConfig
 import com.wheretogo.presentation.c2
+import com.wheretogo.presentation.model.toDomainLatLng
 import com.wheretogo.presentation.model.toNaver
 import kotlinx.coroutines.launch
 
 @Composable
-fun NaverScreen(data: State<List<Journey>>) {
+fun NaverMapScreen(
+    data: State<List<Journey>>,
+    camera: LatLng,
+    onViewPortChange: (LatLng, Viewport) -> Unit,
+    onMarkerClick: (Overlay) -> Unit
+) {
     val context = LocalContext.current
 
     Column(
@@ -58,7 +70,7 @@ fun NaverScreen(data: State<List<Journey>>) {
         Box(modifier = Modifier.fillMaxSize()) {
             if (data.value.isEmpty())
                 ShimmeringPlaceholder()
-            NaverMapComposable(data)
+            NaverMapComposable(data, camera, onViewPortChange, onMarkerClick)
         }
         Column(
             Modifier.padding(horizontal = 16.dp),
@@ -100,7 +112,12 @@ fun ShimmeringPlaceholder() {
 }
 
 @Composable
-fun NaverMapComposable(data: State<List<Journey>>) {
+fun NaverMapComposable(
+    data: State<List<Journey>>,
+    camera: LatLng,
+    onViewPortChange: (LatLng, Viewport) -> Unit,
+    onMarkerClick: (Overlay) -> Unit
+) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val coroutineScope = rememberCoroutineScope()
@@ -110,6 +127,23 @@ fun NaverMapComposable(data: State<List<Journey>>) {
                 naverMap.uiSettings.apply {
                     isLocationButtonEnabled = true
                     isZoomControlEnabled = false
+                    naverMap.minZoom = 11.0
+                }
+
+                naverMap.initLocation()
+
+                naverMap.addOnCameraIdleListener {
+                    naverMap.contentRegion.apply {
+                        onViewPortChange(
+                            naverMap.cameraPosition.target.toDomainLatLng(),
+                            Viewport(
+                                this[0].latitude,
+                                this[3].latitude,
+                                this[0].longitude,
+                                this[3].longitude
+                            )
+                        )
+                    }
                 }
             }
         }
@@ -123,14 +157,15 @@ fun NaverMapComposable(data: State<List<Journey>>) {
                     Lifecycle.Event.ON_START -> mapView.onStart()
                     Lifecycle.Event.ON_RESUME -> {
                         mapView.onResume()
-                        mapView.getMapAsync {
+                        mapView.getMapAsync { naverMap ->
                             context.getMyLocationSource().apply {
-                                it.locationSource = this
+                                naverMap.locationSource = this
+                            }.let {
+                                naverMap.locationTrackingMode = LocationTrackingMode.Follow
                             }
-                            it.locationTrackingMode=LocationTrackingMode.Follow
-
                         }
                     }
+
                     Lifecycle.Event.ON_PAUSE -> mapView.onPause()
                     Lifecycle.Event.ON_STOP -> mapView.onStop()
                     Lifecycle.Event.ON_DESTROY -> mapView.onDestroy()
@@ -148,22 +183,53 @@ fun NaverMapComposable(data: State<List<Journey>>) {
     }
 
     mapView.getMapAsync { naverMap ->
+        if(camera.latitude!=0.0){
+            naverMap.setCamera(camera,12.0)
+        }
         if (data.value.isNotEmpty()) {
-            data.value.forEach {item->
-                Log.d("tst","${item.code}")
+            data.value.forEach { item ->
                 val naverPoints = item.points.toNaver()
-                val marker = Marker()
-                marker.position = naverPoints[0]
-                marker.map = naverMap
-                val path = PathOverlay()
-                path.coords = naverPoints
-                path.map = naverMap
+                Marker().apply {
+                    position = naverPoints[0]
+                    map = naverMap
+                    tag = item.code
+                    this.setOnClickListener { overlay ->
+                        onMarkerClick(overlay)
+                        //naverMap.setCamera(LatLng(naverPoints[0].latitude,naverPoints[0].longitude),12.0)
+                        true
+                    }
+                }
+                PathOverlay().apply {
+                    coords = naverPoints
+                    map = naverMap
+                }
             }
         }
     }
 
     AndroidView(factory = { mapView })
     Text("${data.value.size}", fontSize = 50.sp)
+}
+
+fun NaverMap.initLocation() {
+    addOnLocationChangeListener { location ->
+        if (locationTrackingMode == LocationTrackingMode.Follow) {
+            setCamera(LatLng(location.latitude, location.longitude),12.0)
+        }
+        locationTrackingMode = LocationTrackingMode.NoFollow
+        removeOnLocationChangeListener { }
+    }
+}
+
+private fun NaverMap.setCamera(camera:LatLng ,zoom:Double){
+    moveCamera(
+        CameraUpdate.scrollAndZoomTo(
+            com.naver.maps.geometry.LatLng(
+                camera.latitude,
+                camera.longitude
+            ),zoom
+        ).animate(CameraAnimation.Easing)
+    )
 }
 
 private fun Context.searchNaverMap(course: Course) {
@@ -244,6 +310,6 @@ private fun Context.openPlayStore(url: String) {
     }
 }
 
-private fun Context.getMyLocationSource():FusedLocationSource{
-   return FusedLocationSource(this as ComponentActivity, 1000)
+private fun Context.getMyLocationSource(): FusedLocationSource {
+    return FusedLocationSource(this as ComponentActivity, 1000)
 }

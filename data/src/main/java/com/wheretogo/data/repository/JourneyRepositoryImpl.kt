@@ -14,7 +14,7 @@ import com.wheretogo.domain.model.Course
 import com.wheretogo.domain.model.Journey
 
 import com.wheretogo.domain.model.LatLng
-import com.wheretogo.domain.model.ViewPort
+import com.wheretogo.domain.model.Viewport
 import com.wheretogo.domain.repository.JourneyRepository
 
 import javax.inject.Inject
@@ -44,15 +44,12 @@ class JourneyRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getJourneyInViewPort(
-        viewPort: ViewPort
+        viewPort: Viewport
     ): List<Journey> {
         return viewPort.run {
-            Log.d("tst2","1")
             mapDatabase.journeyDao()
-                .selectInViewPort(minLatitude, maxLatitude, minLongitude, maxLongitude).apply {
-                    Log.d("tst2","size: ${this.size}")
-                }
-        }.map { it.toJourney() }
+                .selectInViewPort(minLatitude, maxLatitude, minLongitude, maxLongitude)
+        }.map { it.toJourney() } //todo 서비스api 추가
     }
 
     override suspend fun setJourney(map: Journey) {

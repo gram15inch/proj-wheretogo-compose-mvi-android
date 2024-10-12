@@ -131,6 +131,8 @@ dependencies {
     //etc
     implementation("com.valentinilk.shimmer:compose-shimmer:1.3.1")
     implementation("com.google.android.gms:play-services-location:21.3.0")
+    implementation("com.github.skydoves:landscapist-glide:2.4.0")
+
 
 }
 

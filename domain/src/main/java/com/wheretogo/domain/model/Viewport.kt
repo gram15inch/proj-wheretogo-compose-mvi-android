@@ -1,6 +1,6 @@
 package com.wheretogo.domain.model
 
-data class ViewPort(
+data class Viewport(
     val minLatitude: Double,
     val maxLatitude: Double,
     val minLongitude: Double,

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.wheretogo.domain.model.Course
 import com.wheretogo.domain.model.Journey
 import com.wheretogo.domain.model.LatLng
+import com.wheretogo.domain.model.Viewport
 import com.wheretogo.domain.usecase.GetJourneyUseCase
 import com.wheretogo.domain.usecase.GetNearByJourneyUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,14 +25,20 @@ class DriveViewModel @Inject constructor(
     fun refreshJourney(course: Course) {
         viewModelScope.launch {
             _journeyGroup.apply {
-               this.value += getJourneyUseCase(course)
+                this.value += getJourneyUseCase(course)
             }
         }
     }
-    fun fetchNearByJourney(current: LatLng, distance: Int) {
-        viewModelScope.launch{
-            _journeyGroup.value += getNearByJourneyUseCase(current, distance)
 
+    fun fetchNearByJourney(current: LatLng, distance: Int) {
+        viewModelScope.launch {
+            _journeyGroup.value += getNearByJourneyUseCase(current, distance)
+        }
+    }
+
+    fun fetchNearByJourney(current: LatLng, viewPort: Viewport) {
+        viewModelScope.launch {
+        _journeyGroup.value = getNearByJourneyUseCase.by(current, viewPort).sortedBy { it.code }
         }
     }
 }
