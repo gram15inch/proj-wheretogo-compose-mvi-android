@@ -37,12 +37,11 @@ android {
 
     }
     signingConfigs {
-        val keystoreProperties = Properties().apply { load(project.rootProject.file("keystore.properties").inputStream()) }
         create("release") {
-            keyAlias = keystoreProperties["keyAlias"] as String
-            keyPassword = keystoreProperties["keyPassword"] as String
-            storeFile = file(keystoreProperties["storeFile"] as String)
-            storePassword = keystoreProperties["storePassword"] as String
+            keyAlias = getUploadKey("keyAlias")
+            keyPassword = getUploadKey("keyPassword")
+            storeFile = File(getUploadKey("storeFile"))
+            storePassword = getUploadKey("storePassword")
         }
     }
     buildTypes {
@@ -146,3 +145,23 @@ tasks.withType(Test::class) {
         events.addAll(arrayOf(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED))
     }
 }
+
+fun getUploadKey(propertyKey: String): String {
+    val propertiesFile = File(rootProject.projectDir, "keystore.properties")
+    val properties = Properties()
+
+    if (propertiesFile.exists()) {
+        propertiesFile.inputStream().use { properties.load(it) }
+    } else {
+        propertiesFile.createNewFile()
+    }
+
+    val defaultValue = "yourUploadKey"
+
+    if (!properties.containsKey(propertyKey)) {
+        properties[propertyKey] = defaultValue
+        propertiesFile.outputStream().use { properties.store(it, null) }
+    }
+    return properties[propertyKey].toString()
+}
+

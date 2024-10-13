@@ -7,6 +7,7 @@ import wheretogo.Kotlin
 import wheretogo.Libraries
 import wheretogo.Squareup
 import wheretogo.UnitTest
+import java.util.Properties
 
 plugins {
     id("com.android.library")
@@ -133,7 +134,6 @@ dependencies {
     implementation("com.google.android.gms:play-services-location:21.3.0")
     implementation("com.github.skydoves:landscapist-glide:2.4.0")
 
-
 }
 
 tasks.withType(Test::class) {
@@ -144,5 +144,20 @@ tasks.withType(Test::class) {
 }
 
 fun getAppKey(propertyKey: String): String {
-    return gradleLocalProperties(rootDir, providers).getProperty(propertyKey)
+    val localPropertiesFile = File(rootProject.projectDir, "local.properties")
+    val properties = Properties()
+
+    if (localPropertiesFile.exists()) {
+        localPropertiesFile.inputStream().use { properties.load(it) }
+    } else {
+        localPropertiesFile.createNewFile()
+    }
+
+    val defaultValue = "\"yourAppKey\""
+
+    if (!properties.containsKey(propertyKey)) {
+        properties[propertyKey] = defaultValue
+        localPropertiesFile.outputStream().use { properties.store(it, null) }
+    }
+    return properties[propertyKey].toString()
 }

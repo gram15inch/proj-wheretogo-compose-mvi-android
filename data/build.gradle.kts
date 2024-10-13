@@ -1,4 +1,3 @@
-import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import wheretogo.AndroidTest
 import wheretogo.AndroidX
@@ -7,6 +6,7 @@ import wheretogo.Kotlin
 import wheretogo.Libraries
 import wheretogo.Squareup
 import wheretogo.UnitTest
+import java.util.Properties
 
 plugins {
     id("com.android.library")
@@ -115,5 +115,20 @@ tasks.withType(Test::class) {
 }
 
 fun getAppKey(propertyKey: String): String {
-    return gradleLocalProperties(rootDir, providers).getProperty(propertyKey)
+    val propertiesFile = File(rootProject.projectDir, "local.properties")
+    val properties = Properties()
+
+    if (propertiesFile.exists()) {
+        propertiesFile.inputStream().use { properties.load(it) }
+    } else {
+        propertiesFile.createNewFile()
+    }
+
+    val defaultValue = "\"yourAppKey\""
+
+    if (!properties.containsKey(propertyKey)) {
+        properties[propertyKey] = defaultValue
+        propertiesFile.outputStream().use { properties.store(it, null) }
+    }
+    return properties[propertyKey].toString()
 }
