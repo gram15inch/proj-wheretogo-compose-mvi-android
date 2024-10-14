@@ -93,6 +93,7 @@ obj/
 .idea/migrations.xml
 .idea/other.xml
 .idea/inspectionProfiles/Project_default.xml
+.idea/libraries/
 
 # Legacy Eclipse project files
 .classpath
