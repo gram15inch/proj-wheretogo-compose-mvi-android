@@ -11,7 +11,6 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.dagger.hilt.android")
     id("de.mannodermaus.android-junit5")
-    id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.devtools.ksp")
 }
 
@@ -45,32 +44,12 @@ android {
 }
 
 dependencies {
-
     implementation(AndroidX.CORE_KTX)
     implementation(platform(Kotlin.KOTLIN_BOM))
     implementation(AndroidX.LIFECYCLE_RUNTIME_KTX)
-    implementation(AndroidX.LIFECYCLE_VIEWMODEL_COMPOSE)
-    implementation(AndroidX.ACTIVITY_COMPOSE)
-    implementation(platform(AndroidX.COMPOSE_BOM))
-
-
-    //compose
-    implementation(AndroidX.COMPOSE_UI)
-    implementation(AndroidX.COMPOSE_UI_GRAPHICS)
-    implementation(AndroidX.COMPOSE_UI_TOOL_PREVIEW)
-    implementation(AndroidX.COMPOSE_MATERIAL3)
-
-    implementation(Libraries.LOTTIE_COMPOSE)
-    androidTestImplementation(AndroidX.COMPOSE_UI_TEST_JUNIT4)
-    androidTestImplementation(platform(AndroidX.COMPOSE_BOM))
-    androidTestImplementation(Libraries.LOTTIE_COMPOSE)
-
-    debugImplementation(AndroidX.COMPOSE_UI_TOOL)
-    debugImplementation(AndroidX.COMPOSE_UI_TEST_MANIFEST)
 
     //hilt
     implementation(Google.HILT_ANDROID)
-    implementation(AndroidX.HILT_NAVIGATION_COMPOSE)
     testImplementation (Google.HILT_ANDROID_TESTING)
     testImplementation(Libraries.MOCKK)
 
@@ -96,7 +75,6 @@ dependencies {
 
     androidTestImplementation(AndroidTest.ANDROID_JUNIT)
     androidTestImplementation(AndroidTest.ESPRESSO_CORE)
-    androidTestImplementation(platform(AndroidX.COMPOSE_BOM))
 
     //etc
     implementation("com.google.android.gms:play-services-location:21.3.0")

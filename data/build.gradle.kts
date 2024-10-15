@@ -1,6 +1,7 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import wheretogo.AndroidTest
 import wheretogo.AndroidX
+import wheretogo.Firebase
 import wheretogo.Google
 import wheretogo.Kotlin
 import wheretogo.Libraries
@@ -14,6 +15,7 @@ plugins {
     id("com.google.dagger.hilt.android")
     id("de.mannodermaus.android-junit5")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("com.google.gms.google-services")
     id("com.google.devtools.ksp")
 }
 
@@ -105,6 +107,8 @@ dependencies {
     testImplementation(AndroidX.ROOM_TESTING)
     ksp(AndroidX.ROOM_COMPILER)
 
+    implementation(platform(Firebase.FIREBASE_BOM))
+    implementation(Firebase.FIREBASE_DATABASE)
 }
 
 tasks.withType(Test::class) {

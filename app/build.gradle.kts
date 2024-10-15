@@ -6,6 +6,7 @@ import wheretogo.AndroidTest
 import wheretogo.Google
 import wheretogo.Libraries
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import wheretogo.Firebase
 import java.util.Properties
 
 plugins {
@@ -14,6 +15,8 @@ plugins {
     id("com.google.dagger.hilt.android")
     id("de.mannodermaus.android-junit5")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
     id("com.google.devtools.ksp")
 }
 
@@ -48,8 +51,8 @@ android {
         release {
             isMinifyEnabled = false
             proguardFiles(
-                    getDefaultProguardFile("proguard-android-optimize.txt"),
-                    "proguard-rules.pro"
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("release")
         }
@@ -93,10 +96,12 @@ dependencies {
 
 
     //compose
+    implementation(platform(AndroidX.COMPOSE_BOM))
     implementation(AndroidX.COMPOSE_UI)
     implementation(AndroidX.COMPOSE_UI_GRAPHICS)
     implementation(AndroidX.COMPOSE_UI_TOOL_PREVIEW)
     implementation(AndroidX.COMPOSE_MATERIAL3)
+    androidTestImplementation(platform(AndroidX.COMPOSE_BOM))
 
     implementation(Libraries.LOTTIE_COMPOSE)
 
@@ -136,7 +141,10 @@ dependencies {
 
     androidTestImplementation(AndroidTest.ANDROID_JUNIT)
     androidTestImplementation(AndroidTest.ESPRESSO_CORE)
-    androidTestImplementation(platform(AndroidX.COMPOSE_BOM))
+
+    implementation(platform(Firebase.FIREBASE_BOM))
+    implementation(Firebase.FIREBASE_CRASHLYTICS)
+    implementation(Firebase.FIREBASE_ANALYTICS)
 }
 
 tasks.withType(Test::class) {

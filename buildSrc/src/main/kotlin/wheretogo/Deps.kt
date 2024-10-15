@@ -6,14 +6,14 @@ object Versions {
     const val KOTLIN_COMPILER_EXTENSION_VERSION = "1.5.15"
 
     const val KOTLIN_VERSION     = "2.0.0"
-    const val CORE      = "1.8.0"
+    const val CORE      = "1.13.1"
 
     const val LIFECYCLE = "2.8.5"
 
     const val TEST = "1.5.2"
 
     const val ACTIVITY = "1.9.2"
-    const val BOM = "2024.09.01"
+    const val COMPOSE_BOM = "2024.09.02"
 
     const val HILT     = "2.52"
 
@@ -32,7 +32,10 @@ object Versions {
     const val JUPITER       = "5.10.2"
     const val JUNIT5_TEST   = "1.4.0"
     const val ANDROID_JUNIT = "1.1.5"
-    const val ESPRESSO_CORE = "3.5.1"
+    const val ESPRESSO_CORE = "3.6.1"
+
+
+    const val FIREBASE = "33.3.0"
 }
 
 object Kotlin {
@@ -40,17 +43,17 @@ object Kotlin {
 }
 
 object AndroidX {
-    const val CORE_KTX                = "androidx.core:core-ktx:${Versions.CORE}"//
+    const val CORE_KTX                = "androidx.core:core-ktx:${Versions.CORE}"
 
 
-    const val LIFECYCLE_RUNTIME_KTX   = "androidx.lifecycle:lifecycle-runtime-ktx:${Versions.LIFECYCLE}"
-    const val LIFECYCLE_VIEWMODEL_COMPOSE   = "androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0"
+    const val LIFECYCLE_RUNTIME_KTX         = "androidx.lifecycle:lifecycle-runtime-ktx:${Versions.LIFECYCLE}"
+    const val LIFECYCLE_VIEWMODEL_COMPOSE   = "androidx.lifecycle:lifecycle-viewmodel-compose:${Versions.LIFECYCLE}"
 
 
 
     const val ACTIVITY_COMPOSE  = "androidx.activity:activity-compose:${Versions.ACTIVITY}"
 
-    const val COMPOSE_BOM              = "androidx.compose:compose-bom:${Versions.BOM}"
+    const val COMPOSE_BOM              = "androidx.compose:compose-bom:${Versions.COMPOSE_BOM}"
     const val COMPOSE_UI               = "androidx.compose.ui:ui"
     const val COMPOSE_UI_GRAPHICS      = "androidx.compose.ui:ui-graphics"
     const val COMPOSE_UI_TOOL_PREVIEW  = "androidx.compose.ui:ui-tooling-preview"
@@ -61,10 +64,10 @@ object AndroidX {
 
     const val HILT_NAVIGATION_COMPOSE = "androidx.hilt:hilt-navigation-compose:1.2.0"
 
-    const val ROOM_RUNTIME="androidx.room:room-runtime:${Versions.ROOM}"
-    const val ROOM_KTX="androidx.room:room-ktx:${Versions.ROOM}"
-    const val ROOM_COMPILER="androidx.room:room-compiler:${Versions.ROOM}"
-    const val ROOM_TESTING="androidx.room:room-testing:${Versions.ROOM}"
+    const val ROOM_RUNTIME      ="androidx.room:room-runtime:${Versions.ROOM}"
+    const val ROOM_KTX          ="androidx.room:room-ktx:${Versions.ROOM}"
+    const val ROOM_COMPILER     ="androidx.room:room-compiler:${Versions.ROOM}"
+    const val ROOM_TESTING      ="androidx.room:room-testing:${Versions.ROOM}"
 
     const val TEST_RUNNER       ="androidx.test:runner:${Versions.TEST}"
 }
@@ -104,4 +107,11 @@ object UnitTest {
 object AndroidTest {
     const val ANDROID_JUNIT = "androidx.test.ext:junit:${Versions.ANDROID_JUNIT}"
     const val ESPRESSO_CORE = "androidx.test.espresso:espresso-core:${Versions.ESPRESSO_CORE}"
+}
+
+object Firebase{
+    const val FIREBASE_BOM = "com.google.firebase:firebase-bom:${Versions.FIREBASE}"
+    const val FIREBASE_CRASHLYTICS = "com.google.firebase:firebase-crashlytics"
+    const val FIREBASE_ANALYTICS = "com.google.firebase:firebase-analytics"
+    const val FIREBASE_DATABASE = "com.google.firebase:firebase-database"
 }

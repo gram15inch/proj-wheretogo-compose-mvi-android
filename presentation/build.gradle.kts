@@ -1,4 +1,3 @@
-import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import wheretogo.AndroidTest
 import wheretogo.AndroidX
@@ -61,14 +60,15 @@ dependencies {
     implementation(AndroidX.LIFECYCLE_RUNTIME_KTX)
     implementation(AndroidX.LIFECYCLE_VIEWMODEL_COMPOSE)
     implementation(AndroidX.ACTIVITY_COMPOSE)
-    implementation(platform(AndroidX.COMPOSE_BOM))
 
 
     //compose
+    implementation(platform(AndroidX.COMPOSE_BOM))
     implementation(AndroidX.COMPOSE_UI)
     implementation(AndroidX.COMPOSE_UI_GRAPHICS)
     implementation(AndroidX.COMPOSE_UI_TOOL_PREVIEW)
     implementation(AndroidX.COMPOSE_MATERIAL3)
+    androidTestImplementation(platform(AndroidX.COMPOSE_BOM))
 
     implementation(Libraries.LOTTIE_COMPOSE)
 
@@ -110,7 +110,6 @@ dependencies {
 
     androidTestImplementation(AndroidTest.ANDROID_JUNIT)
     androidTestImplementation(AndroidTest.ESPRESSO_CORE)
-    androidTestImplementation(platform(AndroidX.COMPOSE_BOM))
 
     //retrofit
     implementation (Squareup.RETROFIT)
