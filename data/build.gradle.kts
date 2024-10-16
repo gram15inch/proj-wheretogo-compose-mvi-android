@@ -109,6 +109,7 @@ dependencies {
 
     implementation(platform(Firebase.FIREBASE_BOM))
     implementation(Firebase.FIREBASE_DATABASE)
+    implementation(Firebase.FIREBASE_FIRESTORE_KTX)
 }
 
 tasks.withType(Test::class) {

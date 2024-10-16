@@ -145,6 +145,7 @@ dependencies {
     implementation(platform(Firebase.FIREBASE_BOM))
     implementation(Firebase.FIREBASE_CRASHLYTICS)
     implementation(Firebase.FIREBASE_ANALYTICS)
+    implementation(Firebase.FIREBASE_FIRESTORE_KTX)
 }
 
 tasks.withType(Test::class) {

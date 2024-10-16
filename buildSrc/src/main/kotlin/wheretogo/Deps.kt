@@ -114,4 +114,5 @@ object Firebase{
     const val FIREBASE_CRASHLYTICS = "com.google.firebase:firebase-crashlytics"
     const val FIREBASE_ANALYTICS = "com.google.firebase:firebase-analytics"
     const val FIREBASE_DATABASE = "com.google.firebase:firebase-database"
+    const val FIREBASE_FIRESTORE_KTX = "com.google.firebase:firebase-firestore-ktx"
 }
