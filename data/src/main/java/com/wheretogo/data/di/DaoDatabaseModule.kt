@@ -16,12 +16,7 @@ object DaoDatabaseModule {
     @Provides
     @Singleton
     fun provideMapDatabase(@ApplicationContext context: Context) =
-        Room.databaseBuilder(
-            context,
-            JourneyDatabase::class.java,
-            "journey_db"
-        ).fallbackToDestructiveMigration()
-            .build()
+        JourneyDatabase.getInstance(context)
 
     @Provides
     fun provideJourneyDao(database: JourneyDatabase) = database.journeyDao()
