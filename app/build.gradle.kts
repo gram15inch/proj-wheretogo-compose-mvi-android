@@ -1,12 +1,11 @@
-import wheretogo.AndroidX
-import wheretogo.Versions
-import wheretogo.Kotlin
-import wheretogo.UnitTest
-import wheretogo.AndroidTest
-import wheretogo.Google
-import wheretogo.Libraries
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import wheretogo.AndroidX
 import wheretogo.Firebase
+import wheretogo.Google
+import wheretogo.Kotlin
+import wheretogo.Libraries
+import wheretogo.UnitTest
+import wheretogo.Versions
 import java.util.Properties
 
 plugins {
@@ -37,7 +36,6 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
-
     }
     signingConfigs {
         create("release") {
@@ -125,23 +123,19 @@ dependencies {
     kspTest (Google.HILT_ANDROID_COMPILER)
     kspAndroidTest (Google.HILT_ANDROID_COMPILER)
 
-    // junit5
+    // test
+    implementation("androidx.test:core-ktx:1.6.1")
+
     testImplementation (UnitTest.JUNIT_JUPITER_API)
     testRuntimeOnly (UnitTest.JUNIT_JUPITER_ENGINE)
     testImplementation (UnitTest.JUNIT_JUPITER_PARAMS)
-
-    androidTestImplementation (AndroidX.TEST_RUNNER)
-    androidTestImplementation (UnitTest.JUNIT_JUPITER_API)
-
-    androidTestImplementation (UnitTest.JUNIT5_TEST_CORE)
-    androidTestRuntimeOnly (UnitTest.JUNIT5_TEST_RUNNER)
-
     testImplementation(UnitTest.JUNIT)
     testImplementation(UnitTest.JUNIT_VINTAGE_ENGINE)
 
-    androidTestImplementation(AndroidTest.ANDROID_JUNIT)
-    androidTestImplementation(AndroidTest.ESPRESSO_CORE)
+    androidTestImplementation (UnitTest.JUNIT_JUPITER_API)
+    androidTestImplementation("org.mockito:mockito-junit-jupiter:3.9.0")
 
+    // firebase
     implementation(platform(Firebase.FIREBASE_BOM))
     implementation(Firebase.FIREBASE_CRASHLYTICS)
     implementation(Firebase.FIREBASE_ANALYTICS)

@@ -1,21 +1,15 @@
-import org.gradle.api.tasks.testing.logging.TestLogEvent
-import wheretogo.AndroidTest
 import wheretogo.AndroidX
 import wheretogo.Firebase
 import wheretogo.Google
 import wheretogo.Kotlin
 import wheretogo.Libraries
 import wheretogo.Squareup
-import wheretogo.UnitTest
 import java.util.Properties
 
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
     id("com.google.dagger.hilt.android")
-    id("de.mannodermaus.android-junit5")
-    id("org.jetbrains.kotlin.plugin.compose")
-    id("com.google.gms.google-services")
     id("com.google.devtools.ksp")
 }
 
@@ -68,37 +62,14 @@ dependencies {
     //hilt
     implementation(Google.HILT_ANDROID)
     implementation(AndroidX.HILT_NAVIGATION_COMPOSE)
-    testImplementation (Google.HILT_ANDROID_TESTING)
-    testImplementation(Libraries.MOCKK)
-
-    androidTestImplementation (Google.HILT_ANDROID_TESTING)
 
     ksp(Google.HILT_COMPILER)
-    kspTest (Google.HILT_ANDROID_COMPILER)
-    kspAndroidTest (Google.HILT_ANDROID_COMPILER)
-
-    // junit5
-    testImplementation (UnitTest.JUNIT_JUPITER_API)
-    testRuntimeOnly (UnitTest.JUNIT_JUPITER_ENGINE)
-    testImplementation (UnitTest.JUNIT_JUPITER_PARAMS)
-
-    androidTestImplementation (AndroidX.TEST_RUNNER)
-    androidTestImplementation (UnitTest.JUNIT_JUPITER_API)
-
-    androidTestImplementation (UnitTest.JUNIT5_TEST_CORE)
-    androidTestRuntimeOnly (UnitTest.JUNIT5_TEST_RUNNER)
-
-    testImplementation(UnitTest.JUNIT)
-    testImplementation(UnitTest.JUNIT_VINTAGE_ENGINE)
-
-    androidTestImplementation(AndroidTest.ANDROID_JUNIT)
-    androidTestImplementation(AndroidTest.ESPRESSO_CORE)
-    androidTestImplementation(platform(AndroidX.COMPOSE_BOM))
 
     //retrofit
-    implementation (Squareup.RETROFIT)
-    implementation (Squareup.RETROFIT_CONVERTER_MOSHI)
-    implementation(Squareup.MOSHI_KOTLIN)
+    api(Squareup.RETROFIT)
+    api(Squareup.RETROFIT_CONVERTER_MOSHI)
+    api(Squareup.MOSHI_KOTLIN)
+
 
     //Room
     implementation(AndroidX.ROOM_RUNTIME)
@@ -110,13 +81,6 @@ dependencies {
     implementation(platform(Firebase.FIREBASE_BOM))
     implementation(Firebase.FIREBASE_DATABASE)
     implementation(Firebase.FIREBASE_FIRESTORE_KTX)
-}
-
-tasks.withType(Test::class) {
-    useJUnitPlatform()
-    testLogging {
-        events.addAll(arrayOf(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED))
-    }
 }
 
 fun getAppKey(propertyKey: String): String {
