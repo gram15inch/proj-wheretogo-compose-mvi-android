@@ -1,8 +1,7 @@
 import wheretogo.AndroidX
 import wheretogo.Firebase
-import wheretogo.Google
+import wheretogo.Dagger
 import wheretogo.Kotlin
-import wheretogo.Libraries
 import wheretogo.Squareup
 import java.util.Properties
 
@@ -57,13 +56,15 @@ dependencies {
     implementation(project(mapOf("path" to ":domain")))
 
     implementation(AndroidX.CORE_KTX)
+    api(AndroidX.ROOM_KTX)
+
+    //bom
     implementation(platform(Kotlin.KOTLIN_BOM))
 
     //hilt
-    implementation(Google.HILT_ANDROID)
-    implementation(AndroidX.HILT_NAVIGATION_COMPOSE)
+    implementation(Dagger.HILT_ANDROID)
 
-    ksp(Google.HILT_COMPILER)
+    ksp(Dagger.HILT_COMPILER)
 
     //retrofit
     api(Squareup.RETROFIT)
@@ -72,10 +73,8 @@ dependencies {
 
 
     //Room
-    implementation(AndroidX.ROOM_RUNTIME)
-    implementation(AndroidX.ROOM_KTX)
+    api(AndroidX.ROOM_RUNTIME)
     annotationProcessor(AndroidX.ROOM_COMPILER)
-    testImplementation(AndroidX.ROOM_TESTING)
     ksp(AndroidX.ROOM_COMPILER)
 
     implementation(platform(Firebase.FIREBASE_BOM))

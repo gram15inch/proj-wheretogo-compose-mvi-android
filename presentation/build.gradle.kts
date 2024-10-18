@@ -1,5 +1,5 @@
 import wheretogo.AndroidX
-import wheretogo.Google
+import wheretogo.Dagger
 import wheretogo.Kotlin
 import wheretogo.Libraries
 import wheretogo.Squareup
@@ -50,49 +50,46 @@ dependencies {
     implementation(project(mapOf("path" to ":domain")))
 
     implementation(AndroidX.CORE_KTX)
+
+    //BOM
     implementation(platform(Kotlin.KOTLIN_BOM))
-    implementation(AndroidX.LIFECYCLE_RUNTIME_KTX)
-    implementation(AndroidX.LIFECYCLE_VIEWMODEL_COMPOSE)
-    implementation(AndroidX.ACTIVITY_COMPOSE)
+    implementation(platform(AndroidX.COMPOSE_BOM))
+    androidTestImplementation(platform(AndroidX.COMPOSE_BOM))
 
 
     //compose
-    implementation(platform(AndroidX.COMPOSE_BOM))
     implementation(AndroidX.COMPOSE_UI)
     implementation(AndroidX.COMPOSE_UI_GRAPHICS)
     implementation(AndroidX.COMPOSE_UI_TOOL_PREVIEW)
     implementation(AndroidX.COMPOSE_MATERIAL3)
-    androidTestImplementation(platform(AndroidX.COMPOSE_BOM))
 
     implementation(Libraries.LOTTIE_COMPOSE)
 
+    implementation(AndroidX.LIFECYCLE_RUNTIME_KTX)
+    implementation(AndroidX.LIFECYCLE_VIEWMODEL_COMPOSE)
+    implementation(AndroidX.ACTIVITY_COMPOSE)
+
     androidTestImplementation(AndroidX.COMPOSE_UI_TEST_JUNIT4)
-    androidTestImplementation(platform(AndroidX.COMPOSE_BOM))
     androidTestImplementation(Libraries.LOTTIE_COMPOSE)
 
     debugImplementation(AndroidX.COMPOSE_UI_TOOL)
     debugImplementation(AndroidX.COMPOSE_UI_TEST_MANIFEST)
 
     //navigation
-    implementation("androidx.navigation:navigation-compose:2.8.0")
+    implementation(AndroidX.NAVIGATION_COMPOSE)
 
     //hilt
-    implementation(Google.HILT_ANDROID)
+    implementation(Dagger.HILT_ANDROID)
     implementation(AndroidX.HILT_NAVIGATION_COMPOSE)
 
-    ksp(Google.HILT_COMPILER)
+    ksp(AndroidX.HILT_COMPILER)
+    ksp(Dagger.HILT_COMPILER)
+    ksp(Dagger.HILT_ANDROID_COMPILER)
 
     //retrofit
-    implementation (Squareup.RETROFIT)
-    implementation (Squareup.RETROFIT_CONVERTER_MOSHI)
+    implementation(Squareup.RETROFIT)
+    implementation(Squareup.RETROFIT_CONVERTER_MOSHI)
     implementation(Squareup.MOSHI_KOTLIN)
-
-    //Room
-    implementation(AndroidX.ROOM_RUNTIME)
-    implementation(AndroidX.ROOM_KTX)
-    annotationProcessor(AndroidX.ROOM_COMPILER)
-    testImplementation(AndroidX.ROOM_TESTING)
-    ksp(AndroidX.ROOM_COMPILER)
 
     //Map
     implementation("com.kakao.maps.open:android:2.11.9")

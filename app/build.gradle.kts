@@ -1,7 +1,7 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import wheretogo.AndroidX
 import wheretogo.Firebase
-import wheretogo.Google
+import wheretogo.Dagger
 import wheretogo.Kotlin
 import wheretogo.Libraries
 import wheretogo.UnitTest
@@ -86,25 +86,25 @@ dependencies {
     implementation(project(mapOf("path" to ":permission")))
 
     implementation(AndroidX.CORE_KTX)
-    implementation(platform(Kotlin.KOTLIN_BOM))
     implementation(AndroidX.LIFECYCLE_RUNTIME_KTX)
-    implementation(AndroidX.LIFECYCLE_VIEWMODEL_COMPOSE)
-    implementation(AndroidX.ACTIVITY_COMPOSE)
-    implementation(platform(AndroidX.COMPOSE_BOM))
+    implementation(AndroidX.WORK_RUNTIME_KTX)
+    implementation(AndroidX.TEST_CORE_KTX)
 
+    implementation(platform(Kotlin.KOTLIN_BOM))
+    implementation(platform(AndroidX.COMPOSE_BOM))
+    androidTestImplementation(platform(AndroidX.COMPOSE_BOM))
 
     //compose
-    implementation(platform(AndroidX.COMPOSE_BOM))
     implementation(AndroidX.COMPOSE_UI)
     implementation(AndroidX.COMPOSE_UI_GRAPHICS)
     implementation(AndroidX.COMPOSE_UI_TOOL_PREVIEW)
     implementation(AndroidX.COMPOSE_MATERIAL3)
-    androidTestImplementation(platform(AndroidX.COMPOSE_BOM))
+    implementation(AndroidX.LIFECYCLE_VIEWMODEL_COMPOSE)
+    implementation(AndroidX.ACTIVITY_COMPOSE)
 
     implementation(Libraries.LOTTIE_COMPOSE)
 
     androidTestImplementation(AndroidX.COMPOSE_UI_TEST_JUNIT4)
-    androidTestImplementation(platform(AndroidX.COMPOSE_BOM))
     androidTestImplementation(Libraries.LOTTIE_COMPOSE)
 
     debugImplementation(AndroidX.COMPOSE_UI_TOOL)
@@ -112,34 +112,37 @@ dependencies {
 
 
     //hilt
-    implementation(Google.HILT_ANDROID)
+    implementation(Dagger.HILT_ANDROID)
+    implementation(AndroidX.HILT_COMMON)
+    implementation(AndroidX.HILT_WORK)
     implementation(AndroidX.HILT_NAVIGATION_COMPOSE)
-    testImplementation (Google.HILT_ANDROID_TESTING)
+    testImplementation(Dagger.HILT_ANDROID_TESTING)
     testImplementation(Libraries.MOCKK)
 
-    androidTestImplementation (Google.HILT_ANDROID_TESTING)
+    androidTestImplementation(Dagger.HILT_ANDROID_TESTING)
 
-    ksp(Google.HILT_COMPILER)
-    kspTest (Google.HILT_ANDROID_COMPILER)
-    kspAndroidTest (Google.HILT_ANDROID_COMPILER)
+    ksp(AndroidX.HILT_COMPILER)
+    ksp(Dagger.HILT_COMPILER)
+    ksp(Dagger.HILT_ANDROID_COMPILER)
 
     // test
-    implementation("androidx.test:core-ktx:1.6.1")
 
-    testImplementation (UnitTest.JUNIT_JUPITER_API)
-    testRuntimeOnly (UnitTest.JUNIT_JUPITER_ENGINE)
-    testImplementation (UnitTest.JUNIT_JUPITER_PARAMS)
+    testImplementation(UnitTest.JUNIT_JUPITER_API)
+    testRuntimeOnly(UnitTest.JUNIT_JUPITER_ENGINE)
+    testImplementation(UnitTest.JUNIT_JUPITER_PARAMS)
     testImplementation(UnitTest.JUNIT)
     testImplementation(UnitTest.JUNIT_VINTAGE_ENGINE)
 
-    androidTestImplementation (UnitTest.JUNIT_JUPITER_API)
-    androidTestImplementation("org.mockito:mockito-junit-jupiter:3.9.0")
+    androidTestImplementation(UnitTest.JUNIT_JUPITER_API)
+    androidTestImplementation(Libraries.MOCKITO_JUNIT_JUPITER)
 
     // firebase
     implementation(platform(Firebase.FIREBASE_BOM))
     implementation(Firebase.FIREBASE_CRASHLYTICS)
     implementation(Firebase.FIREBASE_ANALYTICS)
     implementation(Firebase.FIREBASE_FIRESTORE_KTX)
+
+
 }
 
 tasks.withType(Test::class) {

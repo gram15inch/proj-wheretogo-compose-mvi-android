@@ -1,7 +1,6 @@
 import wheretogo.AndroidX
-import wheretogo.Google
+import wheretogo.Dagger
 import wheretogo.Kotlin
-import wheretogo.Libraries
 
 plugins {
     id("com.android.library")
@@ -43,8 +42,8 @@ dependencies {
     implementation(AndroidX.LIFECYCLE_RUNTIME_KTX)
 
     //hilt
-    implementation(Google.HILT_ANDROID)
-    ksp(Google.HILT_COMPILER)
+    implementation(Dagger.HILT_ANDROID)
+    ksp(Dagger.HILT_COMPILER)
 
 
     //etc

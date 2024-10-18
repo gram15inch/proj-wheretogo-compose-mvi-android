@@ -10,7 +10,9 @@ object Versions {
 
     const val LIFECYCLE = "2.8.5"
 
-    const val TEST = "1.5.2"
+    const val NAVIGATION = "2.8.0"
+
+    const val TEST = "1.6.1"
 
     const val ACTIVITY = "1.9.2"
     const val COMPOSE_BOM = "2024.09.02"
@@ -23,11 +25,6 @@ object Versions {
     const val MOSHI     = "1.13.0"
 
 
-    const val MOCKK      = "1.10.5"
-    const val LOTTIE      = "6.5.2"
-
-
-
     const val JUNIT         = "4.13.2"
     const val JUPITER       = "5.10.2"
     const val JUNIT5_TEST   = "1.4.0"
@@ -36,6 +33,7 @@ object Versions {
 
 
     const val FIREBASE = "33.3.0"
+    const val WORK = "2.9.1"
 }
 
 object Kotlin {
@@ -49,8 +47,6 @@ object AndroidX {
     const val LIFECYCLE_RUNTIME_KTX         = "androidx.lifecycle:lifecycle-runtime-ktx:${Versions.LIFECYCLE}"
     const val LIFECYCLE_VIEWMODEL_COMPOSE   = "androidx.lifecycle:lifecycle-viewmodel-compose:${Versions.LIFECYCLE}"
 
-
-
     const val ACTIVITY_COMPOSE  = "androidx.activity:activity-compose:${Versions.ACTIVITY}"
 
     const val COMPOSE_BOM              = "androidx.compose:compose-bom:${Versions.COMPOSE_BOM}"
@@ -61,22 +57,31 @@ object AndroidX {
     const val COMPOSE_UI_TEST_JUNIT4   = "androidx.compose.ui:ui-test-junit4"
     const val COMPOSE_UI_TEST_MANIFEST = "androidx.compose.ui:ui-test-manifest"
     const val COMPOSE_MATERIAL3        = "androidx.compose.material3:material3"
+    const val NAVIGATION_COMPOSE        = "androidx.navigation:navigation-compose:${Versions.NAVIGATION}"
 
     const val HILT_NAVIGATION_COMPOSE = "androidx.hilt:hilt-navigation-compose:1.2.0"
+    const val HILT_COMPILER = "androidx.hilt:hilt-compiler:1.2.0"
+    const val HILT_COMMON = "androidx.hilt:hilt-common:1.2.0"
+    const val HILT_WORK = "androidx.hilt:hilt-work:1.2.0"
 
     const val ROOM_RUNTIME      ="androidx.room:room-runtime:${Versions.ROOM}"
     const val ROOM_KTX          ="androidx.room:room-ktx:${Versions.ROOM}"
     const val ROOM_COMPILER     ="androidx.room:room-compiler:${Versions.ROOM}"
     const val ROOM_TESTING      ="androidx.room:room-testing:${Versions.ROOM}"
 
+
+    const val WORK_RUNTIME_KTX      ="androidx.work:work-runtime-ktx:${Versions.WORK}"
+
+
     const val TEST_RUNNER       ="androidx.test:runner:${Versions.TEST}"
+    const val TEST_CORE_KTX       ="androidx.test:core-ktx:${Versions.TEST}"
 }
 
-object Google {
+object Dagger {
     const val HILT_ANDROID          = "com.google.dagger:hilt-android:${Versions.HILT}"
     const val HILT_COMPILER         = "com.google.dagger:hilt-compiler:${Versions.HILT}"
     const val HILT_ANDROID_COMPILER = "com.google.dagger:hilt-android-compiler:${Versions.HILT}"
-    const val HILT_ANDROID_TESTING  = "com.google.dagger:hilt-android-testing:${Versions.HILT}"
+    const val HILT_ANDROID_TESTING  = "com.google.dagger:hilt-android-testing:2.52"
 
 }
 
@@ -87,9 +92,9 @@ object Squareup {
 }
 
 object Libraries {
-    const val MOCKK = "io.mockk:mockk:${Versions.MOCKK}"
-    const val LOTTIE_COMPOSE = "com.airbnb.android:lottie-compose:${Versions.LOTTIE}"
-
+    const val MOCKK = "io.mockk:mockk:1.10.5"
+    const val MOCKITO_JUNIT_JUPITER = "org.mockito:mockito-junit-jupiter:3.9.0"
+    const val LOTTIE_COMPOSE = "com.airbnb.android:lottie-compose:6.5.2"
 }
 
 

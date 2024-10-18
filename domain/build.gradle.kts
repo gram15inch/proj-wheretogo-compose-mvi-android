@@ -1,7 +1,6 @@
 import wheretogo.AndroidX
-import wheretogo.Google
+import wheretogo.Dagger
 import wheretogo.Kotlin
-import wheretogo.Libraries
 import wheretogo.Squareup
 
 plugins {
@@ -42,10 +41,8 @@ dependencies {
     implementation(platform(Kotlin.KOTLIN_BOM))
 
     //hilt
-    implementation(Google.HILT_ANDROID)
-    implementation(AndroidX.HILT_NAVIGATION_COMPOSE)
-
-    ksp(Google.HILT_COMPILER)
+    implementation(Dagger.HILT_ANDROID)
+    ksp(Dagger.HILT_COMPILER)
 
     //retrofit
     implementation (Squareup.RETROFIT)
