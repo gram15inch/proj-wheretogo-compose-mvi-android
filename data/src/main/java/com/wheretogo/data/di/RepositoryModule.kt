@@ -1,6 +1,8 @@
 package com.wheretogo.data.di
 
+import com.wheretogo.data.repository.CourseRepositoryImpl
 import com.wheretogo.data.repository.JourneyRepositoryImpl
+import com.wheretogo.domain.repository.CourseRepository
 import com.wheretogo.domain.repository.JourneyRepository
 import dagger.Binds
 import dagger.Module
@@ -13,5 +15,8 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindJourneyRepository(repositoryImpl: JourneyRepositoryImpl): JourneyRepository
+
+    @Binds
+    abstract fun bindCourseRepository(repositoryImpl: CourseRepositoryImpl): CourseRepository
 
 }

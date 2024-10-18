@@ -58,10 +58,6 @@ fun DriveContent(navController: NavController, viewModel: DriveViewModel = hiltV
     var camera by remember { mutableStateOf(LatLng(0.0, 0.0)) }
     val coroutine = rememberCoroutineScope()
     val listState = rememberLazyListState()
-    LaunchedEffect(Dispatchers.IO) {
-        /*     if (viewModel.journeyGroup.value.isEmpty())
-                 listOf(c1, c2, c3, c4, c5, c6, c7).forEach { viewModel.refreshJourney(it)}*/
-    }
     BackHandler {
         visible = false
         navController.navigateUp()
@@ -162,7 +158,7 @@ fun DriveListItem(modifier: Modifier, item: Journey) {
                     modifier =
                     Modifier
                         .wrapContentSize(),
-                    text = item.id.toString(),
+                    text = item.course.waypoints.size.toString(),
                     fontSize = 24.sp
                 )
                 Text(

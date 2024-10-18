@@ -190,7 +190,7 @@ fun NaverMapComposable(
             data.value.forEach { item ->
                 val naverPoints = item.points.toNaver()
                 Marker().apply {
-                    position = naverPoints[0]
+                    position = naverPoints[0] // todo 인덱스 에러 처리
                     map = naverMap
                     tag = item.code
                     this.setOnClickListener { overlay ->
