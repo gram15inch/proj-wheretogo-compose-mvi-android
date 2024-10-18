@@ -1,10 +1,12 @@
 package com.wheretogo.data.datasource.database
 
+import android.content.Context
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
@@ -17,15 +19,26 @@ import com.wheretogo.data.model.journey.LocalLatLng
 import java.lang.reflect.Type
 
 @TypeConverters(JourneyJsonConverters::class)
-@Database(entities = [LocalJourney::class], version = 2, exportSchema = true)
+@Database(entities = [LocalJourney::class], version = 4, exportSchema = true)
 abstract class JourneyDatabase : RoomDatabase() {
     abstract fun journeyDao(): JourneyDao
+
+    companion object{
+        fun getInstance(context:Context): JourneyDatabase {
+           return Room.databaseBuilder(
+                context,
+                JourneyDatabase::class.java,
+                "journey_db"
+            ).fallbackToDestructiveMigration()
+                .build()
+        }
+    }
 }
 
 @Dao
 interface JourneyDao {
-    @Query("SELECT * FROM LocalJourney")
-    suspend fun selectAll(): List<LocalJourney>
+    @Query("SELECT * FROM LocalJourney LIMIT :size")
+    suspend fun selectAll(size:Int): List<LocalJourney>
 
     @Query("SELECT * FROM LocalJourney WHERE code = :code")
     suspend fun select(code: Int): LocalJourney?

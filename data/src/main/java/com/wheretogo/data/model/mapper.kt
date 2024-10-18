@@ -8,18 +8,16 @@ import com.wheretogo.domain.model.Journey
 import com.wheretogo.domain.model.LatLng
 
 
-
 fun LocalJourney.toJourney(): Journey {
     return Journey(
-        id=this.id,
-        code=this.code,
+        code = this.code,
         course = this.course.toCourse(),
         points = this.points.toLatlngList(),
     )
 }
 
 fun LocalLatLng.toLatLng(): LatLng {
-    return LatLng(this.latitude,this.longitude)
+    return LatLng(this.latitude, this.longitude)
 }
 
 fun LocalCourse.toCourse(): Course {
@@ -31,25 +29,26 @@ fun LocalCourse.toCourse(): Course {
     )
 }
 
-fun List<LocalLatLng>.toLatlngList():List<LatLng>{
+fun List<LocalLatLng>.toLatlngList(): List<LatLng> {
     return this.map { it.toLatLng() }
 }
 
-fun Journey.toLocalJourney():LocalJourney{
+fun Journey.toLocalJourney(): LocalJourney {
     return LocalJourney(
-        id=this.id,
-        latitude =this.course.start.latitude,
-        longitude =this.course.start.longitude,
+        code = code,
+        latitude = this.course.start.latitude,
+        longitude = this.course.start.longitude,
         course = this.course.toLocalCourse(),
+        pointsDate = 0L,
         points = this.points.toLocalLatlngList(),
     )
 }
 
-fun LatLng.toLocalLatLng():LocalLatLng{
-    return LocalLatLng(this.latitude,this.longitude)
+fun LatLng.toLocalLatLng(): LocalLatLng {
+    return LocalLatLng(this.latitude, this.longitude)
 }
 
-fun Course.toLocalCourse():LocalCourse{
+fun Course.toLocalCourse(): LocalCourse {
     return LocalCourse(
         code = this.code,
         start = this.start.toLocalLatLng(),
@@ -58,6 +57,6 @@ fun Course.toLocalCourse():LocalCourse{
     )
 }
 
-fun List<LatLng>.toLocalLatlngList():List<LocalLatLng>{
+fun List<LatLng>.toLocalLatlngList(): List<LocalLatLng> {
     return this.map { it.toLocalLatLng() }
 }

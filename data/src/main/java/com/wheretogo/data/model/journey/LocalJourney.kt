@@ -7,16 +7,15 @@ import androidx.room.PrimaryKey
 @Entity(
     tableName = "LocalJourney",
     indices = [
-        Index(value = ["code"], unique = true),
         Index(value = ["latitude", "longitude"])
     ]
 )
 data class LocalJourney(
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
+    @PrimaryKey
     val code: Int = 0,
     val longitude: Double,
     val latitude: Double,
     var course: LocalCourse,
+    val pointsDate : Long,
     var points: List<LocalLatLng>,
 )

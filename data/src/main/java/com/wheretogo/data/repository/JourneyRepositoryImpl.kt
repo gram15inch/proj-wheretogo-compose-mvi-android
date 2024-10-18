@@ -5,40 +5,45 @@ import com.wheretogo.data.BuildConfig
 import com.wheretogo.data.datasource.database.JourneyDatabase
 import com.wheretogo.data.datasource.service.NaverMapApiService
 import com.wheretogo.data.model.journey.LocalJourney
+import com.wheretogo.data.model.toCourse
 import com.wheretogo.data.model.toJourney
 import com.wheretogo.data.model.toLocalCourse
 import com.wheretogo.data.model.toLocalJourney
 import com.wheretogo.data.model.toLocalLatlngList
-
 import com.wheretogo.domain.model.Course
 import com.wheretogo.domain.model.Journey
-
 import com.wheretogo.domain.model.LatLng
 import com.wheretogo.domain.model.Viewport
+import com.wheretogo.domain.repository.CourseRepository
 import com.wheretogo.domain.repository.JourneyRepository
-
 import javax.inject.Inject
 
 class JourneyRepositoryImpl @Inject constructor(
-    private val mapApiService: NaverMapApiService,
-    private val mapDatabase: JourneyDatabase
+    private val pointApiService: NaverMapApiService,
+    private val journeyDatabase: JourneyDatabase,
+    private val courseRepository: CourseRepository,
 ) :
     JourneyRepository {
 
-    override suspend fun getJourneys(): List<Journey> {
-        return mapDatabase.journeyDao().selectAll().map { it.toJourney() }
+    override suspend fun getJourneys(size:Int): List<Journey> {
+        return journeyDatabase.journeyDao().selectAll(size).map { it.toJourney() }
     }
 
     override suspend fun getJourney(course: Course): Journey {
-        return mapDatabase.journeyDao().select(course.code).run {
-            this?.toJourney() ?: return LocalJourney(//todo id 제거 (없음)
+        return journeyDatabase.journeyDao().select(course.code).run {
+            this?.apply {
+                if (this.points.isEmpty())
+                    journeyDatabase.journeyDao()
+                        .insert(this.copy(points = getPoints(course).toLocalLatlngList()))
+            }?.toJourney() ?: return LocalJourney(
                 code = course.code,
                 latitude = course.start.latitude,
                 longitude = course.start.longitude,
                 course = course.toLocalCourse(),
+                pointsDate = System.currentTimeMillis(),
                 points = getPoints(course).toLocalLatlngList()
             ).apply {
-                mapDatabase.journeyDao().insert(this)
+                journeyDatabase.journeyDao().insert(this)
             }.toJourney()
         }
     }
@@ -47,17 +52,38 @@ class JourneyRepositoryImpl @Inject constructor(
         viewPort: Viewport
     ): List<Journey> {
         return viewPort.run {
-            mapDatabase.journeyDao()
+            journeyDatabase.journeyDao()
                 .selectInViewPort(minLatitude, maxLatitude, minLongitude, maxLongitude)
-        }.map { it.toJourney() } //todo 서비스api 추가
+        }.map {
+            (if(it.points.isEmpty())
+                it.copy(pointsDate = System.currentTimeMillis(), points = getPoints(it.course.toCourse()).toLocalLatlngList())
+            else
+                it).toJourney()
+        }
     }
 
     override suspend fun setJourney(map: Journey) {
-        mapDatabase.journeyDao().insert(map.toLocalJourney())
+        journeyDatabase.journeyDao().insert(map.toLocalJourney())
+    }
+
+
+    override suspend fun fetchJourneyWithoutPoints() {
+        courseRepository.getCourse().forEach {
+            it.let { course ->
+                LocalJourney(
+                    code = course.code,
+                    latitude = course.start.latitude,
+                    longitude = course.start.longitude,
+                    course = course.toLocalCourse(),
+                    pointsDate = 0L,
+                    points = emptyList()
+                ).apply { journeyDatabase.journeyDao().insert(this) }
+            }
+        }
     }
 
     private suspend fun getPoints(course: Course): List<LatLng> {
-        val msg = mapApiService.getRouteWayPoint(
+        val msg = pointApiService.getRouteWayPoint(
             BuildConfig.NAVER_CLIENT_ID_KEY,
             BuildConfig.NAVER_CLIENT_SECRET_KEY,
             start = convertLatLng(course.start),
@@ -76,7 +102,6 @@ class JourneyRepositoryImpl @Inject constructor(
         }
     }
 
-
     private fun convertLatLng(latlng: LatLng): String = "${latlng.longitude}, ${latlng.latitude}"
     private fun convertWaypoints(waypoints: List<LatLng>): String {
         var str = ""
@@ -85,4 +110,5 @@ class JourneyRepositoryImpl @Inject constructor(
         }
         return str
     }
+
 }
