@@ -13,12 +13,12 @@ import dagger.assisted.AssistedInject
 class JourneyUpdateWorker @AssistedInject constructor (
    @Assisted context: Context,
    @Assisted params: WorkerParameters,
-   private val fetchJourneyWithoutPointsUseCas: FetchJourneyWithoutPointsUseCase
+   private val fetchJourneyWithoutPointsUseCase: FetchJourneyWithoutPointsUseCase
 ): CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
         return try {
             //todo 권한 확인 추가
-            fetchJourneyWithoutPointsUseCas()
+            fetchJourneyWithoutPointsUseCase()
             Result.success()
         } catch (e: Exception) {
             Result.failure()
