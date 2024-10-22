@@ -55,8 +55,14 @@ class JourneyRepositoryImpl @Inject constructor(
             journeyDatabase.journeyDao()
                 .selectInViewPort(minLatitude, maxLatitude, minLongitude, maxLongitude)
         }.map {
-            (if(it.points.isEmpty())
-                it.copy(pointsDate = System.currentTimeMillis(), points = getPoints(it.course.toCourse()).toLocalLatlngList())
+            (if(it.points.isEmpty()) {
+                it.copy(
+                    pointsDate = System.currentTimeMillis(),
+                    points = getPoints(it.course.toCourse()).toLocalLatlngList()
+                ).apply {
+                    journeyDatabase.journeyDao().insert(this)
+                }
+            }
             else
                 it).toJourney()
         }
