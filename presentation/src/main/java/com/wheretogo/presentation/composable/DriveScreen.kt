@@ -52,7 +52,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Composable
-fun DriveContent(navController: NavController, viewModel: DriveViewModel = hiltViewModel()) {
+fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltViewModel()) {
     var visible by remember { mutableStateOf(true) }
     val data = viewModel.journeyGroup.collectAsState()
     var camera by remember { mutableStateOf(LatLng(0.0, 0.0)) }

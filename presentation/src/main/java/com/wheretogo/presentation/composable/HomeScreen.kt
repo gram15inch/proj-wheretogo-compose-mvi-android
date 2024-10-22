@@ -49,7 +49,7 @@ import com.wheretogo.presentation.theme.hancomSansFontFamily
 import com.wheretogo.presentation.theme.meslolgsFontFamily
 
 @Composable
-fun HomeContent(displayMaxWidth: Dp, navController: NavController) {
+fun HomeScreen(displayMaxWidth: Dp, navController: NavController) {
     val scrollState = rememberScrollState()
     Column(
         modifier = Modifier

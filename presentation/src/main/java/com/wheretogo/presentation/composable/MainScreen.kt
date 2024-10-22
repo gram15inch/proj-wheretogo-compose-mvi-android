@@ -35,8 +35,8 @@ fun MainScreen() {
 
                 val displayMaxWidth = min(400.dp, maxWidth)
                 NavHost(navController = navController, startDestination = "drive") {
-                    composable("home") { HomeContent(displayMaxWidth, navController) }
-                    composable("drive") { DriveContent(navController) }
+                    composable("home") { HomeScreen(displayMaxWidth, navController) }
+                    composable("drive") { DriveScreen(navController) }
                 }
             }
         }
