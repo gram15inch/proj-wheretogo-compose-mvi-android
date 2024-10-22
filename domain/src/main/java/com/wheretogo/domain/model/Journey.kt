@@ -1,11 +1,12 @@
 package com.wheretogo.domain.model
 
 data class Journey(
-    val code: Int = 0,
-    var course: Course,
-    var points: List<LatLng>,
-){
-    companion object{
-        fun empty()=Journey(0,Course.empty(), emptyList())
-    }
-}
+    val code: Int = -1,
+    val courseName: String = "",
+    val duration: String = "",
+    val tag: List<Int> = emptyList(),
+    val imgUrl: String = "",
+    val course: Course = Course(),
+    val checkPoints: List<CheckPoint> = emptyList(),
+    val points: List<LatLng> = emptyList()
+)
