@@ -19,26 +19,34 @@ class DriveViewModel @Inject constructor(
     private val getJourneyUseCase: GetJourneyUseCase,
     private val getNearByJourneyUseCase: GetNearByJourneyUseCase
 ) : ViewModel() {
-    private val _journeyGroup = MutableStateFlow<List<Journey>>(emptyList())
-    val journeyGroup: StateFlow<List<Journey>> get() = _journeyGroup
-
+    private val _journeyGroupInMap = MutableStateFlow<Set<Journey>>(emptySet())
+    private val _journeyGroupInList = MutableStateFlow<List<Journey>>(emptyList())
+    val journeyGroupInMap: StateFlow<Set<Journey>> get() = _journeyGroupInMap
+    val journeyGroupInList: StateFlow<List<Journey>> get() = _journeyGroupInList
     fun refreshJourney(course: Course) {
         viewModelScope.launch {
-            _journeyGroup.apply {
+            _journeyGroupInMap.apply {
                 this.value += getJourneyUseCase(course)
             }
         }
     }
 
-    fun fetchNearByJourney(current: LatLng, distance: Int) {
+    fun fetchNearByJourneyInMap(current: LatLng, distance: Int) {
         viewModelScope.launch {
-            _journeyGroup.value += getNearByJourneyUseCase(current, distance)
+            _journeyGroupInMap.value += getNearByJourneyUseCase.byDistance(current, distance)
         }
     }
 
-    fun fetchNearByJourney(current: LatLng, viewPort: Viewport) {
+    fun fetchNearByJourneyInMap(current: LatLng, viewPort: Viewport) {
         viewModelScope.launch {
-        _journeyGroup.value = getNearByJourneyUseCase.by(current, viewPort).sortedBy { it.code }
+            _journeyGroupInMap.value += getNearByJourneyUseCase.byViewport(current, viewPort)
+                .sortedBy { it.code }
+        }
+    }
+
+    fun fetchNearByJourneyInList(latLng: LatLng) {
+        viewModelScope.launch {
+            _journeyGroupInList.value = getNearByJourneyUseCase.byDistance(latLng,1000)
         }
     }
 }

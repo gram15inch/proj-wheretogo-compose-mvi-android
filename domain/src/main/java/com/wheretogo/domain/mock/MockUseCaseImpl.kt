@@ -14,14 +14,14 @@ class MockUseCaseImpl @Inject constructor() :
     GetNearByJourneyUseCase,
     FetchJourneyWithoutPointsUseCase {
     override suspend fun invoke(course: Course): Journey {
-        return Journey.empty()
+        return Journey()
     }
 
-    override suspend fun invoke(current: LatLng, distance: Int): List<Journey> {
+    override suspend fun byDistance(current: LatLng, distance: Int): List<Journey> {
         return emptyList()
     }
 
-    override suspend fun by(current: LatLng, viewport: Viewport): List<Journey> {
+    override suspend fun byViewport(current: LatLng, viewport: Viewport): List<Journey> {
         return emptyList()
     }
 
