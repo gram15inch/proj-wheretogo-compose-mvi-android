@@ -1,5 +1,6 @@
 package com.wheretogo.presentation.composable
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,11 +27,16 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.naver.maps.map.NaverMap
+import com.naver.maps.map.overlay.Marker
 import com.wheretogo.domain.model.LatLng
+import com.wheretogo.domain.model.Viewport
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.content.DriveList
 import com.wheretogo.presentation.composable.content.NaverMap
-import com.wheretogo.presentation.feature.setCamera
+import com.wheretogo.presentation.feature.naver.HideOverlayMap
+import com.wheretogo.presentation.feature.naver.rotateCamera
+import com.wheretogo.presentation.feature.naver.setCamera
+import com.wheretogo.presentation.model.toDomainLatLng
 import com.wheretogo.presentation.theme.Gray100
 import com.wheretogo.presentation.theme.hancomMalangFontFamily
 import com.wheretogo.presentation.viewmodel.DriveViewModel
@@ -38,19 +44,20 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltViewModel()) {
-    var visible by remember { mutableStateOf(true) }
-    val journeyInMap = viewModel.journeyGroupInMap.collectAsState()
-    val journeyInList = viewModel.journeyGroupInList.collectAsState()
+    val journeyInMap by viewModel.journeyGroupInMap.collectAsState()
+    val journeyInList by viewModel.journeyGroupInList.collectAsState()
+    val journeyInOverlay by viewModel.journeyGroupInOverlay.collectAsState()
+    val overlayWhenHide by remember { mutableStateOf(HideOverlayMap(null)) }
     var naverMap by remember { mutableStateOf<NaverMap?>(null) }
-
     var camera by remember { mutableStateOf(LatLng()) }
+    var viewport by remember { mutableStateOf(Viewport()) }
+    var location by remember { mutableStateOf(LatLng()) }
+
     val coroutine = rememberCoroutineScope()
     val listState = rememberLazyListState()
     BackHandler {
-        visible = false
         navController.navigateUp()
     }
-
     Column(
         modifier = Modifier
             .fillMaxSize(),
@@ -59,47 +66,52 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
         DriveTopBar()
         Box(modifier = Modifier.fillMaxSize()) {
             Column {
-                Text("${journeyInMap.value.size}", fontSize = 50.sp)
-                Text("${journeyInList.value.size}", fontSize = 50.sp)
+                Text("${journeyInMap.size}", fontSize = 50.sp)
+                Text("${journeyInList.size}", fontSize = 50.sp)
             }
             NaverMap(
-                data = journeyInMap,
+                data = journeyInOverlay,
                 onMapAsync = { map ->
                     naverMap = map
+                    overlayWhenHide.naverMap=map
                 },
                 onLocationMove = { latLng ->
-
+                    location = latLng
                 },
                 onCameraMove = { latLng ->
+                    Log.d("tst2", "onCameraMove ${latLng}")
+                    camera = latLng
                     viewModel.fetchNearByJourneyInList(latLng)
+                    viewModel.fetchNearByJourneyInMap(latLng, viewport)
                 },
-                onViewportChange = { camera, viewport ->
-                    viewModel.fetchNearByJourneyInMap(camera, viewport)
+                onViewportChange = { _, vp ->
+                    viewport = vp
                 },
                 onMarkerClick = { overlay ->
-                    val code = overlay.tag
-                    code?.let {
-                        coroutine.launch {
-                            val position = journeyInMap.value.first() { it.code == code }
-                            naverMap!!.setCamera(position.course.start, 14.0)
-                        }
+                    coroutine.launch {
+                        naverMap?.setCamera((overlay as Marker).position.toDomainLatLng(), 13.0)
                     }
                 }
             )
             Box(modifier = Modifier.align(alignment = Alignment.BottomEnd)) {
                 DriveList(journeyInList, listState = listState) { journey ->
-                    camera = journey.course.start
-                    naverMap?.apply {
-                        if (cameraPosition.bearing != 0.0 || cameraPosition.tilt != 0.0)
-                            setCamera(journey.course.start, 14.0, 0.0, 0.0)
-                        else
-                            setCamera(journey.course.start, 14.0, 90.0, -25.0)
+                    naverMap?.rotateCamera(journey.course.start)
+
+                    if(overlayWhenHide.isEmpty()) {
+                        for (list in journeyInList) {
+                            if (list.code != journey.code) {
+                                journeyInOverlay[list.code]?.apply {
+                                    overlayWhenHide[this.code] = this
+                                }
+                            }
+                        }
+                    }else{
+                        overlayWhenHide.clear()
                     }
                 }
             }
         }
     }
-
 }
 
 @Composable
@@ -123,8 +135,10 @@ fun DriveTopBar() {
 
 @Preview
 @Composable
-fun DriveTopBarPreivew(){
+fun DriveTopBarPreivew() {
     DriveTopBar()
 }
 
+private fun hideOverlayWithout(){
 
+}

@@ -25,7 +25,7 @@ class JourneyRepositoryImpl @Inject constructor(
 ) :
     JourneyRepository {
 
-    override suspend fun getJourneys(size:Int): List<Journey> {
+    override suspend fun getJourneys(size: Int): List<Journey> {
         return journeyDatabase.journeyDao().selectAll(size).map { it.toJourney() }
     }
 
@@ -55,16 +55,18 @@ class JourneyRepositoryImpl @Inject constructor(
             journeyDatabase.journeyDao()
                 .selectInViewPort(minLatitude, maxLatitude, minLongitude, maxLongitude)
         }.map {
-            (if(it.points.isEmpty()) {
+            if (it.points.isEmpty()) {
                 it.copy(
                     pointsDate = System.currentTimeMillis(),
                     points = getPoints(it.course.toCourse()).toLocalLatlngList()
                 ).apply {
                     journeyDatabase.journeyDao().insert(this)
                 }
+            } else {
+                it
+            }.run {
+                this.toJourney()
             }
-            else
-                it).toJourney()
         }
     }
 
