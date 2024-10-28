@@ -10,6 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
@@ -29,11 +30,11 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun NaverMap(
+    modifier: Modifier,
     data: Map<Int,JourneyOverlay>,
     onMapAsync: (NaverMap) -> Unit,
     onLocationMove: (LatLng) -> Unit,
-    onCameraMove: (LatLng) -> Unit,
-    onViewportChange: (LatLng, Viewport) -> Unit,
+    onCameraMove: (LatLng,Viewport) -> Unit,
     onMarkerClick: (Overlay) -> Unit
 ) {
     val context = LocalContext.current
@@ -59,17 +60,13 @@ fun NaverMap(
 
                     addOnCameraIdleListener {
                         if(latestCameraPosition.isNotEqual(cameraPosition.target.toDomainLatLng())){
-                            onCameraMove(this.cameraPosition.target.toDomainLatLng())
                             contentRegion.apply {
-                                onViewportChange(
-                                    cameraPosition.target.toDomainLatLng(),
-                                    Viewport(
-                                        this[0].latitude,
-                                        this[3].latitude,
-                                        this[0].longitude,
-                                        this[3].longitude
-                                    )
-                                )
+                                onCameraMove(cameraPosition.target.toDomainLatLng(),  Viewport(
+                                    this[0].latitude,
+                                    this[3].latitude,
+                                    this[0].longitude,
+                                    this[3].longitude
+                                ))
                             }
                             latestCameraPosition = this.cameraPosition.target.toDomainLatLng()
                         }
@@ -93,15 +90,23 @@ fun NaverMap(
     }
     mapView.getMapAsync {map->
         data.forEach {
-            it.value.pathOverlay.map=map
-            it.value.marker.map=map
-            it.value.marker.setOnClickListener { overlay ->
-                onMarkerClick(overlay)
-                true
+            it.value.pathOverlay.apply {
+                this.map = this.map?:map
+            }
+
+            it.value.marker.apply {
+                this.map = this.map?:map
+
+                if(this.onClickListener == null) {
+                    this.setOnClickListener { overlay ->
+                        onMarkerClick(overlay)
+                        true
+                    }
+                }
             }
         }
     }
-    AndroidView(factory = { mapView })
+    AndroidView(modifier = modifier, factory = { mapView })
 }
 
 

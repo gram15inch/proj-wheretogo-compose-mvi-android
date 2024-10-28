@@ -24,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.naver.maps.map.NaverMap
@@ -34,6 +35,7 @@ import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.content.DriveList
 import com.wheretogo.presentation.composable.content.NaverMap
 import com.wheretogo.presentation.feature.naver.HideOverlayMap
+import com.wheretogo.presentation.feature.naver.hideWithoutItem
 import com.wheretogo.presentation.feature.naver.rotateCamera
 import com.wheretogo.presentation.feature.naver.setCamera
 import com.wheretogo.presentation.model.toDomainLatLng
@@ -46,8 +48,9 @@ import kotlinx.coroutines.launch
 fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltViewModel()) {
     val journeyInMap by viewModel.journeyGroupInMap.collectAsState()
     val journeyInList by viewModel.journeyGroupInList.collectAsState()
-    val journeyInOverlay by viewModel.journeyGroupInOverlay.collectAsState()
-    val overlayWhenHide by remember { mutableStateOf(HideOverlayMap(null)) }
+    val journeyOverlayMap by viewModel.journeyOverlayGroup.collectAsState()
+    val isRefreshOverlay by viewModel.isRefreshOverlay.collectAsState()
+    val hiddenOverlayMap by remember { mutableStateOf(HideOverlayMap()) }
     var naverMap by remember { mutableStateOf<NaverMap?>(null) }
     var camera by remember { mutableStateOf(LatLng()) }
     var viewport by remember { mutableStateOf(Viewport()) }
@@ -58,6 +61,11 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
     BackHandler {
         navController.navigateUp()
     }
+    if (isRefreshOverlay) {
+        hiddenOverlayMap.clear()
+        viewModel.setRefresh(false)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize(),
@@ -65,50 +73,41 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
     ) {
         DriveTopBar()
         Box(modifier = Modifier.fillMaxSize()) {
-            Column {
+            Column(modifier = Modifier.zIndex(1f)) {
                 Text("${journeyInMap.size}", fontSize = 50.sp)
                 Text("${journeyInList.size}", fontSize = 50.sp)
             }
             NaverMap(
-                data = journeyInOverlay,
+                modifier = Modifier.zIndex(0f),
+                data = journeyOverlayMap,
                 onMapAsync = { map ->
                     naverMap = map
-                    overlayWhenHide.naverMap=map
                 },
                 onLocationMove = { latLng ->
                     location = latLng
                 },
-                onCameraMove = { latLng ->
+                onCameraMove = { latLng, vp ->
                     Log.d("tst2", "onCameraMove ${latLng}")
                     camera = latLng
-                    viewModel.fetchNearByJourneyInList(latLng)
-                    viewModel.fetchNearByJourneyInMap(latLng, viewport)
-                },
-                onViewportChange = { _, vp ->
                     viewport = vp
+                    viewModel.fetchNearByJourneyInMap(latLng, viewport)
+                    viewModel.fetchNearByJourneyInList(latLng)
                 },
                 onMarkerClick = { overlay ->
                     coroutine.launch {
-                        naverMap?.setCamera((overlay as Marker).position.toDomainLatLng(), 13.0)
+                        val marker = overlay as Marker
+                        naverMap?.setCamera(marker.position.toDomainLatLng(), 11.0)
+                        hiddenOverlayMap.hideWithoutItem(marker.tag as Int, journeyOverlayMap)
                     }
                 }
             )
             Box(modifier = Modifier.align(alignment = Alignment.BottomEnd)) {
-                DriveList(journeyInList, listState = listState) { journey ->
-                    naverMap?.rotateCamera(journey.course.start)
-
-                    if(overlayWhenHide.isEmpty()) {
-                        for (list in journeyInList) {
-                            if (list.code != journey.code) {
-                                journeyInOverlay[list.code]?.apply {
-                                    overlayWhenHide[this.code] = this
-                                }
-                            }
-                        }
-                    }else{
-                        overlayWhenHide.clear()
-                    }
-                }
+                DriveList(data = journeyInList,
+                    listState = listState,
+                    onItemClick = { selectedItem ->
+                        naverMap?.rotateCamera(selectedItem.course.start)
+                        hiddenOverlayMap.hideWithoutItem(selectedItem.code, journeyOverlayMap)
+                    })
             }
         }
     }
@@ -137,8 +136,4 @@ fun DriveTopBar() {
 @Composable
 fun DriveTopBarPreivew() {
     DriveTopBar()
-}
-
-private fun hideOverlayWithout(){
-
 }

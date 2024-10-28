@@ -22,18 +22,28 @@ class DriveViewModel @Inject constructor(
     private val getJourneyUseCase: GetJourneyUseCase,
     private val getNearByJourneyUseCase: GetNearByJourneyUseCase
 ) : ViewModel() {
-    private val _journeyGroupInMap = MutableStateFlow<Set<Journey>>(emptySet())
-    private val _journeyGroupInList = MutableStateFlow<List<Journey>>(emptyList())
-    val journeyGroupInOverlay = MutableStateFlow<MutableMap<Int,JourneyOverlay>>(mutableMapOf())
-    val journeyGroupInMap: StateFlow<Set<Journey>> get() = _journeyGroupInMap
-    val journeyGroupInList: StateFlow<List<Journey>> get() = _journeyGroupInList
+    private val _journeyGroupInMap   = MutableStateFlow<Set<Journey>>(emptySet())
+    private val _journeyGroupInList  = MutableStateFlow<List<Journey>>(emptyList())
+    private val _journeyOverlayGroup = MutableStateFlow<MutableMap<Int,JourneyOverlay>>(mutableMapOf())
+    private val _isRefreshOverlay    = MutableStateFlow<Boolean>(false)
+
+    val journeyGroupInMap   : StateFlow<Set<Journey>> = _journeyGroupInMap
+    val journeyGroupInList  : StateFlow<List<Journey>> = _journeyGroupInList
+    val journeyOverlayGroup : StateFlow<MutableMap<Int,JourneyOverlay>> = _journeyOverlayGroup
+    val isRefreshOverlay    : StateFlow<Boolean> = _isRefreshOverlay
 
     init{
         viewModelScope.launch {
-            journeyGroupInMap.collect{
-                Log.d("tst2","collect ${journeyGroupInMap.value.size}")
-                it.forEach {
-                    journeyGroupInOverlay.value.putIfAbsent(it.code,getJourneyOverlay(it) )
+            launch {
+                journeyGroupInMap.collect{
+                    it.forEach {
+                        journeyOverlayGroup.value.putIfAbsent(it.code,getJourneyOverlay(it) )
+                    }
+                }
+            }
+            launch {
+                journeyGroupInList.collect(){
+                    _isRefreshOverlay.value=true
                 }
             }
         }
@@ -62,6 +72,12 @@ class DriveViewModel @Inject constructor(
     fun fetchNearByJourneyInList(latLng: LatLng) {
         viewModelScope.launch {
             _journeyGroupInList.value = getNearByJourneyUseCase.byDistance(latLng,1500)
+        }
+    }
+
+    fun setRefresh(bool:Boolean){
+        viewModelScope.launch {
+            _isRefreshOverlay.value = bool
         }
     }
 }

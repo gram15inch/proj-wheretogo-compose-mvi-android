@@ -8,7 +8,7 @@ import com.wheretogo.domain.model.Journey
 import com.wheretogo.presentation.model.JourneyOverlay
 import com.wheretogo.presentation.model.toNaver
 
-fun NaverMap.addJourneyOverlay(item: Journey, onMarkerClick: (Overlay) -> Unit):JourneyOverlay{
+fun NaverMap.addJourneyOverlay(item: Journey, onMarkerClick: (Overlay) -> Unit): JourneyOverlay {
     val naverPoints = item.points.toNaver()
     return JourneyOverlay(
         item.code,
@@ -24,13 +24,13 @@ fun NaverMap.addJourneyOverlay(item: Journey, onMarkerClick: (Overlay) -> Unit):
         PathOverlay().apply {
             coords = naverPoints
             map = this@addJourneyOverlay
-            tag= item.code
+            tag = item.code
         }
     )
 }
 
 
-fun getJourneyOverlay(item: Journey):JourneyOverlay{
+fun getJourneyOverlay(item: Journey): JourneyOverlay {
     val naverPoints = item.points.toNaver()
     return JourneyOverlay(
         item.code,
@@ -41,18 +41,31 @@ fun getJourneyOverlay(item: Journey):JourneyOverlay{
         },
         PathOverlay().apply {
             coords = naverPoints
-            tag= item.code
+            tag = item.code
             width = 18
             outlineWidth = 3
         }
     )
 }
 
+fun HideOverlayMap.hideWithoutItem(itemCode: Int, allItems: MutableMap<Int, JourneyOverlay>) {
+    if (this.isEmpty()) {
+        for (itemInAll in allItems) {
+            if (itemInAll.value.code != itemCode) {
+                allItems[itemInAll.value.code]?.let { hiddenItem ->
+                    this[hiddenItem.code] = hiddenItem
+                }
+            }
+        }
+    } else {
+        this.clear()
+    }
+}
+
 
 class HideOverlayMap(
-    var naverMap: NaverMap?,
-    private val innerMap: MutableMap<Int,JourneyOverlay> = mutableMapOf()
-) : MutableMap<Int, JourneyOverlay>by innerMap {
+    private val innerMap: MutableMap<Int, JourneyOverlay> = mutableMapOf()
+) : MutableMap<Int, JourneyOverlay> by innerMap {
 
     override fun put(key: Int, value: JourneyOverlay): JourneyOverlay? {
         hide(value)
@@ -76,19 +89,11 @@ class HideOverlayMap(
     private fun show(element: JourneyOverlay) {
         element.marker.isVisible = true
         element.pathOverlay.isVisible = true
-        naverMap?.apply {
-            element.marker.map = this
-            element.pathOverlay.map = this
-        }
     }
 
     private fun hide(element: JourneyOverlay) {
         element.marker.isVisible = false
         element.pathOverlay.isVisible = false
-        naverMap?.let {
-            element.marker.map = it
-            element.pathOverlay.map = it
-        }
     }
 }
 
