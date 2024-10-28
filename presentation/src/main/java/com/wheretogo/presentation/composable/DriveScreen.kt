@@ -35,7 +35,7 @@ import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.content.DriveList
 import com.wheretogo.presentation.composable.content.NaverMap
 import com.wheretogo.presentation.feature.naver.HideOverlayMap
-import com.wheretogo.presentation.feature.naver.hideWithoutItem
+import com.wheretogo.presentation.feature.naver.hideOverlayWithoutItem
 import com.wheretogo.presentation.feature.naver.rotateCamera
 import com.wheretogo.presentation.feature.naver.setCamera
 import com.wheretogo.presentation.model.toDomainLatLng
@@ -46,8 +46,8 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltViewModel()) {
-    val journeyInMap by viewModel.journeyGroupInMap.collectAsState()
-    val journeyInList by viewModel.journeyGroupInList.collectAsState()
+    val journeyInViewport by viewModel.journeyGroupInViewport.collectAsState()
+    val journeyGroup by viewModel.journeyGroup.collectAsState()
     val journeyOverlayMap by viewModel.journeyOverlayGroup.collectAsState()
     val isRefreshOverlay by viewModel.isRefreshOverlay.collectAsState()
     val hiddenOverlayMap by remember { mutableStateOf(HideOverlayMap()) }
@@ -63,7 +63,7 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
     }
     if (isRefreshOverlay) {
         hiddenOverlayMap.clear()
-        viewModel.setRefresh(false)
+        viewModel.refresh()
     }
 
     Column(
@@ -74,8 +74,8 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
         DriveTopBar()
         Box(modifier = Modifier.fillMaxSize()) {
             Column(modifier = Modifier.zIndex(1f)) {
-                Text("${journeyInMap.size}", fontSize = 50.sp)
-                Text("${journeyInList.size}", fontSize = 50.sp)
+                Text("${journeyInViewport.size}", fontSize = 50.sp)
+                Text("${journeyGroup.size}", fontSize = 50.sp)
             }
             NaverMap(
                 modifier = Modifier.zIndex(0f),
@@ -97,16 +97,18 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
                     coroutine.launch {
                         val marker = overlay as Marker
                         naverMap?.setCamera(marker.position.toDomainLatLng(), 11.0)
-                        hiddenOverlayMap.hideWithoutItem(marker.tag as Int, journeyOverlayMap)
+                        hiddenOverlayMap.hideOverlayWithoutItem(marker.tag as Int, journeyOverlayMap)
+                        viewModel.hideJourneyWithoutItem(marker.tag as Int)
                     }
                 }
             )
             Box(modifier = Modifier.align(alignment = Alignment.BottomEnd)) {
-                DriveList(data = journeyInList,
+                DriveList(data = journeyGroup,
                     listState = listState,
                     onItemClick = { selectedItem ->
                         naverMap?.rotateCamera(selectedItem.course.start)
-                        hiddenOverlayMap.hideWithoutItem(selectedItem.code, journeyOverlayMap)
+                        hiddenOverlayMap.hideOverlayWithoutItem(selectedItem.code, journeyOverlayMap)
+                        viewModel.hideJourneyWithoutItem(selectedItem.code)
                     })
             }
         }

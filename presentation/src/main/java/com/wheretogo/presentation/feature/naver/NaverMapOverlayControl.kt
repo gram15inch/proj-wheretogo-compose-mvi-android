@@ -48,7 +48,7 @@ fun getJourneyOverlay(item: Journey): JourneyOverlay {
     )
 }
 
-fun HideOverlayMap.hideWithoutItem(itemCode: Int, allItems: MutableMap<Int, JourneyOverlay>) {
+fun HideOverlayMap.hideOverlayWithoutItem(itemCode: Int, allItems: MutableMap<Int, JourneyOverlay>) {
     if (this.isEmpty()) {
         for (itemInAll in allItems) {
             if (itemInAll.value.code != itemCode) {

@@ -1,6 +1,5 @@
 package com.wheretogo.presentation.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wheretogo.domain.model.Course
@@ -22,35 +21,37 @@ class DriveViewModel @Inject constructor(
     private val getJourneyUseCase: GetJourneyUseCase,
     private val getNearByJourneyUseCase: GetNearByJourneyUseCase
 ) : ViewModel() {
-    private val _journeyGroupInMap   = MutableStateFlow<Set<Journey>>(emptySet())
-    private val _journeyGroupInList  = MutableStateFlow<List<Journey>>(emptyList())
+    private val _journeyGroupInViewport   = MutableStateFlow<Set<Journey>>(emptySet())
+    private val _journeyGroupInCenter  = MutableStateFlow<List<Journey>>(emptyList())
+    private val _journeyGroup  = MutableStateFlow<List<Journey>>(emptyList())
     private val _journeyOverlayGroup = MutableStateFlow<MutableMap<Int,JourneyOverlay>>(mutableMapOf())
     private val _isRefreshOverlay    = MutableStateFlow<Boolean>(false)
 
-    val journeyGroupInMap   : StateFlow<Set<Journey>> = _journeyGroupInMap
-    val journeyGroupInList  : StateFlow<List<Journey>> = _journeyGroupInList
+    val journeyGroupInViewport   : StateFlow<Set<Journey>> = _journeyGroupInViewport
+    val journeyGroup  : StateFlow<List<Journey>> = _journeyGroup
     val journeyOverlayGroup : StateFlow<MutableMap<Int,JourneyOverlay>> = _journeyOverlayGroup
     val isRefreshOverlay    : StateFlow<Boolean> = _isRefreshOverlay
 
-    init{
+    init {
         viewModelScope.launch {
             launch {
-                journeyGroupInMap.collect{
+                journeyGroupInViewport.collect {
                     it.forEach {
-                        journeyOverlayGroup.value.putIfAbsent(it.code,getJourneyOverlay(it) )
+                        journeyOverlayGroup.value.putIfAbsent(it.code, getJourneyOverlay(it))
                     }
                 }
             }
             launch {
-                journeyGroupInList.collect(){
-                    _isRefreshOverlay.value=true
+                _journeyGroupInCenter.collect {
+                    _isRefreshOverlay.value = true
+                    _journeyGroup.value=it
                 }
             }
         }
     }
     fun refreshJourney(course: Course) {
         viewModelScope.launch {
-            _journeyGroupInMap.apply {
+            _journeyGroupInViewport.apply {
                 this.value += getJourneyUseCase(course)
             }
         }
@@ -58,26 +59,36 @@ class DriveViewModel @Inject constructor(
 
     fun fetchNearByJourneyInMap(current: LatLng, distance: Int) {
         viewModelScope.launch {
-            _journeyGroupInMap.value += getNearByJourneyUseCase.byDistance(current, distance)
+            _journeyGroupInViewport.value += getNearByJourneyUseCase.byDistance(current, distance)
         }
     }
 
     fun fetchNearByJourneyInMap(current: LatLng, viewPort: Viewport) {
         viewModelScope.launch {
-            _journeyGroupInMap.value += getNearByJourneyUseCase.byViewport(current, viewPort)
+            _journeyGroupInViewport.value += getNearByJourneyUseCase.byViewport(current, viewPort)
                 .sortedBy { it.code }
         }
     }
 
     fun fetchNearByJourneyInList(latLng: LatLng) {
         viewModelScope.launch {
-            _journeyGroupInList.value = getNearByJourneyUseCase.byDistance(latLng,1500)
+            _journeyGroupInCenter.value = getNearByJourneyUseCase.byDistance(latLng,1500)
         }
     }
 
-    fun setRefresh(bool:Boolean){
+    fun refresh(){
         viewModelScope.launch {
-            _isRefreshOverlay.value = bool
+            _journeyGroup.value = _journeyGroupInCenter.value
+            _isRefreshOverlay.value = false
+        }
+    }
+
+    fun hideJourneyWithoutItem(itemCode:Int){
+        viewModelScope.launch {
+            if(_journeyGroup.value.size==1 && _journeyGroup.value.first().code==itemCode)
+                refresh()
+            else
+                _journeyGroup.value = _journeyGroup.value.filter { it.code == itemCode }
         }
     }
 }
