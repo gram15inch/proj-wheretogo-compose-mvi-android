@@ -80,6 +80,7 @@ dependencies {
     implementation(platform(Firebase.FIREBASE_BOM))
     implementation(Firebase.FIREBASE_DATABASE)
     implementation(Firebase.FIREBASE_FIRESTORE_KTX)
+    implementation(Firebase.FIREBASE_STORAGE_KTX)
 }
 
 fun getAppKey(propertyKey: String): String {

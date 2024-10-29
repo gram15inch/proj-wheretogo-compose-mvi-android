@@ -141,6 +141,7 @@ dependencies {
     implementation(Firebase.FIREBASE_CRASHLYTICS)
     implementation(Firebase.FIREBASE_ANALYTICS)
     implementation(Firebase.FIREBASE_FIRESTORE_KTX)
+    implementation(Firebase.FIREBASE_STORAGE_KTX)
 
 
 }
