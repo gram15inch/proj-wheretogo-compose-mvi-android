@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.min
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.wheretogo.presentation.composable.test.ImageTestScreen
 import com.wheretogo.presentation.theme.WhereTogoTheme
 import com.wheretogo.presentation.theme.White100
 
@@ -37,6 +38,7 @@ fun MainScreen() {
                 NavHost(navController = navController, startDestination = "drive") {
                     composable("home") { HomeScreen(displayMaxWidth, navController) }
                     composable("drive") { DriveScreen(navController) }
+                    composable("test") { ImageTestScreen() }
                 }
             }
         }

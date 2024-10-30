@@ -19,16 +19,19 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.wheretogo.domain.model.Course
 import junit.framework.TestCase.assertEquals
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
 import java.io.InputStream
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-class FirestoreTest {
+class FirebaseTest {
 
     companion object {
         @JvmStatic
@@ -84,9 +87,18 @@ class FirestoreTest {
     @Test
     fun measureFireStorageInsertTime()= runBlocking{
         val startTime = System.nanoTime()
-       val context: Context = ApplicationProvider.getApplicationContext()
+           val context: Context = ApplicationProvider.getApplicationContext()
 
-        uploadImageFromAsset()
+        val list = listOf(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9)
+        for(item in list) {
+            cacheScaleImageFromAsset("photo_original", item)
+            delay(100)
+        }
+        for(item in list) {
+            cacheScaleImageFromAsset("photo_opt", item)
+            delay(100)
+        }
+
         Log.d("tst3","Data fetch time: ${(System.nanoTime() - startTime) / 1_000_000} ms")
         assertEquals("com.dhkim139.wheretogo", context.packageName)
     }
@@ -106,7 +118,7 @@ class FirestoreTest {
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
         val data = outputStream.toByteArray()
 
-        upload(data)
+        upload(data,"photo_drawable.jpg")
     }
 
     suspend fun uploadImageFromAsset() {
@@ -121,11 +133,57 @@ class FirestoreTest {
             outputStream.write(buffer, 0, length)
         }
         val data = outputStream.toByteArray()
-       upload(data)
+       upload(data,"photo_asset.jpg")
     }
 
-    suspend fun upload(data: ByteArray){
-        val storageRef = FirebaseStorage.getInstance().reference.child("FromAndroid/original.jpg")
+    suspend fun uploadCompressImageFromAsset(source:String, compress:Int) {
+        val context: Context = ApplicationProvider.getApplicationContext()
+
+        val assetManager = context.assets
+        val inputStream: InputStream = assetManager.open("$source.jpg")
+        val bitmap = BitmapFactory.decodeStream(inputStream)
+        inputStream.close()
+
+        val outputStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, compress, outputStream)
+        val compressedData = outputStream.toByteArray()
+        upload(compressedData, "${source}_to_comp_$compress.jpg")
+    }
+
+    suspend fun uploadScaleImageFormAsset(source: String, scale:Double){
+        val context: Context = ApplicationProvider.getApplicationContext()
+
+        val assetManager = context.assets
+        val inputStream: InputStream = assetManager.open("$source.jpg")
+        val bitmap = BitmapFactory.decodeStream(inputStream)
+        val width = (bitmap.width * scale).toInt()
+        val height = (bitmap.height * scale).toInt()
+        val compress  = 50
+        val resizedBitmap = Bitmap.createScaledBitmap(bitmap, width, height, true)
+        val outputStream = ByteArrayOutputStream()
+        resizedBitmap.compress(Bitmap.CompressFormat.JPEG, compress, outputStream)
+        val scaledData = outputStream.toByteArray()
+        upload(scaledData, "${source}_to_scale_${(scale*10).toInt()}_comp_$compress.jpg")
+    }
+
+    suspend fun cacheScaleImageFromAsset(source: String, scale:Double){
+        val context: Context = ApplicationProvider.getApplicationContext()
+
+        val assetManager = context.assets
+        val inputStream: InputStream = assetManager.open("$source.jpg")
+        val bitmap = BitmapFactory.decodeStream(inputStream)
+        val width = (bitmap.width * scale).toInt()
+        val height = (bitmap.height * scale).toInt()
+        val compress  = 50
+        val resizedBitmap = Bitmap.createScaledBitmap(bitmap, width, height, true)
+        val outputStream = ByteArrayOutputStream()
+        resizedBitmap.compress(Bitmap.CompressFormat.JPEG, compress, outputStream)
+        val scaledData = outputStream.toByteArray()
+        saveCache(scaledData,"thumbnails/${source}_to_scale_${(scale*10).toInt()}_comp_$compress.jpg")
+    }
+
+    suspend fun upload(data: ByteArray,fileName:String){
+        val storageRef = FirebaseStorage.getInstance().reference.child("FromAndroid/$fileName")
         suspendCancellableCoroutine{ continuation ->
             storageRef.putBytes(data)
                 .addOnSuccessListener {
@@ -138,4 +196,15 @@ class FirestoreTest {
                 }
         }
     }
+
+    fun saveCache(data: ByteArray, fileName: String){
+        val context: Context = ApplicationProvider.getApplicationContext()
+        val localFile = File(context.cacheDir, fileName)
+
+        FileOutputStream(localFile).use { outputStream ->
+            outputStream.write(data)
+        }
+
+    }
+
 }
