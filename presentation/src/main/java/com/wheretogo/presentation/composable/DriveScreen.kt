@@ -1,6 +1,5 @@
 package com.wheretogo.presentation.composable
 
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,6 +28,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.overlay.Marker
+import com.wheretogo.domain.model.CheckPoint
 import com.wheretogo.domain.model.LatLng
 import com.wheretogo.domain.model.Viewport
 import com.wheretogo.presentation.R
@@ -46,11 +46,12 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltViewModel()) {
-    val journeyInViewport by viewModel.journeyGroupInViewport.collectAsState()
     val journeyGroup by viewModel.journeyGroup.collectAsState()
-    val journeyOverlayMap by viewModel.journeyOverlayGroup.collectAsState()
-    val isRefreshOverlay by viewModel.isRefreshOverlay.collectAsState()
+    val visibleOverlayMap by viewModel.visibleOverlayGroup.collectAsState()
+    val isResetOverlay by viewModel.isRefreshOverlay.collectAsState()
     val hiddenOverlayMap by remember { mutableStateOf(HideOverlayMap()) }
+    var hiddenCheckPointOverlay by remember { mutableStateOf(emptyList<CheckPoint>()) }
+
     var naverMap by remember { mutableStateOf<NaverMap?>(null) }
     var camera by remember { mutableStateOf(LatLng()) }
     var viewport by remember { mutableStateOf(Viewport()) }
@@ -61,11 +62,14 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
     BackHandler {
         navController.navigateUp()
     }
-    if (isRefreshOverlay) {
+    if (isResetOverlay) {
         hiddenOverlayMap.clear()
-        viewModel.refresh()
+        viewModel.resetJourneyGroup()
+        hiddenCheckPointOverlay.forEach {
+            viewModel.hideCheckPointOverlay(it)
+        }
+        hiddenCheckPointOverlay = emptyList()
     }
-
     Column(
         modifier = Modifier
             .fillMaxSize(),
@@ -74,12 +78,12 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
         DriveTopBar()
         Box(modifier = Modifier.fillMaxSize()) {
             Column(modifier = Modifier.zIndex(1f)) {
-                Text("${journeyInViewport.size}", fontSize = 50.sp)
-                Text("${journeyGroup.size}", fontSize = 50.sp)
+                Text("${visibleOverlayMap.size}", fontSize = 50.sp)
+                Text("${hiddenOverlayMap.size}", fontSize = 50.sp)
             }
             NaverMap(
                 modifier = Modifier.zIndex(0f),
-                data = journeyOverlayMap,
+                overlayMap = visibleOverlayMap,
                 onMapAsync = { map ->
                     naverMap = map
                 },
@@ -87,7 +91,6 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
                     location = latLng
                 },
                 onCameraMove = { latLng, vp ->
-                    Log.d("tst2", "onCameraMove ${latLng}")
                     camera = latLng
                     viewport = vp
                     viewModel.fetchNearByJourneyInMap(latLng, viewport)
@@ -97,7 +100,7 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
                     coroutine.launch {
                         val marker = overlay as Marker
                         naverMap?.setCamera(marker.position.toDomainLatLng(), 11.0)
-                        hiddenOverlayMap.hideOverlayWithoutItem(marker.tag as Int, journeyOverlayMap)
+                        hiddenOverlayMap.hideOverlayWithoutItem(marker.tag as Int, visibleOverlayMap)
                         viewModel.hideJourneyWithoutItem(marker.tag as Int)
                     }
                 }
@@ -107,9 +110,22 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
                     listState = listState,
                     onItemClick = { selectedItem ->
                         naverMap?.rotateCamera(selectedItem.course.start)
-                        hiddenOverlayMap.hideOverlayWithoutItem(selectedItem.code, journeyOverlayMap)
+                        hiddenOverlayMap.hideOverlayWithoutItem(selectedItem.code, visibleOverlayMap)
                         viewModel.hideJourneyWithoutItem(selectedItem.code)
-                    })
+
+                        if(hiddenCheckPointOverlay.isEmpty()){
+                            for(item in selectedItem.checkPoints)
+                                viewModel.showCheckPointOverlay(item)
+                            hiddenCheckPointOverlay = selectedItem.checkPoints
+                        }else{
+                            hiddenCheckPointOverlay.forEach {
+                                viewModel.hideCheckPointOverlay(it)
+                            }
+                            hiddenCheckPointOverlay = emptyList()
+                        }
+
+                    }
+                )
             }
         }
     }

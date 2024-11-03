@@ -1,16 +1,27 @@
 package com.wheretogo.presentation.feature.naver
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.BitmapShader
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.RectF
+import android.graphics.Shader
 import com.naver.maps.map.NaverMap
+import com.naver.maps.map.overlay.Align
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.Overlay
+import com.naver.maps.map.overlay.OverlayImage
 import com.naver.maps.map.overlay.PathOverlay
+import com.wheretogo.domain.model.CheckPoint
 import com.wheretogo.domain.model.Journey
-import com.wheretogo.presentation.model.JourneyOverlay
+import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.toNaver
 
-fun NaverMap.addJourneyOverlay(item: Journey, onMarkerClick: (Overlay) -> Unit): JourneyOverlay {
+fun NaverMap.addJourneyOverlay(item: Journey, onMarkerClick: (Overlay) -> Unit): MapOverlay {
     val naverPoints = item.points.toNaver()
-    return JourneyOverlay(
+    return MapOverlay(
         item.code,
         Marker().apply {
             position = naverPoints[0] // todo 인덱스 에러 처리
@@ -30,13 +41,17 @@ fun NaverMap.addJourneyOverlay(item: Journey, onMarkerClick: (Overlay) -> Unit):
 }
 
 
-fun getJourneyOverlay(item: Journey): JourneyOverlay {
+fun getMapOverlay(item: Journey): MapOverlay {
     val naverPoints = item.points.toNaver()
-    return JourneyOverlay(
+    return MapOverlay(
         item.code,
         Marker().apply {
-            this.captionText = item.code.toString()
+            this.captionText = "운전연수 코스 1"
+            this.setCaptionAligns(Align.Top,Align.Right)
+            this.captionOffset=20
+            this.captionTextSize=16f
             position = naverPoints[0]
+            isHideCollidedMarkers = true
             tag = item.code
         },
         PathOverlay().apply {
@@ -48,7 +63,66 @@ fun getJourneyOverlay(item: Journey): JourneyOverlay {
     )
 }
 
-fun HideOverlayMap.hideOverlayWithoutItem(itemCode: Int, allItems: MutableMap<Int, JourneyOverlay>) {
+fun getMapOverlay(item: CheckPoint):MapOverlay{
+
+    return MapOverlay(
+        item.id,
+        Marker().apply {
+            this.captionText = "\uD83D\uDE03 주위가 조용해요."
+            this.setCaptionAligns(Align.Top,Align.Right)
+            this.captionOffset=20
+            this.captionTextSize=16f
+            position = item.latLng.toNaver()
+            val bitmap= BitmapFactory.decodeFile("/data/user/0/com.dhkim139.wheretogo/cache/thumbnails/photo_original_150x200_70.jpg")
+            isHideCollidedMarkers = true
+            icon = OverlayImage.fromBitmap(getRoundedRectWithShadowBitmap(bitmap, 30f,8f,Color.BLACK,Color.WHITE))
+            tag = item.id
+        },
+        PathOverlay()
+    )
+}
+
+
+fun getRoundedRectWithShadowBitmap(
+    bitmap: Bitmap,
+    cornerRadius: Float,
+    shadowRadius: Float,
+    shadowColor: Int,
+    backgroundColor: Int
+): Bitmap {
+    val shadowOffset = shadowRadius * 2
+    val width = bitmap.width + shadowOffset.toInt()
+    val height = bitmap.height + shadowOffset.toInt()
+
+    val output = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(output)
+
+    val shadowPaint = Paint().apply {
+        color = backgroundColor
+        setShadowLayer(shadowRadius, 0f, 0f, shadowColor)
+        isAntiAlias = true
+    }
+
+    val rect = RectF(
+        shadowRadius,
+        shadowRadius,
+        bitmap.width.toFloat() + shadowRadius,
+        bitmap.height.toFloat() + shadowRadius
+    )
+
+    canvas.drawRoundRect(rect, cornerRadius, cornerRadius, shadowPaint)
+
+    val bitmapPaint = Paint().apply {
+        isAntiAlias = true
+        shader = BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+    }
+
+    canvas.drawRoundRect(rect, cornerRadius, cornerRadius, bitmapPaint)
+
+    return output
+}
+
+fun HideOverlayMap.hideOverlayWithoutItem(itemCode: Int, allItems: MutableMap<Int, MapOverlay>) {
     if (this.isEmpty()) {
         for (itemInAll in allItems) {
             if (itemInAll.value.code != itemCode) {
@@ -64,15 +138,15 @@ fun HideOverlayMap.hideOverlayWithoutItem(itemCode: Int, allItems: MutableMap<In
 
 
 class HideOverlayMap(
-    private val innerMap: MutableMap<Int, JourneyOverlay> = mutableMapOf()
-) : MutableMap<Int, JourneyOverlay> by innerMap {
+    private val innerMap: MutableMap<Int, MapOverlay> = mutableMapOf()
+) : MutableMap<Int, MapOverlay> by innerMap {
 
-    override fun put(key: Int, value: JourneyOverlay): JourneyOverlay? {
+    override fun put(key: Int, value: MapOverlay): MapOverlay? {
         hide(value)
         return innerMap.put(key, value)
     }
 
-    override fun remove(key: Int): JourneyOverlay? {
+    override fun remove(key: Int): MapOverlay? {
         innerMap[key]?.let {
             show(it)
         }
@@ -86,12 +160,12 @@ class HideOverlayMap(
         innerMap.clear()
     }
 
-    private fun show(element: JourneyOverlay) {
+    private fun show(element: MapOverlay) {
         element.marker.isVisible = true
         element.pathOverlay.isVisible = true
     }
 
-    private fun hide(element: JourneyOverlay) {
+    private fun hide(element: MapOverlay) {
         element.marker.isVisible = false
         element.pathOverlay.isVisible = false
     }

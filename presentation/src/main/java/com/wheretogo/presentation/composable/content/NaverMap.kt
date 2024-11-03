@@ -24,14 +24,14 @@ import com.naver.maps.map.overlay.Overlay
 import com.naver.maps.map.util.FusedLocationSource
 import com.wheretogo.domain.model.LatLng
 import com.wheretogo.domain.model.Viewport
-import com.wheretogo.presentation.model.JourneyOverlay
+import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.toDomainLatLng
 import kotlinx.coroutines.launch
 
 @Composable
 fun NaverMap(
     modifier: Modifier,
-    data: Map<Int,JourneyOverlay>,
+    overlayMap: Map<Int,MapOverlay>,
     onMapAsync: (NaverMap) -> Unit,
     onLocationMove: (LatLng) -> Unit,
     onCameraMove: (LatLng,Viewport) -> Unit,
@@ -89,22 +89,27 @@ fun NaverMap(
         }
     }
     mapView.getMapAsync {map->
-        data.forEach {
-            it.value.pathOverlay.apply {
-                this.map = this.map?:map
-            }
+        coroutineScope.launch {
+            launch {
+                overlayMap.forEach {
+                    it.value.pathOverlay.apply {
+                        if(coords.isNotEmpty())
+                            this.map = this.map?:map
+                    }
 
-            it.value.marker.apply {
-                this.map = this.map?:map
-
-                if(this.onClickListener == null) {
-                    this.setOnClickListener { overlay ->
-                        onMarkerClick(overlay)
-                        true
+                    it.value.marker.apply {
+                        this.map = this.map?:map
+                        if(this.onClickListener == null) {
+                            this.setOnClickListener { overlay ->
+                                onMarkerClick(overlay)
+                                true
+                            }
+                        }
                     }
                 }
             }
         }
+
     }
     AndroidView(modifier = modifier, factory = { mapView })
 }

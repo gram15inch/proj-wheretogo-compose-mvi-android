@@ -14,8 +14,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
            MainScreen()
-        }
 
+        }
+        //CoroutineScope(Dispatchers.IO).launch { createDummy(this@MainActivity) }
         locationRequest{ }
     }
 }

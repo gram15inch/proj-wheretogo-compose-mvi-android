@@ -34,3 +34,6 @@ fun List<LatLng>.toKakao(): List<KakaoLatLng> {
 fun NaverLatLng.toDomainLatLng(): LatLng {
     return LatLng(latitude, longitude)
 }
+fun LatLng.toNaver(): NaverLatLng {
+    return NaverLatLng(latitude, longitude)
+}
