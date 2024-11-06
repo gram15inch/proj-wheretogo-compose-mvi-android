@@ -2,6 +2,7 @@ package com.wheretogo.presentation.composable.content
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -31,7 +32,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun NaverMap(
     modifier: Modifier,
-    overlayMap: Map<Int,MapOverlay>,
+    overlayMap: List<MapOverlay>,
     onMapAsync: (NaverMap) -> Unit,
     onLocationMove: (LatLng) -> Unit,
     onCameraMove: (LatLng,Viewport) -> Unit,
@@ -92,12 +93,12 @@ fun NaverMap(
         coroutineScope.launch {
             launch {
                 overlayMap.forEach {
-                    it.value.pathOverlay.apply {
+                    it.pathOverlay.apply {
                         if(coords.isNotEmpty())
                             this.map = this.map?:map
                     }
 
-                    it.value.marker.apply {
+                    it.marker.apply {
                         this.map = this.map?:map
                         if(this.onClickListener == null) {
                             this.setOnClickListener { overlay ->

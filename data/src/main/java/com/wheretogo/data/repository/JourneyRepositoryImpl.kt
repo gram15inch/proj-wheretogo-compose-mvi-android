@@ -10,6 +10,7 @@ import com.wheretogo.data.model.toJourney
 import com.wheretogo.data.model.toLocalCourse
 import com.wheretogo.data.model.toLocalJourney
 import com.wheretogo.data.model.toLocalLatlngList
+import com.wheretogo.domain.model.CheckPoint
 import com.wheretogo.domain.model.Course
 import com.wheretogo.domain.model.Journey
 import com.wheretogo.domain.model.LatLng
@@ -65,7 +66,12 @@ class JourneyRepositoryImpl @Inject constructor(
             } else {
                 it
             }.run {
-                this.toJourney()
+                this.toJourney().copy(checkPoints = listOf(
+                    CheckPoint(id=101,latLng =LatLng(latitude=37.2763159, longitude=127.115934) ),
+                    CheckPoint(id=102,latLng =  LatLng(latitude=37.2852041, longitude=127.1056534)),
+                    CheckPoint(id=103,latLng = LatLng(latitude=37.2733587, longitude=127.1056238)),
+                    CheckPoint(id=104,latLng =LatLng(latitude=37.2753486, longitude=127.1139649) ),
+                ))
             }
         }
     }
