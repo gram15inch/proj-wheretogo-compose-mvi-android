@@ -2,13 +2,10 @@ package com.wheretogo.presentation.composable
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -27,7 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -38,12 +34,7 @@ import com.naver.maps.map.overlay.Marker
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.content.DriveList
 import com.wheretogo.presentation.composable.content.NaverMap
-import com.wheretogo.presentation.feature.naver.rotateCamera
-import com.wheretogo.presentation.feature.naver.setCamera
 import com.wheretogo.presentation.intent.DriveScreenIntent
-import com.wheretogo.presentation.model.toDomainLatLng
-import com.wheretogo.presentation.theme.Gray100
-import com.wheretogo.presentation.theme.hancomMalangFontFamily
 import com.wheretogo.presentation.viewmodel.DriveViewModel
 
 @Composable
@@ -74,7 +65,6 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
             },
             onMarkerClick = { overlay ->
                 val marker = overlay as Marker
-                naverMap?.setCamera(marker.position.toDomainLatLng(), 11.0)
                 viewModel.handleIntent(DriveScreenIntent.MarkerClick(marker.tag as Int))
             }
         )
@@ -84,36 +74,42 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
                 DriveList(data = state.listState.listData,
                     listState = listState,
                     onItemClick = { selectedItem ->
-                        naverMap?.rotateCamera(selectedItem.course.start)
                         viewModel.handleIntent(DriveScreenIntent.ListItemClick(selectedItem))
                     }
                 )
             }
-        }
+
+        if (state.popUpState.isVisible)
+            Box(modifier = Modifier.align(alignment = Alignment.BottomEnd))
+
+        if (state.floatingButtonState.isVisible)
+            Box(
+                modifier = Modifier
+                    .padding(12.dp)
+                    .align(alignment = Alignment.BottomEnd)
+            ) {
+                CircularButton(onClick = {
+                    viewModel.handleIntent(DriveScreenIntent.FloatingButtonClick)
+                })
+            }
     }
+
 }
 
 @Composable
-fun DriveTopBar() {
-    Row(
+fun CircularButton(onClick: () -> Unit, color: Color = Color.Blue) {
+    Button(
+        onClick = onClick,
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+            .size(62.dp)
+            .clip(CircleShape),
+        colors = ButtonDefaults.buttonColors(contentColor = color),
+        contentPadding = PaddingValues(0.dp)
     ) {
-        Text(
-            text = stringResource(R.string.where_to_go),
-            fontSize = 24.sp,
-            fontFamily = hancomMalangFontFamily,
-            color = Gray100
+        Image(
+            painter = painterResource(id = R.drawable.ic_setting),
+            contentDescription = "Icon Description",
+            modifier = Modifier.size(32.dp)
         )
     }
-}
-
-
-@Preview
-@Composable
-fun DriveTopBarPreivew() {
-    DriveTopBar()
 }
