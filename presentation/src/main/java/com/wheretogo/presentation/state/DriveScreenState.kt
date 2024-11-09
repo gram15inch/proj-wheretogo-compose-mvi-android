@@ -7,13 +7,13 @@ import com.wheretogo.presentation.model.MapOverlay
 data class DriveScreenState(
     val mapState: MapState = MapState(),
     val listState: ListState = ListState(),
-    val popUpState: PopUpState=PopUpState(),
-    val floatingButtonState: FloatingButtonState=FloatingButtonState(),
-    val error :String?=null
+    val popUpState: PopUpState = PopUpState(),
+    val floatingButtonState: FloatingButtonState = FloatingButtonState(),
+    val error: String? = null
 ) {
     data class MapState(
         val isMapReady: Boolean = false,
-        val mapData : List<MapOverlay> = emptyList()
+        val mapData: List<MapOverlay> = emptyList()
     )
 
     data class ListState(
@@ -22,7 +22,9 @@ data class DriveScreenState(
     )
 
     data class PopUpState(
-        val isVisible: Boolean = false
+        val isVisible: Boolean = false,
+        val id: Int = -1,
+        val url: String = ""
     )
 
     data class FloatingButtonState(

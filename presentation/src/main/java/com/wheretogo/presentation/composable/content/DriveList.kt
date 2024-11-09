@@ -71,36 +71,36 @@ fun DriveListItem(modifier: Modifier, item: Journey) {
         exit = fadeOut() + shrinkHorizontally()
     ) {
         Box(modifier = modifier.fillMaxWidth().padding(8.dp)) {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
                 Text(
                     modifier = Modifier
                         .wrapContentSize(),
                     text = item.code.toString(),
-                    fontSize = 20.sp
+                    fontSize = 16.sp
                 )
                 Text(
                     modifier = Modifier.wrapContentSize(),
                     text = "소요시간: ${item.duration}",
-                    fontSize = 20.sp
+                    fontSize = 16.sp
                 )
 
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)){
                     Text(
                         modifier = Modifier.wrapContentSize(),
                         text = "태그: ${item.duration}",
-                        fontSize = 20.sp
+                        fontSize = 16.sp
 
                     )
                     for(t in item.tag)
                         Text(
                             modifier = Modifier.wrapContentSize(),
                             text = "${t}",
-                            fontSize = 20.sp
+                            fontSize = 16.sp
                         )
                 }
             }
             GlideImage(
-                modifier = Modifier.height(80.dp).align(Alignment.CenterEnd),
+                modifier = Modifier.height(60.dp).align(Alignment.CenterEnd),
                 imageModel = { R.drawable.ic_setting },
                 imageOptions = ImageOptions(
                     contentScale = ContentScale.Crop,

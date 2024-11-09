@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.wheretogo.domain.model.CheckPoint
 import com.wheretogo.domain.model.Journey
 import com.wheretogo.domain.model.LatLng
+import com.wheretogo.domain.model.MarkerTag
 import com.wheretogo.domain.model.Viewport
 import com.wheretogo.domain.usecase.GetNearByJourneyUseCase
 import com.wheretogo.presentation.exceptions.MapNotInitializedException
@@ -59,11 +60,19 @@ class DriveViewModel @Inject constructor(
                 is DriveScreenIntent.MoveToCurrentLocation -> moveToCurrentLocation()
                 is DriveScreenIntent.UpdateCamera -> updateCamara(intent.latLng, intent.viewPort)
                 is DriveScreenIntent.UpdateLocation -> updateLocation(intent.latLng)
-                is DriveScreenIntent.MarkerClick -> markerClick(intent.code)
+                is DriveScreenIntent.CourseMarkerClick -> courseMarkerClick(intent.url)
+                is DriveScreenIntent.CheckPointMarkerClick -> checkPointMarkerClick(intent.url)
+                is DriveScreenIntent.PopUpClick -> popUpClick()
                 is DriveScreenIntent.ListItemClick -> listItemClick(intent.journey)
                 is DriveScreenIntent.FloatingButtonClick -> floatingButtonClick()
             }
         }
+    }
+
+    private fun popUpClick() {
+        _driveScreenState.value = _driveScreenState.value.copy(
+            popUpState = _driveScreenState.value.popUpState.copy(isVisible = false)
+        )
     }
 
     private fun mapIsReady() {
@@ -86,7 +95,7 @@ class DriveViewModel @Inject constructor(
                         _cacheCourseMapOverlayGroup.getOrPut(it.code) { getMapOverlay(it) }
                     }
             }
-            val listData = async { getNearByJourneyUseCase.byDistance(latLng, 1500) }
+            val listData = async { getNearByJourneyUseCase.byDistance(latLng, 2000) }
             Pair(mapData.await(), listData.await())
         }
 
@@ -110,12 +119,15 @@ class DriveViewModel @Inject constructor(
         _latestLocation = latLng
     }
 
-    private fun markerClick(code: Int) {
-        val newMapData = _latestCourseMapOverlayGroup + _cacheCheckPointGroup[code]!!.map {
-            _cacheCheckPointMapOverlayGroup.getOrPut(it.id) { getMapOverlay(it) }.apply {
-                this.marker.isVisible = true
+    private fun courseMarkerClick(url: MarkerTag) {
+        val newMapData =
+            _latestCourseMapOverlayGroup + _cacheCheckPointGroup[url.code]!!.map { checkPoint ->
+                _cacheCheckPointMapOverlayGroup.getOrPut(checkPoint.id) {
+                    getMapOverlay(url.code, checkPoint)
+                }.apply {
+                    this.marker.isVisible = true
+                }
             }
-        }
         _driveScreenState.value = _driveScreenState.value.run {
             copy(
                 mapState = mapState.copy(
@@ -123,6 +135,25 @@ class DriveViewModel @Inject constructor(
                 ),
                 listState = listState.copy(
                     isVisible = false
+                ),
+                floatingButtonState = floatingButtonState.copy(
+                    isVisible = true
+                )
+            )
+        }
+    }
+
+    private fun checkPointMarkerClick(url: MarkerTag) {
+        _driveScreenState.value = _driveScreenState.value.run {
+            copy(
+                listState = listState.copy(
+                    isVisible = false
+                ),
+                popUpState = popUpState.copy(
+                    isVisible = true,
+                    id = url.id,
+                    url = "/data/user/0/com.dhkim139.wheretogo/cache/thumbnails/photo_original_768x1024_70.jpg"
+                    //url = _cacheCheckPointGroup[url.code]!!.first{it.id==url.id}.url
                 ),
                 floatingButtonState = floatingButtonState.copy(
                     isVisible = true
@@ -146,7 +177,9 @@ class DriveViewModel @Inject constructor(
             }
 
             val newMapData = _latestCourseMapOverlayGroup - _latestItemJourney.checkPoints.map {
-                _cacheCheckPointMapOverlayGroup.getOrPut(it.id) { getMapOverlay(it) }.apply {
+                _cacheCheckPointMapOverlayGroup.getOrPut(it.id) {
+                    getMapOverlay(_latestItemJourney.code, it)
+                }.apply {
                     this.marker.isVisible = false
                 }
             }.toSet()
@@ -159,6 +192,9 @@ class DriveViewModel @Inject constructor(
                         ),
                         listState = listState.copy(
                             isVisible = true
+                        ),
+                        popUpState = popUpState.copy(
+                            isVisible = false
                         ),
                         floatingButtonState = floatingButtonState.copy(
                             isVisible = false
@@ -174,9 +210,10 @@ class DriveViewModel @Inject constructor(
             _latestItemJourney = journey
             _latestCourseMapOverlayGroup.hideCourseMapOverlayWithout(journey.code)
             val newMapData = _latestCourseMapOverlayGroup + journey.checkPoints.map {
-                _cacheCheckPointMapOverlayGroup.getOrPut(it.id) { getMapOverlay(it) }.apply {
-                    this.marker.isVisible = true
-                }
+                _cacheCheckPointMapOverlayGroup.getOrPut(it.id) { getMapOverlay(journey.code, it) }
+                    .apply {
+                        this.marker.isVisible = true
+                    }
             }
             _driveScreenState.value = _driveScreenState.value.run {
                 copy(

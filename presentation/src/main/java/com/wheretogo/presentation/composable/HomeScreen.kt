@@ -55,6 +55,7 @@ fun HomeScreen(displayMaxWidth: Dp, navController: NavController) {
         modifier = Modifier
             .fillMaxHeight()
             .width(displayMaxWidth)
+            .padding(12.dp)
             .background(White100)
             .verticalScroll(scrollState),
         verticalArrangement = Arrangement.spacedBy(8.dp)

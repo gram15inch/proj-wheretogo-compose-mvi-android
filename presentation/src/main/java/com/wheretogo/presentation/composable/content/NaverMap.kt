@@ -23,6 +23,7 @@ import com.naver.maps.map.MapView
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.overlay.Overlay
 import com.naver.maps.map.util.FusedLocationSource
+import com.wheretogo.domain.model.COURSE_MIN
 import com.wheretogo.domain.model.LatLng
 import com.wheretogo.domain.model.Viewport
 import com.wheretogo.presentation.model.MapOverlay
@@ -35,8 +36,9 @@ fun NaverMap(
     overlayMap: List<MapOverlay>,
     onMapAsync: (NaverMap) -> Unit,
     onLocationMove: (LatLng) -> Unit,
-    onCameraMove: (LatLng,Viewport) -> Unit,
-    onMarkerClick: (Overlay) -> Unit
+    onCameraMove: (LatLng, Viewport) -> Unit,
+    onCourseMarkerClick: (Overlay) -> Unit,
+    onCheckPointMarkerClick: (Overlay) -> Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -91,24 +93,32 @@ fun NaverMap(
     }
     mapView.getMapAsync {map->
         coroutineScope.launch {
-            launch {
                 overlayMap.forEach {
-                    it.pathOverlay.apply {
-                        if(coords.isNotEmpty())
-                            this.map = this.map?:map
+                    launch {
+                        it.pathOverlay.apply {
+                            if(coords.isNotEmpty())
+                                this.map = this.map?:map
+                        }
                     }
 
-                    it.marker.apply {
-                        this.map = this.map?:map
-                        if(this.onClickListener == null) {
-                            this.setOnClickListener { overlay ->
-                                onMarkerClick(overlay)
-                                true
+                    launch {
+                        it.marker.apply {
+                            this.map = this.map?:map
+                            if(this.onClickListener == null) {
+                                Log.d("tst3","${it.code} onClickListener")
+                                this.setOnClickListener { overlay ->
+                                    if(it.code>= COURSE_MIN)
+                                        onCourseMarkerClick(overlay)
+                                    else
+                                        onCheckPointMarkerClick(overlay)
+                                    true
+                                }
                             }
                         }
                     }
+
                 }
-            }
+
         }
 
     }

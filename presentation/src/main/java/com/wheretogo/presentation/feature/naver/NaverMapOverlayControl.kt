@@ -16,6 +16,9 @@ import com.naver.maps.map.overlay.OverlayImage
 import com.naver.maps.map.overlay.PathOverlay
 import com.wheretogo.domain.model.CheckPoint
 import com.wheretogo.domain.model.Journey
+import com.wheretogo.domain.model.getCheckPointMarkerTag
+import com.wheretogo.domain.model.getCourseMarkerTag
+import com.wheretogo.domain.model.getCoursePathOverlayTag
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.toNaver
 
@@ -26,7 +29,7 @@ fun NaverMap.addJourneyOverlay(item: Journey, onMarkerClick: (Overlay) -> Unit):
         Marker().apply {
             position = naverPoints[0] // todo 인덱스 에러 처리
             map = this@addJourneyOverlay
-            tag = item.code
+            tag = getCourseMarkerTag(code = item.code)
             this.setOnClickListener { overlay ->
                 onMarkerClick(overlay)
                 true
@@ -35,7 +38,7 @@ fun NaverMap.addJourneyOverlay(item: Journey, onMarkerClick: (Overlay) -> Unit):
         PathOverlay().apply {
             coords = naverPoints
             map = this@addJourneyOverlay
-            tag = item.code
+            tag = getCoursePathOverlayTag(code = item.code)
         }
     )
 }
@@ -46,37 +49,36 @@ fun getMapOverlay(item: Journey): MapOverlay {
     return MapOverlay(
         item.code,
         Marker().apply {
-            this.captionText = "운전연수 코스 1"
-            this.setCaptionAligns(Align.Top,Align.Right)
-            this.captionOffset=20
-            this.captionTextSize=16f
+            this.captionText = "운전연수 코스 ${item.code}"
+            this.setCaptionAligns(Align.Top, Align.Right)
+            this.captionOffset = 20
+            this.captionTextSize = 16f
             position = naverPoints[0]
             isHideCollidedMarkers = true
-            tag = item.code
+            tag = getCourseMarkerTag(code = item.code)
         },
         PathOverlay().apply {
             coords = naverPoints
-            tag = item.code
+            tag = getCoursePathOverlayTag(code = item.code)
             width = 18
             outlineWidth = 3
         }
     )
 }
 
-fun getMapOverlay(item: CheckPoint):MapOverlay{
-
+fun getMapOverlay(code: Int, item: CheckPoint): MapOverlay {
     return MapOverlay(
         item.id,
         Marker().apply {
-            this.captionText = "\uD83D\uDE03 주위가 조용해요."
-            this.setCaptionAligns(Align.Top,Align.Right)
-            this.captionOffset=20
-            this.captionTextSize=16f
+            this.captionText = "\uD83D\uDE03 주위가 조용해요. ${item.id}"
+            this.setCaptionAligns(Align.Top, Align.Right)
+            this.captionOffset = 20
+            this.captionTextSize = 16f
             position = item.latLng.toNaver()
-            val bitmap= BitmapFactory.decodeFile("/data/user/0/com.dhkim139.wheretogo/cache/thumbnails/photo_original_150x200_70.jpg")
+            val bitmap = BitmapFactory.decodeFile(item.url)
             isHideCollidedMarkers = true
-            icon = OverlayImage.fromBitmap(getRoundedRectWithShadowBitmap(bitmap, 30f,8f,Color.BLACK,Color.WHITE))
-            tag = item.id
+            icon = OverlayImage.fromBitmap(getRoundedRectWithShadowBitmap(bitmap, 30f, 8f, Color.BLACK, Color.WHITE))
+            tag = getCheckPointMarkerTag(code, checkPoint = item)
         },
         PathOverlay()
     )
