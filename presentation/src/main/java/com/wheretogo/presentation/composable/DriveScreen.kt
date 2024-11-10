@@ -1,10 +1,12 @@
 package com.wheretogo.presentation.composable
 
 import androidx.activity.compose.BackHandler
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -13,7 +15,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -52,7 +53,6 @@ import com.wheretogo.presentation.viewmodel.DriveViewModel
 fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltViewModel()) {
     val state by viewModel.driveScreenState.collectAsState()
     var naverMap by remember { mutableStateOf<NaverMap?>(null) }
-    val listState = rememberLazyListState()
     BackHandler {
         navController.navigateUp()
     }
@@ -90,7 +90,6 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
             visible = state.listState.isVisible
         ) {
             DriveList(data = state.listState.listData,
-                listState = listState,
                 onItemClick = { selectedItem ->
                     viewModel.handleIntent(DriveScreenIntent.ListItemClick(selectedItem))
                 }
@@ -109,22 +108,43 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
             )
         }
 
-        SlideAnimation(
+        Column(
             modifier = Modifier
                 .padding(12.dp)
                 .align(alignment = Alignment.BottomEnd),
-            visible = state.floatingButtonState.isVisible
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            CircularButton(onClick = {
-                viewModel.handleIntent(DriveScreenIntent.FloatingButtonClick)
-            })
+            SlideAnimation(
+                modifier = Modifier,
+                visible = state.floatingButtonState.isCommentVisible
+            ) {
+                CircularButton(icon = R.drawable.ic_comment,
+                    onClick = {
+                        viewModel.handleIntent(DriveScreenIntent.CommentFloatingButtonClick)
+                    })
+            }
+
+            SlideAnimation(
+                modifier = Modifier,
+                visible = state.floatingButtonState.isFoldVisible
+            ) {
+                CircularButton(icon = R.drawable.ic_fold_up,
+                    onClick = {
+                        viewModel.handleIntent(DriveScreenIntent.FoldFloatingButtonClick)
+                    })
+            }
         }
     }
 
 }
 
+
 @Composable
-fun CircularButton(onClick: () -> Unit, color: Color = Color.Blue) {
+fun CircularButton(
+    @DrawableRes icon: Int,
+    color: Color = Color.Blue,
+    onClick: () -> Unit
+) {
     Button(
         onClick = onClick,
         modifier = Modifier
@@ -134,7 +154,7 @@ fun CircularButton(onClick: () -> Unit, color: Color = Color.Blue) {
         contentPadding = PaddingValues(0.dp)
     ) {
         Image(
-            painter = painterResource(id = R.drawable.ic_setting),
+            painter = painterResource(id = icon),
             contentDescription = "Icon Description",
             modifier = Modifier.size(32.dp)
         )
@@ -156,9 +176,9 @@ fun PopUpImage(onClick: () -> Unit, url: String) {
     ) {
         GlideImage(modifier = Modifier
             .align(Alignment.BottomStart)
-            .widthIn(max = 250.dp)
+            .widthIn(max = 280.dp)
             .heightIn(max = 500.dp)
-            .padding(10.dp)
+            .padding(12.dp)
             .clip(RoundedCornerShape(16.dp)), imageModel = { url })
     }
 }

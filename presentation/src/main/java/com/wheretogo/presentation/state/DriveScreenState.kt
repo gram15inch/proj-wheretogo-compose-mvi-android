@@ -28,6 +28,7 @@ data class DriveScreenState(
     )
 
     data class FloatingButtonState(
-        val isVisible: Boolean = false
+        val isFoldVisible: Boolean = false,
+        val isCommentVisible: Boolean = false
     )
 }

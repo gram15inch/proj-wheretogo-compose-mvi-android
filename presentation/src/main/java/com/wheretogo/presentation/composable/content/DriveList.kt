@@ -17,8 +17,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,9 +39,9 @@ import com.wheretogo.presentation.theme.White100
 @Composable
 fun DriveList(
     data: List<Journey>,
-    listState: LazyListState,
     onItemClick: (Journey) -> Unit
 ) {
+    val listState = rememberLazyListState()
     LazyColumn(
         modifier = Modifier
             .heightIn(max = 230.dp)

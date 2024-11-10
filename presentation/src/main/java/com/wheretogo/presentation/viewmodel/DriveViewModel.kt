@@ -64,14 +64,18 @@ class DriveViewModel @Inject constructor(
                 is DriveScreenIntent.CheckPointMarkerClick -> checkPointMarkerClick(intent.url)
                 is DriveScreenIntent.PopUpClick -> popUpClick()
                 is DriveScreenIntent.ListItemClick -> listItemClick(intent.journey)
-                is DriveScreenIntent.FloatingButtonClick -> floatingButtonClick()
+                is DriveScreenIntent.FoldFloatingButtonClick -> foldFloatingButtonClick()
+                is DriveScreenIntent.CommentFloatingButtonClick -> commentFloatingButtonClick()
             }
         }
     }
 
     private fun popUpClick() {
         _driveScreenState.value = _driveScreenState.value.copy(
-            popUpState = _driveScreenState.value.popUpState.copy(isVisible = false)
+            popUpState = _driveScreenState.value.popUpState.copy(isVisible = false),
+            floatingButtonState = _driveScreenState.value.floatingButtonState.copy(
+                isCommentVisible = false
+            )
         )
     }
 
@@ -99,7 +103,7 @@ class DriveViewModel @Inject constructor(
             Pair(mapData.await(), listData.await())
         }
 
-        if (!_driveScreenState.value.floatingButtonState.isVisible) {
+        if (!_driveScreenState.value.floatingButtonState.isFoldVisible) {
             _driveScreenState.value = _driveScreenState.value.copy(
                 mapState = _driveScreenState.value.mapState.copy(
                     mapData = data.first
@@ -119,11 +123,11 @@ class DriveViewModel @Inject constructor(
         _latestLocation = latLng
     }
 
-    private fun courseMarkerClick(url: MarkerTag) {
+    private fun courseMarkerClick(tag: MarkerTag) {
         val newMapData =
-            _latestCourseMapOverlayGroup + _cacheCheckPointGroup[url.code]!!.map { checkPoint ->
+            _latestCourseMapOverlayGroup + _cacheCheckPointGroup[tag.code]!!.map { checkPoint ->
                 _cacheCheckPointMapOverlayGroup.getOrPut(checkPoint.id) {
-                    getMapOverlay(url.code, checkPoint)
+                    getMapOverlay(tag.code, checkPoint)
                 }.apply {
                     this.marker.isVisible = true
                 }
@@ -137,7 +141,7 @@ class DriveViewModel @Inject constructor(
                     isVisible = false
                 ),
                 floatingButtonState = floatingButtonState.copy(
-                    isVisible = true
+                    isFoldVisible = true
                 )
             )
         }
@@ -156,13 +160,14 @@ class DriveViewModel @Inject constructor(
                     //url = _cacheCheckPointGroup[url.code]!!.first{it.id==url.id}.url
                 ),
                 floatingButtonState = floatingButtonState.copy(
-                    isVisible = true
+                    isFoldVisible = true,
+                    isCommentVisible = true
                 )
             )
         }
     }
 
-    private suspend fun floatingButtonClick() {
+    private suspend fun foldFloatingButtonClick() {
         coroutineScope {
             launch {
                 _latestCourseMapOverlayGroup.forEach {
@@ -197,7 +202,25 @@ class DriveViewModel @Inject constructor(
                             isVisible = false
                         ),
                         floatingButtonState = floatingButtonState.copy(
-                            isVisible = false
+                            isFoldVisible = false,
+                            isCommentVisible = false
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    private suspend fun commentFloatingButtonClick() {
+        coroutineScope {
+
+            viewModelScope.launch(exceptionHandler) {
+                _driveScreenState.value = _driveScreenState.value.run {
+                    copy(
+                        popUpState = popUpState.copy(
+
+                        ),
+                        floatingButtonState = floatingButtonState.copy(
                         )
                     )
                 }
@@ -224,7 +247,7 @@ class DriveViewModel @Inject constructor(
                         isVisible = false
                     ),
                     floatingButtonState = floatingButtonState.copy(
-                        isVisible = true
+                        isFoldVisible = true
                     )
                 )
             }

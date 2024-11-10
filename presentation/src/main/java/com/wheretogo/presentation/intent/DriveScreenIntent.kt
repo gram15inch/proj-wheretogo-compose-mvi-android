@@ -14,5 +14,6 @@ sealed class DriveScreenIntent {
     data class CheckPointMarkerClick(val url: MarkerTag) : DriveScreenIntent()
     data class ListItemClick(val journey: Journey) : DriveScreenIntent()
     object PopUpClick : DriveScreenIntent()
-    object FloatingButtonClick : DriveScreenIntent()
+    object FoldFloatingButtonClick : DriveScreenIntent()
+    object CommentFloatingButtonClick : DriveScreenIntent()
 }
