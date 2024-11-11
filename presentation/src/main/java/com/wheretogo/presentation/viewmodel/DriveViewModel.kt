@@ -60,8 +60,8 @@ class DriveViewModel @Inject constructor(
                 is DriveScreenIntent.MoveToCurrentLocation -> moveToCurrentLocation()
                 is DriveScreenIntent.UpdateCamera -> updateCamara(intent.latLng, intent.viewPort)
                 is DriveScreenIntent.UpdateLocation -> updateLocation(intent.latLng)
-                is DriveScreenIntent.CourseMarkerClick -> courseMarkerClick(intent.url)
-                is DriveScreenIntent.CheckPointMarkerClick -> checkPointMarkerClick(intent.url)
+                is DriveScreenIntent.CourseMarkerClick -> courseMarkerClick(intent.tag)
+                is DriveScreenIntent.CheckPointMarkerClick -> checkPointMarkerClick(intent.tag)
                 is DriveScreenIntent.PopUpClick -> popUpClick()
                 is DriveScreenIntent.ListItemClick -> listItemClick(intent.journey)
                 is DriveScreenIntent.FoldFloatingButtonClick -> foldFloatingButtonClick()
@@ -72,7 +72,10 @@ class DriveViewModel @Inject constructor(
 
     private fun popUpClick() {
         _driveScreenState.value = _driveScreenState.value.copy(
-            popUpState = _driveScreenState.value.popUpState.copy(isVisible = false),
+            popUpState = _driveScreenState.value.popUpState.copy(
+                isVisible = false,
+                isCommentVisible = false
+            ),
             floatingButtonState = _driveScreenState.value.floatingButtonState.copy(
                 isCommentVisible = false
             )
@@ -147,7 +150,7 @@ class DriveViewModel @Inject constructor(
         }
     }
 
-    private fun checkPointMarkerClick(url: MarkerTag) {
+    private fun checkPointMarkerClick(tag: MarkerTag) {
         _driveScreenState.value = _driveScreenState.value.run {
             copy(
                 listState = listState.copy(
@@ -155,9 +158,9 @@ class DriveViewModel @Inject constructor(
                 ),
                 popUpState = popUpState.copy(
                     isVisible = true,
-                    id = url.id,
-                    url = "/data/user/0/com.dhkim139.wheretogo/cache/thumbnails/photo_original_768x1024_70.jpg"
-                    //url = _cacheCheckPointGroup[url.code]!!.first{it.id==url.id}.url
+                    checkPointId = tag.id,
+                    imageUrl = "/data/user/0/com.dhkim139.wheretogo/cache/thumbnails/photo_original_768x1024_70.jpg"
+                    //tag = _cacheCheckPointGroup[tag.code]!!.first{it.id==tag.id}.url
                 ),
                 floatingButtonState = floatingButtonState.copy(
                     isFoldVisible = true,
@@ -218,9 +221,7 @@ class DriveViewModel @Inject constructor(
                 _driveScreenState.value = _driveScreenState.value.run {
                     copy(
                         popUpState = popUpState.copy(
-
-                        ),
-                        floatingButtonState = floatingButtonState.copy(
+                            isCommentVisible = !popUpState.isCommentVisible
                         )
                     )
                 }

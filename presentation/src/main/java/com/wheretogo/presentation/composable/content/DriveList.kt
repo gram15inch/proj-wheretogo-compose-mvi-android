@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -43,21 +44,20 @@ fun DriveList(
 ) {
     val listState = rememberLazyListState()
     LazyColumn(
-        modifier = Modifier
-            .heightIn(max = 230.dp)
-            .padding(8.dp),
+        modifier = Modifier.heightIn(max = 230.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         state = listState
     ) {
         items(data) { item ->
             DriveListItem(
                 modifier = Modifier
+                    .widthIn(650.dp)
                     .clickable {
                         onItemClick(item)
                     }
                     .clip(RoundedCornerShape(16.dp))
                     .background(White100),
-                item= item
+                item = item
             )
         }
     }
@@ -70,7 +70,9 @@ fun DriveListItem(modifier: Modifier, item: Journey) {
         enter = slideInHorizontally(initialOffsetX = { fullWidth -> fullWidth }) + fadeIn(),
         exit = fadeOut() + shrinkHorizontally()
     ) {
-        Box(modifier = modifier.fillMaxWidth().padding(8.dp)) {
+        Box(modifier = modifier
+            .fillMaxWidth()
+            .padding(8.dp)) {
             Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
                 Text(
                     modifier = Modifier
@@ -84,14 +86,14 @@ fun DriveListItem(modifier: Modifier, item: Journey) {
                     fontSize = 16.sp
                 )
 
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)){
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         modifier = Modifier.wrapContentSize(),
                         text = "태그: ${item.duration}",
                         fontSize = 16.sp
 
                     )
-                    for(t in item.tag)
+                    for (t in item.tag)
                         Text(
                             modifier = Modifier.wrapContentSize(),
                             text = "${t}",
@@ -100,7 +102,9 @@ fun DriveListItem(modifier: Modifier, item: Journey) {
                 }
             }
             GlideImage(
-                modifier = Modifier.height(60.dp).align(Alignment.CenterEnd),
+                modifier = Modifier
+                    .height(60.dp)
+                    .align(Alignment.CenterEnd),
                 imageModel = { R.drawable.ic_setting },
                 imageOptions = ImageOptions(
                     contentScale = ContentScale.Crop,
@@ -113,6 +117,6 @@ fun DriveListItem(modifier: Modifier, item: Journey) {
 
 @Preview
 @Composable
-fun DriveListItemPreview(){
-    DriveListItem(Modifier,Journey(tag = listOf(1,2)))
+fun DriveListItemPreview() {
+    DriveListItem(Modifier, Journey(tag = listOf(1, 2)))
 }

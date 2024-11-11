@@ -1,5 +1,6 @@
 package com.wheretogo.presentation.state
 
+import com.wheretogo.domain.model.Comment
 import com.wheretogo.domain.model.Journey
 import com.wheretogo.presentation.model.MapOverlay
 
@@ -23,9 +24,13 @@ data class DriveScreenState(
 
     data class PopUpState(
         val isVisible: Boolean = false,
-        val id: Int = -1,
-        val url: String = ""
-    )
+        val isCommentVisible: Boolean = false,
+        val checkPointId: Int = -1,
+        val imageUrl: String = "",
+        val comment: CommentState = CommentState()
+    ) {
+        data class CommentState(val data: List<Comment> = emptyList())
+    }
 
     data class FloatingButtonState(
         val isFoldVisible: Boolean = false,
