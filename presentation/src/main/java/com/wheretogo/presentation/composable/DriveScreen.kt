@@ -59,6 +59,7 @@ import com.wheretogo.presentation.viewmodel.DriveViewModel
 fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltViewModel()) {
     val state by viewModel.driveScreenState.collectAsState()
     var naverMap by remember { mutableStateOf<NaverMap?>(null) }
+    val isWideSize = screenSize(true) > 650.dp
     BackHandler {
         navController.navigateUp()
     }
@@ -89,7 +90,7 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
         }
     )
 
-    FadeAnimation(modifier = Modifier, visible = state.popUpState.isVisible) {
+    FadeAnimation(visible = state.popUpState.isVisible) {
         BlurEffect(onClick = {
             viewModel.handleIntent(DriveScreenIntent.PopUpClick)
         })
@@ -121,6 +122,7 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
         ) {
             OneHandArea {
                 ExtendArea(
+                    isExtend = isWideSize,
                     holdContent = {
                         PopUpImage(
                             modifier = Modifier.align(alignment = Alignment.BottomStart),
@@ -131,13 +133,24 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
                         )
                     },
                     moveContent = {
+                        FadeAnimation(visible = state.popUpState.isCommentVisible && !isWideSize) {
+                            BlurEffect(
+                                Modifier
+                                    .sizeIn(maxWidth = 260.dp, maxHeight = 500.dp)
+                                    .clip(RoundedCornerShape(16.dp)), onClick = {
+                                    viewModel.handleIntent(DriveScreenIntent.CommentFloatingButtonClick)
+                                })
+                        }
                         SlideAnimation(
-                            modifier = Modifier.graphicsLayer(clip = true),
+                            modifier = Modifier
+                                .align(alignment = Alignment.BottomStart)
+                                .graphicsLayer(clip = true),
                             visible = state.popUpState.isCommentVisible,
-                            direction = if (screenSize(true) > 650.dp) AnimationDirection.CenterRight else AnimationDirection.CenterDown
+                            direction = if (isWideSize) AnimationDirection.CenterRight else AnimationDirection.CenterDown
                         ) {
                             PopUpComment(
-                                modifier = Modifier.align(alignment = Alignment.BottomStart),
+                                modifier = Modifier,
+                                isCompact = isWideSize,
                                 onClick = {
 
                                 },
@@ -211,11 +224,11 @@ fun PopUpImage(modifier: Modifier, onClick: () -> Unit, url: String) {
 }
 
 @Composable
-fun PopUpComment(modifier: Modifier, onClick: () -> Unit, data: List<Comment>) {
+fun PopUpComment(modifier: Modifier, isCompact: Boolean, onClick: () -> Unit, data: List<Comment>) {
     val interactionSource by remember { mutableStateOf(MutableInteractionSource()) }
     Box(
         modifier = modifier
-            .sizeIn(maxWidth = 260.dp, maxHeight = 500.dp)
+            .sizeIn(maxWidth = 260.dp, maxHeight = if (isCompact) 500.dp else 350.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(colorResource(R.color.teal_200))
             .fillMaxSize()
@@ -239,11 +252,11 @@ fun OneHandArea(content: @Composable () -> Unit) {
 }
 
 @Composable
-fun BlurEffect(onClick: () -> Unit) {
+fun BlurEffect(modifier: Modifier = Modifier, onClick: () -> Unit) {
     val interactionSource by remember { mutableStateOf(MutableInteractionSource()) }
 
     Box(
-        Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(color = colorResource(R.color.gray_50))
             .clickable(
@@ -258,14 +271,18 @@ fun BlurEffect(onClick: () -> Unit) {
 }
 
 @Composable
-fun ExtendArea(holdContent: @Composable () -> Unit, moveContent: @Composable () -> Unit) {
-    if (screenSize(true) >= 650.dp) {
+fun ExtendArea(
+    isExtend: Boolean,
+    holdContent: @Composable () -> Unit,
+    moveContent: @Composable () -> Unit
+) {
+    if (isExtend) {
         Row() {
             holdContent()
             moveContent()
         }
     } else {
-        Box() {
+        Box(modifier = Modifier.graphicsLayer(clip = true)) {
             holdContent()
             moveContent()
         }

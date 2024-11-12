@@ -43,9 +43,10 @@ fun SlideAnimation(
             slideInVertically(
                 initialOffsetY = { fullHeight -> fullHeight },
                 animationSpec = tween(
-                    durationMillis = 400,
                     easing = androidx.compose.animation.core.FastOutSlowInEasing
                 )
+            ) + fadeIn(
+                animationSpec = tween(durationMillis = 300)
             )
         }
 
@@ -77,9 +78,10 @@ fun SlideAnimation(
             slideOutVertically(
                 targetOffsetY = { fullHeight -> fullHeight },
                 animationSpec = tween(
-                    durationMillis = 500,
                     easing = androidx.compose.animation.core.FastOutSlowInEasing
                 )
+            ) + fadeOut(
+                animationSpec = tween(durationMillis = 300)
             )
         }
 
@@ -101,7 +103,11 @@ fun SlideAnimation(
 }
 
 @Composable
-fun FadeAnimation(modifier: Modifier, visible: Boolean, content: @Composable () -> Unit) {
+fun FadeAnimation(
+    modifier: Modifier = Modifier,
+    visible: Boolean,
+    content: @Composable () -> Unit
+) {
     AnimatedVisibility(
         modifier = modifier,
         visible = visible,
