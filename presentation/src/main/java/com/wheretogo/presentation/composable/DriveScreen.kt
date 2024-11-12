@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -52,6 +53,8 @@ import com.wheretogo.presentation.composable.content.DriveList
 import com.wheretogo.presentation.composable.content.FadeAnimation
 import com.wheretogo.presentation.composable.content.NaverMap
 import com.wheretogo.presentation.composable.content.SlideAnimation
+import com.wheretogo.presentation.feature.GestureDirection
+import com.wheretogo.presentation.feature.detectDrag
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.viewmodel.DriveViewModel
 
@@ -135,9 +138,10 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
                     moveContent = {
                         FadeAnimation(visible = state.popUpState.isCommentVisible && !isWideSize) {
                             BlurEffect(
-                                Modifier
+                                modifier = Modifier
                                     .sizeIn(maxWidth = 260.dp, maxHeight = 500.dp)
-                                    .clip(RoundedCornerShape(16.dp)), onClick = {
+                                    .clip(RoundedCornerShape(16.dp)),
+                                onClick = {
                                     viewModel.handleIntent(DriveScreenIntent.CommentFloatingButtonClick)
                                 })
                         }
@@ -150,11 +154,14 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
                         ) {
                             PopUpComment(
                                 modifier = Modifier,
-                                isCompact = isWideSize,
+                                isCompact = !isWideSize,
+                                state.popUpState.comment.data,
                                 onClick = {
 
                                 },
-                                state.popUpState.comment.data
+                                onDrag = {
+                                    viewModel.handleIntent(DriveScreenIntent.CommentFloatingButtonClick)
+                                }
                             )
                         }
                     }
@@ -224,14 +231,29 @@ fun PopUpImage(modifier: Modifier, onClick: () -> Unit, url: String) {
 }
 
 @Composable
-fun PopUpComment(modifier: Modifier, isCompact: Boolean, onClick: () -> Unit, data: List<Comment>) {
+fun PopUpComment(
+    modifier: Modifier,
+    isCompact: Boolean,
+    data: List<Comment>,
+    onClick: () -> Unit,
+    onDrag: () -> Unit
+) {
     val interactionSource by remember { mutableStateOf(MutableInteractionSource()) }
+    var isDrag = true
     Box(
         modifier = modifier
-            .sizeIn(maxWidth = 260.dp, maxHeight = if (isCompact) 500.dp else 350.dp)
+            .sizeIn(maxWidth = 260.dp, maxHeight = if (isCompact) 350.dp else 500.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(colorResource(R.color.teal_200))
             .fillMaxSize()
+            .pointerInput(Unit) {
+                detectDrag(direction = if(isCompact) GestureDirection.Down else GestureDirection.Left) {
+                    if (isDrag) {
+                        isDrag = false
+                        onDrag()
+                    }
+                }()
+            }
             .clickable(
                 indication = null,
                 interactionSource = interactionSource

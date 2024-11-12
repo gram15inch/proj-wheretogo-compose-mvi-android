@@ -1,5 +1,6 @@
 package com.wheretogo.presentation.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wheretogo.domain.model.CheckPoint
@@ -216,7 +217,7 @@ class DriveViewModel @Inject constructor(
 
     private suspend fun commentFloatingButtonClick() {
         coroutineScope {
-
+            Log.d("tst3","commentFloatingButtonClick")
             viewModelScope.launch(exceptionHandler) {
                 _driveScreenState.value = _driveScreenState.value.run {
                     copy(

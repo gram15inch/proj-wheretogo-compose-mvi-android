@@ -2,7 +2,6 @@ package com.wheretogo.presentation.composable.content
 
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -105,7 +104,6 @@ fun NaverMap(
                         it.marker.apply {
                             this.map = this.map?:map
                             if(this.onClickListener == null) {
-                                Log.d("tst3","${it.code} onClickListener")
                                 this.setOnClickListener { overlay ->
                                     if(it.code>= COURSE_MIN)
                                         onCourseMarkerClick(overlay)
