@@ -1,9 +1,9 @@
 package com.wheretogo.presentation.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wheretogo.domain.model.CheckPoint
+import com.wheretogo.domain.model.Comment
 import com.wheretogo.domain.model.Journey
 import com.wheretogo.domain.model.LatLng
 import com.wheretogo.domain.model.MarkerTag
@@ -13,6 +13,7 @@ import com.wheretogo.presentation.exceptions.MapNotInitializedException
 import com.wheretogo.presentation.feature.naver.getMapOverlay
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.model.MapOverlay
+import com.wheretogo.presentation.model.getCommentDummy
 import com.wheretogo.presentation.state.DriveScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -57,21 +58,24 @@ class DriveViewModel @Inject constructor(
     fun handleIntent(intent: DriveScreenIntent) {
         viewModelScope.launch(exceptionHandler) {
             when (intent) {
+                //결과
                 is DriveScreenIntent.MapIsReady -> mapIsReady()
-                is DriveScreenIntent.MoveToCurrentLocation -> moveToCurrentLocation()
                 is DriveScreenIntent.UpdateCamera -> updateCamara(intent.latLng, intent.viewPort)
                 is DriveScreenIntent.UpdateLocation -> updateLocation(intent.latLng)
+                is DriveScreenIntent.DismissPopup -> dismissPopup()
+
+                //동작
                 is DriveScreenIntent.CourseMarkerClick -> courseMarkerClick(intent.tag)
                 is DriveScreenIntent.CheckPointMarkerClick -> checkPointMarkerClick(intent.tag)
-                is DriveScreenIntent.PopUpClick -> popUpClick()
-                is DriveScreenIntent.ListItemClick -> listItemClick(intent.journey)
+                is DriveScreenIntent.DriveListItemClick -> driveListItemClick(intent.journey)
+                is DriveScreenIntent.CommentListItemClick -> commentListItemClick(intent.comment)
                 is DriveScreenIntent.FoldFloatingButtonClick -> foldFloatingButtonClick()
                 is DriveScreenIntent.CommentFloatingButtonClick -> commentFloatingButtonClick()
             }
         }
     }
 
-    private fun popUpClick() {
+    private fun dismissPopup() {
         _driveScreenState.value = _driveScreenState.value.copy(
             popUpState = _driveScreenState.value.popUpState.copy(
                 isVisible = false,
@@ -87,10 +91,6 @@ class DriveViewModel @Inject constructor(
         _driveScreenState.value = _driveScreenState.value.copy(
             mapState = _driveScreenState.value.mapState.copy(isMapReady = true)
         )
-    }
-
-    private fun moveToCurrentLocation() {
-
     }
 
     private suspend fun updateCamara(latLng: LatLng, viewPort: Viewport) {
@@ -193,66 +193,76 @@ class DriveViewModel @Inject constructor(
                 }
             }.toSet()
 
-            viewModelScope.launch(exceptionHandler) {
-                _driveScreenState.value = _driveScreenState.value.run {
-                    copy(
-                        mapState = mapState.copy(
-                            mapData = newMapData
-                        ),
-                        listState = listState.copy(
-                            isVisible = true
-                        ),
-                        popUpState = popUpState.copy(
-                            isVisible = false
-                        ),
-                        floatingButtonState = floatingButtonState.copy(
-                            isFoldVisible = false,
-                            isCommentVisible = false
-                        )
-                    )
-                }
-            }
-        }
-    }
 
-    private suspend fun commentFloatingButtonClick() {
-        coroutineScope {
-            Log.d("tst3","commentFloatingButtonClick")
-            viewModelScope.launch(exceptionHandler) {
-                _driveScreenState.value = _driveScreenState.value.run {
-                    copy(
-                        popUpState = popUpState.copy(
-                            isCommentVisible = !popUpState.isCommentVisible
-                        )
-                    )
-                }
-            }
-        }
-    }
-
-    private fun listItemClick(journey: Journey) {
-        viewModelScope.launch(exceptionHandler) {
-            _latestItemJourney = journey
-            _latestCourseMapOverlayGroup.hideCourseMapOverlayWithout(journey.code)
-            val newMapData = _latestCourseMapOverlayGroup + journey.checkPoints.map {
-                _cacheCheckPointMapOverlayGroup.getOrPut(it.id) { getMapOverlay(journey.code, it) }
-                    .apply {
-                        this.marker.isVisible = true
-                    }
-            }
             _driveScreenState.value = _driveScreenState.value.run {
                 copy(
                     mapState = mapState.copy(
                         mapData = newMapData
                     ),
                     listState = listState.copy(
+                        isVisible = true
+                    ),
+                    popUpState = popUpState.copy(
                         isVisible = false
                     ),
                     floatingButtonState = floatingButtonState.copy(
-                        isFoldVisible = true
+                        isFoldVisible = false,
+                        isCommentVisible = false
                     )
                 )
             }
+
+        }
+    }
+
+    private fun commentFloatingButtonClick() {
+        _driveScreenState.value = _driveScreenState.value.run {
+            copy(
+                popUpState = popUpState.copy(
+                    isCommentVisible = !popUpState.isCommentVisible,
+                    //todo 임시
+                    commentState = popUpState.commentState.copy(data = getCommentDummy())
+                )
+            )
+        }
+    }
+
+    private fun driveListItemClick(journey: Journey) {
+        _latestItemJourney = journey
+        _latestCourseMapOverlayGroup.hideCourseMapOverlayWithout(journey.code)
+        val newMapData = _latestCourseMapOverlayGroup + journey.checkPoints.map {
+            _cacheCheckPointMapOverlayGroup.getOrPut(it.id) { getMapOverlay(journey.code, it) }
+                .apply {
+                    this.marker.isVisible = true
+                }
+        }
+        _driveScreenState.value = _driveScreenState.value.run {
+            copy(
+                mapState = mapState.copy(
+                    mapData = newMapData
+                ),
+                listState = listState.copy(
+                    isVisible = false
+                ),
+                floatingButtonState = floatingButtonState.copy(
+                    isFoldVisible = true
+                )
+            )
+        }
+    }
+
+    private fun commentListItemClick(comment: Comment) {
+        _driveScreenState.value = _driveScreenState.value.run {
+            copy(
+                popUpState = popUpState.copy(
+                    commentState = popUpState.commentState.copy(data = popUpState.commentState.data.map {
+                        if (it.commentId == comment.commentId)
+                            it.copy(like = it.like + 1)
+                        else
+                            it
+                    })
+                )
+            )
         }
     }
 

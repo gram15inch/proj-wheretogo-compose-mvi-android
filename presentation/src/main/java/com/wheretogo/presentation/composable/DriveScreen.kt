@@ -12,10 +12,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -30,9 +33,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollDispatcher
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -53,8 +60,6 @@ import com.wheretogo.presentation.composable.content.DriveList
 import com.wheretogo.presentation.composable.content.FadeAnimation
 import com.wheretogo.presentation.composable.content.NaverMap
 import com.wheretogo.presentation.composable.content.SlideAnimation
-import com.wheretogo.presentation.feature.GestureDirection
-import com.wheretogo.presentation.feature.detectDrag
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.viewmodel.DriveViewModel
 
@@ -95,7 +100,7 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
 
     FadeAnimation(visible = state.popUpState.isVisible) {
         BlurEffect(onClick = {
-            viewModel.handleIntent(DriveScreenIntent.PopUpClick)
+            viewModel.handleIntent(DriveScreenIntent.DismissPopup)
         })
     }
 
@@ -113,7 +118,7 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
                 DriveList(
                     data = state.listState.listData,
                     onItemClick = { selectedItem ->
-                        viewModel.handleIntent(DriveScreenIntent.ListItemClick(selectedItem))
+                        viewModel.handleIntent(DriveScreenIntent.DriveListItemClick(selectedItem))
                     }
                 )
             }
@@ -129,9 +134,6 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
                     holdContent = {
                         PopUpImage(
                             modifier = Modifier.align(alignment = Alignment.BottomStart),
-                            onClick = {
-                                viewModel.handleIntent(DriveScreenIntent.PopUpClick)
-                            },
                             url = state.popUpState.imageUrl
                         )
                     },
@@ -152,15 +154,14 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
                             visible = state.popUpState.isCommentVisible,
                             direction = if (isWideSize) AnimationDirection.CenterRight else AnimationDirection.CenterDown
                         ) {
-                            PopUpComment(
+                            PopUpCommentList(
                                 modifier = Modifier,
                                 isCompact = !isWideSize,
-                                state.popUpState.comment.data,
-                                onClick = {
-
-                                },
-                                onDrag = {
-                                    viewModel.handleIntent(DriveScreenIntent.CommentFloatingButtonClick)
+                                state.popUpState.commentState.data,
+                                onItemClick = { item ->
+                                    viewModel.handleIntent(
+                                        DriveScreenIntent.CommentListItemClick(item)
+                                    )
                                 }
                             )
                         }
@@ -224,43 +225,50 @@ fun CircularButton(
 }
 
 @Composable
-fun PopUpImage(modifier: Modifier, onClick: () -> Unit, url: String) {
+fun PopUpImage(modifier: Modifier, url: String) {
     GlideImage(modifier = modifier
         .sizeIn(maxWidth = 260.dp, maxHeight = 500.dp)
-        .clip(RoundedCornerShape(16.dp)), imageModel = { url })
+        .clip(RoundedCornerShape(16.dp)),
+        imageModel = { url }
+    )
 }
 
 @Composable
-fun PopUpComment(
+fun PopUpCommentList(
     modifier: Modifier,
     isCompact: Boolean,
     data: List<Comment>,
-    onClick: () -> Unit,
-    onDrag: () -> Unit
+    onItemClick: (Comment) -> Unit
 ) {
-    val interactionSource by remember { mutableStateOf(MutableInteractionSource()) }
-    var isDrag = true
     Box(
         modifier = modifier
             .sizeIn(maxWidth = 260.dp, maxHeight = if (isCompact) 350.dp else 500.dp)
             .clip(RoundedCornerShape(16.dp))
-            .background(colorResource(R.color.teal_200))
-            .fillMaxSize()
-            .pointerInput(Unit) {
-                detectDrag(direction = if(isCompact) GestureDirection.Down else GestureDirection.Left) {
-                    if (isDrag) {
-                        isDrag = false
-                        onDrag()
-                    }
-                }()
+            .background(colorResource(R.color.white))
+            .fillMaxSize(),
+    ) {
+        LazyColumn(Modifier.fillMaxSize()) {
+            items(data) { item ->
+                CommentListItem(modifier = Modifier.clickable {
+                    onItemClick(item)
+                }, item)
             }
-            .clickable(
-                indication = null,
-                interactionSource = interactionSource
-            ) {
-                onClick()
+        }
+    }
+}
+
+@Composable
+fun CommentListItem(modifier: Modifier, comment: Comment) {
+    Box(modifier = modifier.padding(10.dp)) {
+        Column(modifier.fillMaxWidth()) {
+            Text(comment.commentId.toString())
+            Row {
+                Text(comment.imoge)
+                Text(comment.content.toString())
             }
-    )
+            Text("❤ ${comment.like}")
+        }
+    }
 }
 
 @Composable
@@ -319,4 +327,28 @@ fun screenSize(isWidth: Boolean): Dp {
     val screenWidthDp = configuration.screenWidthDp
     val screenHeightDp = configuration.screenHeightDp
     return if (isWidth) screenWidthDp.dp else screenHeightDp.dp
+}
+
+
+// todo 실험용
+@Composable
+fun NestedDragScroll(
+    modifier: Modifier,
+    onDrag: (Offset) -> Unit,
+    content: @Composable () -> Unit
+) {
+    val nestedScrollDispatcher = remember { NestedScrollDispatcher() }
+    val nestedScrollConnection = remember {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                onDrag(available)
+
+                return super.onPreScroll(available, source)
+            }
+        }
+    }
+
+    Box(modifier = modifier.nestedScroll(nestedScrollConnection, nestedScrollDispatcher)) {
+        content()
+    }
 }

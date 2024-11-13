@@ -27,7 +27,7 @@ data class DriveScreenState(
         val isCommentVisible: Boolean = false,
         val checkPointId: Int = -1,
         val imageUrl: String = "",
-        val comment: CommentState = CommentState()
+        val commentState: CommentState = CommentState()
     ) {
         data class CommentState(val data: List<Comment> = emptyList())
     }

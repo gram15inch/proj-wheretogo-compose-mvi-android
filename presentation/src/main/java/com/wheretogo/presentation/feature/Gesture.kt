@@ -5,7 +5,7 @@ import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.ui.input.pointer.PointerInputScope
 
 enum class GestureDirection {
-    Right, Left, Down
+    Right, Left, Down, Up
 }
 
 suspend fun detectDrag(
@@ -13,7 +13,7 @@ suspend fun detectDrag(
     onDrag: () -> Unit
 ): suspend PointerInputScope.() -> Unit {
     return when (direction) {
-        GestureDirection.Left -> {
+        GestureDirection.Left  -> {
             {
                 detectHorizontalDragGestures(
                     onHorizontalDrag = { _, dragAmount ->
@@ -30,6 +30,18 @@ suspend fun detectDrag(
                 detectVerticalDragGestures(
                     onVerticalDrag = { _, dragAmount ->
                         if (dragAmount > 5) {
+                            onDrag()
+                        }
+                    }
+                )
+            }
+        }
+
+        GestureDirection.Up ->{
+            {
+                detectVerticalDragGestures(
+                    onVerticalDrag = { _, dragAmount ->
+                        if (dragAmount < 5) {
                             onDrag()
                         }
                     }
