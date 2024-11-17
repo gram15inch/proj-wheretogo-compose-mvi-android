@@ -10,7 +10,7 @@ import com.skt.Tmap.TMapTapi
 import com.wheretogo.domain.model.Course
 import com.wheretogo.presentation.BuildConfig
 
-fun Context.searchNaverMap(course: Course) {
+fun getNaverMapUrl(course: Course): String {
     val url =
         "nmap://route/car?slat=${course.start.latitude}&slng=${course.start.longitude}&sname=start" +
                 "&dlat=${course.goal.latitude}&dlng=${course.goal.longitude}&dname=end" +
@@ -22,15 +22,20 @@ fun Context.searchNaverMap(course: Course) {
                     str
                 } +
                 "&appname=com.dhkim139.wheretogo"
+    return url
+}
+
+fun Context.callNaverMap(course: Course) {
+    val url = getNaverMapUrl(course)
     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
     startActivity(intent)
 }
 
-fun Context.searchTMap(course: Course) {
-    val api = TMapTapi(this)
-    api.setSKTMapAuthentication(BuildConfig.TMAP_APP_KEY)
 
-    api.setOnAuthenticationListener(object : OnAccountsUpdateListener,
+fun TMapTapi.CallTMap(course: Course) {
+    setSKTMapAuthentication(BuildConfig.TMAP_APP_KEY)
+
+    setOnAuthenticationListener(object : OnAccountsUpdateListener,
         TMapTapi.OnAuthenticationListenerCallback {
         override fun onAccountsUpdated(p0: Array<out Account>?) {
 
@@ -57,13 +62,13 @@ fun Context.searchTMap(course: Course) {
                 routeMap["rV${idx + 1}Y"] = latlng.latitude.toString()
             }
 
-            if (!api.isTmapApplicationInstalled) {
-                api.tMapDownUrl?.let {
-                    openPlayStore(it[0])
-                    Log.d("tst", "${api.tMapDownUrl}")
+            if (!isTmapApplicationInstalled) {
+                tMapDownUrl?.let {
+                    //openPlayStore(it[0])
+                    Log.d("tst", "${tMapDownUrl}")
                 }
             } else {
-                api.invokeRoute(routeMap)
+                invokeRoute(routeMap)
             }
         }
 

@@ -1,28 +1,20 @@
 package com.wheretogo.presentation.composable
 
 import androidx.activity.compose.BackHandler
-import androidx.annotation.DrawableRes
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -33,16 +25,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollDispatcher
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,11 +39,13 @@ import com.naver.maps.map.NaverMap
 import com.naver.maps.map.overlay.Marker
 import com.skydoves.landscapist.glide.GlideImage
 import com.wheretogo.domain.model.Comment
+import com.wheretogo.domain.model.Course
 import com.wheretogo.domain.model.toMarkerTag
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.content.AnimationDirection
 import com.wheretogo.presentation.composable.content.DriveList
 import com.wheretogo.presentation.composable.content.FadeAnimation
+import com.wheretogo.presentation.composable.content.FloatingButtons
 import com.wheretogo.presentation.composable.content.NaverMap
 import com.wheretogo.presentation.composable.content.SlideAnimation
 import com.wheretogo.presentation.intent.DriveScreenIntent
@@ -107,11 +95,11 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(12.dp)
     ) {
-
         FadeAnimation(
-            modifier = Modifier.align(alignment = Alignment.BottomEnd),
+            modifier = Modifier
+                .align(alignment = Alignment.BottomEnd)
+                .padding(12.dp),
             visible = state.listState.isVisible
         ) {
             OneHandArea {
@@ -170,59 +158,34 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
             }
         }
 
-        Column(
-            modifier = Modifier
-                .align(alignment = Alignment.BottomEnd),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            SlideAnimation(
-                modifier = Modifier,
-                visible = state.floatingButtonState.isCommentVisible,
-                direction = AnimationDirection.RightCenter
-            ) {
-                CircularButton(icon = R.drawable.ic_comment,
-                    onClick = {
-                        viewModel.handleIntent(DriveScreenIntent.CommentFloatingButtonClick)
-                    })
+        FloatingButtons(
+            course = state.listState.clickItem.course,
+            isCommentVisible = state.floatingButtonState.isCommentVisible,
+            isExpertVisible = state.floatingButtonState.isExpertVisible,
+            isFoldVisible = state.floatingButtonState.isFoldVisible,
+            isBackPlate = state.floatingButtonState.isBackPlateVisible,
+            onCommentClick = {
+                viewModel.handleIntent(DriveScreenIntent.CommentFloatingButtonClick)
+            },
+            onExportMapClick = {
+                viewModel.handleIntent(DriveScreenIntent.ExpertMapFloatingButtonClick)
+            },
+            onFoldClick = {
+                viewModel.handleIntent(DriveScreenIntent.FoldFloatingButtonClick)
             }
-
-            SlideAnimation(
-                modifier = Modifier,
-                visible = state.floatingButtonState.isFoldVisible,
-                direction = AnimationDirection.RightCenter
-            ) {
-                CircularButton(icon = R.drawable.ic_fold_up,
-                    onClick = {
-                        viewModel.handleIntent(DriveScreenIntent.FoldFloatingButtonClick)
-                    })
-            }
-        }
-    }
-
-}
-
-
-@Composable
-fun CircularButton(
-    @DrawableRes icon: Int,
-    color: Color = Color.Blue,
-    onClick: () -> Unit
-) {
-    Button(
-        onClick = onClick,
-        modifier = Modifier
-            .size(62.dp)
-            .clip(CircleShape),
-        colors = ButtonDefaults.buttonColors(contentColor = color),
-        contentPadding = PaddingValues(0.dp)
-    ) {
-        Image(
-            painter = painterResource(id = icon),
-            contentDescription = "Icon Description",
-            modifier = Modifier.size(32.dp)
         )
     }
+
 }
+
+@Preview
+@Composable
+fun FloatingButtonPreview() {
+    FloatingButtons(modifier = Modifier.background(colorResource(R.color.gray_50)),
+        Course(), true, true, true, true,
+        {}, {}, {})
+}
+
 
 @Composable
 fun PopUpImage(modifier: Modifier, url: String) {
@@ -330,25 +293,3 @@ fun screenSize(isWidth: Boolean): Dp {
 }
 
 
-// todo 실험용
-@Composable
-fun NestedDragScroll(
-    modifier: Modifier,
-    onDrag: (Offset) -> Unit,
-    content: @Composable () -> Unit
-) {
-    val nestedScrollDispatcher = remember { NestedScrollDispatcher() }
-    val nestedScrollConnection = remember {
-        object : NestedScrollConnection {
-            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                onDrag(available)
-
-                return super.onPreScroll(available, source)
-            }
-        }
-    }
-
-    Box(modifier = modifier.nestedScroll(nestedScrollConnection, nestedScrollDispatcher)) {
-        content()
-    }
-}

@@ -20,6 +20,7 @@ data class DriveScreenState(
     data class ListState(
         val isVisible: Boolean = true,
         val listData: List<Journey> = emptyList(),
+        val clickItem: Journey = Journey()
     )
 
     data class PopUpState(
@@ -34,6 +35,8 @@ data class DriveScreenState(
 
     data class FloatingButtonState(
         val isFoldVisible: Boolean = false,
-        val isCommentVisible: Boolean = false
+        val isCommentVisible: Boolean = false,
+        val isExpertVisible: Boolean = false,
+        val isBackPlateVisible: Boolean = false
     )
 }

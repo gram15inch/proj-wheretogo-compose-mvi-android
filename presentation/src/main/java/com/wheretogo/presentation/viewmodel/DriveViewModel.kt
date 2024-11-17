@@ -71,6 +71,7 @@ class DriveViewModel @Inject constructor(
                 is DriveScreenIntent.CommentListItemClick -> commentListItemClick(intent.comment)
                 is DriveScreenIntent.FoldFloatingButtonClick -> foldFloatingButtonClick()
                 is DriveScreenIntent.CommentFloatingButtonClick -> commentFloatingButtonClick()
+                is DriveScreenIntent.ExpertMapFloatingButtonClick -> expertMapFloatingButtonClick()
             }
         }
     }
@@ -145,7 +146,8 @@ class DriveViewModel @Inject constructor(
                     isVisible = false
                 ),
                 floatingButtonState = floatingButtonState.copy(
-                    isFoldVisible = true
+                    isFoldVisible = true,
+                    isExpertVisible = false
                 )
             )
         }
@@ -165,7 +167,8 @@ class DriveViewModel @Inject constructor(
                 ),
                 floatingButtonState = floatingButtonState.copy(
                     isFoldVisible = true,
-                    isCommentVisible = true
+                    isCommentVisible = true,
+                    isBackPlateVisible = false,
                 )
             )
         }
@@ -206,8 +209,10 @@ class DriveViewModel @Inject constructor(
                         isVisible = false
                     ),
                     floatingButtonState = floatingButtonState.copy(
+                        isCommentVisible = false,
+                        isExpertVisible = false,
                         isFoldVisible = false,
-                        isCommentVisible = false
+                        isBackPlateVisible = false
                     )
                 )
             }
@@ -222,6 +227,17 @@ class DriveViewModel @Inject constructor(
                     isCommentVisible = !popUpState.isCommentVisible,
                     //todo 임시
                     commentState = popUpState.commentState.copy(data = getCommentDummy())
+                ),
+                floatingButtonState = floatingButtonState.copy(isBackPlateVisible = false)
+            )
+        }
+    }
+
+    private fun expertMapFloatingButtonClick() {
+        _driveScreenState.value = _driveScreenState.value.run {
+            copy(
+                floatingButtonState = floatingButtonState.copy(
+                    isBackPlateVisible = !floatingButtonState.isBackPlateVisible
                 )
             )
         }
@@ -242,10 +258,12 @@ class DriveViewModel @Inject constructor(
                     mapData = newMapData
                 ),
                 listState = listState.copy(
-                    isVisible = false
+                    isVisible = false,
+                    clickItem = journey
                 ),
                 floatingButtonState = floatingButtonState.copy(
-                    isFoldVisible = true
+                    isFoldVisible = true,
+                    isExpertVisible = true
                 )
             )
         }
