@@ -49,6 +49,8 @@ import com.wheretogo.presentation.composable.content.FloatingButtons
 import com.wheretogo.presentation.composable.content.NaverMap
 import com.wheretogo.presentation.composable.content.SlideAnimation
 import com.wheretogo.presentation.intent.DriveScreenIntent
+import com.wheretogo.presentation.model.getCommentDummy
+import com.wheretogo.presentation.model.getJourneyDummy
 import com.wheretogo.presentation.viewmodel.DriveViewModel
 
 @Composable
@@ -113,46 +115,23 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
         }
 
         FadeAnimation(
-            modifier = Modifier.align(alignment = Alignment.BottomEnd),
+            modifier = Modifier
+                .align(alignment = Alignment.BottomEnd)
+                .padding(6.dp),
             visible = state.popUpState.isVisible
         ) {
             OneHandArea {
-                ExtendArea(
-                    isExtend = isWideSize,
-                    holdContent = {
-                        PopUpImage(
-                            modifier = Modifier.align(alignment = Alignment.BottomStart),
-                            url = state.popUpState.imageUrl
-                        )
+                Popup(
+                    modifier = Modifier.align(Alignment.BottomStart),
+                    data = state.popUpState.commentState.data,
+                    imageUrl = state.popUpState.imageUrl,
+                    isWideSize = isWideSize,
+                    isCommentVisible = state.popUpState.isCommentVisible,
+                    onCommentListItemClick = { item ->
+                        viewModel.handleIntent(DriveScreenIntent.CommentListItemClick(item))
                     },
-                    moveContent = {
-                        FadeAnimation(visible = state.popUpState.isCommentVisible && !isWideSize) {
-                            BlurEffect(
-                                modifier = Modifier
-                                    .sizeIn(maxWidth = 260.dp, maxHeight = 500.dp)
-                                    .clip(RoundedCornerShape(16.dp)),
-                                onClick = {
-                                    viewModel.handleIntent(DriveScreenIntent.CommentFloatingButtonClick)
-                                })
-                        }
-                        SlideAnimation(
-                            modifier = Modifier
-                                .align(alignment = Alignment.BottomStart)
-                                .graphicsLayer(clip = true),
-                            visible = state.popUpState.isCommentVisible,
-                            direction = if (isWideSize) AnimationDirection.CenterRight else AnimationDirection.CenterDown
-                        ) {
-                            PopUpCommentList(
-                                modifier = Modifier,
-                                isCompact = !isWideSize,
-                                state.popUpState.commentState.data,
-                                onItemClick = { item ->
-                                    viewModel.handleIntent(
-                                        DriveScreenIntent.CommentListItemClick(item)
-                                    )
-                                }
-                            )
-                        }
+                    onCommentFloatingButtonClick = {
+                        viewModel.handleIntent(DriveScreenIntent.CommentFloatingButtonClick)
                     }
                 )
             }
@@ -180,10 +159,85 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
 
 @Preview
 @Composable
+fun PopupPreview() {
+    Box(modifier = Modifier) {
+        Popup(
+            modifier = Modifier.align(alignment = Alignment.BottomEnd),
+            getCommentDummy(),
+            imageUrl = "",
+            isWideSize = false,
+            isCommentVisible = true,
+            onCommentListItemClick = {},
+            onCommentFloatingButtonClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+fun DriveListPreview() {
+    DriveList(
+        data = getJourneyDummy(),
+        onItemClick = {}
+    )
+}
+
+@Preview
+@Composable
 fun FloatingButtonPreview() {
-    FloatingButtons(modifier = Modifier.background(colorResource(R.color.gray_50)),
+    FloatingButtons(modifier = Modifier
+        .background(colorResource(R.color.gray_50)),
         Course(), true, true, true, true,
         {}, {}, {})
+}
+
+
+
+@Composable
+fun Popup(
+    modifier: Modifier,
+    data: List<Comment>,
+    imageUrl: String,
+    isWideSize: Boolean,
+    isCommentVisible: Boolean,
+    onCommentFloatingButtonClick: () -> Unit,
+    onCommentListItemClick: (Comment) -> Unit
+) {
+    ExtendArea(
+        isExtend = isWideSize,
+        holdContent = {
+            PopUpImage(
+                modifier = modifier,
+                url = imageUrl
+            )
+        },
+        moveContent = {
+            FadeAnimation(visible = isCommentVisible && !isWideSize) {
+                BlurEffect(
+                    modifier = Modifier
+                        .sizeIn(maxWidth = 260.dp, maxHeight = 500.dp)
+                        .clip(RoundedCornerShape(16.dp)),
+                    onClick = {
+                        onCommentFloatingButtonClick()
+                    })
+            }
+            SlideAnimation(
+                modifier = modifier
+                    .graphicsLayer(clip = true),
+                visible = isCommentVisible,
+                direction = if (isWideSize) AnimationDirection.CenterRight else AnimationDirection.CenterDown
+            ) {
+                PopUpCommentList(
+                    modifier = Modifier,
+                    isCompact = !isWideSize,
+                    data,
+                    onItemClick = { item ->
+                        onCommentListItemClick(item)
+                    }
+                )
+            }
+        }
+    )
 }
 
 

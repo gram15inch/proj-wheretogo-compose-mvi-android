@@ -99,3 +99,11 @@ fun getCommentDummy(): List<Comment> {
         ),
     )
 }
+
+
+fun getJourneyDummy():List<Journey>{
+    return listOf(
+        Journey(1001,"운전연수 코스 1001","20", emptyList(),""),
+        Journey(1002,"운전연수 코스 1002","15", emptyList(),""),
+    )
+}

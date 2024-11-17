@@ -58,8 +58,7 @@ fun FloatingButtons(
     onFoldClick: () -> Unit
 ) {
     Box(
-        modifier = modifier
-            .fillMaxSize(),
+        modifier = modifier,
         contentAlignment = Alignment.BottomEnd
     ) {
         val context = LocalContext.current
