@@ -73,7 +73,9 @@ fun MapPopup(
         isExtend = isWideSize,
         holdContent = {
             PopUpImage(
-                modifier = modifier,
+                modifier = modifier.clickable {
+                    onCommentFloatingButtonClick()
+                },
                 url = imageUrl
             )
         },
