@@ -35,18 +35,30 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wheretogo.domain.model.Journey
 import com.wheretogo.presentation.R
+import com.wheretogo.presentation.model.getJourneyDummy
 import com.wheretogo.presentation.theme.White100
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 
 
+@Preview
+@Composable
+fun DriveListPreview() {
+    DriveList(
+        modifier = Modifier,
+        data = getJourneyDummy(),
+        onItemClick = {}
+    )
+}
+
 @Composable
 fun DriveList(
+    modifier: Modifier,
     data: List<Journey>,
     onItemClick: (Journey) -> Unit
 ) {
     val listState = rememberLazyListState()
     LazyColumn(
-        modifier = Modifier,
+        modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(6.dp),
         state = listState
     ) {
@@ -147,10 +159,4 @@ fun driveItemAttribute(modifier: Modifier, content: String, type: String) {
             )
         }
     }
-}
-
-@Preview
-@Composable
-fun DriveListItemPreview() {
-    DriveListItem(Modifier, Journey(tag = listOf(1, 2)))
 }

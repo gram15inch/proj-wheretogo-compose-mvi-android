@@ -3,6 +3,7 @@ package com.wheretogo.presentation.model
 
 import com.wheretogo.domain.model.Comment
 import com.wheretogo.domain.model.Course
+import com.wheretogo.domain.model.Journey
 import com.wheretogo.domain.model.LatLng
 import com.kakao.vectormap.LatLng as KakaoLatLng
 import com.naver.maps.geometry.LatLng as NaverLatLng
@@ -48,62 +49,80 @@ fun getCommentDummy(): List<Comment> {
             userId = 2024,
             checkpointId = 101,
             imoge = "\uD83D\uDE19",
-            content = "content",
+            detailedReview = "자세한 리뷰가 오는 공간입니다 자세한 리뷰가 오는 공간입니다 자세한 리뷰가 오는 공간입니다.",
+            singleLineReview = "한줄평이 오는 공간입니다.",
             date = System.currentTimeMillis(),
-            like = 3
+            like = 3,
+            isLike = true,
+            isFold = true
         ),
         Comment(
             commentId = 2,
             userId = 2024,
             checkpointId = 101,
             imoge = "\uD83D\uDE10",
-            content = "content",
+            detailedReview = "자세한 리뷰가 오는 공간입니다 자세한 리뷰가 오는 공간입니다 자세한 리뷰가 오는 공간입니다.",
+            singleLineReview = "한줄평이 오는 공간입니다.",
             date = System.currentTimeMillis(),
-            like = 5
+            like = 5,
+            isLike = false,
+            isFold = true
         ),
         Comment(
             commentId = 3,
             userId = 2024,
             checkpointId = 102,
             imoge = "\uD83D\uDE07",
-            content = "content",
+            detailedReview = "자세한 리뷰가 오는 공간입니다 자세한 리뷰가 오는 공간입니다 자세한 리뷰가 오는 공간입니다.",
+            singleLineReview = "한줄평이 오는 공간입니다.",
             date = System.currentTimeMillis(),
-            like = 0
+            like = 0,
+            isLike = true,
+            isFold = false
         ),
         Comment(
             commentId = 4,
             userId = 2025,
             checkpointId = 103,
             imoge = "\uD83D\uDE07",
-            content = "content",
+            detailedReview = "자세한 리뷰가 오는 공간입니다 자세한 리뷰가 오는 공간입니다 자세한 리뷰가 오는 공간입니다.",
+            singleLineReview = "한줄평이 오는 공간입니다.",
             date = System.currentTimeMillis(),
-            like = 0
+            like = 0,
+            isLike = false,
+            isFold = true
         ),
         Comment(
             commentId = 5,
             userId = 2025,
             checkpointId = 104,
             imoge = "\uD83D\uDE10",
-            content = "content",
+            detailedReview = "자세한 리뷰가 오는 공간입니다 자세한 리뷰가 오는 공간입니다 자세한 리뷰가 오는 공간입니다.",
+            singleLineReview = "한줄평이 오는 공간입니다.",
             date = System.currentTimeMillis(),
-            like = 40
+            like = 40,
+            isLike = false,
+            isFold = true
         ),
         Comment(
             commentId = 6,
             userId = 2025,
             checkpointId = 104,
             imoge = "\uD83D\uDE10",
-            content = "content",
+            detailedReview = "자세한 리뷰가 오는 공간입니다 자세한 리뷰가 오는 공간입니다 자세한 리뷰가 오는 공간입니다.",
+            singleLineReview = "한줄평이 오는 공간입니다.",
             date = System.currentTimeMillis(),
-            like = 22
+            like = 22,
+            isLike = false,
+            isFold = true
         ),
     )
 }
 
 
-fun getJourneyDummy():List<Journey>{
+fun getJourneyDummy(): List<Journey> {
     return listOf(
-        Journey(1001,"운전연수 코스 1001","20", emptyList(),""),
-        Journey(1002,"운전연수 코스 1002","15", emptyList(),""),
+        Journey(1001, "운전연수 코스 1001", "20", emptyList(), ""),
+        Journey(1002, "운전연수 코스 1002", "15", emptyList(), ""),
     )
 }

@@ -69,9 +69,10 @@ class DriveViewModel @Inject constructor(
                 is DriveScreenIntent.CheckPointMarkerClick -> checkPointMarkerClick(intent.tag)
                 is DriveScreenIntent.DriveListItemClick -> driveListItemClick(intent.journey)
                 is DriveScreenIntent.CommentListItemClick -> commentListItemClick(intent.comment)
+                is DriveScreenIntent.CommentLikeClick -> commentLikeClick(intent.comment)
                 is DriveScreenIntent.FoldFloatingButtonClick -> foldFloatingButtonClick()
                 is DriveScreenIntent.CommentFloatingButtonClick -> commentFloatingButtonClick()
-                is DriveScreenIntent.ExpertMapFloatingButtonClick -> expertMapFloatingButtonClick()
+                is DriveScreenIntent.ExportMapFloatingButtonClick -> exportMapFloatingButtonClick()
             }
         }
     }
@@ -147,7 +148,7 @@ class DriveViewModel @Inject constructor(
                 ),
                 floatingButtonState = floatingButtonState.copy(
                     isFoldVisible = true,
-                    isExpertVisible = false
+                    isExportVisible = false
                 )
             )
         }
@@ -210,7 +211,7 @@ class DriveViewModel @Inject constructor(
                     ),
                     floatingButtonState = floatingButtonState.copy(
                         isCommentVisible = false,
-                        isExpertVisible = false,
+                        isExportVisible = false,
                         isFoldVisible = false,
                         isBackPlateVisible = false
                     )
@@ -233,7 +234,7 @@ class DriveViewModel @Inject constructor(
         }
     }
 
-    private fun expertMapFloatingButtonClick() {
+    private fun exportMapFloatingButtonClick() {
         _driveScreenState.value = _driveScreenState.value.run {
             copy(
                 floatingButtonState = floatingButtonState.copy(
@@ -263,7 +264,7 @@ class DriveViewModel @Inject constructor(
                 ),
                 floatingButtonState = floatingButtonState.copy(
                     isFoldVisible = true,
-                    isExpertVisible = true
+                    isExportVisible = true
                 )
             )
         }
@@ -275,7 +276,22 @@ class DriveViewModel @Inject constructor(
                 popUpState = popUpState.copy(
                     commentState = popUpState.commentState.copy(data = popUpState.commentState.data.map {
                         if (it.commentId == comment.commentId)
-                            it.copy(like = it.like + 1)
+                            it.copy(isFold = !it.isFold)
+                        else
+                            it
+                    })
+                )
+            )
+        }
+    }
+
+    private fun commentLikeClick(comment: Comment) {
+        _driveScreenState.value = _driveScreenState.value.run {
+            copy(
+                popUpState = popUpState.copy(
+                    commentState = popUpState.commentState.copy(data = popUpState.commentState.data.map {
+                        if (it.commentId == comment.commentId)
+                            it.copy(like = it.like + if (it.isLike) -1 else +1, isLike = !it.isLike)
                         else
                             it
                     })

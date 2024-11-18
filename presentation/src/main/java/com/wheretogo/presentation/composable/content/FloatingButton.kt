@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -33,8 +32,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,14 +46,24 @@ import com.wheretogo.presentation.feature.CallTMap
 import com.wheretogo.presentation.feature.callNaverMap
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 
+@Preview
+@Composable
+fun FloatingButtonPreview() {
+    FloatingButtons(modifier = Modifier
+        .background(colorResource(R.color.gray_50)),
+        Course(), true, true, true, true,
+        {}, {}, {})
+}
+
+
 @Composable
 fun FloatingButtons(
     modifier: Modifier = Modifier,
     course: Course,
     isCommentVisible: Boolean,
-    isExpertVisible: Boolean,
+    isExportVisible: Boolean,
     isFoldVisible: Boolean,
-    isBackPlate: Boolean,
+    isExportBackPlate: Boolean,
     onCommentClick: () -> Unit,
     onExportMapClick: () -> Unit,
     onFoldClick: () -> Unit
@@ -65,7 +76,7 @@ fun FloatingButtons(
         val buttonEndPadding = 12.dp
         Column(
             horizontalAlignment = Alignment.End,
-            verticalArrangement = Arrangement.spacedBy(if (isBackPlate) 0.dp else 9.dp),
+            verticalArrangement = Arrangement.spacedBy(if (isExportBackPlate) 0.dp else 9.dp),
             modifier = Modifier
                 .padding(vertical = 12.dp)
                 .fillMaxWidth()
@@ -85,21 +96,21 @@ fun FloatingButtons(
 
             SlideAnimation(
                 modifier = Modifier,
-                visible = isExpertVisible,
+                visible = isExportVisible,
                 direction = AnimationDirection.RightCenter
             ) {
                 Box(modifier = Modifier.graphicsLayer(clip = false)) {
                     CirclePlateButton(
                         modifier = Modifier.align(Alignment.CenterEnd),
                         icon = R.drawable.ic_setting,
-                        isBackPlate = isBackPlate && isExpertVisible,
+                        isBackPlate = isExportBackPlate && isExportVisible,
                         buttonEndPadding = buttonEndPadding,
                         onNaverClick = {
                             context.callNaverMap(course)
                             onExportMapClick()
                         },
                         onKaKaoClick = {
-                           //todo 구현
+                            //todo 구현
                             onExportMapClick()
                         },
                         onTClick = {
@@ -166,7 +177,7 @@ fun CirclePlateButton(
     onNaverClick: () -> Unit,
     onTClick: () -> Unit,
     onKaKaoClick: () -> Unit,
-    onExpertClick: () -> Unit,
+    onExportClick: () -> Unit,
 ) {
     var targetOffset by remember { mutableStateOf(0.dp) }
     val animatedOffset by animateDpAsState(targetValue = targetOffset)
@@ -250,7 +261,7 @@ fun CirclePlateButton(
         CircleButton(
             icon = icon
         ) {
-            onExpertClick()
+            onExportClick()
         }
     }
 }

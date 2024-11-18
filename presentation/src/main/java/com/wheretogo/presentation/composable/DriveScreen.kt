@@ -8,13 +8,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -24,11 +19,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,20 +30,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.overlay.Marker
-import com.skydoves.landscapist.glide.GlideImage
-import com.wheretogo.domain.model.Comment
-import com.wheretogo.domain.model.Course
 import com.wheretogo.domain.model.toMarkerTag
 import com.wheretogo.presentation.R
-import com.wheretogo.presentation.composable.content.AnimationDirection
 import com.wheretogo.presentation.composable.content.DriveList
 import com.wheretogo.presentation.composable.content.FadeAnimation
 import com.wheretogo.presentation.composable.content.FloatingButtons
+import com.wheretogo.presentation.composable.content.MapPopup
 import com.wheretogo.presentation.composable.content.NaverMap
-import com.wheretogo.presentation.composable.content.SlideAnimation
 import com.wheretogo.presentation.intent.DriveScreenIntent
-import com.wheretogo.presentation.model.getCommentDummy
-import com.wheretogo.presentation.model.getJourneyDummy
 import com.wheretogo.presentation.viewmodel.DriveViewModel
 
 @Composable
@@ -65,6 +52,7 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
     Column(modifier = Modifier.zIndex(1f)) {
         Text("${state.mapState.mapData.size}", fontSize = 50.sp)
     }
+
     NaverMap(
         modifier = Modifier.zIndex(0f),
         overlayMap = state.mapState.mapData,
@@ -101,11 +89,12 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
         FadeAnimation(
             modifier = Modifier
                 .align(alignment = Alignment.BottomEnd)
-                .padding(12.dp),
+                .padding(horizontal = 12.dp),
             visible = state.listState.isVisible
         ) {
             OneHandArea {
                 DriveList(
+                    modifier = Modifier.align(alignment = Alignment.BottomEnd),
                     data = state.listState.listData,
                     onItemClick = { selectedItem ->
                         viewModel.handleIntent(DriveScreenIntent.DriveListItemClick(selectedItem))
@@ -121,33 +110,37 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
             visible = state.popUpState.isVisible
         ) {
             OneHandArea {
-                Popup(
+                MapPopup(
                     modifier = Modifier.align(Alignment.BottomStart),
                     data = state.popUpState.commentState.data,
                     imageUrl = state.popUpState.imageUrl,
                     isWideSize = isWideSize,
                     isCommentVisible = state.popUpState.isCommentVisible,
+                    onCommentFloatingButtonClick = {
+                        viewModel.handleIntent(DriveScreenIntent.CommentFloatingButtonClick)
+                    },
                     onCommentListItemClick = { item ->
                         viewModel.handleIntent(DriveScreenIntent.CommentListItemClick(item))
                     },
-                    onCommentFloatingButtonClick = {
-                        viewModel.handleIntent(DriveScreenIntent.CommentFloatingButtonClick)
+                    onCommentLikeClick = { item ->
+                        viewModel.handleIntent(DriveScreenIntent.CommentLikeClick(item))
                     }
                 )
             }
         }
 
         FloatingButtons(
+            modifier = Modifier.fillMaxSize(),
             course = state.listState.clickItem.course,
             isCommentVisible = state.floatingButtonState.isCommentVisible,
-            isExpertVisible = state.floatingButtonState.isExpertVisible,
+            isExportVisible = state.floatingButtonState.isExportVisible,
             isFoldVisible = state.floatingButtonState.isFoldVisible,
-            isBackPlate = state.floatingButtonState.isBackPlateVisible,
+            isExportBackPlate = state.floatingButtonState.isBackPlateVisible,
             onCommentClick = {
                 viewModel.handleIntent(DriveScreenIntent.CommentFloatingButtonClick)
             },
             onExportMapClick = {
-                viewModel.handleIntent(DriveScreenIntent.ExpertMapFloatingButtonClick)
+                viewModel.handleIntent(DriveScreenIntent.ExportMapFloatingButtonClick)
             },
             onFoldClick = {
                 viewModel.handleIntent(DriveScreenIntent.FoldFloatingButtonClick)
@@ -157,136 +150,8 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
 
 }
 
-@Preview
-@Composable
-fun PopupPreview() {
-    Box(modifier = Modifier) {
-        Popup(
-            modifier = Modifier.align(alignment = Alignment.BottomEnd),
-            getCommentDummy(),
-            imageUrl = "",
-            isWideSize = false,
-            isCommentVisible = true,
-            onCommentListItemClick = {},
-            onCommentFloatingButtonClick = {}
-        )
-    }
-}
+//미리보기
 
-@Preview
-@Composable
-fun DriveListPreview() {
-    DriveList(
-        data = getJourneyDummy(),
-        onItemClick = {}
-    )
-}
-
-@Preview
-@Composable
-fun FloatingButtonPreview() {
-    FloatingButtons(modifier = Modifier
-        .background(colorResource(R.color.gray_50)),
-        Course(), true, true, true, true,
-        {}, {}, {})
-}
-
-
-
-@Composable
-fun Popup(
-    modifier: Modifier,
-    data: List<Comment>,
-    imageUrl: String,
-    isWideSize: Boolean,
-    isCommentVisible: Boolean,
-    onCommentFloatingButtonClick: () -> Unit,
-    onCommentListItemClick: (Comment) -> Unit
-) {
-    ExtendArea(
-        isExtend = isWideSize,
-        holdContent = {
-            PopUpImage(
-                modifier = modifier,
-                url = imageUrl
-            )
-        },
-        moveContent = {
-            FadeAnimation(visible = isCommentVisible && !isWideSize) {
-                BlurEffect(
-                    modifier = Modifier
-                        .sizeIn(maxWidth = 260.dp, maxHeight = 500.dp)
-                        .clip(RoundedCornerShape(16.dp)),
-                    onClick = {
-                        onCommentFloatingButtonClick()
-                    })
-            }
-            SlideAnimation(
-                modifier = modifier
-                    .graphicsLayer(clip = true),
-                visible = isCommentVisible,
-                direction = if (isWideSize) AnimationDirection.CenterRight else AnimationDirection.CenterDown
-            ) {
-                PopUpCommentList(
-                    modifier = Modifier,
-                    isCompact = !isWideSize,
-                    data,
-                    onItemClick = { item ->
-                        onCommentListItemClick(item)
-                    }
-                )
-            }
-        }
-    )
-}
-
-
-@Composable
-fun PopUpImage(modifier: Modifier, url: String) {
-    GlideImage(modifier = modifier
-        .sizeIn(maxWidth = 260.dp, maxHeight = 500.dp)
-        .clip(RoundedCornerShape(16.dp)),
-        imageModel = { url }
-    )
-}
-
-@Composable
-fun PopUpCommentList(
-    modifier: Modifier,
-    isCompact: Boolean,
-    data: List<Comment>,
-    onItemClick: (Comment) -> Unit
-) {
-    Box(
-        modifier = modifier
-            .sizeIn(maxWidth = 260.dp, maxHeight = if (isCompact) 350.dp else 500.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(colorResource(R.color.white))
-            .fillMaxSize(),
-    ) {
-        LazyColumn(Modifier.fillMaxSize()) {
-            items(data) { item ->
-                CommentListItem(modifier = Modifier.clickable {
-                    onItemClick(item)
-                }, item)
-            }
-        }
-    }
-}
-
-@Composable
-fun CommentListItem(modifier: Modifier, comment: Comment) {
-    Box(modifier = modifier.padding(10.dp)) {
-        Column(modifier.fillMaxWidth()) {
-            Text(comment.commentId.toString())
-            Row {
-                Text(comment.imoge)
-                Text(comment.content.toString())
-            }
-            Text("❤ ${comment.like}")
-        }
-    }
-}
 
 @Composable
 fun OneHandArea(content: @Composable () -> Unit) {
@@ -301,7 +166,6 @@ fun OneHandArea(content: @Composable () -> Unit) {
 @Composable
 fun BlurEffect(modifier: Modifier = Modifier, onClick: () -> Unit) {
     val interactionSource by remember { mutableStateOf(MutableInteractionSource()) }
-
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -312,9 +176,7 @@ fun BlurEffect(modifier: Modifier = Modifier, onClick: () -> Unit) {
             ) {
                 onClick()
             }
-    ) {
-
-    }
+    )
 }
 
 @Composable
@@ -345,5 +207,6 @@ fun screenSize(isWidth: Boolean): Dp {
     val screenHeightDp = configuration.screenHeightDp
     return if (isWidth) screenWidthDp.dp else screenHeightDp.dp
 }
+
 
 
