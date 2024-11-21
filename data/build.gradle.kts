@@ -81,6 +81,10 @@ dependencies {
     implementation(Firebase.FIREBASE_DATABASE)
     implementation(Firebase.FIREBASE_FIRESTORE_KTX)
     implementation(Firebase.FIREBASE_STORAGE_KTX)
+
+    implementation("com.google.firebase:firebase-auth-ktx:23.1.0")
+
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
 }
 
 fun getAppKey(propertyKey: String): String {

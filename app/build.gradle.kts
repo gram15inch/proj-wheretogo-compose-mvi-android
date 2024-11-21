@@ -143,7 +143,7 @@ dependencies {
     implementation(Firebase.FIREBASE_FIRESTORE_KTX)
     implementation(Firebase.FIREBASE_STORAGE_KTX)
 
-
+    implementation("com.google.firebase:firebase-auth-ktx:23.1.0")
 }
 
 tasks.withType(Test::class) {

@@ -36,6 +36,9 @@ android {
         buildConfigField( "String", "KAKAO_ADMIN_KEY", getAppKey("kakaoNativeApp"))
 
         buildConfigField( "String", "TMAP_APP_KEY", getAppKey("tmapApp"))
+
+        buildConfigField( "String", "GOOGLE_WEB_CLIENT_ID_KEY", getAppKey("googleWebClientId"))
+
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -96,11 +99,16 @@ dependencies {
     implementation("com.naver.maps:map-sdk:3.19.1")
     implementation(files("libs/com.skt.Tmap_1.76.jar"))
 
+
+    implementation("androidx.credentials:credentials:1.3.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+
     //etc
     implementation("com.valentinilk.shimmer:compose-shimmer:1.3.1")
     implementation("com.google.android.gms:play-services-location:21.3.0")
     implementation("com.github.skydoves:landscapist-glide:2.4.0")
-
+    implementation("com.google.accompanist:accompanist-navigation-animation:0.31.1-alpha")
 }
 
 fun getAppKey(propertyKey: String): String {
