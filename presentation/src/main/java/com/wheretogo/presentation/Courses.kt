@@ -1,7 +1,7 @@
 package com.wheretogo.presentation
 
-import com.wheretogo.domain.model.Course
-import com.wheretogo.domain.model.LatLng
+import com.wheretogo.domain.model.map.Course
+import com.wheretogo.domain.model.map.LatLng
 
 val c1= Course( // 기흥호수공원 순환
     code=1001,

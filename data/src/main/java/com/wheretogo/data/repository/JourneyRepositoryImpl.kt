@@ -11,10 +11,10 @@ import com.wheretogo.data.model.toJourney
 import com.wheretogo.data.model.toLocalCourse
 import com.wheretogo.data.model.toLocalJourney
 import com.wheretogo.data.model.toLocalLatlngList
-import com.wheretogo.domain.model.Course
-import com.wheretogo.domain.model.Journey
-import com.wheretogo.domain.model.LatLng
-import com.wheretogo.domain.model.Viewport
+import com.wheretogo.domain.model.map.Course
+import com.wheretogo.domain.model.map.Journey
+import com.wheretogo.domain.model.map.LatLng
+import com.wheretogo.domain.model.map.Viewport
 import com.wheretogo.domain.repository.CourseRepository
 import com.wheretogo.domain.repository.JourneyRepository
 import javax.inject.Inject

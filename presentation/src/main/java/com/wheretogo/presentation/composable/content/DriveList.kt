@@ -33,7 +33,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wheretogo.domain.model.Journey
+import com.wheretogo.domain.model.map.Journey
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.model.getJourneyDummy
 import com.wheretogo.presentation.theme.White100

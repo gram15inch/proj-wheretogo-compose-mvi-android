@@ -3,9 +3,9 @@ package com.wheretogo.data.model
 import com.wheretogo.data.model.journey.LocalCourse
 import com.wheretogo.data.model.journey.LocalJourney
 import com.wheretogo.data.model.journey.LocalLatLng
-import com.wheretogo.domain.model.Course
-import com.wheretogo.domain.model.Journey
-import com.wheretogo.domain.model.LatLng
+import com.wheretogo.domain.model.map.Course
+import com.wheretogo.domain.model.map.Journey
+import com.wheretogo.domain.model.map.LatLng
 
 
 fun LocalJourney.toJourney(): Journey {

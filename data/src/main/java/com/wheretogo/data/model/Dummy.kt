@@ -1,7 +1,7 @@
 package com.wheretogo.data.model
 
-import com.wheretogo.domain.model.CheckPoint
-import com.wheretogo.domain.model.LatLng
+import com.wheretogo.domain.model.map.CheckPoint
+import com.wheretogo.domain.model.map.LatLng
 
 val checkpoint1006 = listOf(
     CheckPoint(id = 101, latLng = LatLng(latitude = 37.2763159, longitude = 127.115934)),

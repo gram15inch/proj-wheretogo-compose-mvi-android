@@ -4,7 +4,7 @@ import com.naver.maps.map.CameraAnimation
 import com.naver.maps.map.CameraPosition
 import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.NaverMap
-import com.wheretogo.domain.model.LatLng
+import com.wheretogo.domain.model.map.LatLng
 
 fun NaverMap.rotateCamera(latLng: LatLng){
     if (cameraPosition.bearing != 0.0 || cameraPosition.tilt != 0.0)

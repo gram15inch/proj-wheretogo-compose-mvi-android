@@ -1,7 +1,7 @@
 package com.wheretogo.presentation.state
 
-import com.wheretogo.domain.model.Comment
-import com.wheretogo.domain.model.Journey
+import com.wheretogo.domain.model.map.Comment
+import com.wheretogo.domain.model.map.Journey
 import com.wheretogo.presentation.model.MapOverlay
 
 

@@ -1,5 +1,7 @@
 package com.wheretogo.domain.model
 
+import com.wheretogo.domain.model.map.CheckPoint
+
 
 const val COURSE_MIN = 1000
 const val CHECKPOINT_MIN = 0

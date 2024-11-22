@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.skt.Tmap.TMapTapi
-import com.wheretogo.domain.model.Course
+import com.wheretogo.domain.model.map.Course
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.CallTMap
 import com.wheretogo.presentation.feature.callNaverMap

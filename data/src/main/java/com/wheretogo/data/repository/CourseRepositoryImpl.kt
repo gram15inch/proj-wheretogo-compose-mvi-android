@@ -3,7 +3,7 @@ package com.wheretogo.data.repository
 import com.google.firebase.firestore.FirebaseFirestore
 import com.wheretogo.data.model.journey.LocalCourse
 import com.wheretogo.data.model.toCourse
-import com.wheretogo.domain.model.Course
+import com.wheretogo.domain.model.map.Course
 import com.wheretogo.domain.repository.CourseRepository
 import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject

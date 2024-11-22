@@ -1,8 +1,8 @@
 package com.wheretogo.domain.repository
 
-import com.wheretogo.domain.model.Course
-import com.wheretogo.domain.model.Journey
-import com.wheretogo.domain.model.Viewport
+import com.wheretogo.domain.model.map.Course
+import com.wheretogo.domain.model.map.Journey
+import com.wheretogo.domain.model.map.Viewport
 
 
 interface JourneyRepository {

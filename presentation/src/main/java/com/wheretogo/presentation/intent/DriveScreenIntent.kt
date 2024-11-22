@@ -1,10 +1,10 @@
 package com.wheretogo.presentation.intent
 
-import com.wheretogo.domain.model.Comment
-import com.wheretogo.domain.model.Journey
-import com.wheretogo.domain.model.LatLng
+import com.wheretogo.domain.model.map.Comment
+import com.wheretogo.domain.model.map.Journey
+import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.MarkerTag
-import com.wheretogo.domain.model.Viewport
+import com.wheretogo.domain.model.map.Viewport
 
 sealed class DriveScreenIntent {
     //결과

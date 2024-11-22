@@ -1,9 +1,9 @@
 package com.wheretogo.domain.mock
 
-import com.wheretogo.domain.model.Course
-import com.wheretogo.domain.model.Journey
-import com.wheretogo.domain.model.LatLng
-import com.wheretogo.domain.model.Viewport
+import com.wheretogo.domain.model.map.Course
+import com.wheretogo.domain.model.map.Journey
+import com.wheretogo.domain.model.map.LatLng
+import com.wheretogo.domain.model.map.Viewport
 import com.wheretogo.domain.usecase.FetchJourneyWithoutPointsUseCase
 import com.wheretogo.domain.usecase.GetJourneyUseCase
 import com.wheretogo.domain.usecase.GetNearByJourneyUseCase

@@ -2,12 +2,13 @@ package com.wheretogo.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.wheretogo.domain.model.CheckPoint
-import com.wheretogo.domain.model.Comment
-import com.wheretogo.domain.model.Journey
-import com.wheretogo.domain.model.LatLng
 import com.wheretogo.domain.model.MarkerTag
-import com.wheretogo.domain.model.Viewport
+import com.wheretogo.domain.model.map.CheckPoint
+import com.wheretogo.domain.model.map.Comment
+import com.wheretogo.domain.model.map.Journey
+import com.wheretogo.domain.model.map.LatLng
+import com.wheretogo.domain.model.map.Viewport
+
 import com.wheretogo.domain.usecase.GetNearByJourneyUseCase
 import com.wheretogo.presentation.exceptions.MapNotInitializedException
 import com.wheretogo.presentation.feature.naver.getMapOverlay

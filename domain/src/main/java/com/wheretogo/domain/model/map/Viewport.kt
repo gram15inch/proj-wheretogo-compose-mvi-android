@@ -1,4 +1,4 @@
-package com.wheretogo.domain.model
+package com.wheretogo.domain.model.map
 
 data class Viewport(
     val minLatitude: Double=0.0,

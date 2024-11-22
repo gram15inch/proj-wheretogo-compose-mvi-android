@@ -23,8 +23,8 @@ import com.naver.maps.map.NaverMap
 import com.naver.maps.map.overlay.Overlay
 import com.naver.maps.map.util.FusedLocationSource
 import com.wheretogo.domain.model.COURSE_MIN
-import com.wheretogo.domain.model.LatLng
-import com.wheretogo.domain.model.Viewport
+import com.wheretogo.domain.model.map.LatLng
+import com.wheretogo.domain.model.map.Viewport
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.toDomainLatLng
 import kotlinx.coroutines.launch

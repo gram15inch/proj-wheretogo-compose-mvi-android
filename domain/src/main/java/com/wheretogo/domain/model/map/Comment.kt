@@ -1,4 +1,4 @@
-package com.wheretogo.domain.model
+package com.wheretogo.domain.model.map
 
 data class Comment(
     val commentId: Int = -1,

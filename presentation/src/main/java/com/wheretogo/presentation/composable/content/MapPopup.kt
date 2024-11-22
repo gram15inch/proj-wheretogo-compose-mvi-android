@@ -31,7 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.skydoves.landscapist.glide.GlideImage
-import com.wheretogo.domain.model.Comment
+import com.wheretogo.domain.model.map.Comment
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.BlurEffect
 import com.wheretogo.presentation.composable.ExtendArea

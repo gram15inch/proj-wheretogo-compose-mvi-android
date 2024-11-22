@@ -7,7 +7,7 @@ import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import com.skt.Tmap.TMapTapi
-import com.wheretogo.domain.model.Course
+import com.wheretogo.domain.model.map.Course
 import com.wheretogo.presentation.BuildConfig
 
 fun getNaverMapUrl(course: Course): String {

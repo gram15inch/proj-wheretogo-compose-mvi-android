@@ -1,10 +1,10 @@
 package com.wheretogo.presentation.model
 
 
-import com.wheretogo.domain.model.Comment
-import com.wheretogo.domain.model.Course
-import com.wheretogo.domain.model.Journey
-import com.wheretogo.domain.model.LatLng
+import com.wheretogo.domain.model.map.Comment
+import com.wheretogo.domain.model.map.Course
+import com.wheretogo.domain.model.map.Journey
+import com.wheretogo.domain.model.map.LatLng
 import com.kakao.vectormap.LatLng as KakaoLatLng
 import com.naver.maps.geometry.LatLng as NaverLatLng
 
