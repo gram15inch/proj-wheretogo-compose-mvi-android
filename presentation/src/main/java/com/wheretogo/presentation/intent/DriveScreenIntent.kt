@@ -19,6 +19,7 @@ sealed class DriveScreenIntent {
     data class DriveListItemClick(val journey: Journey) : DriveScreenIntent()
     data class CommentListItemClick(val comment: Comment) : DriveScreenIntent()
     data class CommentLikeClick(val comment: Comment) : DriveScreenIntent()
+    data class DriveListItemBookmarkClick(val journey: Journey) : DriveScreenIntent()
 
     object FoldFloatingButtonClick : DriveScreenIntent()
     object CommentFloatingButtonClick : DriveScreenIntent()

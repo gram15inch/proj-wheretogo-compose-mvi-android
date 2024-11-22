@@ -4,8 +4,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.dhkim139.permission.locationRequest
+import com.dhkim139.wheretogo.test.createDummy
 import com.wheretogo.presentation.composable.MainScreen
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -16,7 +20,7 @@ class MainActivity : ComponentActivity() {
            MainScreen()
 
         }
-        //CoroutineScope(Dispatchers.IO).launch { createDummy(this@MainActivity) }
+        //oroutineScope(Dispatchers.Default).launch { createDummy(this@MainActivity) }
         locationRequest{ }
     }
 }

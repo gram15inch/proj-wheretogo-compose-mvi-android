@@ -60,6 +60,7 @@ fun MainScreen(viewModel: MainViewModel = hiltViewModel()) {
                 NavHost(navController = navController, startDestination = "home") {
                     composable("home") { HomeScreen(displayMaxWidth, navController) }
                     composable("drive") { DriveScreen(navController) }
+                    composable("bookmark") { BookmarkScreen(navController) }
                     composable("login",
                         enterTransition = { slideInVertically(initialOffsetY = { it }) },
                         exitTransition = { slideOutVertically(targetOffsetY = { it }) })

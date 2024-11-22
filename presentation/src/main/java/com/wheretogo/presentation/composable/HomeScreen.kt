@@ -149,7 +149,7 @@ fun Body(bodyMaxWidth: Dp, navigate: (String) -> Unit) {
                         R.raw.lt_bike
                     )
                 },
-                click = {})
+                click = { navigate("bookmark") })
         }
 
         GridButton(

@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideInHorizontally
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,10 +16,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -46,7 +50,8 @@ fun DriveListPreview() {
     DriveList(
         modifier = Modifier,
         data = getJourneyDummy(),
-        onItemClick = {}
+        onItemClick = {},
+        onBookmarkClick = {}
     )
 }
 
@@ -54,7 +59,8 @@ fun DriveListPreview() {
 fun DriveList(
     modifier: Modifier,
     data: List<Journey>,
-    onItemClick: (Journey) -> Unit
+    onItemClick: (Journey) -> Unit,
+    onBookmarkClick: (Journey) -> Unit,
 ) {
     val listState = rememberLazyListState()
     LazyColumn(
@@ -69,7 +75,8 @@ fun DriveList(
                     .clickable {
                         onItemClick(item)
                     },
-                item = item
+                item = item,
+                onBookmarkCLick = onBookmarkClick
             )
         }
         item { Spacer(modifier = Modifier.height(1.dp)) }
@@ -77,7 +84,7 @@ fun DriveList(
 }
 
 @Composable
-fun DriveListItem(modifier: Modifier, item: Journey) {
+fun DriveListItem(modifier: Modifier, item: Journey, onBookmarkCLick : (Journey)->Unit) {
     AnimatedVisibility(
         visible = true,
         enter = slideInHorizontally(initialOffsetX = { fullWidth -> fullWidth }) + fadeIn(),
@@ -99,11 +106,10 @@ fun DriveListItem(modifier: Modifier, item: Journey) {
                 Text(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    text = "운전연수 코스 1001",
+                    text = "운전연수 코스 ${item.code}",
                     textAlign = TextAlign.Center,
                     fontFamily = hancomSansFontFamily,
-                    fontSize = 16.5.sp
-                )
+                    fontSize = 16.5.sp)
                 Row(
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -120,6 +126,23 @@ fun DriveListItem(modifier: Modifier, item: Journey) {
                         type = "소요시간"
                     )
                 }
+            }
+
+            Box(
+                modifier = Modifier
+                    .align(alignment = Alignment.TopEnd)
+                    .clip(CircleShape)
+                    .clickable {
+                        onBookmarkCLick(item)
+                    }
+            ) {
+                Image(
+                    modifier = Modifier
+                        .size(26.dp)
+                        .padding(5.dp),
+                    painter = painterResource(if (item.isBookmark) R.drawable.ic_heart_red else R.drawable.ic_heart_bk),
+                    contentDescription = "",
+                )
             }
         }
     }

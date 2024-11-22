@@ -98,6 +98,9 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
                     data = state.listState.listData,
                     onItemClick = { selectedItem ->
                         viewModel.handleIntent(DriveScreenIntent.DriveListItemClick(selectedItem))
+                    },
+                    onBookmarkClick = {
+                        viewModel.handleIntent(DriveScreenIntent.DriveListItemBookmarkClick(it))
                     }
                 )
             }

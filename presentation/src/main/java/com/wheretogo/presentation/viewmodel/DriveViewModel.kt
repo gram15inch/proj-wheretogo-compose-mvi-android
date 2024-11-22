@@ -8,7 +8,7 @@ import com.wheretogo.domain.model.map.Comment
 import com.wheretogo.domain.model.map.Journey
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.Viewport
-
+import com.wheretogo.domain.repository.UserRepository
 import com.wheretogo.domain.usecase.GetNearByJourneyUseCase
 import com.wheretogo.presentation.exceptions.MapNotInitializedException
 import com.wheretogo.presentation.feature.naver.getMapOverlay
@@ -22,12 +22,14 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class DriveViewModel @Inject constructor(
-    private val getNearByJourneyUseCase: GetNearByJourneyUseCase
+    private val getNearByJourneyUseCase: GetNearByJourneyUseCase,
+    private val userRepository: UserRepository
 ) : ViewModel() {
     private val _driveScreenState = MutableStateFlow(DriveScreenState())
     private val _cacheCourseMapOverlayGroup = mutableMapOf<Int, MapOverlay>() // code
@@ -56,6 +58,21 @@ class DriveViewModel @Inject constructor(
         }
     }
 
+    init {
+        viewModelScope.launch(exceptionHandler) {
+            userRepository.getBookmarkFlow().combine(_driveScreenState) { bookmarks, state ->
+                val data = state.listState.copy().listData.map {
+                    it.copy(isBookmark = if (it.code in bookmarks) true else false)
+                }
+                state.copy(listState = state.listState.copy(listData = data))
+            }.collect {
+                _driveScreenState.value = it
+            }
+        }
+
+    }
+
+
     fun handleIntent(intent: DriveScreenIntent) {
         viewModelScope.launch(exceptionHandler) {
             when (intent) {
@@ -69,6 +86,7 @@ class DriveViewModel @Inject constructor(
                 is DriveScreenIntent.CourseMarkerClick -> courseMarkerClick(intent.tag)
                 is DriveScreenIntent.CheckPointMarkerClick -> checkPointMarkerClick(intent.tag)
                 is DriveScreenIntent.DriveListItemClick -> driveListItemClick(intent.journey)
+                is DriveScreenIntent.DriveListItemBookmarkClick -> driveListItemBookmarkClick(intent.journey)
                 is DriveScreenIntent.CommentListItemClick -> commentListItemClick(intent.comment)
                 is DriveScreenIntent.CommentLikeClick -> commentLikeClick(intent.comment)
                 is DriveScreenIntent.FoldFloatingButtonClick -> foldFloatingButtonClick()
@@ -76,6 +94,14 @@ class DriveViewModel @Inject constructor(
                 is DriveScreenIntent.ExportMapFloatingButtonClick -> exportMapFloatingButtonClick()
             }
         }
+    }
+
+    private suspend fun driveListItemBookmarkClick(journey: Journey) {
+        if (journey.isBookmark)
+            userRepository.removeBookmark(journey.code)
+        else
+            userRepository.addBookmark(journey.code)
+
     }
 
     private fun dismissPopup() {

@@ -49,6 +49,11 @@ class JourneyRepositoryImpl @Inject constructor(
         }
     }
 
+
+    override suspend fun getJourney(code: Int): Journey? {
+        return journeyDatabase.journeyDao().select(code)?.toJourney()
+    }
+
     override suspend fun getJourneyInViewPort(
         viewPort: Viewport
     ): List<Journey> {
