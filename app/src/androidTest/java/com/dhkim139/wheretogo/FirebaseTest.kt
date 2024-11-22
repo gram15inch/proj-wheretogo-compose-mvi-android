@@ -60,7 +60,7 @@ class FirebaseTest {
         
         repeat(500){
             val docRef= db.collection("users").document()
-            batch.set(docRef,Course().copy(code=it))
+            batch.set(docRef, Course().copy(code=it))
         }
         val startTime = System.nanoTime()
 

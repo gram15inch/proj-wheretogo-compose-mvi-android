@@ -42,11 +42,11 @@ fun NaverMap(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val coroutineScope = rememberCoroutineScope()
-    var latestCameraPosition by remember { mutableStateOf(LatLng())}
+    var latestCameraPosition by remember { mutableStateOf(LatLng()) }
     val mapView = remember {
         MapView(context).apply {
             getMapAsync { naverMap ->
-                naverMap.apply{
+                naverMap.apply {
                     onMapAsync(this)
 
                     uiSettings.apply {
@@ -61,14 +61,16 @@ fun NaverMap(
                     }
 
                     addOnCameraIdleListener {
-                        if(latestCameraPosition.isNotEqual(cameraPosition.target.toDomainLatLng())){
+                        if (latestCameraPosition.isNotEqual(cameraPosition.target.toDomainLatLng())) {
                             contentRegion.apply {
-                                onCameraMove(cameraPosition.target.toDomainLatLng(),  Viewport(
-                                    this[0].latitude,
-                                    this[3].latitude,
-                                    this[0].longitude,
-                                    this[3].longitude
-                                ))
+                                onCameraMove(
+                                    cameraPosition.target.toDomainLatLng(), Viewport(
+                                        this[0].latitude,
+                                        this[3].latitude,
+                                        this[0].longitude,
+                                        this[3].longitude
+                                    )
+                                )
                             }
                             latestCameraPosition = this.cameraPosition.target.toDomainLatLng()
                         }
@@ -90,32 +92,32 @@ fun NaverMap(
             lifecycleOwner.lifecycle.removeObserver(lifecycleObserver)
         }
     }
-    mapView.getMapAsync {map->
+    mapView.getMapAsync { map ->
         coroutineScope.launch {
-                overlayMap.forEach {
-                    launch {
-                        it.pathOverlay.apply {
-                            if(coords.isNotEmpty())
-                                this.map = this.map?:map
-                        }
+            overlayMap.forEach {
+                launch {
+                    it.pathOverlay.apply {
+                        if (coords.isNotEmpty())
+                            this.map = this.map ?: map
                     }
+                }
 
-                    launch {
-                        it.marker.apply {
-                            this.map = this.map?:map
-                            if(this.onClickListener == null) {
-                                this.setOnClickListener { overlay ->
-                                    if(it.code>= COURSE_MIN)
-                                        onCourseMarkerClick(overlay)
-                                    else
-                                        onCheckPointMarkerClick(overlay)
-                                    true
-                                }
+                launch {
+                    it.marker.apply {
+                        this.map = this.map ?: map
+                        if (this.onClickListener == null) {
+                            this.setOnClickListener { overlay ->
+                                if (it.code >= COURSE_MIN)
+                                    onCourseMarkerClick(overlay)
+                                else
+                                    onCheckPointMarkerClick(overlay)
+                                true
                             }
                         }
                     }
-
                 }
+
+            }
 
         }
 
@@ -135,27 +137,27 @@ private fun Context.getMyLocationSource(): FusedLocationSource {
     return FusedLocationSource(this as ComponentActivity, 1000)
 }
 
-private fun MapView.syncLifecycle(source: LifecycleOwner, event:Lifecycle.Event):()->Unit{
+private fun MapView.syncLifecycle(source: LifecycleOwner, event: Lifecycle.Event): () -> Unit {
     return {
-            when (event) {
-                Lifecycle.Event.ON_CREATE -> onCreate(Bundle())
-                Lifecycle.Event.ON_START -> onStart()
-                Lifecycle.Event.ON_RESUME -> {
-                    onResume()
-                    getMapAsync { naverMap ->
-                        context.getMyLocationSource().apply {
-                            naverMap.locationSource = this
-                        }.let {
-                            naverMap.locationTrackingMode = LocationTrackingMode.Follow
-                        }
+        when (event) {
+            Lifecycle.Event.ON_CREATE -> onCreate(Bundle())
+            Lifecycle.Event.ON_START -> onStart()
+            Lifecycle.Event.ON_RESUME -> {
+                onResume()
+                getMapAsync { naverMap ->
+                    context.getMyLocationSource().apply {
+                        naverMap.locationSource = this
+                    }.let {
+                        naverMap.locationTrackingMode = LocationTrackingMode.Follow
                     }
                 }
-
-                Lifecycle.Event.ON_PAUSE ->onPause()
-                Lifecycle.Event.ON_STOP -> onStop()
-                Lifecycle.Event.ON_DESTROY ->onDestroy()
-                Lifecycle.Event.ON_ANY -> {}
             }
+
+            Lifecycle.Event.ON_PAUSE -> onPause()
+            Lifecycle.Event.ON_STOP -> onStop()
+            Lifecycle.Event.ON_DESTROY -> onDestroy()
+            Lifecycle.Event.ON_ANY -> {}
         }
+    }
 }
 

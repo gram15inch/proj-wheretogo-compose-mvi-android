@@ -12,7 +12,7 @@ fun LocalJourney.toJourney(): Journey {
     return Journey(
         code = this.code,
         course = this.course.toCourse(),
-        points = this.points.toLatlngList(),
+        points = this.points.toLatlngList()
     )
 }
 

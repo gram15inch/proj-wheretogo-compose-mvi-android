@@ -131,8 +131,8 @@ fun Body(bodyMaxWidth: Dp, navigate: (String) -> Unit) {
                 maxWidth = rowWidth,
                 content = {
                     ContentTextImage(
-                        stringResource(R.string.trainng_main),
-                        stringResource(R.string.trainng_sub),
+                        stringResource(R.string.ranking_main),
+                        stringResource(R.string.ranking_sub),
                         0.dp,
                         null
                     )
@@ -143,8 +143,8 @@ fun Body(bodyMaxWidth: Dp, navigate: (String) -> Unit) {
                 maxWidth = rowWidth,
                 content = {
                     ContentTextImage(
-                        stringResource(R.string.sports_main),
-                        stringResource(R.string.sports_sub),
+                        stringResource(R.string.bookmark_main),
+                        stringResource(R.string.bookmark_sub),
                         75.dp,
                         R.raw.lt_bike
                     )

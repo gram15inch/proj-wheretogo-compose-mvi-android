@@ -1,7 +1,6 @@
 package com.wheretogo.data.model.journey
 
 import androidx.room.Entity
-import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity()

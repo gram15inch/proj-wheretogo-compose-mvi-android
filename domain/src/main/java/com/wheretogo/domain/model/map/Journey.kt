@@ -6,6 +6,7 @@ data class Journey(
     val duration: String = "",
     val tag: List<Int> = emptyList(),
     val imgUrl: String = "",
+    val isBookmark: Boolean = false,
     val course: Course = Course(),
     val checkPoints: List<CheckPoint> = emptyList(),
     val points: List<LatLng> = emptyList()
