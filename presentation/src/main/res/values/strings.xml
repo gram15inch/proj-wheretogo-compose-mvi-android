@@ -5,6 +5,11 @@
     <string name="drive_sub">가족, 연인, 친구 함께 떠나요</string>
     <string name="trainng_main">도로연수</string>
     <string name="trainng_sub">초보탈출 기원</string>
+
+    <string name="ranking_main">실시간 랭킹</string>
+    <string name="ranking_sub">지금 떠오르는 코스는?</string>
+    <string name="bookmark_main">즐겨찾기</string>
+    <string name="bookmark_sub">나의 추억들</string>
     <string name="sports_main">스포츠</string>
     <string name="sports_sub">스트레스 해소가\n필요할때</string>
     <string name="visit_first_main">처음이신가요?</string>
