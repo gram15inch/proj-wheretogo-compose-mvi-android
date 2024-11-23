@@ -4,10 +4,7 @@ import androidx.credentials.GetCredentialResponse
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
-import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import com.wheretogo.domain.usecase.UserSignInUseCase
-import com.wheretogo.presentation.exceptions.MapNotInitializedException
-import com.wheretogo.presentation.exceptions.UnexpectedTypeOfCredentialException
 import com.wheretogo.presentation.state.LoginScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -24,21 +21,10 @@ class LoginViewModel @Inject constructor(private val userSignUseCase: UserSignIn
 
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
         when (exception) {
-            is MapNotInitializedException -> {
+            else -> {
                 _loginScreenState.value = _loginScreenState.value.copy(
                     error = exception.message
                 )
-            }
-
-            is GoogleIdTokenParsingException -> {
-
-            }
-
-            is UnexpectedTypeOfCredentialException -> {
-
-            }
-
-            else -> {
                 exception.printStackTrace()
             }
         }
@@ -54,10 +40,6 @@ class LoginViewModel @Inject constructor(private val userSignUseCase: UserSignIn
                     _loginScreenState.value = _loginScreenState.value.run {
                         copy(isExit = true)
                     }
-                }
-
-                else -> {
-                    throw UnexpectedTypeOfCredentialException()
                 }
             }
         }

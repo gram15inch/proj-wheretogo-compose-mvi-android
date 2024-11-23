@@ -14,7 +14,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class BookmarkViewModel @Inject constructor(
-    val userRepository: UserRepository,
+    private val userRepository: UserRepository,
     journeyRepository: JourneyRepository
 ) :
     ViewModel() {

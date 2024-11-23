@@ -10,7 +10,6 @@ import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.Viewport
 import com.wheretogo.domain.repository.UserRepository
 import com.wheretogo.domain.usecase.GetNearByJourneyUseCase
-import com.wheretogo.presentation.exceptions.MapNotInitializedException
 import com.wheretogo.presentation.feature.naver.getMapOverlay
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.model.MapOverlay
@@ -46,13 +45,10 @@ class DriveViewModel @Inject constructor(
 
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
         when (exception) {
-            is MapNotInitializedException -> {
+            else -> {
                 _driveScreenState.value = _driveScreenState.value.copy(
                     error = exception.message
                 )
-            }
-
-            else -> {
                 exception.printStackTrace()
             }
         }
