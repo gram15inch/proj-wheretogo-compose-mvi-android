@@ -12,10 +12,10 @@ import java.util.UUID
 
 suspend fun getGoogleCredential(context:Context) : GetCredentialResponse {
     val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
-        .setFilterByAuthorizedAccounts(true)
+        .setFilterByAuthorizedAccounts(false)
         .setServerClientId(BuildConfig.GOOGLE_WEB_CLIENT_ID_KEY)
         .setAutoSelectEnabled(true)
-        .setNonce(generateNonce())
+        //.setNonce(generateNonce())
         .build()
 
     val credentialManager = CredentialManager.create(context)

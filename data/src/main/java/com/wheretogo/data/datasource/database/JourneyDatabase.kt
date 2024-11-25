@@ -19,13 +19,13 @@ import com.wheretogo.data.model.journey.LocalLatLng
 import java.lang.reflect.Type
 
 @TypeConverters(JourneyJsonConverters::class)
-@Database(entities = [LocalJourney::class], version = 4, exportSchema = true)
+@Database(entities = [LocalJourney::class], version = 4, exportSchema = false)
 abstract class JourneyDatabase : RoomDatabase() {
     abstract fun journeyDao(): JourneyDao
 
-    companion object{
-        fun getInstance(context:Context): JourneyDatabase {
-           return Room.databaseBuilder(
+    companion object {
+        fun getInstance(context: Context): JourneyDatabase {
+            return Room.databaseBuilder(
                 context,
                 JourneyDatabase::class.java,
                 "journey_db"
@@ -38,7 +38,7 @@ abstract class JourneyDatabase : RoomDatabase() {
 @Dao
 interface JourneyDao {
     @Query("SELECT * FROM LocalJourney LIMIT :size")
-    suspend fun selectAll(size:Int): List<LocalJourney>
+    suspend fun selectAll(size: Int): List<LocalJourney>
 
     @Query("SELECT * FROM LocalJourney WHERE code = :code")
     suspend fun select(code: Int): LocalJourney?

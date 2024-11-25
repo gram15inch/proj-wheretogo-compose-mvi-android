@@ -25,8 +25,8 @@ class CourseRepositoryImpl @Inject constructor(
                         }
                     }
                     continuation.resume(courseGroup)
-                }.addOnFailureListener {
-                    continuation.resumeWithException(Exception("No document found"))
+                }.addOnFailureListener { e ->
+                    continuation.resumeWithException(Exception(e))
                 }
         }
 }

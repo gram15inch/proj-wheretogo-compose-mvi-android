@@ -24,6 +24,12 @@ class UserTest {
     }
 
     @Test
+    fun useAppContext() {
+        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
+        assertEquals("com.dhkim139.wheretogo", appContext.packageName)
+    }
+
+    @Test
     fun getAndSetProfileTest(): Unit = runBlocking {
         val firestore = FirebaseModule.provideFirestore()
         val remoteDatasource = UserRemoteDatasourceImpl(firestore)
@@ -33,8 +39,8 @@ class UserTest {
             name = "name",
             mail = "mail",
             authCompany = "google",
-            lastVisitedDate = 0L,
-            accountCreationDate = 0L,
+            lastVisited = 0L,
+            accountCreation = 0L,
             isAdRemove = false
         )
 
@@ -54,8 +60,8 @@ class UserTest {
             name = "name",
             mail = "mail",
             authCompany = "google",
-            lastVisitedDate = 0L,
-            accountCreationDate = 0L,
+            lastVisited = 0L,
+            accountCreation = 0L,
             isAdRemove = false
         )
 
@@ -84,8 +90,8 @@ class UserTest {
             name = "name",
             mail = "mail",
             authCompany = "google",
-            lastVisitedDate = 0L,
-            accountCreationDate = 0L,
+            lastVisited = 0L,
+            accountCreation = 0L,
             isAdRemove = false
         )
 

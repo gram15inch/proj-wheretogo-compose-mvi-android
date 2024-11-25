@@ -1,10 +1,17 @@
 package com.wheretogo.presentation.viewmodel
 
+import android.util.Log
+import androidx.credentials.Credential
 import androidx.credentials.GetCredentialResponse
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
-import com.wheretogo.domain.usecase.UserSignInUseCase
+import com.wheretogo.domain.AUTH_COMPANY
+import com.wheretogo.domain.model.UseCaseResponse
+import com.wheretogo.domain.model.user.Profile
+import com.wheretogo.domain.model.user.SignInRequest
+import com.wheretogo.domain.model.user.SignUpRequest
+import com.wheretogo.domain.usecase.UserSignUpAndSignInUseCase
 import com.wheretogo.presentation.state.LoginScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -14,7 +21,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class LoginViewModel @Inject constructor(private val userSignUseCase: UserSignInUseCase) :
+class LoginViewModel @Inject constructor(
+    private val userSignUpAndSignInUseCase: UserSignUpAndSignInUseCase
+) :
     ViewModel() {
     private val _loginScreenState = MutableStateFlow(LoginScreenState())
     val loginScreenState: StateFlow<LoginScreenState> = _loginScreenState
@@ -30,29 +39,71 @@ class LoginViewModel @Inject constructor(private val userSignUseCase: UserSignIn
         }
     }
 
-    fun signIn(result: GetCredentialResponse) {
+    fun signUpAndSignIn(result: GetCredentialResponse) {
         viewModelScope.launch(exceptionHandler) {
-            val credential = result.credential
-            when (credential.type) {
-                GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL -> {
-                    val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
-                    userSignUseCase(googleIdTokenCredential.idToken)
-                    _loginScreenState.value = _loginScreenState.value.run {
-                        copy(isExit = true)
+
+            val googleCredential = getGoogleIdTokenCredential(result.credential)
+            if (googleCredential != null) {
+                val signInRequest = SignInRequest(token = googleCredential.idToken)
+                val signUpRequest = SignUpRequest(
+                    profile = Profile(
+                        mail = googleCredential.id,
+                        name = googleCredential.displayName ?: "익명의드라이버",
+                        authCompany = AUTH_COMPANY.GOOGLE.name,
+                        lastVisited = System.currentTimeMillis(),
+                        accountCreation = System.currentTimeMillis(),
+                        isAdRemove = false
+                    ),
+                    token = googleCredential.idToken
+                )
+
+                when (userSignUpAndSignInUseCase(signUpRequest, signInRequest).status) {
+
+                    UseCaseResponse.Status.Success -> {
+                        _loginScreenState.value = _loginScreenState.value.run {
+                            copy(
+                                isExit = true,
+                                isToast = true,
+                                toastMsg = "반갑습니다 ${googleCredential.displayName}님."
+                            )
+                        }
                     }
+
+                    UseCaseResponse.Status.Fail -> {
+                        _loginScreenState.value = _loginScreenState.value.run {
+                            copy(
+                                isExit = false,
+                                isToast = true,
+                                toastMsg = "로그인 실패"
+                            )
+                        }
+                        _loginScreenState.value = _loginScreenState.value.run {
+                            copy(isToast = false)
+                        }
+                    }
+                    UseCaseResponse.Status.Error -> {}
                 }
             }
         }
     }
 
-
-    fun noSign() {
+    fun signInPass() {
         viewModelScope.launch(exceptionHandler) {
-            userSignUseCase.signPass()
+            userSignUpAndSignInUseCase.signInPass()
+            _loginScreenState.value = _loginScreenState.value.run {
+                copy(isExit = true)
+            }
+            Log.d("tst4", "signInPass")
         }
+    }
 
-        _loginScreenState.value = _loginScreenState.value.run {
-            copy(isExit = true)
+    private fun getGoogleIdTokenCredential(credential: Credential): GoogleIdTokenCredential? {
+        return when (credential.type) {
+            GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL -> {
+                GoogleIdTokenCredential.createFrom(credential.data)
+            }
+
+            else -> null
         }
     }
 }

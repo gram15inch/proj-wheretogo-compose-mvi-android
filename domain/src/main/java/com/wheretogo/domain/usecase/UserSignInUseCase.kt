@@ -1,7 +1,10 @@
 package com.wheretogo.domain.usecase
 
-interface UserSignInUseCase {
-    suspend operator fun invoke(idToken: String)
+import com.wheretogo.domain.model.UseCaseResponse
+import com.wheretogo.domain.model.user.SignInRequest
 
-    suspend fun signPass()
+interface UserSignInUseCase {
+    suspend operator fun invoke(request: SignInRequest): UseCaseResponse
+
+    suspend fun signInPass()
 }

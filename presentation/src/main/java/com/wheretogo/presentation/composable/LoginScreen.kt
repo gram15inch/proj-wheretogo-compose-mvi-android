@@ -1,5 +1,6 @@
 package com.wheretogo.presentation.composable
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,6 +34,13 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
+
+    LaunchedEffect(state.isToast) {
+        if (state.isToast) {
+            Toast.makeText(context.applicationContext, "${state.toastMsg}", Toast.LENGTH_LONG).show()
+        }
+    }
+
     LaunchedEffect(state.isExit) {
         if (state.isExit) {
             navController.navigate("home") {
@@ -48,7 +56,7 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
         ) {
             LoginButton("구글 로그인") {
                 coroutineScope.launch {
-                    viewModel.signIn(getGoogleCredential(context))
+                    viewModel.signUpAndSignIn(getGoogleCredential(context))
                 }
             }
         }
@@ -57,8 +65,9 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
             .padding(bottom = 10.dp)
             .align(alignment = Alignment.BottomCenter)
             .clickable {
-                viewModel.noSign()
-            }, text = "로그인 없이 앱 둘러보기")
+                viewModel.signInPass()
+            }, text = "로그인 없이 앱 둘러보기"
+        )
     }
 
 }
