@@ -2,7 +2,7 @@ package com.wheretogo.data.di
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import com.wheretogo.data.policy.NetworkPolicy
+import com.wheretogo.data.NAVER_OPEN_API_URL
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -42,7 +42,7 @@ object RetrofitClientModule {
                 MoshiConverterFactory.create(moshi)
             )
             .client(client)
-            .baseUrl(NetworkPolicy.NAVER_OPEN_API_URL)
+            .baseUrl(NAVER_OPEN_API_URL)
             .build()
     }
 }

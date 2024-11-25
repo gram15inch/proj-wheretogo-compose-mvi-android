@@ -25,17 +25,16 @@ import com.wheretogo.presentation.composable.test.DragTestScreen
 import com.wheretogo.presentation.composable.test.ImageTestScreen
 import com.wheretogo.presentation.theme.WhereTogoTheme
 import com.wheretogo.presentation.theme.White100
-import com.wheretogo.presentation.viewmodel.MainViewModel
+import com.wheretogo.presentation.viewmodel.RootViewModel
 
 @Composable
-fun MainScreen(viewModel: MainViewModel = hiltViewModel()) {
+fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
     WhereTogoTheme {
         val navController = rememberNavController()
-        val state by viewModel.mainScreenState.collectAsState()
+        val state by viewModel.rootScreenState.collectAsState()
 
         LaunchedEffect(state.isRequestLogin) {
             if (state.isRequestLogin) {
-                Log.d("tst4", "${state.isRequestLogin}")
                 navController.navigate("login") {
                     popUpTo("home") { inclusive = true }
                 }

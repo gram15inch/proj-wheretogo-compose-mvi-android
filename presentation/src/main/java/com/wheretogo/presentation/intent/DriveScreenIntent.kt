@@ -3,7 +3,8 @@ package com.wheretogo.presentation.intent
 import com.wheretogo.domain.model.map.Comment
 import com.wheretogo.domain.model.map.Journey
 import com.wheretogo.domain.model.map.LatLng
-import com.wheretogo.domain.model.MarkerTag
+import com.wheretogo.domain.model.map.MarkerTag
+
 import com.wheretogo.domain.model.map.Viewport
 
 sealed class DriveScreenIntent {

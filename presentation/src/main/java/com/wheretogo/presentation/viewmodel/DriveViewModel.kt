@@ -2,11 +2,11 @@ package com.wheretogo.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.wheretogo.domain.model.MarkerTag
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.Comment
 import com.wheretogo.domain.model.map.Journey
 import com.wheretogo.domain.model.map.LatLng
+import com.wheretogo.domain.model.map.MarkerTag
 import com.wheretogo.domain.model.map.Viewport
 import com.wheretogo.domain.repository.UserRepository
 import com.wheretogo.domain.usecase.GetNearByJourneyUseCase

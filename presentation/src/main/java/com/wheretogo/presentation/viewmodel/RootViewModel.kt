@@ -3,7 +3,7 @@ package com.wheretogo.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wheretogo.domain.repository.UserRepository
-import com.wheretogo.presentation.state.MainScreenState
+import com.wheretogo.presentation.state.RootScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,10 +11,10 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor(private val userRepository: UserRepository) :
+class RootViewModel @Inject constructor(private val userRepository: UserRepository) :
     ViewModel() {
-    private val _mainScreenState = MutableStateFlow(MainScreenState())
-    val mainScreenState: StateFlow<MainScreenState> = _mainScreenState
+    private val _mainScreenState = MutableStateFlow(RootScreenState())
+    val rootScreenState: StateFlow<RootScreenState> = _mainScreenState
 
     init {
         viewModelScope.launch {

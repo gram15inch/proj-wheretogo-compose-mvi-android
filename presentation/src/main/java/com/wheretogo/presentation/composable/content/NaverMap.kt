@@ -22,7 +22,7 @@ import com.naver.maps.map.MapView
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.overlay.Overlay
 import com.naver.maps.map.util.FusedLocationSource
-import com.wheretogo.domain.model.COURSE_MIN
+import com.wheretogo.domain.COURSE_MIN
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.Viewport
 import com.wheretogo.presentation.model.MapOverlay
