@@ -16,9 +16,9 @@ import com.naver.maps.map.overlay.OverlayImage
 import com.naver.maps.map.overlay.PathOverlay
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.Journey
-import com.wheretogo.domain.model.getCheckPointMarkerTag
-import com.wheretogo.domain.model.getCourseMarkerTag
-import com.wheretogo.domain.model.getCoursePathOverlayTag
+import com.wheretogo.domain.getCheckPointMarkerTag
+import com.wheretogo.domain.getCourseMarkerTag
+import com.wheretogo.domain.getCoursePathOverlayTag
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.toNaver
 

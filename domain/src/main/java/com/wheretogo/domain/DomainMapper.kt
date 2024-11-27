@@ -1,6 +1,6 @@
-package com.wheretogo.domain.model
+package com.wheretogo.domain
 
-import com.wheretogo.domain.USER_DATE_FORMAT
+
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.MarkerTag
 import java.text.SimpleDateFormat

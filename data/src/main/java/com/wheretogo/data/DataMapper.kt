@@ -1,8 +1,8 @@
-package com.wheretogo.data.model
+package com.wheretogo.data
 
 import com.wheretogo.data.model.journey.LocalCourse
 import com.wheretogo.data.model.journey.LocalJourney
-import com.wheretogo.data.model.journey.LocalLatLng
+import com.wheretogo.data.model.map.DataLatLng
 import com.wheretogo.domain.model.map.Course
 import com.wheretogo.domain.model.map.Journey
 import com.wheretogo.domain.model.map.LatLng
@@ -16,7 +16,7 @@ fun LocalJourney.toJourney(): Journey {
     )
 }
 
-fun LocalLatLng.toLatLng(): LatLng {
+fun DataLatLng.toLatLng(): LatLng {
     return LatLng(this.latitude, this.longitude)
 }
 
@@ -29,7 +29,7 @@ fun LocalCourse.toCourse(): Course {
     )
 }
 
-fun List<LocalLatLng>.toLatlngList(): List<LatLng> {
+fun List<DataLatLng>.toLatlngList(): List<LatLng> {
     return this.map { it.toLatLng() }
 }
 
@@ -44,8 +44,8 @@ fun Journey.toLocalJourney(): LocalJourney {
     )
 }
 
-fun LatLng.toLocalLatLng(): LocalLatLng {
-    return LocalLatLng(this.latitude, this.longitude)
+fun LatLng.toLocalLatLng(): DataLatLng {
+    return DataLatLng(this.latitude, this.longitude)
 }
 
 fun Course.toLocalCourse(): LocalCourse {
@@ -57,6 +57,6 @@ fun Course.toLocalCourse(): LocalCourse {
     )
 }
 
-fun List<LatLng>.toLocalLatlngList(): List<LocalLatLng> {
+fun List<LatLng>.toLocalLatlngList(): List<DataLatLng> {
     return this.map { it.toLocalLatLng() }
 }

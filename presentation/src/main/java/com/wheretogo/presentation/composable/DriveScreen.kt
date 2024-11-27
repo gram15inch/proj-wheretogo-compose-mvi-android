@@ -30,7 +30,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.overlay.Marker
-import com.wheretogo.domain.model.toMarkerTag
+import com.wheretogo.domain.toMarkerTag
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.content.DriveList
 import com.wheretogo.presentation.composable.content.FadeAnimation

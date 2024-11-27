@@ -15,7 +15,7 @@ import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.wheretogo.data.model.journey.LocalCourse
 import com.wheretogo.data.model.journey.LocalJourney
-import com.wheretogo.data.model.journey.LocalLatLng
+import com.wheretogo.data.model.map.DataLatLng
 import java.lang.reflect.Type
 
 @TypeConverters(JourneyJsonConverters::class)
@@ -63,17 +63,17 @@ class JourneyJsonConverters {
         .build()
 
     private val latLngListType: Type =
-        Types.newParameterizedType(List::class.java, LocalLatLng::class.java)
-    private val latLngAdapter = moshi.adapter<List<LocalLatLng>>(latLngListType)
+        Types.newParameterizedType(List::class.java, DataLatLng::class.java)
+    private val latLngAdapter = moshi.adapter<List<DataLatLng>>(latLngListType)
     private val courseAdapter = moshi.adapter(LocalCourse::class.java)
 
     @TypeConverter
-    fun fromLatLngList(latLngList: List<LocalLatLng>?): String? {
+    fun fromLatLngList(latLngList: List<DataLatLng>?): String? {
         return latLngList?.let { latLngAdapter.toJson(it) }
     }
 
     @TypeConverter
-    fun toLatLngList(jsonString: String?): List<LocalLatLng>? {
+    fun toLatLngList(jsonString: String?): List<DataLatLng>? {
         return jsonString?.let { latLngAdapter.fromJson(it) }
     }
 

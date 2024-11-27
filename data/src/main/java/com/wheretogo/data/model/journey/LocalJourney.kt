@@ -3,6 +3,7 @@ package com.wheretogo.data.model.journey
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.wheretogo.data.model.map.DataLatLng
 
 @Entity(
     tableName = "LocalJourney",
@@ -17,5 +18,5 @@ data class LocalJourney(
     val latitude: Double,
     var course: LocalCourse,
     val pointsDate : Long,
-    var points: List<LocalLatLng>,
+    var points: List<DataLatLng>,
 )

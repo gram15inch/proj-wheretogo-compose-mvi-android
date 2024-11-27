@@ -1,4 +1,4 @@
-package com.wheretogo.data.model
+package com.wheretogo.data.model.dummy
 
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.LatLng
