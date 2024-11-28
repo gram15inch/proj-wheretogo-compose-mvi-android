@@ -1,43 +1,36 @@
 package com.wheretogo.data.datasource
 
-
 import com.google.firebase.firestore.FirebaseFirestore
 import com.wheretogo.data.FireStoreTableName
-import com.wheretogo.data.model.comment.RemoteComment
+import com.wheretogo.data.model.course.RemoteCourse
 import com.wheretogo.data.name
 import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-class CommentRemoteDatasourceImpl @Inject constructor(
+class CourseRemoteDatasourceImpl @Inject constructor(
     private val firestore: FirebaseFirestore
-) : CommentRemoteDatasource {
-    val checkPointTable = FireStoreTableName.CHECKPOINT_TABLE.name()
-    val commentTable = FireStoreTableName.COMMENT_TABLE.name()
+) : CourseRemoteDatasource {
+    val courseTable = FireStoreTableName.COURSE_TABLE.name()
 
-    override suspend fun getCommentGroupInCheckPoint(checkpointId: String): List<RemoteComment> {
+    override suspend fun getCourse(courseId: String): RemoteCourse? {
         return suspendCancellableCoroutine { continuation ->
-            firestore.collection(checkPointTable).document(checkpointId)
-                .collection(commentTable)
+            firestore.collection(courseTable).document(courseId)
                 .get()
                 .addOnSuccessListener {
-                    val group = it.toObjects(RemoteComment::class.java)
-                    continuation.resume(group)
+                    val course = it.toObject(RemoteCourse::class.java)
+                    continuation.resume(course)
                 }.addOnFailureListener {
                     continuation.resumeWithException(it)
                 }
         }
     }
 
-    override suspend fun addCommentInCheckPoint(
-        checkpointId: String,
-        comment: RemoteComment
-    ): Boolean {
+    override suspend fun setCourse(course: RemoteCourse): Boolean {
         return suspendCancellableCoroutine { continuation ->
-            firestore.collection(checkPointTable).document(checkpointId)
-                .collection(commentTable).document(comment.commentId)
-                .set(comment)
+            firestore.collection(courseTable).document(course.courseId)
+                .set(course)
                 .addOnSuccessListener {
                     continuation.resume(true)
                 }.addOnFailureListener {
@@ -46,13 +39,9 @@ class CommentRemoteDatasourceImpl @Inject constructor(
         }
     }
 
-    override suspend fun removeCommentInCheckPoint(
-        checkpointId: String,
-        commentId: String
-    ): Boolean {
+    override suspend fun removeCourse(courseId: String): Boolean {
         return suspendCancellableCoroutine { continuation ->
-            firestore.collection(checkPointTable).document(checkpointId)
-                .collection(commentTable).document(commentId)
+            firestore.collection(courseTable).document(courseId)
                 .delete()
                 .addOnSuccessListener {
                     continuation.resume(true)

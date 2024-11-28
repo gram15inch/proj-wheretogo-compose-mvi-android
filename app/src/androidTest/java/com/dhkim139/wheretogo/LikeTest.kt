@@ -3,15 +3,16 @@ package com.dhkim139.wheretogo
 import androidx.test.platform.app.InstrumentationRegistry
 import com.dhkim139.wheretogo.di.FirebaseModule
 import com.google.firebase.FirebaseApp
-import com.wheretogo.data.datasource.CourseRemoteDatasourceImpl
+import com.wheretogo.data.LikeObject
+import com.wheretogo.data.datasource.LikeRemoteDatasourceImpl
 import com.wheretogo.data.model.course.RemoteCourse
+import com.wheretogo.data.model.course.RemoteLike
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 
-class CourseTest {
-
+class LikeTest {
     companion object {
         @JvmStatic
         @BeforeAll
@@ -25,23 +26,25 @@ class CourseTest {
     }
 
     @Test
-    fun courseTest(): Unit = runBlocking {
+    fun likeTest(): Unit = runBlocking {
         val firestore = FirebaseModule.provideFirestore()
-        val datasource = CourseRemoteDatasourceImpl(firestore)
+        val datasource = LikeRemoteDatasourceImpl(firestore)
         val cs1 = RemoteCourse(
-            courseId = "cs1",
+            courseId = "cs1"
+        )
+        val l1 = RemoteLike(
+            like = 1,
         )
 
-        assertEquals(true, datasource.setCourse(cs1))
+        assertEquals(true, datasource.setLikeInObject(LikeObject.COURSE_LIKE, cs1.courseId, l1))
 
-        val cs2 = datasource.getCourse(cs1.courseId)
+        val l2 = datasource.getLikeInObject(LikeObject.COURSE_LIKE, cs1.courseId)
+        assertEquals(l1, l2)
 
-        assertEquals(cs1, cs2)
+        assertEquals(true, datasource.removeLikeInCourse(LikeObject.COURSE_LIKE, cs1.courseId))
 
-        assertEquals(true, datasource.removeCourse(cs1.courseId))
+        val l3 = datasource.getLikeInObject(LikeObject.COURSE_LIKE, cs1.courseId)
 
-        val cs3 = datasource.getCourse(cs1.courseId)
-        assertEquals(null, cs3)
+        assertEquals(0, l3.like)
     }
-
 }

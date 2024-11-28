@@ -3,15 +3,15 @@ package com.dhkim139.wheretogo
 import androidx.test.platform.app.InstrumentationRegistry
 import com.dhkim139.wheretogo.di.FirebaseModule
 import com.google.firebase.FirebaseApp
-import com.wheretogo.data.datasource.CourseRemoteDatasourceImpl
-import com.wheretogo.data.model.course.RemoteCourse
+import com.wheretogo.data.datasource.RouteRemoteDatasourceImpl
+import com.wheretogo.data.model.route.RemoteRoute
+import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 
-class CourseTest {
 
+class RouteTest {
     companion object {
         @JvmStatic
         @BeforeAll
@@ -25,23 +25,20 @@ class CourseTest {
     }
 
     @Test
-    fun courseTest(): Unit = runBlocking {
+    fun routeTest(): Unit = runBlocking {
         val firestore = FirebaseModule.provideFirestore()
-        val datasource = CourseRemoteDatasourceImpl(firestore)
-        val cs1 = RemoteCourse(
-            courseId = "cs1",
+        val datasource = RouteRemoteDatasourceImpl(firestore)
+        val rt1 = RemoteRoute(
+            routeId = datasource.getRouteId("cs1")
         )
 
-        assertEquals(true, datasource.setCourse(cs1))
+        assertEquals(true, datasource.setRouteInCourse("cs1", rt1))
+        val rt2 = datasource.getRouteInCourse("cs1")
 
-        val cs2 = datasource.getCourse(cs1.courseId)
+        assertEquals(rt1, rt2)
+        assertEquals(true, datasource.removeRouteInCourse("cs1"))
 
-        assertEquals(cs1, cs2)
-
-        assertEquals(true, datasource.removeCourse(cs1.courseId))
-
-        val cs3 = datasource.getCourse(cs1.courseId)
-        assertEquals(null, cs3)
+        val rt3 = datasource.getRouteInCourse("cs1")
+        assertEquals(true, rt3.points.isEmpty())
     }
-
 }
