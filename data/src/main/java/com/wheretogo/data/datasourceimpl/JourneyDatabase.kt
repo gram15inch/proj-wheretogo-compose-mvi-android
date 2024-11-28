@@ -1,4 +1,4 @@
-package com.wheretogo.data.datasource.database
+package com.wheretogo.data.datasourceimpl
 
 import android.content.Context
 import androidx.room.Dao

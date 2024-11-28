@@ -1,4 +1,4 @@
-package com.wheretogo.data.repository
+package com.wheretogo.data.repositoryimpl
 
 import com.wheretogo.data.datasource.UserLocalDatasource
 import com.wheretogo.data.datasource.UserRemoteDatasource

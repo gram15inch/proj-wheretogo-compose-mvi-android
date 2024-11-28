@@ -4,7 +4,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.dhkim139.wheretogo.di.FirebaseModule
 import com.google.firebase.FirebaseApp
 import com.wheretogo.data.LikeObject
-import com.wheretogo.data.datasource.LikeRemoteDatasourceImpl
+import com.wheretogo.data.datasourceimpl.LikeRemoteDatasourceImpl
 import com.wheretogo.data.model.course.RemoteCourse
 import com.wheretogo.data.model.course.RemoteLike
 import kotlinx.coroutines.runBlocking

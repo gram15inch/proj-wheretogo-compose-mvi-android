@@ -1,6 +1,6 @@
 package com.wheretogo.data.di
 
-import com.wheretogo.data.datasource.service.NaverMapApiService
+import com.wheretogo.data.datasourceimpl.service.NaverMapApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

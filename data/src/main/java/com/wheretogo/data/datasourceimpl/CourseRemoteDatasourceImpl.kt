@@ -1,7 +1,8 @@
-package com.wheretogo.data.datasource
+package com.wheretogo.data.datasourceimpl
 
 import com.google.firebase.firestore.FirebaseFirestore
 import com.wheretogo.data.FireStoreTableName
+import com.wheretogo.data.datasource.CourseRemoteDatasource
 import com.wheretogo.data.model.course.RemoteCourse
 import com.wheretogo.data.name
 import kotlinx.coroutines.suspendCancellableCoroutine

@@ -1,4 +1,4 @@
-package com.wheretogo.data.repository
+package com.wheretogo.data.repositoryimpl
 
 import com.google.firebase.firestore.FirebaseFirestore
 import com.wheretogo.data.model.journey.LocalCourse

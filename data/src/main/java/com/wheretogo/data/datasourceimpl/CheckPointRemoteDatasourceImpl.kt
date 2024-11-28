@@ -1,8 +1,9 @@
-package com.wheretogo.data.datasource
+package com.wheretogo.data.datasourceimpl
 
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.wheretogo.data.FireStoreTableName
+import com.wheretogo.data.datasource.CheckPointRemoteDatasource
 import com.wheretogo.data.model.checkpoint.RemoteCheckPoint
 import com.wheretogo.data.name
 import kotlinx.coroutines.suspendCancellableCoroutine

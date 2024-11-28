@@ -1,9 +1,9 @@
-package com.wheretogo.data.repository
+package com.wheretogo.data.repositoryimpl
 
 import android.util.Log
 import com.wheretogo.data.BuildConfig
-import com.wheretogo.data.datasource.database.JourneyDatabase
-import com.wheretogo.data.datasource.service.NaverMapApiService
+import com.wheretogo.data.datasourceimpl.JourneyDatabase
+import com.wheretogo.data.datasourceimpl.service.NaverMapApiService
 import com.wheretogo.data.model.dummy.getCheckpointDummy
 import com.wheretogo.data.model.journey.LocalJourney
 import com.wheretogo.data.toCourse

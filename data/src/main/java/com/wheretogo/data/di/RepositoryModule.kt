@@ -1,9 +1,9 @@
 package com.wheretogo.data.di
 
-import com.wheretogo.data.repository.AuthRepositoryImpl
-import com.wheretogo.data.repository.CourseRepositoryImpl
-import com.wheretogo.data.repository.JourneyRepositoryImpl
-import com.wheretogo.data.repository.UserRepositoryImpl
+import com.wheretogo.data.repositoryimpl.AuthRepositoryImpl
+import com.wheretogo.data.repositoryimpl.CourseRepositoryImpl
+import com.wheretogo.data.repositoryimpl.JourneyRepositoryImpl
+import com.wheretogo.data.repositoryimpl.UserRepositoryImpl
 import com.wheretogo.domain.repository.AuthRepository
 import com.wheretogo.domain.repository.CourseRepository
 import com.wheretogo.domain.repository.JourneyRepository

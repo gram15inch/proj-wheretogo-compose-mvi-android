@@ -1,4 +1,4 @@
-package com.wheretogo.data.datasource.service
+package com.wheretogo.data.datasourceimpl.service
 
 import com.wheretogo.data.model.naver.NaverRouteResponse
 import com.wheretogo.data.model.naver.NaverRouteWaypointResponse

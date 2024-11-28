@@ -1,7 +1,7 @@
-package com.wheretogo.data.datasource
+package com.wheretogo.data.datasourceimpl
 
-import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
+import com.wheretogo.data.datasource.UserRemoteDatasource
 
 import com.wheretogo.domain.model.user.Profile
 import kotlinx.coroutines.suspendCancellableCoroutine

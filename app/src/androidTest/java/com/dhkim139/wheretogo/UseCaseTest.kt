@@ -3,11 +3,11 @@ package com.dhkim139.wheretogo
 import androidx.test.platform.app.InstrumentationRegistry
 import com.dhkim139.wheretogo.di.FirebaseModule
 import com.google.firebase.FirebaseApp
-import com.wheretogo.data.datasource.service.NaverMapApiService
+import com.wheretogo.data.datasourceimpl.service.NaverMapApiService
 import com.wheretogo.data.di.DaoDatabaseModule
 import com.wheretogo.data.di.RetrofitClientModule
-import com.wheretogo.data.repository.CourseRepositoryImpl
-import com.wheretogo.data.repository.JourneyRepositoryImpl
+import com.wheretogo.data.repositoryimpl.CourseRepositoryImpl
+import com.wheretogo.data.repositoryimpl.JourneyRepositoryImpl
 import com.wheretogo.domain.usecaseimpl.FetchJourneyWithoutPointsUseCaseImpl
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals

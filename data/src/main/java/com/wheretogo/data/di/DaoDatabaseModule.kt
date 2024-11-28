@@ -1,8 +1,7 @@
 package com.wheretogo.data.di
 
 import android.content.Context
-import androidx.room.Room
-import com.wheretogo.data.datasource.database.JourneyDatabase
+import com.wheretogo.data.datasourceimpl.JourneyDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

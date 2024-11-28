@@ -3,7 +3,7 @@ package com.dhkim139.wheretogo
 import androidx.test.platform.app.InstrumentationRegistry
 import com.dhkim139.wheretogo.di.FirebaseModule
 import com.google.firebase.FirebaseApp
-import com.wheretogo.data.datasource.CommentRemoteDatasourceImpl
+import com.wheretogo.data.datasourceimpl.CommentRemoteDatasourceImpl
 import com.wheretogo.data.model.comment.RemoteComment
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.runBlocking
