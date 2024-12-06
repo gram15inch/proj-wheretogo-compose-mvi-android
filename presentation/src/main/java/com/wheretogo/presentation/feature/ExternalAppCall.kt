@@ -11,9 +11,11 @@ import com.wheretogo.domain.model.map.Course
 import com.wheretogo.presentation.BuildConfig
 
 fun getNaverMapUrl(course: Course): String {
+    val start = course.waypoints.first()
+    val goal = course.waypoints.last()
     val url =
-        "nmap://route/car?slat=${course.start.latitude}&slng=${course.start.longitude}&sname=start" +
-                "&dlat=${course.goal.latitude}&dlng=${course.goal.longitude}&dname=end" +
+        "nmap://route/car?slat=${start.latitude}&slng=${start.longitude}&sname=start" +
+                "&dlat=${goal.latitude}&dlng=${goal.longitude}&dname=end" +
                 course.waypoints.run {
                     var str = ""
                     this.forEachIndexed { idx, latlng ->
@@ -33,6 +35,9 @@ fun Context.callNaverMap(course: Course) {
 
 
 fun TMapTapi.CallTMap(course: Course) {
+    val start = course.waypoints.first()
+    val goal = course.waypoints.last()
+    val mid = course.waypoints.drop(1).dropLast(1)
     setSKTMapAuthentication(BuildConfig.TMAP_APP_KEY)
 
     setOnAuthenticationListener(object : OnAccountsUpdateListener,
@@ -44,19 +49,19 @@ fun TMapTapi.CallTMap(course: Course) {
         override fun SKTMapApikeySucceed() {
             val routeMap = HashMap<String, String>()
 
-            course.start.apply {
+            start.apply {
                 routeMap["rStName"] = "출발지"
                 routeMap["rStX"] = longitude.toString()
                 routeMap["rStY"] = latitude.toString()
             }
 
-            course.goal.apply {
+            goal.apply {
                 routeMap["rGoName"] = "목적지"
                 routeMap["rGoX"] = longitude.toString()
                 routeMap["rGoY"] = latitude.toString()
             }
 
-            course.waypoints.forEachIndexed { idx, latlng ->
+            mid.forEachIndexed { idx, latlng ->
                 routeMap["rV${idx + 1}Name"] = "경유지 ${idx + 1}"
                 routeMap["rV${idx + 1}X"] = latlng.longitude.toString()
                 routeMap["rV${idx + 1}Y"] = latlng.latitude.toString()

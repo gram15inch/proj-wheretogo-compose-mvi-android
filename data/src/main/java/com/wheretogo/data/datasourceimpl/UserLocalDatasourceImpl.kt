@@ -42,24 +42,23 @@ class UserLocalDatasourceImpl @Inject constructor(
     }
 
 
-    override suspend fun addBookmark(code: Int) {
+    override suspend fun addBookmark(code: String) {
         userDataStore.edit { preferences ->
             preferences[bookmark] = (preferences[bookmark]?.toMutableSet()
-                ?: mutableSetOf()).apply { this += code.toString() }
+                ?: mutableSetOf()).apply { this += code }
         }
     }
 
-    override suspend fun removeBookmark(code: Int) {
+    override suspend fun removeBookmark(code: String) {
         userDataStore.edit { preferences ->
             preferences[bookmark] = (preferences[bookmark]?.toMutableSet()
-                ?: mutableSetOf()).apply { this -= code.toString() }
+                ?: mutableSetOf()).apply { this -= code }
         }
     }
 
-
-    override fun getBookmarkFlow(): Flow<List<Int>> {
+    override fun getBookmarkFlow(): Flow<List<String>> {
         return userDataStore.data.map { preferences ->
-            preferences[bookmark]?.map { it.toInt() } ?: emptyList()
+            preferences[bookmark]?.map { it } ?: emptyList()
         }
     }
 

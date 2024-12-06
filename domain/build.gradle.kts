@@ -48,4 +48,7 @@ dependencies {
     implementation (Squareup.RETROFIT)
     implementation (Squareup.RETROFIT_CONVERTER_MOSHI)
     implementation(Squareup.MOSHI_KOTLIN)
+
+    implementation ("com.firebase:geofire-android:3.2.0")
+    implementation ("com.firebase:geofire-android-common:3.2.0")
 }

@@ -1,7 +1,7 @@
 package com.wheretogo.data.di
 
 import android.content.Context
-import com.wheretogo.data.datasourceimpl.JourneyDatabase
+import com.wheretogo.data.datasourceimpl.database.CourseDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -12,11 +12,13 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DaoDatabaseModule {
-    @Provides
-    @Singleton
-    fun provideMapDatabase(@ApplicationContext context: Context) =
-        JourneyDatabase.getInstance(context)
 
     @Provides
-    fun provideJourneyDao(database: JourneyDatabase) = database.journeyDao()
+    @Singleton
+    fun provideCourseDatabase(@ApplicationContext context: Context) =
+        CourseDatabase.getInstance(context)
+
+    @Provides
+    fun provideCourseDao(database: CourseDatabase) = database.courseDao()
+
 }

@@ -2,6 +2,7 @@ package com.wheretogo.presentation.composable.content
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -22,11 +23,12 @@ import com.naver.maps.map.MapView
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.overlay.Overlay
 import com.naver.maps.map.util.FusedLocationSource
-import com.wheretogo.domain.COURSE_MIN
+import com.wheretogo.domain.CHECKPOINT_TYPE
+import com.wheretogo.domain.COURSE_TYPE
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.Viewport
 import com.wheretogo.presentation.model.MapOverlay
-import com.wheretogo.presentation.model.toDomainLatLng
+import com.wheretogo.presentation.toDomainLatLng
 import kotlinx.coroutines.launch
 
 @Composable
@@ -94,6 +96,7 @@ fun NaverMap(
     }
     mapView.getMapAsync { map ->
         coroutineScope.launch {
+            Log.d("tst5", "overlay size: ${overlayMap.size}")
             overlayMap.forEach {
                 launch {
                     it.pathOverlay.apply {
@@ -104,14 +107,21 @@ fun NaverMap(
 
                 launch {
                     it.marker.apply {
-                        this.map = this.map ?: map
-                        if (this.onClickListener == null) {
-                            this.setOnClickListener { overlay ->
-                                if (it.code >= COURSE_MIN)
-                                    onCourseMarkerClick(overlay)
-                                else
-                                    onCheckPointMarkerClick(overlay)
-                                true
+                        if (it.marker.position.latitude.toString() != "NaN") {
+                            this.map = this.map ?: map
+                            if (this.onClickListener == null) {
+                                this.setOnClickListener { overlay ->
+                                    when (it.type) {
+                                        CHECKPOINT_TYPE -> {
+                                            onCheckPointMarkerClick(overlay)
+                                        }
+
+                                        COURSE_TYPE -> {
+                                            onCourseMarkerClick(overlay)
+                                        }
+                                    }
+                                    false
+                                }
                             }
                         }
                     }

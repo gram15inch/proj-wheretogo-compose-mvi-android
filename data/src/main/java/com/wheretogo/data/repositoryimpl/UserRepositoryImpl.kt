@@ -22,15 +22,15 @@ class UserRepositoryImpl @Inject constructor(
         userLocalDatasource.setRequestLogin(boolean)
     }
 
-    override suspend fun addBookmark(code: Int) {
+    override suspend fun addBookmark(code: String) {
         userLocalDatasource.addBookmark(code)
     }
 
-    override suspend fun removeBookmark(code: Int) {
+    override suspend fun removeBookmark(code: String) {
         userLocalDatasource.removeBookmark(code)
     }
 
-    override suspend fun getBookmarkFlow(): Flow<List<Int>> {
+    override suspend fun getBookmarkFlow(): Flow<List<String>> {
         return userLocalDatasource.getBookmarkFlow()
     }
 
@@ -40,6 +40,14 @@ class UserRepositoryImpl @Inject constructor(
 
     override suspend fun isUserExists(uid: String): Boolean {
         return userRemoteDatasource.getProfile(uid) != null
+    }
+
+    override suspend fun setProfile(profile: Profile): Boolean {
+        if (userRemoteDatasource.setProfile(profile)) {
+            userLocalDatasource.setProfile(profile)
+            return true
+        }
+        return false
     }
 
     override suspend fun signUp(profile: Profile): SignResponse {
@@ -52,14 +60,6 @@ class UserRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             SignResponse(SignResponse.Status.Error)
         }
-    }
-
-    override suspend fun setProfile(profile: Profile): Boolean {
-        if (userRemoteDatasource.setProfile(profile)) {
-            userLocalDatasource.setProfile(profile)
-            return true
-        }
-        return false
     }
 
     override suspend fun signIn(uid: String): SignResponse {

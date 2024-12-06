@@ -37,9 +37,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wheretogo.domain.model.map.Journey
 import com.wheretogo.presentation.R
-import com.wheretogo.presentation.model.getJourneyDummy
+import com.wheretogo.presentation.state.DriveScreenState.ListState.ListItemState
 import com.wheretogo.presentation.theme.White100
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 
@@ -49,7 +48,7 @@ import com.wheretogo.presentation.theme.hancomSansFontFamily
 fun DriveListPreview() {
     DriveList(
         modifier = Modifier,
-        data = getJourneyDummy(),
+        emptyList(),
         onItemClick = {},
         onBookmarkClick = {}
     )
@@ -58,9 +57,9 @@ fun DriveListPreview() {
 @Composable
 fun DriveList(
     modifier: Modifier,
-    data: List<Journey>,
-    onItemClick: (Journey) -> Unit,
-    onBookmarkClick: (Journey) -> Unit,
+    listItemGroup: List<ListItemState>,
+    onItemClick: (ListItemState) -> Unit,
+    onBookmarkClick: (ListItemState) -> Unit,
 ) {
     val listState = rememberLazyListState()
     LazyColumn(
@@ -68,15 +67,15 @@ fun DriveList(
         verticalArrangement = Arrangement.spacedBy(6.dp),
         state = listState
     ) {
-        items(data) { item ->
+        items(listItemGroup) { item ->
             DriveListItem(
                 modifier = Modifier
                     .widthIn(650.dp)
                     .clickable {
                         onItemClick(item)
                     },
-                item = item,
-                onBookmarkCLick = onBookmarkClick
+                listItem = item,
+                onBookmarkClick = onBookmarkClick
             )
         }
         item { Spacer(modifier = Modifier.height(1.dp)) }
@@ -84,7 +83,11 @@ fun DriveList(
 }
 
 @Composable
-fun DriveListItem(modifier: Modifier, item: Journey, onBookmarkCLick : (Journey)->Unit) {
+fun DriveListItem(
+    modifier: Modifier,
+    listItem: ListItemState,
+    onBookmarkClick: (ListItemState) -> Unit
+) {
     AnimatedVisibility(
         visible = true,
         enter = slideInHorizontally(initialOffsetX = { fullWidth -> fullWidth }) + fadeIn(),
@@ -106,23 +109,39 @@ fun DriveListItem(modifier: Modifier, item: Journey, onBookmarkCLick : (Journey)
                 Text(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    text = "운전연수 코스 ${item.code}",
+                    text = listItem.course.courseName,
                     textAlign = TextAlign.Center,
                     fontFamily = hancomSansFontFamily,
-                    fontSize = 16.5.sp)
+                    fontSize = 16.5.sp
+                )
                 Row(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     driveItemAttribute(
                         modifier = Modifier.weight(1f),
-                        content = "도로연수",
+                        content = listItem.course.tag,
                         type = "태그"
                     )
-                    driveItemAttribute(modifier = Modifier.weight(1f), content = "4.5", type = "평점")
-                    driveItemAttribute(modifier = Modifier.weight(1f), content = "초보", type = "난이도")
                     driveItemAttribute(
                         modifier = Modifier.weight(1f),
-                        content = "20분",
+                        content = listItem.course.like.toString(),
+                        type = "평점"
+                    )
+                    if (listItem.course.level == "")
+                        driveItemAttribute(
+                            modifier = Modifier.weight(1f),
+                            content = listItem.course.relation,
+                            type = "인원"
+                        )
+                    else
+                        driveItemAttribute(
+                            modifier = Modifier.weight(1f),
+                            content = listItem.course.level,
+                            type = "난이도"
+                        )
+                    driveItemAttribute(
+                        modifier = Modifier.weight(1f),
+                        content = listItem.course.duration + "분",
                         type = "소요시간"
                     )
                 }
@@ -133,14 +152,14 @@ fun DriveListItem(modifier: Modifier, item: Journey, onBookmarkCLick : (Journey)
                     .align(alignment = Alignment.TopEnd)
                     .clip(CircleShape)
                     .clickable {
-                        onBookmarkCLick(item)
+                        onBookmarkClick(listItem)
                     }
             ) {
                 Image(
                     modifier = Modifier
                         .size(26.dp)
                         .padding(5.dp),
-                    painter = painterResource(if (item.isBookmark) R.drawable.ic_heart_red else R.drawable.ic_heart_bk),
+                    painter = painterResource(if (listItem.isBookmark) R.drawable.ic_heart_red else R.drawable.ic_heart_bk),
                     contentDescription = "",
                 )
             }

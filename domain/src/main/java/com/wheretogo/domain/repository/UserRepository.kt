@@ -9,11 +9,11 @@ interface UserRepository {
 
     suspend fun setRequestLogin(boolean: Boolean)
 
-    suspend fun addBookmark(code: Int)
+    suspend fun addBookmark(code: String)
 
-    suspend fun removeBookmark(code: Int)
+    suspend fun removeBookmark(code: String)
 
-    suspend fun getBookmarkFlow(): Flow<List<Int>>
+    suspend fun getBookmarkFlow(): Flow<List<String>>
 
     suspend fun getProfileFlow(): Flow<Profile>
 

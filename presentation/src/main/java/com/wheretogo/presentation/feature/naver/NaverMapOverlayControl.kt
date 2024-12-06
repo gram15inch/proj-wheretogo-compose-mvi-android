@@ -8,77 +8,69 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Shader
-import com.naver.maps.map.NaverMap
 import com.naver.maps.map.overlay.Align
 import com.naver.maps.map.overlay.Marker
-import com.naver.maps.map.overlay.Overlay
 import com.naver.maps.map.overlay.OverlayImage
 import com.naver.maps.map.overlay.PathOverlay
-import com.wheretogo.domain.model.map.CheckPoint
-import com.wheretogo.domain.model.map.Journey
+import com.wheretogo.domain.CHECKPOINT_TYPE
+import com.wheretogo.domain.COURSE_TYPE
 import com.wheretogo.domain.getCheckPointMarkerTag
 import com.wheretogo.domain.getCourseMarkerTag
 import com.wheretogo.domain.getCoursePathOverlayTag
+import com.wheretogo.domain.model.map.CheckPoint
+import com.wheretogo.domain.model.map.Course
 import com.wheretogo.presentation.model.MapOverlay
-import com.wheretogo.presentation.model.toNaver
+import com.wheretogo.presentation.toNaver
 
-fun NaverMap.addJourneyOverlay(item: Journey, onMarkerClick: (Overlay) -> Unit): MapOverlay {
-    val naverPoints = item.points.toNaver()
+
+fun getMapOverlay(item: Course): MapOverlay {
+    val naverPoints = item.route.toNaver()
     return MapOverlay(
-        item.code,
+        item.courseId,
+        COURSE_TYPE,
         Marker().apply {
-            position = naverPoints[0] // todo 인덱스 에러 처리
-            map = this@addJourneyOverlay
-            tag = getCourseMarkerTag(code = item.code)
-            this.setOnClickListener { overlay ->
-                onMarkerClick(overlay)
-                true
-            }
-        },
-        PathOverlay().apply {
-            coords = naverPoints
-            map = this@addJourneyOverlay
-            tag = getCoursePathOverlayTag(code = item.code)
-        }
-    )
-}
-
-
-fun getMapOverlay(item: Journey): MapOverlay {
-    val naverPoints = item.points.toNaver()
-    return MapOverlay(
-        item.code,
-        Marker().apply {
-            this.captionText = "운전연수 코스 ${item.code}"
+            this.captionText = item.courseName
             this.setCaptionAligns(Align.Top, Align.Right)
             this.captionOffset = 20
             this.captionTextSize = 16f
-            position = naverPoints[0]
+            naverPoints.getOrNull(0)
+                ?.let { position = it }
             isHideCollidedMarkers = true
-            tag = getCourseMarkerTag(code = item.code)
+            tag = getCourseMarkerTag(code = item.courseId)
         },
         PathOverlay().apply {
-            coords = naverPoints
-            tag = getCoursePathOverlayTag(code = item.code)
-            width = 18
-            outlineWidth = 3
+            if (naverPoints.size >= 2) {
+                coords = naverPoints
+                tag = getCoursePathOverlayTag(code = item.courseId)
+                width = 18
+                outlineWidth = 3
+            }
         }
     )
 }
 
-fun getMapOverlay(code: Int, item: CheckPoint): MapOverlay {
+fun getMapOverlay(item: CheckPoint): MapOverlay {
     return MapOverlay(
-        item.id,
+        item.checkPointId,
+        CHECKPOINT_TYPE,
         Marker().apply {
-            this.captionText = "\uD83D\uDE03 주위가 조용해요. ${item.id}"
+            this.captionText = "\uD83D\uDE03 주위가 조용해요. ${item.checkPointId}"
             this.setCaptionAligns(Align.Top, Align.Right)
             this.captionOffset = 20
             this.captionTextSize = 16f
             position = item.latLng.toNaver()
-            val bitmap = BitmapFactory.decodeFile(item.url)
+            val bitmap = BitmapFactory.decodeFile(item.imgUrl)
             isHideCollidedMarkers = true
-            icon = OverlayImage.fromBitmap(getRoundedRectWithShadowBitmap(bitmap, 30f, 8f, Color.BLACK, Color.WHITE))
-            tag = getCheckPointMarkerTag(code, checkPoint = item)
+            icon = OverlayImage.fromBitmap(
+                getRoundedRectWithShadowBitmap(
+                    bitmap,
+                    30f,
+                    8f,
+                    Color.BLACK,
+                    Color.WHITE
+                )
+            )
+            tag = getCheckPointMarkerTag(item.checkPointId)
         },
         PathOverlay()
     )
@@ -123,21 +115,6 @@ fun getRoundedRectWithShadowBitmap(
 
     return output
 }
-
-fun HideOverlayMap.hideOverlayWithoutItem(itemCode: Int, allItems: MutableMap<Int, MapOverlay>) {
-    if (this.isEmpty()) {
-        for (itemInAll in allItems) {
-            if (itemInAll.value.code != itemCode) {
-                allItems[itemInAll.value.code]?.let { hiddenItem ->
-                    this[hiddenItem.code] = hiddenItem
-                }
-            }
-        }
-    } else {
-        this.clear()
-    }
-}
-
 
 class HideOverlayMap(
     private val innerMap: MutableMap<Int, MapOverlay> = mutableMapOf()

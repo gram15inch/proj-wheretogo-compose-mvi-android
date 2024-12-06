@@ -1,6 +1,8 @@
 package com.wheretogo.data.model.route
 
-import com.wheretogo.data.DATA_NULL
-import com.wheretogo.data.model.map.DataLatLng
+import com.wheretogo.domain.model.map.LatLng
 
-data class RemoteRoute(val routeId: String = DATA_NULL, val points: List<DataLatLng> = emptyList())
+data class RemoteRoute(
+    val courseId: String = "",
+    val points: List<LatLng> = emptyList()
+)

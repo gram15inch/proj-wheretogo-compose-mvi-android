@@ -1,16 +1,14 @@
 package com.wheretogo.domain.di
 
 import com.wheretogo.domain.usecase.FetchJourneyWithoutPointsUseCase
-import com.wheretogo.domain.usecase.GetJourneyUseCase
-import com.wheretogo.domain.usecase.GetNearByJourneyUseCase
+import com.wheretogo.domain.usecase.GetNearByCourseUseCase
 import com.wheretogo.domain.usecase.UserProfileUpdateUseCase
 import com.wheretogo.domain.usecase.UserSignInUseCase
 import com.wheretogo.domain.usecase.UserSignOutUseCase
 import com.wheretogo.domain.usecase.UserSignUpAndSignInUseCase
 import com.wheretogo.domain.usecase.UserSignUpUseCase
 import com.wheretogo.domain.usecaseimpl.FetchJourneyWithoutPointsUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.GetJourneyUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.GetNearByJourneyUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.GetNearByCourseUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.UserProfileUpdateUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.UserSignInUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.UserSignOutUseCaseImpl
@@ -27,10 +25,7 @@ import dagger.hilt.components.SingletonComponent
 abstract class UseCaseModule {
 
     @Binds
-    abstract fun bindGetJourneyUseCase(useCaseImpl: GetJourneyUseCaseImpl): GetJourneyUseCase
-
-    @Binds
-    abstract fun bindGetNearByJourneyUseCase(useCaseImpl: GetNearByJourneyUseCaseImpl): GetNearByJourneyUseCase
+    abstract fun bindGetNearByJourneyUseCase(useCaseImpl: GetNearByCourseUseCaseImpl): GetNearByCourseUseCase
 
     @Binds
     abstract fun bindFetchCourseUseCase(useCaseImpl: FetchJourneyWithoutPointsUseCaseImpl): FetchJourneyWithoutPointsUseCase

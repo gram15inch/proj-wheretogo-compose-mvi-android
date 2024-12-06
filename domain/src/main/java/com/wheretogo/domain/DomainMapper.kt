@@ -1,13 +1,22 @@
 package com.wheretogo.domain
 
 
-import com.wheretogo.domain.model.map.CheckPoint
+import com.firebase.geofire.GeoFireUtils
+import com.firebase.geofire.GeoLocation
+import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.MarkerTag
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+fun LatLng.toGeoHash(length: Int): String {
+    return GeoFireUtils.getGeoHashForLocation(GeoLocation(latitude, longitude), length)
+}
 
+fun LatLng.toGeoHashBound(radius: Double): Pair<String, String> {
+    return GeoFireUtils.getGeoHashQueryBounds(GeoLocation(latitude, longitude), radius).first()
+        .run { Pair(startHash, endHash) }
+}
 
 fun MarkerTag.toCheckPointTag(url: MarkerTag) = "$code/${id}"
 fun MarkerTag.toCourseTag(url: MarkerTag) = "$code"
@@ -19,9 +28,11 @@ fun Any.toMarkerTag() = (this as String).split('/').run {
     }
 }
 
-fun getCheckPointMarkerTag(code: Int, checkPoint: CheckPoint) = "$code/${checkPoint.id}"
+fun getCheckPointMarkerTag(checkPointId: String) = checkPointId.hashCode()
 fun getCourseMarkerTag(code: Int) = "$code"
 fun getCoursePathOverlayTag(code: Int) = "$code"
+fun getCourseMarkerTag(code: String) = code.hashCode()
+fun getCoursePathOverlayTag(code: String) = code.hashCode()
 
 
 fun formatMillisToDate(millis: Long, pattern: String = USER_DATE_FORMAT): String {

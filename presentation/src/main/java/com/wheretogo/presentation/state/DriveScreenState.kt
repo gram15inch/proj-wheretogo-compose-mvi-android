@@ -1,7 +1,7 @@
 package com.wheretogo.presentation.state
 
 import com.wheretogo.domain.model.map.Comment
-import com.wheretogo.domain.model.map.Journey
+import com.wheretogo.domain.model.map.Course
 import com.wheretogo.presentation.model.MapOverlay
 
 
@@ -19,9 +19,15 @@ data class DriveScreenState(
 
     data class ListState(
         val isVisible: Boolean = true,
-        val listData: List<Journey> = emptyList(),
-        val clickItem: Journey = Journey()
-    )
+        val listItemGroup: List<ListItemState> = emptyList(),
+        val clickItem: ListItemState = ListItemState()
+    ) {
+        data class ListItemState(
+            val distanceFromCenter: Int = 0,
+            val isBookmark: Boolean = false,
+            val course: Course = Course()
+        )
+    }
 
     data class PopUpState(
         val isVisible: Boolean = false,

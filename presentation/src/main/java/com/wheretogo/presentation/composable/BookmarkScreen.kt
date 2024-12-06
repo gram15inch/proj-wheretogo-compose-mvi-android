@@ -18,26 +18,19 @@ fun BookmarkScreen(navController: NavController, viewModel: BookmarkViewModel = 
     Column(modifier = Modifier.fillMaxWidth()) {
         Column() {
             Button(onClick = {
-                viewModel.addBookmark(1001)
-                viewModel.addBookmark(1002)
-                viewModel.addBookmark(1003)
-                viewModel.addBookmark(1004)
-                viewModel.addBookmark(1005)
-                viewModel.addBookmark(1006)
-                viewModel.addBookmark(1007)
             }) { Text("더미 추가") }
         }
 
         DriveList(modifier = Modifier,
-            data = state.value.data,
+            listItemGroup = emptyList(),
             onItemClick = {
-                //  viewModel.removeBookmark(it.code)
+                viewModel.removeBookmark(it.course.courseId)
             },
             onBookmarkClick = { item ->
                 if (item.isBookmark)
-                    viewModel.removeBookmark(item.code)
+                    viewModel.removeBookmark(item.course.courseId)
                 else
-                    viewModel.addBookmark(item.code)
+                    viewModel.addBookmark(item.course.courseId)
             })
     }
 

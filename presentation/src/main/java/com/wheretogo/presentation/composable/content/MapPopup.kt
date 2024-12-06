@@ -35,7 +35,7 @@ import com.wheretogo.domain.model.map.Comment
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.BlurEffect
 import com.wheretogo.presentation.composable.ExtendArea
-import com.wheretogo.presentation.model.getCommentDummy
+import com.wheretogo.presentation.getCommentDummy
 import com.wheretogo.presentation.theme.hancomMalangFontFamily
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 
@@ -140,7 +140,8 @@ fun PopupCommentList(
         LazyColumn(
             Modifier
                 .fillMaxSize()
-                .padding(2.dp)) {
+                .padding(2.dp)
+        ) {
             item {
                 CommentFocusItem(
                     comment = data.maxBy { it.like },

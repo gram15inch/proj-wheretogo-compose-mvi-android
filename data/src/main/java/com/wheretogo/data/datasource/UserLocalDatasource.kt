@@ -8,11 +8,11 @@ interface UserLocalDatasource {
 
     suspend fun setRequestLogin(boolean: Boolean)
 
-    suspend fun addBookmark(code: Int)
+    suspend fun addBookmark(code: String)
 
-    suspend fun removeBookmark(code: Int)
+    suspend fun removeBookmark(code: String)
 
-    fun getBookmarkFlow(): Flow<List<Int>>
+    fun getBookmarkFlow(): Flow<List<String>>
 
     suspend fun setProfile(profile: Profile)
 

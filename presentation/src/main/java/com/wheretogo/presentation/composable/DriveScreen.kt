@@ -95,7 +95,7 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
             OneHandArea {
                 DriveList(
                     modifier = Modifier.align(alignment = Alignment.BottomEnd),
-                    data = state.listState.listData,
+                    listItemGroup = state.listState.listItemGroup,
                     onItemClick = { selectedItem ->
                         viewModel.handleIntent(DriveScreenIntent.DriveListItemClick(selectedItem))
                     },

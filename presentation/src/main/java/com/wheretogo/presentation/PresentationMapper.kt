@@ -1,28 +1,10 @@
-package com.wheretogo.presentation.model
+package com.wheretogo.presentation
 
 
 import com.wheretogo.domain.model.map.Comment
-import com.wheretogo.domain.model.map.Course
-import com.wheretogo.domain.model.map.Journey
 import com.wheretogo.domain.model.map.LatLng
 import com.kakao.vectormap.LatLng as KakaoLatLng
 import com.naver.maps.geometry.LatLng as NaverLatLng
-
-fun Course.toNaver(): CourseNaver {
-    return CourseNaver(
-        start = NaverLatLng(start.latitude, start.longitude),
-        goal = NaverLatLng(goal.latitude, goal.longitude),
-        waypoints = waypoints.toNaver()
-    )
-}
-
-fun Course.toKakao(): CourseKakao {
-    return CourseKakao(
-        start = KakaoLatLng.from(start.latitude, start.longitude),
-        goal = KakaoLatLng.from(goal.latitude, goal.longitude),
-        waypoints = waypoints.toKakao()
-    )
-}
 
 
 fun List<LatLng>.toNaver(): List<NaverLatLng> {
@@ -116,13 +98,5 @@ fun getCommentDummy(): List<Comment> {
             isLike = false,
             isFold = true
         ),
-    )
-}
-
-
-fun getJourneyDummy(): List<Journey> {
-    return listOf(
-        Journey(1001, "운전연수 코스 1001", "20", emptyList(), "",),
-        Journey(1002, "운전연수 코스 1002", "15", emptyList(), "",),
     )
 }

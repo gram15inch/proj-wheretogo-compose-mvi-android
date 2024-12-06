@@ -1,7 +1,9 @@
 package com.wheretogo.data.datasourceimpl
 
 import com.google.firebase.firestore.FirebaseFirestore
+import com.wheretogo.data.FireStoreTableName
 import com.wheretogo.data.datasource.UserRemoteDatasource
+import com.wheretogo.data.name
 
 import com.wheretogo.domain.model.user.Profile
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -12,44 +14,44 @@ import kotlin.coroutines.resumeWithException
 class UserRemoteDatasourceImpl @Inject constructor(
     private val firestore: FirebaseFirestore
 ) : UserRemoteDatasource {
-    private val table=  "usersTest"
+    private val userTable = FireStoreTableName.USER_TABLE.name()
 
     override suspend fun setProfile(profile: Profile): Boolean {
         return suspendCancellableCoroutine { continuation ->
-            firestore.collection(table).document(profile.uid)
+            firestore.collection(userTable).document(profile.uid)
                 .set(profile)
                 .addOnSuccessListener { result ->
                     continuation.resume(true)
-                }.addOnFailureListener { e->
+                }.addOnFailureListener { e ->
                     continuation.resumeWithException(Exception(e))
                 }
         }
     }
 
-    override suspend fun getProfile(uid:String): Profile? {
+    override suspend fun getProfile(uid: String): Profile? {
         return suspendCancellableCoroutine { continuation ->
-            firestore.collection(table).document(uid)
+            firestore.collection(userTable).document(uid)
                 .get()
                 .addOnSuccessListener { result ->
                     if (result != null && result.exists()) {
                         val profile = result.toObject(Profile::class.java)
-                        if(profile!=null){
+                        if (profile != null) {
                             continuation.resume(profile)
-                        }else{
+                        } else {
                             continuation.resumeWithException(Exception("User parse error uid:$uid"))
                         }
-                    }else{
+                    } else {
                         continuation.resume(null)
                     }
-                }.addOnFailureListener { e->
+                }.addOnFailureListener { e ->
                     continuation.resumeWithException(Exception(e))
                 }
         }
     }
 
-    suspend fun removeProfile(uid:String): Boolean {
+    suspend fun removeProfile(uid: String): Boolean {
         return suspendCancellableCoroutine { continuation ->
-            firestore.collection(table).document(uid)
+            firestore.collection(userTable).document(uid)
                 .delete()
                 .addOnSuccessListener { result ->
                     continuation.resume(true)
