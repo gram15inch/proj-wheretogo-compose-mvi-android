@@ -1,5 +1,6 @@
 package com.dhkim139.wheretogo
 
+import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import com.dhkim139.wheretogo.di.FirebaseModule
 import com.google.firebase.FirebaseApp
@@ -7,17 +8,24 @@ import com.wheretogo.data.datasourceimpl.CheckPointLocalDatasourceImpl
 import com.wheretogo.data.datasourceimpl.CheckPointRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.CourseLocalDatasourceImpl
 import com.wheretogo.data.datasourceimpl.CourseRemoteDatasourceImpl
+import com.wheretogo.data.datasourceimpl.ImageLocalDatasourceImpl
 import com.wheretogo.data.datasourceimpl.LikeRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.RouteRemoteDatasourceImpl
 import com.wheretogo.data.di.ApiServiceModule
 import com.wheretogo.data.di.DaoDatabaseModule
 import com.wheretogo.data.di.RetrofitClientModule
 import com.wheretogo.data.model.course.RemoteCourse
+import com.wheretogo.data.repositoryimpl.CheckPointRepositoryImpl
 import com.wheretogo.data.repositoryimpl.CourseRepositoryImpl
+import com.wheretogo.data.toDataMetaCheckPoint
+import com.wheretogo.data.toRemoteCourse
+import com.wheretogo.domain.model.dummy.getCourseDummy
 import com.wheretogo.domain.model.map.Course
+import com.wheretogo.domain.toMetaCheckPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 
@@ -32,6 +40,23 @@ class CourseTest {
                 FirebaseApp.initializeApp(appContext)
             }
             assertEquals("com.dhkim139.wheretogo", appContext.packageName)
+        }
+    }
+
+    @Test
+    fun courseInit(): Unit = runBlocking {
+        val firestore = FirebaseModule.provideFirestore()
+        val datasource = CourseRemoteDatasourceImpl(firestore)
+        getCourseDummy().forEach { course ->
+            val r = datasource.setCourse(
+                course.toRemoteCourse().copy(
+                    remoteMetaCheckPoint = course.checkpoints.toMetaCheckPoint()
+                        .toDataMetaCheckPoint(
+                            timeStamp = System.currentTimeMillis()
+                        )
+                )
+            )
+            assertEquals(true, r)
         }
     }
 
@@ -56,6 +81,17 @@ class CourseTest {
     }
 
     @Test
+    fun getCourseDatasourceTest(): Unit = runBlocking {
+        val firestore = FirebaseModule.provideFirestore()
+        val datasource = CourseRemoteDatasourceImpl(firestore)
+
+
+        val cs2 = datasource.getCourse("cs1")!!
+        assertEquals(true, cs2.remoteMetaCheckPoint.checkPointIdGroup.isNotEmpty())
+        Log.d("tst5", "${cs2.remoteMetaCheckPoint}")
+    }
+
+    @Test
     fun datasourceGetCourseGroupByGeoHashTest(): Unit = runBlocking {
         val firestore = FirebaseModule.provideFirestore()
         val datasource = CourseRemoteDatasourceImpl(firestore)
@@ -66,40 +102,79 @@ class CourseTest {
         val end = "$start\uf8ff"
         val csg1 = datasource.getCourseGroupByGeoHash(start, end)
         assertEquals(true, csg1.isNotEmpty())
+        assertNotEquals(0, csg1.first().remoteMetaCheckPoint.checkPointIdGroup.size)
         //assertEquals(cs1.courseId, csg1.first().courseId)
+    }
+
+    @Test
+    fun repositoryGetCourseTest(): Unit = runBlocking {
+        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
+        val firestore = FirebaseModule.provideFirestore()
+        val firebaseStorage = FirebaseModule.provideFirebaseStorage()
+        val naverApi = ApiServiceModule.provideNaverMapApiService(RetrofitClientModule.run {
+            provideRetrofit(provideMoshi(), provideClient())
+        })
+        val courseDao =
+            DaoDatabaseModule.run { provideCourseDao(provideCourseDatabase(appContext)) }
+        val checkPointDao =
+            DaoDatabaseModule.run { provideCheckPointDao(provideCheckPointDatabase(appContext)) }
+        val checkPointRepository = CheckPointRepositoryImpl(
+            checkPointRemoteDatasource = CheckPointRemoteDatasourceImpl(firestore),
+            checkPointLocalDatasource = CheckPointLocalDatasourceImpl(checkPointDao),
+            imageLocalDatasource = ImageLocalDatasourceImpl(firebaseStorage, appContext)
+        )
+        val courseRepository = CourseRepositoryImpl(
+            courseRemoteDatasource = CourseRemoteDatasourceImpl(firestore),
+            courseLocalDatasource = CourseLocalDatasourceImpl(courseDao),
+            routeRemoteDatasource = RouteRemoteDatasourceImpl(firestore, naverApi),
+            likeRemoteDatasource = LikeRemoteDatasourceImpl(firestore),
+            checkPointRepository = checkPointRepository
+        )
+        val dc1 = Course(
+            courseId = "cs1"
+        )
+        val cs1 = courseRepository.getCourse(dc1.courseId)
+        val cpg1 = cs1?.checkpoints ?: emptyList()
+        Log.d("tst5", "${cpg1.size}")
+        Log.d("tst5", "${cpg1.first().localImgUrl} ${cpg1.first().remoteImgUrl}")
+        Log.d("tst5", "${cpg1.first().latLng}")
+        assertEquals(true, cpg1.isNotEmpty())
+        assertEquals(true, cpg1.first().localImgUrl.isNotEmpty())
+        assertNotEquals(0.0, cpg1.first().latLng.latitude)
     }
 
     @Test
     fun repositoryGetCourseGroupByGeoHashTest(): Unit = runBlocking {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val firestore = FirebaseModule.provideFirestore()
+        val firebaseStorage = FirebaseModule.provideFirebaseStorage()
         val naverApi = ApiServiceModule.provideNaverMapApiService(RetrofitClientModule.run {
             provideRetrofit(provideMoshi(), provideClient())
         })
         val courseDao =
             DaoDatabaseModule.run { provideCourseDao(provideCourseDatabase(appContext)) }
-
-        val courseRemote = CourseRemoteDatasourceImpl(firestore)
-        val courseLocal = CourseLocalDatasourceImpl(courseDao)
-        val routeRemote = RouteRemoteDatasourceImpl(firestore, naverApi)
-        val likeRemote = LikeRemoteDatasourceImpl(firestore)
-        val checkPointRemote = CheckPointRemoteDatasourceImpl(firestore)
-        val checkPointLocal = CheckPointLocalDatasourceImpl()
-
-        val courseRepository = CourseRepositoryImpl(
-            courseRemoteDatasource = courseRemote,
-            courseLocalDatasource = courseLocal,
-            routeRemoteDatasource = routeRemote,
-            likeRemoteDatasource = likeRemote,
-            checkPointRemoteDatasource = checkPointRemote,
-            checkPointLocalDatasource = checkPointLocal
+        val checkPointDao =
+            DaoDatabaseModule.run { provideCheckPointDao(provideCheckPointDatabase(appContext)) }
+        val checkPointRepository = CheckPointRepositoryImpl(
+            checkPointRemoteDatasource = CheckPointRemoteDatasourceImpl(firestore),
+            checkPointLocalDatasource = CheckPointLocalDatasourceImpl(checkPointDao),
+            imageLocalDatasource = ImageLocalDatasourceImpl(firebaseStorage, appContext)
         )
+        val courseRepository = CourseRepositoryImpl(
+            courseRemoteDatasource = CourseRemoteDatasourceImpl(firestore),
+            courseLocalDatasource = CourseLocalDatasourceImpl(courseDao),
+            routeRemoteDatasource = RouteRemoteDatasourceImpl(firestore, naverApi),
+            likeRemoteDatasource = LikeRemoteDatasourceImpl(firestore),
+            checkPointRepository = checkPointRepository
+        )
+
         val dc1 = Course(
             courseId = "cs1"
         )
         val csg1 = courseRepository.getCourseGroupByGeoHash("wyd7")
         assertEquals(1, csg1.size)
         assertEquals(dc1.courseId, csg1.first().courseId)
+        assertNotEquals(0, csg1.first().checkpoints.size)
 
         delay(1000)
         val csg2 = courseRepository.getCourseGroupByGeoHash("wyd7")

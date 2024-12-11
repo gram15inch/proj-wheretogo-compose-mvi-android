@@ -13,6 +13,7 @@ import androidx.room.TypeConverters
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import com.wheretogo.data.model.checkpoint.LocalCheckPoint
 import com.wheretogo.data.model.course.DataMetaCheckPoint
 import com.wheretogo.data.model.course.LocalCourse
 import com.wheretogo.data.model.meta.LocalMetaGeoHash
@@ -66,6 +67,10 @@ interface CourseDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun setMetaGeoHash(entity: LocalMetaGeoHash)
+
+    @Query("UPDATE LocalCourse SET localMetaCheckPoint = :metaCheckPoint WHERE courseId = :courseId")
+    suspend fun updateMetaCheckPoint(courseId: String, metaCheckPoint: DataMetaCheckPoint)
+
 }
 
 class CourseJsonConverters {
@@ -78,7 +83,12 @@ class CourseJsonConverters {
         Types.newParameterizedType(List::class.java, LatLng::class.java)
     private val latLngGroupAdapter = moshi.adapter<List<LatLng>>(latLngListType)
     private val latLngAdapter = moshi.adapter(LatLng::class.java)
-    private val checkPointAdapter = moshi.adapter(DataMetaCheckPoint::class.java)
+
+    private val checkPointListType: Type =
+        Types.newParameterizedType(List::class.java, LocalCheckPoint::class.java)
+    private val checkPointListAdapter = moshi.adapter<List<LocalCheckPoint>>(checkPointListType)
+
+    private val metaCheckPointAdapter = moshi.adapter(DataMetaCheckPoint::class.java)
 
     @TypeConverter
     fun fromLatLngList(latLngList: List<LatLng>?): String? {
@@ -91,13 +101,13 @@ class CourseJsonConverters {
     }
 
     @TypeConverter
-    fun fromMetaCheckPoint(course: DataMetaCheckPoint?): String? {
-        return course?.let { checkPointAdapter.toJson(course) }
+    fun fromCheckPointList(latLngList: List<LocalCheckPoint>?): String? {
+        return latLngList?.let { checkPointListAdapter.toJson(it) }
     }
 
     @TypeConverter
-    fun toMetaCheckPoint(jsonString: String?): DataMetaCheckPoint? {
-        return jsonString?.let { checkPointAdapter.fromJson(it) }
+    fun toCheckPointList(jsonString: String?): List<LocalCheckPoint>? {
+        return jsonString?.let { checkPointListAdapter.fromJson(it) }
     }
 
     @TypeConverter
@@ -106,8 +116,18 @@ class CourseJsonConverters {
     }
 
     @TypeConverter
-    fun fromLatLng(course: LatLng?): String? {
-        return course?.let { latLngAdapter.toJson(course) }
+    fun fromLatLng(latlng: LatLng?): String? {
+        return latlng?.let { latLngAdapter.toJson(it) }
+    }
+
+    @TypeConverter
+    fun toCheckpoint(jsonString: String?): DataMetaCheckPoint? {
+        return jsonString?.let { metaCheckPointAdapter.fromJson(it) }
+    }
+
+    @TypeConverter
+    fun fromCheckpoint(checkpoint: DataMetaCheckPoint?): String? {
+        return checkpoint?.let { metaCheckPointAdapter.toJson(it) }
     }
 
 }

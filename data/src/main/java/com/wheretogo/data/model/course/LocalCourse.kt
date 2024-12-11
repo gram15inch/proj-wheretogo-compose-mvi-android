@@ -21,7 +21,7 @@ data class LocalCourse(
     val geoHash: String = "",
     val waypoints: List<LatLng> = emptyList(),
     val route: List<LatLng> = emptyList(),
-    val metaCheckPoint: DataMetaCheckPoint = DataMetaCheckPoint(),
+    val localMetaCheckPoint: DataMetaCheckPoint = DataMetaCheckPoint(),
     val duration: String = "",
     val tag: String = "",
     val level: String = "",

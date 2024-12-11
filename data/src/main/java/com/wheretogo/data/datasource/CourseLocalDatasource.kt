@@ -1,5 +1,6 @@
 package com.wheretogo.data.datasource
 
+import com.wheretogo.data.model.course.DataMetaCheckPoint
 import com.wheretogo.data.model.course.LocalCourse
 import com.wheretogo.data.model.meta.LocalMetaGeoHash
 
@@ -19,4 +20,6 @@ interface CourseLocalDatasource {
     suspend fun isExistMetaGeoHash(geoHash: String): Boolean
 
     suspend fun setMetaGeoHash(entity: LocalMetaGeoHash)
+
+    suspend fun updateMetaCheckPoint(courseId: String, dataMetaCheckPoint: DataMetaCheckPoint)
 }

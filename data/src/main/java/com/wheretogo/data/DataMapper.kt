@@ -1,5 +1,6 @@
 package com.wheretogo.data
 
+import com.wheretogo.data.model.checkpoint.LocalCheckPoint
 import com.wheretogo.data.model.checkpoint.RemoteCheckPoint
 import com.wheretogo.data.model.course.DataMetaCheckPoint
 import com.wheretogo.data.model.course.LocalCourse
@@ -12,8 +13,8 @@ import com.wheretogo.domain.model.map.MetaCheckPoint
 import com.wheretogo.domain.toGeoHash
 
 
-fun DataMetaCheckPoint.toMetaCheckPoint(): MetaCheckPoint {
-    return MetaCheckPoint(metaCheckPointGroup = dataGroup, timeStamp = timeStamp)
+fun DataMetaCheckPoint.toMetaCheckPoint(timestamp: Long = timeStamp): MetaCheckPoint {
+    return MetaCheckPoint(checkPointIdGroup = checkPointIdGroup, timeStamp = timestamp)
 }
 
 fun CheckPoint.toRemoteCheckPoint(): RemoteCheckPoint {
@@ -21,12 +22,59 @@ fun CheckPoint.toRemoteCheckPoint(): RemoteCheckPoint {
         checkPointId = checkPointId,
         latLng = latLng.toDataLatLng(),
         titleComment = titleComment,
-        imgUrl = imgUrl
+        imgUrl = remoteImgUrl
     )
 }
 
-fun LocalCourse.toDomainCourse(
+fun CheckPoint.toLocalCheckPoint(
+    localImgUrl: String = this.localImgUrl,
+): LocalCheckPoint {
+    return LocalCheckPoint(
+        checkPointId = checkPointId,
+        latLng = latLng,
+        titleComment = titleComment,
+        remoteImgUrl = remoteImgUrl,
+        localImgUrl = localImgUrl
+    )
+}
+
+fun RemoteCheckPoint.toCheckPoint(): CheckPoint {
+    return CheckPoint(
+        checkPointId = checkPointId,
+        latLng = latLng.toLatLng(),
+        titleComment = titleComment,
+        remoteImgUrl = imgUrl
+    )
+}
+
+fun RemoteCheckPoint.toLocalCheckPoint(
+    localImgUrl: String = "",
+    timestamp: Long = 0L
+): LocalCheckPoint {
+    return LocalCheckPoint(
+        checkPointId = checkPointId,
+        latLng = latLng.toLatLng(),
+        titleComment = titleComment,
+        remoteImgUrl = imgUrl,
+        localImgUrl = localImgUrl,
+        timestamp = timestamp
+    )
+}
+
+fun LocalCheckPoint.toCheckPoint(): CheckPoint {
+    return CheckPoint(
+        checkPointId = checkPointId,
+        latLng = latLng,
+        titleComment = titleComment,
+        remoteImgUrl = remoteImgUrl,
+        localImgUrl = localImgUrl,
+    )
+}
+
+
+fun LocalCourse.toCourse(
     route: List<LatLng> = this.route,
+    checkPoints: List<CheckPoint>,
     like: Int = this.like
 ): Course {
     return Course(
@@ -34,7 +82,7 @@ fun LocalCourse.toDomainCourse(
         courseName = courseName,
         waypoints = waypoints,
         route = route,
-        metaCheckPoint = metaCheckPoint.toMetaCheckPoint(),
+        checkpoints = checkPoints,
         duration = duration,
         tag = tag,
         level = level,
@@ -45,7 +93,9 @@ fun LocalCourse.toDomainCourse(
     )
 }
 
-fun Course.toLocalCourse(): LocalCourse {
+fun Course.toLocalCourse(
+    checkPoint: DataMetaCheckPoint = DataMetaCheckPoint()
+): LocalCourse {
     return LocalCourse(
         courseId = courseId,
         courseName = courseName,
@@ -54,7 +104,7 @@ fun Course.toLocalCourse(): LocalCourse {
         geoHash = cameraLatLng.toGeoHash(6),
         waypoints = waypoints,
         route = route,
-        metaCheckPoint = metaCheckPoint.toDataMetaCheckPoint(),
+        localMetaCheckPoint = checkPoint,
         duration = duration,
         tag = tag,
         level = level,
@@ -68,6 +118,7 @@ fun Course.toLocalCourse(): LocalCourse {
 
 fun RemoteCourse.toLocalCourse(
     route: List<LatLng> = emptyList(),
+    checkPoint: DataMetaCheckPoint = DataMetaCheckPoint(),
     like: Int = 0
 ): LocalCourse {
     return LocalCourse(
@@ -78,7 +129,7 @@ fun RemoteCourse.toLocalCourse(
         geoHash = cameraLatLng.toGeoHash(6),
         waypoints = waypoints,
         route = route,
-        metaCheckPoint = metaCheckPoint,
+        localMetaCheckPoint = checkPoint,
         duration = duration,
         tag = tag,
         level = level,
@@ -89,7 +140,9 @@ fun RemoteCourse.toLocalCourse(
     )
 }
 
-fun Course.toRemoteCourse(): RemoteCourse {
+fun Course.toRemoteCourse(
+    checkPoint: DataMetaCheckPoint = DataMetaCheckPoint(),
+): RemoteCourse {
     return RemoteCourse(
         courseId = courseId,
         courseName = courseName,
@@ -97,7 +150,7 @@ fun Course.toRemoteCourse(): RemoteCourse {
         longitude = cameraLatLng.longitude,
         geoHash = cameraLatLng.toGeoHash(6),
         waypoints = waypoints,
-        metaCheckPoint = metaCheckPoint.toDataMetaCheckPoint(),
+        remoteMetaCheckPoint = checkPoint,
         duration = duration,
         tag = tag,
         level = level,
@@ -107,8 +160,9 @@ fun Course.toRemoteCourse(): RemoteCourse {
     )
 }
 
-fun RemoteCourse.toDomainCourse(
+fun RemoteCourse.toCourse(
     route: List<LatLng> = emptyList(),
+    checkPoint: List<CheckPoint> = emptyList(),
     like: Int = 0
 ): Course {
     return Course(
@@ -116,7 +170,7 @@ fun RemoteCourse.toDomainCourse(
         courseName = courseName,
         waypoints = waypoints,
         route = route,
-        metaCheckPoint = metaCheckPoint.toMetaCheckPoint(),
+        checkpoints = checkPoint,
         duration = duration,
         tag = tag,
         level = level,
@@ -127,9 +181,41 @@ fun RemoteCourse.toDomainCourse(
     )
 }
 
-fun MetaCheckPoint.toDataMetaCheckPoint(): DataMetaCheckPoint {
+fun List<LocalCheckPoint>.toCheckPoint(): List<CheckPoint> {
+    return map {
+        CheckPoint(
+            checkPointId = it.checkPointId,
+            latLng = it.latLng,
+            titleComment = it.titleComment,
+            remoteImgUrl = it.remoteImgUrl,
+            localImgUrl = it.localImgUrl
+        )
+    }
+}
+
+fun List<CheckPoint>.toLocalCheckPoint(): List<LocalCheckPoint> {
+    return map {
+        LocalCheckPoint(
+            checkPointId = it.checkPointId,
+            latLng = it.latLng,
+            titleComment = it.titleComment,
+            remoteImgUrl = it.remoteImgUrl,
+            localImgUrl = it.localImgUrl
+        )
+    }
+}
+
+fun MetaCheckPoint.toCheckPointGroup(): List<CheckPoint> {
+    return checkPointIdGroup.map { CheckPoint(checkPointId = it) }
+}
+
+fun MetaCheckPoint.toLocalCheckPointGroup(): List<LocalCheckPoint> {
+    return checkPointIdGroup.map { LocalCheckPoint(checkPointId = it) }
+}
+
+fun MetaCheckPoint.toDataMetaCheckPoint(timeStamp: Long = this.timeStamp): DataMetaCheckPoint {
     return DataMetaCheckPoint(
-        dataGroup = metaCheckPointGroup,
+        checkPointIdGroup = checkPointIdGroup,
         timeStamp = timeStamp
     )
 }

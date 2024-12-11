@@ -8,7 +8,7 @@ import com.wheretogo.data.datasourceimpl.RouteRemoteDatasourceImpl
 import com.wheretogo.data.di.ApiServiceModule
 import com.wheretogo.data.di.RetrofitClientModule
 import com.wheretogo.data.model.route.RemoteRoute
-import com.wheretogo.domain.model.dummy.getDomainCourseDummy
+import com.wheretogo.domain.model.dummy.getCourseDummy
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeAll
@@ -63,7 +63,7 @@ class RouteTest {
         val datasource = RouteRemoteDatasourceImpl(firestore, naverApi)
 
 
-        val rtGroup = listOf(getDomainCourseDummy()).first().map {
+        val rtGroup = listOf(getCourseDummy()).first().map {
             RemoteRoute(
                 courseId = it.courseId,
                 points = datasource.getRouteByNaver(it.waypoints)

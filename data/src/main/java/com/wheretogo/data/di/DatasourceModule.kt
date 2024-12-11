@@ -4,6 +4,7 @@ import com.wheretogo.data.datasource.CheckPointLocalDatasource
 import com.wheretogo.data.datasource.CheckPointRemoteDatasource
 import com.wheretogo.data.datasource.CourseLocalDatasource
 import com.wheretogo.data.datasource.CourseRemoteDatasource
+import com.wheretogo.data.datasource.ImageLocalDatasource
 import com.wheretogo.data.datasource.LikeRemoteDatasource
 import com.wheretogo.data.datasource.RouteRemoteDatasource
 import com.wheretogo.data.datasource.UserLocalDatasource
@@ -12,6 +13,7 @@ import com.wheretogo.data.datasourceimpl.CheckPointLocalDatasourceImpl
 import com.wheretogo.data.datasourceimpl.CheckPointRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.CourseLocalDatasourceImpl
 import com.wheretogo.data.datasourceimpl.CourseRemoteDatasourceImpl
+import com.wheretogo.data.datasourceimpl.ImageLocalDatasourceImpl
 import com.wheretogo.data.datasourceimpl.LikeRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.RouteRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.UserLocalDatasourceImpl
@@ -49,6 +51,9 @@ abstract class DatasourceModule {
 
     @Binds
     abstract fun bindLikeRemoteDatasource(datasource: LikeRemoteDatasourceImpl): LikeRemoteDatasource
+
+    @Binds
+    abstract fun bindImageLocalDatasource(datasource: ImageLocalDatasourceImpl): ImageLocalDatasource
 
 
 }

@@ -1,11 +1,11 @@
 package com.wheretogo.domain.model.dummy
 
+import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.Course
 import com.wheretogo.domain.model.map.LatLng
-import com.wheretogo.domain.model.map.MetaCheckPoint
 
 
-fun getDomainCourseDummy(): List<Course> {
+fun getCourseDummy(): List<Course> {
 
     val w1 = listOf(
         // 기흥호수공원 순환
@@ -58,7 +58,7 @@ fun getDomainCourseDummy(): List<Course> {
             courseId = "cs1",
             courseName = "기흥호수공원 순환",
             waypoints = w1,
-            metaCheckPoint = getMetaCheckPointDummy("c1"),
+            checkpoints = getCheckPointDummy("cs1"),
             duration = "15",
             tag = "드라이브",
             level = "",
@@ -70,7 +70,7 @@ fun getDomainCourseDummy(): List<Course> {
             courseId = "cs2",
             courseName = "광교호수공원 순환",
             waypoints = w2,
-            metaCheckPoint = getMetaCheckPointDummy("c2"),
+            checkpoints = getCheckPointDummy("cs2"),
             duration = "15",
             tag = "드라이브",
             level = "",
@@ -82,7 +82,7 @@ fun getDomainCourseDummy(): List<Course> {
             courseId = "cs3",
             courseName = "에버랜드 장미원 <-> 1bw 주차장",
             waypoints = w3,
-            metaCheckPoint = getMetaCheckPointDummy(),
+            checkpoints = getCheckPointDummy(),
             duration = "15",
             tag = "스포츠",
             level = "3",
@@ -94,7 +94,7 @@ fun getDomainCourseDummy(): List<Course> {
             courseId = "cs4",
             courseName = "에버랜드 장미원 <-> 백련사",
             waypoints = w4,
-            metaCheckPoint = getMetaCheckPointDummy(),
+            checkpoints = getCheckPointDummy(),
             duration = "15",
             tag = "스포츠",
             level = "2",
@@ -106,7 +106,7 @@ fun getDomainCourseDummy(): List<Course> {
             courseId = "cs5",
             courseName = "기흥역 <-> 역북램프 공영주차장",
             waypoints = w5,
-            metaCheckPoint = getMetaCheckPointDummy(),
+            checkpoints = getCheckPointDummy(),
             duration = "15",
             tag = "도로연수",
             level = "1",
@@ -119,7 +119,7 @@ fun getDomainCourseDummy(): List<Course> {
             courseId = "cs6",
             courseName = "기흥역 <-> 용인 운전면허시험 <-> 신갈오거리",
             waypoints = w6,
-            metaCheckPoint = getMetaCheckPointDummy("c6"),
+            checkpoints = getCheckPointDummy("cs6"),
             duration = "15",
             tag = "도로연수",
             level = "1",
@@ -132,7 +132,7 @@ fun getDomainCourseDummy(): List<Course> {
             courseId = "cs7",
             courseName = "에버랜드1b주차장 <-> 용인 스피드웨이",
             waypoints = w7,
-            metaCheckPoint = getMetaCheckPointDummy(),
+            checkpoints = getCheckPointDummy(),
             duration = "15",
             tag = "스포츠",
             level = "4",
@@ -144,7 +144,7 @@ fun getDomainCourseDummy(): List<Course> {
 }
 
 
-fun getMetaCheckPointDummy(courseId: String = ""): MetaCheckPoint {
+fun getCheckPointDummy(courseId: String = ""): List<CheckPoint> {
     val list = mutableListOf<String>()
     when (courseId) {
         "cs1" -> {
@@ -166,8 +166,5 @@ fun getMetaCheckPointDummy(courseId: String = ""): MetaCheckPoint {
         }
     }
 
-    return MetaCheckPoint(
-        metaCheckPointGroup = list,
-        timeStamp = System.currentTimeMillis()
-    )
+    return list.map { CheckPoint(checkPointId = it) }
 }

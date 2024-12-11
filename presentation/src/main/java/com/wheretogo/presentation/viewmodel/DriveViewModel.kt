@@ -1,16 +1,18 @@
 package com.wheretogo.presentation.viewmodel
 
 import android.location.Location
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wheretogo.domain.getCheckPointMarkerTag
-import com.wheretogo.domain.model.map.Comment
 import com.wheretogo.domain.model.map.CheckPoint
+import com.wheretogo.domain.model.map.Comment
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.MarkerTag
 import com.wheretogo.domain.model.map.Viewport
+import com.wheretogo.domain.repository.CheckPointRepository
+import com.wheretogo.domain.repository.CourseRepository
 import com.wheretogo.domain.repository.UserRepository
+import com.wheretogo.domain.toMetaCheckPoint
 import com.wheretogo.domain.usecase.GetNearByCourseUseCase
 import com.wheretogo.presentation.feature.naver.getMapOverlay
 import com.wheretogo.presentation.getCommentDummy
@@ -29,7 +31,9 @@ import javax.inject.Inject
 @HiltViewModel
 class DriveViewModel @Inject constructor(
     private val getNearByCourseUseCase: GetNearByCourseUseCase,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val courseRepository: CourseRepository,
+    private val checkPointRepository: CheckPointRepository,
 ) : ViewModel() {
     private val _driveScreenState = MutableStateFlow(DriveScreenState())
     private val _cacheCourseMapOverlayGroup = mutableMapOf<Int, MapOverlay>() // id, hashcode
@@ -123,13 +127,10 @@ class DriveViewModel @Inject constructor(
         _latestCamera = latLng
 
         val data = getNearByCourseUseCase(latLng)
-        Log.d("tst5", "viewModel data size: ${data.size}")
-        val mapData =
-            data.map {
-                //_cacheCheckPointGroup[it.courseId ] = it.checkPoints
-                _cacheCourseMapOverlayGroup.getOrPut(it.courseId.hashCode()) { getMapOverlay(it) }
-            }
-        Log.d("tst5", "viewModel mapData size: ${mapData.size}")
+        val mapData = data.map {
+            //_cacheCheckPointGroup[it.courseId ] = it.checkPoints
+            _cacheCourseMapOverlayGroup.getOrPut(it.courseId.hashCode()) { getMapOverlay(it) }
+        }
 
         val listData = data.mapNotNull {
             val camera = latLng
@@ -152,8 +153,6 @@ class DriveViewModel @Inject constructor(
             else
                 null
         }.sortedBy { it.course.courseId }
-        Pair(mapData, listData)
-
 
         if (!_driveScreenState.value.floatingButtonState.isFoldVisible) {
             _driveScreenState.value = _driveScreenState.value.copy(
@@ -176,7 +175,7 @@ class DriveViewModel @Inject constructor(
     }
 
     private fun courseMarkerClick(tag: MarkerTag) {
-        val newMapData =
+        val mapData =
             _latestCourseMapOverlayGroup + _cacheCheckPointGroup[tag.code]!!.map { checkPoint ->
                 _cacheCheckPointMapOverlayGroup.getOrPut(getCheckPointMarkerTag(checkPoint.checkPointId)) {
                     getMapOverlay(checkPoint)
@@ -187,7 +186,7 @@ class DriveViewModel @Inject constructor(
         _driveScreenState.value = _driveScreenState.value.run {
             copy(
                 mapState = mapState.copy(
-                    mapData = newMapData
+                    mapData = mapData
                 ),
                 listState = listState.copy(
                     isVisible = false
@@ -236,14 +235,13 @@ class DriveViewModel @Inject constructor(
             }
 
             val newMapData =
-                _latestCourseMapOverlayGroup - _latestItemState.course.metaCheckPoint.metaCheckPointGroup.map {
-                    _cacheCheckPointMapOverlayGroup.getOrPut(it.hashCode()) {
-                        getMapOverlay(CheckPoint(checkPointId = it)) //todo 임시
+                _latestCourseMapOverlayGroup - _latestItemState.course.checkpoints.map {
+                    _cacheCheckPointMapOverlayGroup.getOrPut(it.checkPointId.hashCode()) {
+                        getMapOverlay(it)
                     }.apply {
-                        this.marker.isVisible = false
+                        marker.isVisible = false
                     }
                 }.toSet()
-
 
             _driveScreenState.value = _driveScreenState.value.run {
                 copy(
@@ -291,16 +289,19 @@ class DriveViewModel @Inject constructor(
         }
     }
 
-    private fun driveListItemClick(state: DriveScreenState.ListState.ListItemState) {
+    private suspend fun driveListItemClick(state: DriveScreenState.ListState.ListItemState) {
         _latestItemState = state
         _latestCourseMapOverlayGroup.hideCourseMapOverlayWithout(state.course.courseId.hashCode())
+        val checkPoints =
+            checkPointRepository.getCheckPointGroup(state.course.checkpoints.toMetaCheckPoint())
+
+        _cacheCheckPointGroup[state.course.courseId.hashCode()] = checkPoints
         val newMapData =
-            _latestCourseMapOverlayGroup + state.course.metaCheckPoint.metaCheckPointGroup.map {
-                _cacheCheckPointMapOverlayGroup.getOrPut(it.hashCode()) {
-                    getMapOverlay(CheckPoint(checkPointId = it)) //todo 임시
-                        .apply {
-                            this.marker.isVisible = true
-                        }
+            _latestCourseMapOverlayGroup + checkPoints.map {
+                _cacheCheckPointMapOverlayGroup.getOrPut(it.checkPointId.hashCode()) {
+                    getMapOverlay(it)
+                }.apply {
+                    this.marker.isVisible = true
                 }
             }
         _driveScreenState.value = _driveScreenState.value.run {

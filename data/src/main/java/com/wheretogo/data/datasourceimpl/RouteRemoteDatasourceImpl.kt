@@ -1,13 +1,11 @@
 package com.wheretogo.data.datasourceimpl
 
-import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.wheretogo.data.BuildConfig
 import com.wheretogo.data.FireStoreTableName
 import com.wheretogo.data.datasource.RouteRemoteDatasource
 import com.wheretogo.data.datasourceimpl.service.NaverMapApiService
 import com.wheretogo.data.model.course.RemoteCourse
-import com.wheretogo.data.model.map.DataLatLng
 import com.wheretogo.data.model.route.RemoteRoute
 import com.wheretogo.data.name
 import com.wheretogo.domain.model.map.LatLng
@@ -85,12 +83,8 @@ class RouteRemoteDatasourceImpl @Inject constructor(
             if (msg.body()?.currentDateTime != null) {
                 val r = msg.body()!!.route.traoptimal.map { it.path }.first()
                     .map { LatLng(it[1], it[0]) }
-                Log.i("tst5", "${msg}")
-                Log.i("tst5", "${msg.body()}")
                 return r
             } else {
-                Log.d("tst", "${msg}")
-                Log.d("tst", "${msg.body()}")
                 return emptyList()
             }
         } else
@@ -110,14 +104,6 @@ class RouteRemoteDatasourceImpl @Inject constructor(
     data class LatLngGeo(val latitude: Double, val longitude: Double, val geohash: String)
 
     suspend fun setGeoTest(): Boolean {
-        val courseId = "cs1"
-        /*   val points = getRouteInCourse(courseId).points.map {
-               LatLngGeo(
-                   it.latitude, it.longitude,
-                   GeoFireUtils.getGeoHashForLocation(GeoLocation(it.latitude, it.longitude))
-               )
-           }*/
-
         fun getGeoHase(num: Int): String {
             val random = (0..9).random()
             return when (num) {
@@ -160,48 +146,6 @@ class RouteRemoteDatasourceImpl @Inject constructor(
             }.addOnFailureListener {
                 continuation.resume(false)
             }
-        }
-    }
-
-    suspend fun getGeoTest(meter: Double): Int {
-        val lat = 37.2560577
-        val lng = 127.0940143
-
-        val start = "wyd7um"
-        val end = start + "\uf8ff"
-        /* val query = GeoFireUtils.getGeoHashQueryBounds(GeoLocation(lat,lng),meter)
-         Log.d("tst5","${query[0].startHash}/${query[0].endHash}")*/
-        return suspendCancellableCoroutine { continuation ->
-            firestore.collection("TEST_POINT_GEO_TABLE")
-                .whereGreaterThanOrEqualTo("geohash", start)
-                .whereLessThanOrEqualTo("geohash", end)
-                .get().addOnSuccessListener {
-                    val data = it.toObjects(DataLatLng::class.java)
-                    Log.d("tst5", "size: ${data.size} $data")
-                    continuation.resume(data.size)
-                }.addOnFailureListener {
-                    continuation.resumeWithException(it)
-                }
-        }
-    }
-
-    suspend fun getTest(): Int {
-        val lat = 37.2560577
-        val lng = 127.0940143
-
-        return suspendCancellableCoroutine { continuation ->
-            firestore.collection("TEST_POINT_TABLE")
-                .whereGreaterThanOrEqualTo("latitude", lat)
-                .whereLessThanOrEqualTo("latitude", lat + 0.001)
-                .whereGreaterThanOrEqualTo("longitude", lng - 0.001)
-                .whereLessThanOrEqualTo("longitude", lng)
-                .get().addOnSuccessListener {
-                    val data = it.toObjects(DataLatLng::class.java)
-                    Log.d("tst5", "size: ${data.size} $data")
-                    continuation.resume(data.size)
-                }.addOnFailureListener {
-                    continuation.resumeWithException(it)
-                }
         }
     }
 

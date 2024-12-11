@@ -10,7 +10,7 @@ data class RemoteCourse(
     val longitude: Double = 0.0,
     val geoHash: String = "",
     val waypoints: List<LatLng> = emptyList(),
-    val metaCheckPoint: DataMetaCheckPoint = DataMetaCheckPoint(),
+    val remoteMetaCheckPoint: DataMetaCheckPoint = DataMetaCheckPoint(),
     val duration: String = "",
     val tag: String = "",
     val level: String = "",

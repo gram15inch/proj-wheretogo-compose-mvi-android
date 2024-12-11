@@ -1,6 +1,7 @@
 package com.wheretogo.data.di
 
 import android.content.Context
+import com.wheretogo.data.datasourceimpl.database.CheckPointDatabase
 import com.wheretogo.data.datasourceimpl.database.CourseDatabase
 import dagger.Module
 import dagger.Provides
@@ -20,5 +21,13 @@ object DaoDatabaseModule {
 
     @Provides
     fun provideCourseDao(database: CourseDatabase) = database.courseDao()
+
+    @Provides
+    @Singleton
+    fun provideCheckPointDatabase(@ApplicationContext context: Context) =
+        CheckPointDatabase.getInstance(context)
+
+    @Provides
+    fun provideCheckPointDao(database: CheckPointDatabase) = database.checkPointDao()
 
 }

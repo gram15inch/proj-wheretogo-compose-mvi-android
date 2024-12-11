@@ -2,6 +2,7 @@ package com.wheretogo.data.datasourceimpl
 
 import com.wheretogo.data.datasource.CourseLocalDatasource
 import com.wheretogo.data.datasourceimpl.database.CourseDao
+import com.wheretogo.data.model.course.DataMetaCheckPoint
 import com.wheretogo.data.model.course.LocalCourse
 import com.wheretogo.data.model.meta.LocalMetaGeoHash
 import javax.inject.Inject
@@ -36,6 +37,13 @@ class CourseLocalDatasourceImpl @Inject constructor(
 
     override suspend fun setMetaGeoHash(entity: LocalMetaGeoHash) {
         courseDao.setMetaGeoHash(entity)
+    }
+
+    override suspend fun updateMetaCheckPoint(
+        courseId: String,
+        dataMetaCheckPoint: DataMetaCheckPoint
+    ) {
+
     }
 
 }

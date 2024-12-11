@@ -3,8 +3,10 @@ package com.wheretogo.domain
 
 import com.firebase.geofire.GeoFireUtils
 import com.firebase.geofire.GeoLocation
+import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.MarkerTag
+import com.wheretogo.domain.model.map.MetaCheckPoint
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -45,4 +47,13 @@ fun parseDateToMillis(dateString: String, pattern: String = USER_DATE_FORMAT): L
     val dateFormat = SimpleDateFormat(pattern, Locale.getDefault())
     val date = dateFormat.parse(dateString)
     return date?.time ?: throw IllegalArgumentException("Invalid date format or value")
+}
+
+fun List<CheckPoint>.toMetaCheckPoint(
+    timestamp: Long = 0L
+): MetaCheckPoint {
+    return MetaCheckPoint(
+        checkPointIdGroup = map { it.checkPointId },
+        timeStamp = timestamp
+    )
 }

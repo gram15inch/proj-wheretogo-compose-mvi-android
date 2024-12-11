@@ -2,7 +2,6 @@ package com.wheretogo.presentation.composable.content
 
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -96,7 +95,6 @@ fun NaverMap(
     }
     mapView.getMapAsync { map ->
         coroutineScope.launch {
-            Log.d("tst5", "overlay size: ${overlayMap.size}")
             overlayMap.forEach {
                 launch {
                     it.pathOverlay.apply {

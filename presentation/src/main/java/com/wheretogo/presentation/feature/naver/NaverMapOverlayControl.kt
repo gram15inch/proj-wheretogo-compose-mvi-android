@@ -8,6 +8,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Shader
+import android.util.Log
 import com.naver.maps.map.overlay.Align
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
@@ -54,22 +55,22 @@ fun getMapOverlay(item: CheckPoint): MapOverlay {
         item.checkPointId,
         CHECKPOINT_TYPE,
         Marker().apply {
-            this.captionText = "\uD83D\uDE03 주위가 조용해요. ${item.checkPointId}"
+            this.captionText = item.titleComment
             this.setCaptionAligns(Align.Top, Align.Right)
             this.captionOffset = 20
             this.captionTextSize = 16f
             position = item.latLng.toNaver()
-            val bitmap = BitmapFactory.decodeFile(item.imgUrl)
             isHideCollidedMarkers = true
-            icon = OverlayImage.fromBitmap(
-                getRoundedRectWithShadowBitmap(
-                    bitmap,
-                    30f,
-                    8f,
-                    Color.BLACK,
-                    Color.WHITE
+            if (item.localImgUrl.isNotEmpty())
+                icon = OverlayImage.fromBitmap(
+                    getRoundedRectWithShadowBitmap(
+                        BitmapFactory.decodeFile(item.localImgUrl),
+                        30f,
+                        8f,
+                        Color.BLACK,
+                        Color.WHITE
+                    )
                 )
-            )
             tag = getCheckPointMarkerTag(item.checkPointId)
         },
         PathOverlay()

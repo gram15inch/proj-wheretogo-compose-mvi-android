@@ -1,3 +1,3 @@
 package com.wheretogo.data.model.course
 
-data class DataMetaCheckPoint(val dataGroup: List<String> = emptyList(), val timeStamp: Long = 0L)
+data class DataMetaCheckPoint(val checkPointIdGroup: List<String> = emptyList(), val timeStamp: Long = 0L)

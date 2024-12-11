@@ -1,6 +1,5 @@
 package com.wheretogo.data.datasourceimpl
 
-import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.wheretogo.data.FireStoreTableName
 import com.wheretogo.data.datasource.CourseRemoteDatasource
@@ -39,7 +38,6 @@ class CourseRemoteDatasourceImpl @Inject constructor(
                 .get()
                 .addOnSuccessListener {
                     val data = it.toObjects(RemoteCourse::class.java)
-                    Log.d("tst5", "size: ${data.size} $data")
                     continuation.resume(data)
                 }.addOnFailureListener {
                     continuation.resumeWithException(it)

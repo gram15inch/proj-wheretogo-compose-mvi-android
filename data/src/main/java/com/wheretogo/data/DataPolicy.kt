@@ -2,7 +2,8 @@ package com.wheretogo.data
 
 const val NAVER_OPEN_API_URL = "https://naveropenapi.apigw.ntruss.com"
 const val DATA_NULL = ""
-
+const val DAY = 86400000L
+const val CHECKPOINT_UPDATE_TIME = DAY
 
 //파이어스토어 테이블명
 enum class FireStoreTableName() {
