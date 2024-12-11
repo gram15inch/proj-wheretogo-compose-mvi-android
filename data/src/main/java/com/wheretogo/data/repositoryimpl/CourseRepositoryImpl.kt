@@ -1,6 +1,5 @@
 package com.wheretogo.data.repositoryimpl
 
-import android.util.Log
 import com.wheretogo.data.LikeObject
 import com.wheretogo.data.datasource.CourseLocalDatasource
 import com.wheretogo.data.datasource.CourseRemoteDatasource
@@ -46,7 +45,6 @@ class CourseRepositoryImpl @Inject constructor(
                     }
                     val route = async {
                         _cacheRouteGroup.getOrPut(courseId.hashCode()) {
-                            Log.d("tst6","init ${courseId}")
                             routeRemoteDatasource.getRouteInCourse(courseId).points
                         }
                     }
@@ -73,16 +71,10 @@ class CourseRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getCourseGroupByGeoHash(geoHash: String): List<Course> {
-        return if (courseLocalDatasource.isExistMetaGeoHash(geoHash)) {
-            coroutineScope {
-                courseLocalDatasource.getCourseGroupByGeoHash(geoHash).map {
-                    it.toCourse(
-                        checkPoints = it.localMetaCheckPoint.toMetaCheckPoint().toCheckPointGroup()
-                    )
-                }
-            }
+        return if (courseLocalDatasource.isExistMetaGeoHash(geoHash)) { // geohash로 구역 호출 여부 확인
+            courseLocalDatasource.getCourseGroupByGeoHash(geoHash)
         } else {
-            courseRemoteDatasource.getCourseGroupByGeoHash(geoHash, "$geoHash\uf8ff")
+            courseRemoteDatasource.getCourseGroupByGeoHash(geoHash, "$geoHash\uf8ff") // 구역에 해당하는 코스들 가져오기
                 .run {
                     courseLocalDatasource.setMetaGeoHash(
                         LocalMetaGeoHash(geoHash = geoHash, timestamp = System.currentTimeMillis())
@@ -92,18 +84,21 @@ class CourseRepositoryImpl @Inject constructor(
                             async {
                                 val route =
                                     routeRemoteDatasource.getRouteInCourse(it.courseId).points
-                                val checkPoint = it.remoteMetaCheckPoint.checkPointIdGroup
-                                courseLocalDatasource.setCourse(
-                                    it.toLocalCourse(
-                                        route = route,
-                                        checkPoint = DataMetaCheckPoint(checkPointIdGroup = checkPoint)
-                                    )
-                                )
-                                it.toCourse(route = route)
+                                val checkPoint =
+                                    DataMetaCheckPoint(checkPointIdGroup = it.remoteMetaCheckPoint.checkPointIdGroup)
+
+                                it.toLocalCourse(
+                                    route = route,
+                                    checkPoint = checkPoint
+                                ).apply {
+                                    courseLocalDatasource.setCourse(this) // 불러온 코스 저장
+                                }
                             }
                         }.awaitAll()
                     }
                 }
+        }.map {
+            it.toCourse(checkPoints = it.localMetaCheckPoint.toMetaCheckPoint().toCheckPointGroup())
         }
     }
 
