@@ -1,6 +1,5 @@
 package com.wheretogo.presentation.viewmodel
 
-import android.location.Location
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wheretogo.domain.getCheckPointMarkerTag
@@ -10,10 +9,10 @@ import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.MarkerTag
 import com.wheretogo.domain.model.map.Viewport
 import com.wheretogo.domain.repository.CheckPointRepository
-import com.wheretogo.domain.repository.CourseRepository
 import com.wheretogo.domain.repository.UserRepository
 import com.wheretogo.domain.toMetaCheckPoint
 import com.wheretogo.domain.usecase.GetNearByCourseUseCase
+import com.wheretogo.presentation.feature.map.distanceTo
 import com.wheretogo.presentation.feature.naver.getMapOverlay
 import com.wheretogo.presentation.getCommentDummy
 import com.wheretogo.presentation.intent.DriveScreenIntent
@@ -32,7 +31,6 @@ import javax.inject.Inject
 class DriveViewModel @Inject constructor(
     private val getNearByCourseUseCase: GetNearByCourseUseCase,
     private val userRepository: UserRepository,
-    private val courseRepository: CourseRepository,
     private val checkPointRepository: CheckPointRepository,
 ) : ViewModel() {
     private val _driveScreenState = MutableStateFlow(DriveScreenState())
@@ -128,23 +126,14 @@ class DriveViewModel @Inject constructor(
 
         val data = getNearByCourseUseCase(latLng)
         val mapData = data.map {
-            //_cacheCheckPointGroup[it.courseId ] = it.checkPoints
             _cacheCourseMapOverlayGroup.getOrPut(it.courseId.hashCode()) { getMapOverlay(it) }
         }
 
         val listData = data.mapNotNull {
             val camera = latLng
             val course = it.cameraLatLng
-            val distance = FloatArray(1).apply {
-                Location.distanceBetween(
-                    camera.latitude,
-                    camera.longitude,
-                    course.latitude,
-                    course.longitude,
-                    this
-                )
-            }[0].toInt()
-            if (distance < 3000)
+            val distance = camera.distanceTo(course)
+            if (distance < 3000) // 근처 코스만 필터링
                 DriveScreenState.ListState.ListItemState(
                     distanceFromCenter = distance,
                     course = it,
@@ -152,7 +141,17 @@ class DriveViewModel @Inject constructor(
                 )
             else
                 null
-        }.sortedBy { it.course.courseId }
+        }.sortedBy { it.course.courseId }.apply {
+            coroutineScope {
+                this@apply.forEach {
+                    launch {
+                        _cacheCheckPointGroup.getOrPut(it.course.courseId.hashCode()) {
+                            checkPointRepository.getCheckPointGroup(it.course.checkpoints.toMetaCheckPoint())// 체크포인트 미리 불러오기
+                        }
+                    }
+                }
+            }
+        }
 
         if (!_driveScreenState.value.floatingButtonState.isFoldVisible) {
             _driveScreenState.value = _driveScreenState.value.copy(
@@ -292,10 +291,10 @@ class DriveViewModel @Inject constructor(
     private suspend fun driveListItemClick(state: DriveScreenState.ListState.ListItemState) {
         _latestItemState = state
         _latestCourseMapOverlayGroup.hideCourseMapOverlayWithout(state.course.courseId.hashCode())
-        val checkPoints =
+        val checkPoints = _cacheCheckPointGroup.getOrPut(state.course.courseId.hashCode()) {
             checkPointRepository.getCheckPointGroup(state.course.checkpoints.toMetaCheckPoint())
+        }
 
-        _cacheCheckPointGroup[state.course.courseId.hashCode()] = checkPoints
         val newMapData =
             _latestCourseMapOverlayGroup + checkPoints.map {
                 _cacheCheckPointMapOverlayGroup.getOrPut(it.checkPointId.hashCode()) {

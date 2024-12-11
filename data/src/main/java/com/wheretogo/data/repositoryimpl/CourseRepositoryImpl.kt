@@ -1,5 +1,6 @@
 package com.wheretogo.data.repositoryimpl
 
+import android.util.Log
 import com.wheretogo.data.LikeObject
 import com.wheretogo.data.datasource.CourseLocalDatasource
 import com.wheretogo.data.datasource.CourseRemoteDatasource
@@ -15,6 +16,7 @@ import com.wheretogo.data.toMetaCheckPoint
 import com.wheretogo.data.toRemoteCourse
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.Course
+import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.MetaCheckPoint
 import com.wheretogo.domain.repository.CourseRepository
 import kotlinx.coroutines.async
@@ -29,6 +31,7 @@ class CourseRepositoryImpl @Inject constructor(
     private val likeRemoteDatasource: LikeRemoteDatasource,
     private val checkPointRepository: CheckPointRepositoryImpl
 ) : CourseRepository {
+    private val _cacheRouteGroup = mutableMapOf<Int, List<LatLng>>()// id , hashcode
 
     override suspend fun getCourse(courseId: String): Course? {
         return courseLocalDatasource.getCourse(courseId).run {
@@ -37,11 +40,16 @@ class CourseRepositoryImpl @Inject constructor(
                     val checkPoint = async {
                         checkPointRepository.getCheckPointGroup(
                             remoteMetaCheckPoint.toMetaCheckPoint(
-                                timestamp = 0L //
+                                timestamp = 0L
                             )
                         )
                     }
-                    val route = async { routeRemoteDatasource.getRouteInCourse(courseId).points }
+                    val route = async {
+                        _cacheRouteGroup.getOrPut(courseId.hashCode()) {
+                            Log.d("tst6","init ${courseId}")
+                            routeRemoteDatasource.getRouteInCourse(courseId).points
+                        }
+                    }
 
                     val like = async {
                         likeRemoteDatasource.getLikeInObject(
