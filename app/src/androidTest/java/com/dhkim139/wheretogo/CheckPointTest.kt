@@ -101,26 +101,25 @@ class CheckPointTest {
 
     @Test
     fun initCheckPoint(): Unit = runBlocking {
-        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val firestore = FirebaseModule.provideFirestore()
         val datasource = CheckPointRemoteDatasourceImpl(firestore)
 
         val cs1 = cs1.map {
             it.copy(
                 titleComment = "\uD83D\uDE0A 주위가 조용해요.",
-                imgUrl = "checkpoint/photo_original_150x200_80.jpg"
+                imgUrl = "photo_original.jpg"
             )
         }
         val cs2 = cs2.map {
             it.copy(
                 titleComment = "\uD83D\uDE0C 경치가 좋아요.",
-                imgUrl = "checkpoint/photo_original_150x200_80.jpg"
+                imgUrl = "photo_original.jpg"
             )
         }
         val cs6 = cs6.map {
             it.copy(
                 titleComment = "\uD83D\uDE1A 또 가고싶어요.",
-                imgUrl = "checkpoint/photo_original_150x200_80.jpg"
+                imgUrl = "photo_original.jpg"
             )
         }
         // file:///data/user/0/com.dhkim139.wheretogo/cache/down_photo_original_768x1024_70.jpg
@@ -201,7 +200,7 @@ class CheckPointTest {
             ImageLocalDatasourceImpl(FirebaseModule.provideFirebaseStorage(), appContext)
         val remotePath = "checkpoint/photo_original_768x1024_70.jpg"
 
-        val path = datasource.setCheckPointImage(remotePath)
+        val path = datasource.getImage(remotePath, "small")
         assertEquals("cache_photo_original_768x1024_70.jpg", path.split("/").last())
     }
 

@@ -5,8 +5,8 @@ import com.firebase.geofire.GeoFireUtils
 import com.firebase.geofire.GeoLocation
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.LatLng
-import com.wheretogo.domain.model.map.MarkerTag
 import com.wheretogo.domain.model.map.MetaCheckPoint
+import com.wheretogo.domain.model.map.OverlayTag
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -20,21 +20,16 @@ fun LatLng.toGeoHashBound(radius: Double): Pair<String, String> {
         .run { Pair(startHash, endHash) }
 }
 
-fun MarkerTag.toCheckPointTag(url: MarkerTag) = "$code/${id}"
-fun MarkerTag.toCourseTag(url: MarkerTag) = "$code"
-fun Any.toMarkerTag() = (this as String).split('/').run {
-    when (size) {
-        1 -> MarkerTag(this[0].toInt())
-        2 -> MarkerTag(this[0].toInt(), this[1].toInt())
-        else -> MarkerTag()
-    }
+fun parseMarkerTag(stringTag: String): OverlayTag {
+    val items = stringTag.split("/")
+    return OverlayTag(
+        overlayId = items.getOrNull(0) ?: "",
+        parentId = items.getOrNull(1) ?: "",
+        itemType = items.getOrNull(2)?.toInt() ?: -1,
+    )
 }
 
-fun getCheckPointMarkerTag(checkPointId: String) = checkPointId.hashCode()
-fun getCourseMarkerTag(code: Int) = "$code"
-fun getCoursePathOverlayTag(code: Int) = "$code"
-fun getCourseMarkerTag(code: String) = code.hashCode()
-fun getCoursePathOverlayTag(code: String) = code.hashCode()
+fun OverlayTag.toStringTag() = "${this.overlayId}/${this.parentId}/${this.itemType}"
 
 
 fun formatMillisToDate(millis: Long, pattern: String = USER_DATE_FORMAT): String {

@@ -33,7 +33,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun NaverMap(
     modifier: Modifier,
-    overlayMap: List<MapOverlay>,
+    overlayMap: Set<MapOverlay>,
     onMapAsync: (NaverMap) -> Unit,
     onLocationMove: (LatLng) -> Unit,
     onCameraMove: (LatLng, Viewport) -> Unit,

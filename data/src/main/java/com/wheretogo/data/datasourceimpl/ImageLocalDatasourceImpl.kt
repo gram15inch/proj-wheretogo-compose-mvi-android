@@ -16,17 +16,20 @@ class ImageLocalDatasourceImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ImageLocalDatasource {
 
-    override suspend fun setCheckPointImage(remotePath: String): String {
-        return downloadFileToLocal(context, remotePath, "cache_${remotePath.split("/").last()}")
+    override suspend fun getImage(fileName: String, size: String): String {
+        val remoteChildPath = "image/$size/$fileName"
+        val localFile = File(context.cacheDir, "${size}_${fileName}")
+        return if(localFile.exists())
+            localFile.path
+        else
+            downloadFileToLocal(remoteChildPath, localFile)
     }
 
     private suspend fun downloadFileToLocal(
-        context: Context,
-        filePath: String,
-        localFileName: String,
+        remoteChildPath: String,
+        localFile: File
     ): String {
-        val storageRef: StorageReference = firebaseStorage.reference.child(filePath)
-        val localFile = File(context.cacheDir, localFileName) // 로컬 캐시 디렉토리에 저장
+        val storageRef: StorageReference = firebaseStorage.reference.child(remoteChildPath)
 
         return suspendCancellableCoroutine<String> { con ->
             storageRef.getFile(localFile)

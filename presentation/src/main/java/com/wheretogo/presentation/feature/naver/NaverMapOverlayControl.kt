@@ -8,27 +8,27 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Shader
-import android.util.Log
 import com.naver.maps.map.overlay.Align
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
 import com.naver.maps.map.overlay.PathOverlay
 import com.wheretogo.domain.CHECKPOINT_TYPE
 import com.wheretogo.domain.COURSE_TYPE
-import com.wheretogo.domain.getCheckPointMarkerTag
-import com.wheretogo.domain.getCourseMarkerTag
-import com.wheretogo.domain.getCoursePathOverlayTag
+import com.wheretogo.domain.PATH_TYPE
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.Course
+import com.wheretogo.domain.model.map.OverlayTag
+import com.wheretogo.domain.toStringTag
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.toNaver
 
 
 fun getMapOverlay(item: Course): MapOverlay {
     val naverPoints = item.route.toNaver()
+    val overlayTag = OverlayTag(item.courseId, item.courseId, COURSE_TYPE)
     return MapOverlay(
-        item.courseId,
-        COURSE_TYPE,
+        overlayTag.overlayId,
+        overlayTag.itemType,
         Marker().apply {
             this.captionText = item.courseName
             this.setCaptionAligns(Align.Top, Align.Right)
@@ -37,12 +37,12 @@ fun getMapOverlay(item: Course): MapOverlay {
             naverPoints.getOrNull(0)
                 ?.let { position = it }
             isHideCollidedMarkers = true
-            tag = getCourseMarkerTag(code = item.courseId)
+            tag = overlayTag.toStringTag()
         },
         PathOverlay().apply {
             if (naverPoints.size >= 2) {
                 coords = naverPoints
-                tag = getCoursePathOverlayTag(code = item.courseId)
+                tag = overlayTag.copy(itemType = PATH_TYPE).toStringTag()
                 width = 18
                 outlineWidth = 3
             }
@@ -50,10 +50,11 @@ fun getMapOverlay(item: Course): MapOverlay {
     )
 }
 
-fun getMapOverlay(item: CheckPoint): MapOverlay {
+fun getMapOverlay(courseId:String, item: CheckPoint): MapOverlay {
+    val overlayTag = OverlayTag(item.checkPointId, courseId, CHECKPOINT_TYPE)
     return MapOverlay(
-        item.checkPointId,
-        CHECKPOINT_TYPE,
+        overlayTag.overlayId,
+        overlayTag.itemType,
         Marker().apply {
             this.captionText = item.titleComment
             this.setCaptionAligns(Align.Top, Align.Right)
@@ -71,7 +72,7 @@ fun getMapOverlay(item: CheckPoint): MapOverlay {
                         Color.WHITE
                     )
                 )
-            tag = getCheckPointMarkerTag(item.checkPointId)
+            tag = overlayTag.toStringTag()
         },
         PathOverlay()
     )

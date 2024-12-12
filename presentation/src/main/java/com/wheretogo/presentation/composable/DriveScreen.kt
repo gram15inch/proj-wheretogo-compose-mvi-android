@@ -30,7 +30,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.overlay.Marker
-import com.wheretogo.domain.toMarkerTag
+import com.wheretogo.domain.parseMarkerTag
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.content.DriveList
 import com.wheretogo.presentation.composable.content.FadeAnimation
@@ -50,12 +50,12 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
     }
 
     Column(modifier = Modifier.zIndex(1f)) {
-        Text("${state.mapState.mapData.size}", fontSize = 50.sp)
+        Text("${state.mapState.mapOverlayGroup.size}", fontSize = 50.sp)
     }
 
     NaverMap(
         modifier = Modifier.zIndex(0f),
-        overlayMap = state.mapState.mapData,
+        overlayMap = state.mapState.mapOverlayGroup,
         onMapAsync = { map ->
             naverMap = map
             viewModel.handleIntent(DriveScreenIntent.MapIsReady)
@@ -68,11 +68,11 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
         },
         onCourseMarkerClick = { overlay ->
             val marker = overlay as Marker
-            viewModel.handleIntent(DriveScreenIntent.CourseMarkerClick(marker.tag!!.toMarkerTag()))
+            viewModel.handleIntent(DriveScreenIntent.CourseMarkerClick(parseMarkerTag(marker.tag as String)))
         },
         onCheckPointMarkerClick = { overlay ->
             val marker = overlay as Marker
-            viewModel.handleIntent(DriveScreenIntent.CheckPointMarkerClick(marker.tag!!.toMarkerTag()))
+            viewModel.handleIntent(DriveScreenIntent.CheckPointMarkerClick(parseMarkerTag(marker.tag as String)))
         }
     )
 
@@ -116,7 +116,7 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
                 MapPopup(
                     modifier = Modifier.align(Alignment.BottomStart),
                     data = state.popUpState.commentState.data,
-                    imageUrl = state.popUpState.imageUrl,
+                    imageUrl = state.popUpState.localImageUrl,
                     isWideSize = isWideSize,
                     isCommentVisible = state.popUpState.isCommentVisible,
                     onCommentFloatingButtonClick = {
@@ -152,8 +152,6 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
     }
 
 }
-
-//미리보기
 
 
 @Composable

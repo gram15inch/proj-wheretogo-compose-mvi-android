@@ -14,7 +14,7 @@ data class DriveScreenState(
 ) {
     data class MapState(
         val isMapReady: Boolean = false,
-        val mapData: List<MapOverlay> = emptyList()
+        val mapOverlayGroup: Set<MapOverlay> = emptySet()
     )
 
     data class ListState(
@@ -32,8 +32,8 @@ data class DriveScreenState(
     data class PopUpState(
         val isVisible: Boolean = false,
         val isCommentVisible: Boolean = false,
-        val checkPointId: Int = -1,
-        val imageUrl: String = "",
+        val checkPointId: String = "",
+        val localImageUrl: String = "",
         val commentState: CommentState = CommentState()
     ) {
         data class CommentState(val data: List<Comment> = emptyList())
