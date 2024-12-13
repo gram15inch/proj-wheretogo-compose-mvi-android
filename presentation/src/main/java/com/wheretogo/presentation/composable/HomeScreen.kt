@@ -1,6 +1,5 @@
 package com.wheretogo.presentation.composable
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -41,7 +40,7 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.theme.Black100
-import com.wheretogo.presentation.theme.Blue300
+import com.wheretogo.presentation.theme.Blue200
 import com.wheretogo.presentation.theme.Gray100
 import com.wheretogo.presentation.theme.Gray200
 import com.wheretogo.presentation.theme.Gray300
@@ -71,7 +70,7 @@ fun HomeScreen(
         TopBar(displayMaxWidth, onSettingClick = {
             viewModel.settingClick()
         })
-        Body(displayMaxWidth - outPadding*2) { screen ->
+        Body(displayMaxWidth - outPadding * 2) { screen ->
             navController.navigate(screen)
         }
         Spacer(modifier = Modifier.weight(1f))
@@ -230,7 +229,7 @@ fun ContentTextImage(title: String, subTitle: String, size: Dp, rawRes: Int?) {
 fun ContentBanner(bannerMain: String, bannerSub: String) {
     Box(
         modifier = Modifier
-            .background(Blue300)
+            .background(Blue200)
             .padding(15.dp)
     ) {
 
