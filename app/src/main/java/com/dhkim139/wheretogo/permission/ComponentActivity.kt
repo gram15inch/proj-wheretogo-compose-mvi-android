@@ -1,4 +1,4 @@
-package com.dhkim139.permission
+package com.dhkim139.wheretogo.permission
 
 import android.Manifest
 import android.content.pm.PackageManager
