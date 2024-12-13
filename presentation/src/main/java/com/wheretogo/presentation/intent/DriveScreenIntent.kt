@@ -12,6 +12,8 @@ sealed class DriveScreenIntent {
     data class UpdateCamera(val latLng: LatLng, val viewPort: Viewport) : DriveScreenIntent()
     data class UpdateLocation(val latLng: LatLng) : DriveScreenIntent()
     object DismissPopup : DriveScreenIntent()
+    data class OverlayRenderComplete(val isRendered: Boolean) : DriveScreenIntent()
+
 
     //동작
     data class CourseMarkerClick(val tag: OverlayTag) : DriveScreenIntent()
@@ -24,5 +26,4 @@ sealed class DriveScreenIntent {
     object FoldFloatingButtonClick : DriveScreenIntent()
     object CommentFloatingButtonClick : DriveScreenIntent()
     object ExportMapFloatingButtonClick : DriveScreenIntent()
-
 }

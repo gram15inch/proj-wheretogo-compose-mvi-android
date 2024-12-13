@@ -5,13 +5,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,6 +30,12 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieClipSpec
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.overlay.Marker
 import com.wheretogo.domain.parseMarkerTag
@@ -39,6 +47,9 @@ import com.wheretogo.presentation.composable.content.MapPopup
 import com.wheretogo.presentation.composable.content.NaverMap
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.viewmodel.DriveViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltViewModel()) {
@@ -49,8 +60,24 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
         navController.navigateUp()
     }
 
-    Column(modifier = Modifier.zIndex(1f)) {
-        Text("${state.mapState.mapOverlayGroup.size}", fontSize = 50.sp)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .zIndex(1f)
+    ) {
+        Text(
+            modifier = Modifier.align(alignment = Alignment.TopStart),
+            text = "${state.mapState.mapOverlayGroup.size}",
+            fontSize = 50.sp
+        )
+        delayLottieAnimation(
+            modifier = Modifier
+                .size(50.dp)
+                .align(alignment = Alignment.TopEnd),
+            isVisible = state.isLoading,
+            delay = 300
+        )
+
     }
 
     NaverMap(
@@ -73,6 +100,9 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
         onCheckPointMarkerClick = { overlay ->
             val marker = overlay as Marker
             viewModel.handleIntent(DriveScreenIntent.CheckPointMarkerClick(parseMarkerTag(marker.tag as String)))
+        },
+        onOverlayRenderComplete = { isRendered->
+            viewModel.handleIntent(DriveScreenIntent.OverlayRenderComplete(isRendered))
         }
     )
 
@@ -209,5 +239,36 @@ fun screenSize(isWidth: Boolean): Dp {
     return if (isWidth) screenWidthDp.dp else screenHeightDp.dp
 }
 
+@Composable
+fun delayLottieAnimation(modifier: Modifier, isVisible: Boolean, delay: Long) {
+    var shouldShowAnimation by remember { mutableStateOf(true) }
+    var animation by remember { mutableStateOf<Job?>(null) }
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.lt_loading))
+    val progress by animateLottieCompositionAsState(
+        composition = composition,
+        iterations = LottieConstants.IterateForever,
+        clipSpec = LottieClipSpec.Progress(0f, 0.4f),
+    )
+
+    LaunchedEffect(isVisible) {
+        if (isVisible) {
+            if (animation == null)
+                animation = launch {
+                    delay(delay)
+                    shouldShowAnimation = true
+                }
+        } else {
+            animation?.cancel()
+            animation = null
+            shouldShowAnimation = false
+        }
+    }
+    if (shouldShowAnimation)
+        LottieAnimation(
+            modifier = modifier,
+            composition = composition,
+            progress = { progress },
+        )
+}
 
 

@@ -85,6 +85,7 @@ class DriveViewModel @Inject constructor(
                 is DriveScreenIntent.UpdateCamera -> updateCamara(intent.latLng, intent.viewPort)
                 is DriveScreenIntent.UpdateLocation -> updateLocation(intent.latLng)
                 is DriveScreenIntent.DismissPopup -> dismissPopup()
+                is DriveScreenIntent.OverlayRenderComplete -> overlayRenderComplete(intent.isRendered)
 
                 //동작
                 is DriveScreenIntent.CourseMarkerClick -> courseMarkerClick(intent.tag)
@@ -100,6 +101,7 @@ class DriveViewModel @Inject constructor(
         }
     }
 
+
     // 결과
 
     private fun mapIsReady() {
@@ -109,24 +111,25 @@ class DriveViewModel @Inject constructor(
     }
 
     private suspend fun updateCamara(latLng: LatLng, viewPort: Viewport) {
-        _latestCamera = latLng
+        if (_latestCamera.distanceTo(latLng) >= 1) {
+            _latestCamera = latLng
+            val courseGroup = getNearByCourseUseCase(latLng)
+            val overlayGroup = getOverlayGroup(courseGroup)
+            val listItemGroup = getNearByListDataGroup(center = latLng, meter = 3000, courseGroup)
 
-        val courseGroup = getNearByCourseUseCase(latLng)
-        val overlayGroup = getOverlayGroup(courseGroup)
-        val listItemGroup = getNearByListDataGroup(center = latLng, meter = 3000, courseGroup)
-
-        if (!_driveScreenState.value.floatingButtonState.isFoldVisible) {
-            _driveScreenState.value = _driveScreenState.value.copy(
-                mapState = _driveScreenState.value.mapState.copy(
-                    mapOverlayGroup = overlayGroup
-                ),
-                listState = _driveScreenState.value.listState.copy(
-                    listItemGroup = listItemGroup
+            if (!_driveScreenState.value.floatingButtonState.isFoldVisible) {
+                _driveScreenState.value = _driveScreenState.value.copy(
+                    mapState = _driveScreenState.value.mapState.copy(
+                        mapOverlayGroup = overlayGroup
+                    ),
+                    listState = _driveScreenState.value.listState.copy(
+                        listItemGroup = listItemGroup
+                    )
                 )
-            )
+            }
+            _latestCourseMapOverlayGroup.clear()
+            _latestCourseMapOverlayGroup.addAll(overlayGroup)
         }
-        _latestCourseMapOverlayGroup.clear()
-        _latestCourseMapOverlayGroup.addAll(overlayGroup)
     }
 
     private fun updateLocation(latLng: LatLng) {
@@ -145,6 +148,10 @@ class DriveViewModel @Inject constructor(
         )
     }
 
+
+    private fun overlayRenderComplete(isRendered: Boolean) {
+        _driveScreenState.value = _driveScreenState.value.copy(isLoading = !isRendered)
+    }
 
     // 동작
 
@@ -175,6 +182,7 @@ class DriveViewModel @Inject constructor(
     }
 
     private suspend fun driveListItemClick(state: DriveScreenState.ListState.ListItemState) {
+        _driveScreenState.value = _driveScreenState.value.copy(isLoading = true)
         val course = state.course
         _latestItemState = state
         hideCourseMapOverlayWithout(course.courseId)
@@ -199,6 +207,7 @@ class DriveViewModel @Inject constructor(
             )
         }
         checkPointGroup.imagePreLoad("normal")
+        _driveScreenState.value = _driveScreenState.value.copy(isLoading = false)
     }
 
     private suspend fun driveListItemBookmarkClick(state: DriveScreenState.ListState.ListItemState) {

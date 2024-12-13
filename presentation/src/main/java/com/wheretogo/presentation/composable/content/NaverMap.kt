@@ -26,8 +26,11 @@ import com.wheretogo.domain.CHECKPOINT_TYPE
 import com.wheretogo.domain.COURSE_TYPE
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.Viewport
+import com.wheretogo.presentation.feature.map.distanceTo
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.toDomainLatLng
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 
 @Composable
@@ -38,12 +41,14 @@ fun NaverMap(
     onLocationMove: (LatLng) -> Unit,
     onCameraMove: (LatLng, Viewport) -> Unit,
     onCourseMarkerClick: (Overlay) -> Unit,
-    onCheckPointMarkerClick: (Overlay) -> Unit
+    onCheckPointMarkerClick: (Overlay) -> Unit,
+    onOverlayRenderComplete: (Boolean) -> Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val coroutineScope = rememberCoroutineScope()
     var latestCameraPosition by remember { mutableStateOf(LatLng()) }
+    var latestLocation by remember { mutableStateOf(LatLng()) }
     val mapView = remember {
         MapView(context).apply {
             getMapAsync { naverMap ->
@@ -58,7 +63,12 @@ fun NaverMap(
                     }
 
                     addOnLocationChangeListener { location ->
-                        onLocationMove(LatLng(location.latitude, location.longitude))
+                        LatLng(location.latitude, location.latitude).let { latlng ->
+                            if (latestLocation.distanceTo(latlng) >= 1) {
+                                onLocationMove(latlng)
+                                latestLocation = latlng
+                            }
+                        }
                     }
 
                     addOnCameraIdleListener {
@@ -95,40 +105,50 @@ fun NaverMap(
     }
     mapView.getMapAsync { map ->
         coroutineScope.launch {
-            overlayMap.forEach {
-                launch {
-                    it.pathOverlay.apply {
-                        if (coords.isNotEmpty())
-                            this.map = this.map ?: map
+            var isRendered = false
+            overlayMap.map {
+                async {
+                    val path = async {
+                        it.pathOverlay.apply {
+                            if (coords.isNotEmpty()) {
+                                this.map = this.map ?: map
+                            }
+                        }
                     }
-                }
 
-                launch {
-                    it.marker.apply {
-                        if (it.marker.position.latitude.toString() != "NaN") {
-                            this.map = this.map ?: map
-                            if (this.onClickListener == null) {
-                                this.setOnClickListener { overlay ->
-                                    when (it.type) {
-                                        CHECKPOINT_TYPE -> {
-                                            onCheckPointMarkerClick(overlay)
-                                        }
+                    val marker = async {
+                        it.marker.apply {
+                            if (it.marker.position.latitude.toString() != "NaN") {
+                                this.map = this.map ?: run {
+                                    if (!isRendered)
+                                        isRendered = true
+                                    map
+                                }
+                                if (this.onClickListener == null) {
 
-                                        COURSE_TYPE -> {
-                                            onCourseMarkerClick(overlay)
+                                    this.setOnClickListener { overlay ->
+                                        when (it.type) {
+                                            CHECKPOINT_TYPE -> {
+                                                onCheckPointMarkerClick(overlay)
+                                            }
+
+                                            COURSE_TYPE -> {
+                                                onCourseMarkerClick(overlay)
+                                            }
                                         }
+                                        false
                                     }
-                                    false
                                 }
                             }
                         }
                     }
+                    path.await()
+                    marker.await()
                 }
-
-            }
-
+            }.awaitAll()
+            if (isRendered)
+                onOverlayRenderComplete(true)
         }
-
     }
     AndroidView(modifier = modifier, factory = { mapView })
 }

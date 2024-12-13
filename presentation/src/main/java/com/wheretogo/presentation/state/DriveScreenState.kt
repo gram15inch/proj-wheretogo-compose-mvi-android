@@ -10,6 +10,7 @@ data class DriveScreenState(
     val listState: ListState = ListState(),
     val popUpState: PopUpState = PopUpState(),
     val floatingButtonState: FloatingButtonState = FloatingButtonState(),
+    val isLoading: Boolean = true,
     val error: String? = null
 ) {
     data class MapState(

@@ -4,7 +4,7 @@ import android.location.Location
 import com.wheretogo.domain.model.map.LatLng
 
 
-fun LatLng.distanceTo(latLng: LatLng): Int {
+fun LatLng.distanceTo(latLng: LatLng): Int { // meter
     return FloatArray(1).apply {
         Location.distanceBetween(
             latitude,
