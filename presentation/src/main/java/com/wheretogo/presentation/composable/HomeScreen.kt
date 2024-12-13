@@ -40,7 +40,7 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.theme.Black100
-import com.wheretogo.presentation.theme.Blue100
+import com.wheretogo.presentation.theme.Blue300
 import com.wheretogo.presentation.theme.Gray100
 import com.wheretogo.presentation.theme.Gray200
 import com.wheretogo.presentation.theme.Gray300
@@ -228,7 +228,7 @@ fun ContentTextImage(title: String, subTitle: String, size: Dp, rawRes: Int?) {
 fun ContentBanner(bannerMain: String, bannerSub: String) {
     Box(
         modifier = Modifier
-            .background(Blue100)
+            .background(Blue300)
             .padding(15.dp)
     ) {
 
