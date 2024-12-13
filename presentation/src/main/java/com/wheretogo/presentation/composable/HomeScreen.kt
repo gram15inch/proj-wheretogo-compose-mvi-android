@@ -1,5 +1,6 @@
 package com.wheretogo.presentation.composable
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -57,11 +58,12 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val scrollState = rememberScrollState()
+    val outPadding = 12.dp
     Column(
         modifier = Modifier
             .fillMaxHeight()
             .width(displayMaxWidth)
-            .padding(12.dp)
+            .padding(outPadding)
             .background(White100)
             .verticalScroll(scrollState),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -69,7 +71,7 @@ fun HomeScreen(
         TopBar(displayMaxWidth, onSettingClick = {
             viewModel.settingClick()
         })
-        Body(displayMaxWidth) { screen ->
+        Body(displayMaxWidth - outPadding*2) { screen ->
             navController.navigate(screen)
         }
         Spacer(modifier = Modifier.weight(1f))
@@ -207,7 +209,7 @@ fun ContentTextImage(title: String, subTitle: String, size: Dp, rawRes: Int?) {
                 .padding(15.dp)
         ) {
             Text(title, color = Gray300, fontSize = 18.sp, fontFamily = meslolgsFontFamily)
-            Text(subTitle, color = Gray200, fontSize = 16.sp, fontFamily = hancomSansFontFamily)
+            Text(subTitle, color = Gray200, fontSize = 15.sp, fontFamily = hancomSansFontFamily)
         }
         if (rawRes != null) {
             val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(rawRes))
@@ -269,13 +271,13 @@ fun BottomBar(maxWidth: Dp) {
     ) {
         Text(
             text = stringResource(R.string.contact_banner),
-            fontSize = 16.sp,
+            fontSize = 15.sp,
             fontFamily = hancomSansFontFamily,
             color = Gray200
         )
         Text(
             text = stringResource(R.string.dev_gmail),
-            fontSize = 16.sp,
+            fontSize = 15.sp,
             fontFamily = hancomSansFontFamily,
             color = Gray200
         )
