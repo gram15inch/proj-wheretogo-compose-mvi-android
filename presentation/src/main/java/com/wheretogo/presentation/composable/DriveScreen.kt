@@ -6,11 +6,17 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -59,9 +65,9 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
     BackHandler {
         navController.navigateUp()
     }
-
     Box(
         modifier = Modifier
+            .systemBarsPadding()
             .fillMaxWidth()
             .zIndex(1f)
     ) {
@@ -81,7 +87,10 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
     }
 
     NaverMap(
-        modifier = Modifier.zIndex(0f),
+        modifier = Modifier
+            .zIndex(0f)
+            .fillMaxSize()
+            .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Bottom)),
         overlayMap = state.mapState.mapOverlayGroup,
         onMapAsync = { map ->
             naverMap = map
@@ -101,7 +110,7 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
             val marker = overlay as Marker
             viewModel.handleIntent(DriveScreenIntent.CheckPointMarkerClick(parseMarkerTag(marker.tag as String)))
         },
-        onOverlayRenderComplete = { isRendered->
+        onOverlayRenderComplete = { isRendered ->
             viewModel.handleIntent(DriveScreenIntent.OverlayRenderComplete(isRendered))
         }
     )
@@ -114,6 +123,7 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
 
     Box(
         modifier = Modifier
+            .systemBarsPadding()
             .fillMaxSize()
     ) {
         FadeAnimation(
@@ -180,7 +190,6 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
             }
         )
     }
-
 }
 
 

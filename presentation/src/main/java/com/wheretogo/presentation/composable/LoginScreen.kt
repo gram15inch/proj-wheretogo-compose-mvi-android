@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -49,7 +50,9 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier
+        .systemBarsPadding()
+        .fillMaxSize()) {
         Column(
             modifier = Modifier.align(alignment = Alignment.Center),
             verticalArrangement = Arrangement.spacedBy(6.dp)
@@ -61,12 +64,13 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
             }
         }
 
-        Text(modifier = Modifier
-            .padding(bottom = 10.dp)
-            .align(alignment = Alignment.BottomCenter)
-            .clickable {
-                viewModel.signInPass()
-            }, text = "로그인 없이 앱 둘러보기"
+        Text(
+            modifier = Modifier
+                .padding(bottom = 10.dp)
+                .align(alignment = Alignment.BottomCenter)
+                .clickable {
+                    viewModel.signInPass()
+                }, text = "로그인 없이 앱 둘러보기"
         )
     }
 
