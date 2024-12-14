@@ -10,13 +10,13 @@ import com.wheretogo.domain.model.map.MetaCheckPoint
 import com.wheretogo.domain.model.map.OverlayTag
 import com.wheretogo.domain.model.map.Viewport
 import com.wheretogo.domain.repository.CheckPointRepository
+import com.wheretogo.domain.repository.CommentRepository
 import com.wheretogo.domain.repository.ImageRepository
 import com.wheretogo.domain.repository.UserRepository
 import com.wheretogo.domain.toMetaCheckPoint
 import com.wheretogo.domain.usecase.GetNearByCourseUseCase
 import com.wheretogo.presentation.feature.map.distanceTo
 import com.wheretogo.presentation.feature.naver.getMapOverlay
-import com.wheretogo.presentation.getCommentDummy
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.state.DriveScreenState
@@ -36,7 +36,8 @@ class DriveViewModel @Inject constructor(
     private val getNearByCourseUseCase: GetNearByCourseUseCase,
     private val userRepository: UserRepository,
     private val checkPointRepository: CheckPointRepository,
-    private val imageRepository: ImageRepository
+    private val imageRepository: ImageRepository,
+    private val commentRepository: CommentRepository
 ) : ViewModel() {
     private val _driveScreenState = MutableStateFlow(DriveScreenState())
     private val _cacheCourseMapOverlayGroup = mutableMapOf<Int, MapOverlay>() // id, hashcode
@@ -169,7 +170,7 @@ class DriveViewModel @Inject constructor(
                 ),
                 popUpState = popUpState.copy(
                     isVisible = true,
-                    checkPointId = tag.parentId,
+                    checkPointId = checkpoint.checkPointId,
                     localImageUrl = image,
                 ),
                 floatingButtonState = floatingButtonState.copy(
@@ -207,6 +208,7 @@ class DriveViewModel @Inject constructor(
             )
         }
         checkPointGroup.imagePreLoad("normal")
+        checkPointGroup.commentPreLoad()
         _driveScreenState.value = _driveScreenState.value.copy(isLoading = false)
     }
 
@@ -222,8 +224,8 @@ class DriveViewModel @Inject constructor(
         _driveScreenState.value = _driveScreenState.value.run {
             copy(
                 popUpState = popUpState.copy(
-                    commentState = popUpState.commentState.copy(data = popUpState.commentState.data.map {
-                        if (it.commentId == comment.commentId)
+                    commentState = popUpState.commentState.copy(commentItemGroup = popUpState.commentState.commentItemGroup.map {
+                        if (it.data.commentId == comment.commentId)
                             it.copy(isFold = !it.isFold)
                         else
                             it
@@ -237,9 +239,12 @@ class DriveViewModel @Inject constructor(
         _driveScreenState.value = _driveScreenState.value.run {
             copy(
                 popUpState = popUpState.copy(
-                    commentState = popUpState.commentState.copy(data = popUpState.commentState.data.map {
-                        if (it.commentId == comment.commentId)
-                            it.copy(like = it.like + if (it.isLike) -1 else +1, isLike = !it.isLike)
+                    commentState = popUpState.commentState.copy(commentItemGroup = popUpState.commentState.commentItemGroup.map {
+                        if (it.data.commentId == comment.commentId)
+                            it.copy(
+                                data = it.data.copy(like = it.data.like + if (it.isLike) -1 else +1),
+                                isLike = !it.isLike
+                            )
                         else
                             it
                     })
@@ -293,13 +298,20 @@ class DriveViewModel @Inject constructor(
         }
     }
 
-    private fun commentFloatingButtonClick() {
+    private suspend fun commentFloatingButtonClick() {
+        val comment = commentRepository.getComment(_driveScreenState.value.popUpState.checkPointId)
+
         _driveScreenState.value = _driveScreenState.value.run {
             copy(
                 popUpState = popUpState.copy(
                     isCommentVisible = !popUpState.isCommentVisible,
-                    //todo 임시
-                    commentState = popUpState.commentState.copy(data = getCommentDummy())
+                    commentState = popUpState.commentState.copy(
+                        commentItemGroup = comment.map {
+                            DriveScreenState.PopUpState.CommentState.CommentItemState(
+                                data = it
+                            )
+                        }
+                    )
                 ),
                 floatingButtonState = floatingButtonState.copy(isBackPlateVisible = false)
             )
@@ -395,6 +407,16 @@ class DriveViewModel @Inject constructor(
             forEach {
                 launch {
                     imageRepository.getImage(it.remoteImgUrl, size)  // 체크포인트 이미지 미리로드
+                }
+            }
+        }
+    }
+
+    private suspend fun List<CheckPoint>.commentPreLoad() {
+        coroutineScope {
+            forEach {
+                launch {
+                    commentRepository.getComment(it.checkPointId)
                 }
             }
         }

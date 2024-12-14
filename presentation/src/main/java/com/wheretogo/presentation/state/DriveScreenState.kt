@@ -37,7 +37,13 @@ data class DriveScreenState(
         val localImageUrl: String = "",
         val commentState: CommentState = CommentState()
     ) {
-        data class CommentState(val data: List<Comment> = emptyList())
+        data class CommentState(val commentItemGroup: List<CommentItemState> = emptyList()) {
+            data class CommentItemState(
+                val data: Comment = Comment(),
+                val isLike: Boolean = false,
+                val isFold: Boolean = true
+            )
+        }
     }
 
     data class FloatingButtonState(

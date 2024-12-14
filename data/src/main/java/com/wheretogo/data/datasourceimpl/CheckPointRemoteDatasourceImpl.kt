@@ -1,6 +1,5 @@
 package com.wheretogo.data.datasourceimpl
 
-import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.wheretogo.data.FireStoreTableName
 import com.wheretogo.data.datasource.CheckPointRemoteDatasource
@@ -41,17 +40,13 @@ class CheckPointRemoteDatasourceImpl @Inject constructor(
     }
 
     override suspend fun setCheckPoint(checkPoint: RemoteCheckPoint): Boolean {
-        return firestore.collection(checkPointTable).document(checkPoint.checkPointId)
-            .mySet(checkPoint)
-    }
-
-    suspend fun <T : Any> DocumentReference.mySet(data: T): Boolean {
         return suspendCancellableCoroutine { continuation ->
-            this.set(data).addOnSuccessListener {
-                continuation.resume(true)
-            }.addOnFailureListener {
-                continuation.resumeWithException(it)
-            }
+            firestore.collection(checkPointTable).document(checkPoint.checkPointId)
+                .set(checkPoint).addOnSuccessListener {
+                    continuation.resume(true)
+                }.addOnFailureListener {
+                    continuation.resumeWithException(it)
+                }
         }
     }
 }

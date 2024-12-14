@@ -2,16 +2,44 @@ package com.wheretogo.data
 
 import com.wheretogo.data.model.checkpoint.LocalCheckPoint
 import com.wheretogo.data.model.checkpoint.RemoteCheckPoint
+import com.wheretogo.data.model.comment.RemoteComment
 import com.wheretogo.data.model.course.DataMetaCheckPoint
 import com.wheretogo.data.model.course.LocalCourse
 import com.wheretogo.data.model.course.RemoteCourse
 import com.wheretogo.data.model.map.DataLatLng
 import com.wheretogo.domain.model.map.CheckPoint
+import com.wheretogo.domain.model.map.Comment
 import com.wheretogo.domain.model.map.Course
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.MetaCheckPoint
 import com.wheretogo.domain.toGeoHash
 
+
+fun RemoteComment.toComment(): Comment {
+    return Comment(
+        commentId = commentId,
+        userId = userId,
+        groupId = commentGroupId,
+        emoji = emoji,
+        oneLineReview = oneLineReview,
+        detailedReview = detailedReview,
+        date = date,
+        like = like
+    )
+}
+
+fun Comment.toRemoteComment(): RemoteComment {
+    return RemoteComment(
+        commentId = commentId,
+        userId = userId,
+        commentGroupId = groupId,
+        emoji = emoji,
+        oneLineReview = oneLineReview,
+        detailedReview = detailedReview,
+        date = date,
+        like = like
+    )
+}
 
 fun DataMetaCheckPoint.toMetaCheckPoint(timestamp: Long = timeStamp): MetaCheckPoint {
     return MetaCheckPoint(checkPointIdGroup = checkPointIdGroup, timeStamp = timestamp)

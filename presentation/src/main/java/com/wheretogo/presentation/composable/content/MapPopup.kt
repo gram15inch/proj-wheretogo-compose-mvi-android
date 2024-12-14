@@ -31,11 +31,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.skydoves.landscapist.glide.GlideImage
+import com.wheretogo.domain.model.dummy.getCommentDummy
 import com.wheretogo.domain.model.map.Comment
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.BlurEffect
 import com.wheretogo.presentation.composable.ExtendArea
-import com.wheretogo.presentation.getCommentDummy
+import com.wheretogo.presentation.state.DriveScreenState
 import com.wheretogo.presentation.theme.hancomMalangFontFamily
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 
@@ -46,7 +47,15 @@ fun PopupPreview() {
     Box(modifier = Modifier) {
         MapPopup(
             modifier = Modifier.align(alignment = Alignment.BottomEnd),
-            getCommentDummy(),
+            DriveScreenState.PopUpState.CommentState(
+                getCommentDummy().map {
+                    DriveScreenState.PopUpState.CommentState.CommentItemState(
+                        data = it,
+                        isFold = if (it.like % 2 == 0) true else false,
+                        isLike = if (it.like % 2 == 0) false else true
+                    )
+                },
+            ),
             imageUrl = "",
             isWideSize = false,
             isCommentVisible = true,
@@ -61,7 +70,7 @@ fun PopupPreview() {
 @Composable
 fun MapPopup(
     modifier: Modifier,
-    data: List<Comment>,
+    commentState: DriveScreenState.PopUpState.CommentState,
     imageUrl: String,
     isWideSize: Boolean,
     isCommentVisible: Boolean,
@@ -98,7 +107,7 @@ fun MapPopup(
                 PopupCommentList(
                     modifier = Modifier,
                     isCompact = !isWideSize,
-                    data,
+                    commentItemGroup = commentState.commentItemGroup,
                     onLongItemClick = { item ->
                         onCommentListItemClick(item)
                     },
@@ -125,7 +134,7 @@ fun PopUpImage(modifier: Modifier, url: String) {
 fun PopupCommentList(
     modifier: Modifier,
     isCompact: Boolean,
-    data: List<Comment>,
+    commentItemGroup: List<DriveScreenState.PopUpState.CommentState.CommentItemState>,
     onLongItemClick: (Comment) -> Unit,
     onLikeClick: (Comment) -> Unit
 ) {
@@ -142,18 +151,19 @@ fun PopupCommentList(
                 .fillMaxSize()
                 .padding(2.dp)
         ) {
-            item {
-                CommentFocusItem(
-                    comment = data.maxBy { it.like },
-                    onItemClick = { item ->
-                        onLongItemClick(item)
-                    },
-                    onLikeClick = { item ->
-                        onLikeClick(item)
-                    }
-                )
-            }
-            items(data) { item ->
+            if (commentItemGroup.isNotEmpty())
+                item {
+                    CommentFocusItem(
+                        comment = commentItemGroup.maxBy { it.data.like },
+                        onItemClick = { item ->
+                            onLongItemClick(item)
+                        },
+                        onLikeClick = { item ->
+                            onLikeClick(item)
+                        }
+                    )
+                }
+            items(commentItemGroup) { item ->
                 CommentListItem(
                     comment = item,
                     onItemClick = {
@@ -173,21 +183,21 @@ fun PopupCommentList(
 @Composable
 fun CommentListItem(
     modifier: Modifier = Modifier,
-    comment: Comment,
+    comment: DriveScreenState.PopUpState.CommentState.CommentItemState,
     onItemClick: (Comment) -> Unit,
     onLikeClick: (Comment) -> Unit
 ) {
     Box(modifier = modifier
         .fillMaxWidth()
         .clickable {
-            onItemClick(comment)
+            onItemClick(comment.data)
         }
         .padding(10.dp)) {
         Row {
             Column {
                 Text(
                     modifier = Modifier.padding(),
-                    text = comment.imoge,
+                    text = comment.data.emoji,
                     textAlign = TextAlign.Center,
                     fontSize = 13.sp,
                     fontFamily = hancomSansFontFamily
@@ -201,7 +211,7 @@ fun CommentListItem(
             ) {
                 Text(
                     modifier = Modifier,
-                    text = comment.singleLineReview,
+                    text = comment.data.oneLineReview,
                     fontSize = 13.sp,
                     fontFamily = hancomMalangFontFamily,
                     maxLines = 1,
@@ -210,7 +220,7 @@ fun CommentListItem(
                 if (!comment.isFold)
                     Text(
                         modifier = Modifier.padding(top = 4.dp),
-                        text = comment.detailedReview,
+                        text = comment.data.detailedReview,
                         fontSize = 10.sp,
                         fontFamily = hancomSansFontFamily,
                         maxLines = 5,
@@ -246,7 +256,7 @@ fun CommentListItem(
                     modifier = Modifier
                         .clip(CircleShape)
                         .clickable {
-                            onLikeClick(comment)
+                            onLikeClick(comment.data)
                         }
                 ) {
                     Image(
@@ -261,7 +271,7 @@ fun CommentListItem(
                     modifier = Modifier
                         .align(alignment = Alignment.CenterHorizontally)
                         .padding(start = 0.dp),
-                    text = "${comment.like}",
+                    text = "${comment.data.like}",
                     fontSize = 10.sp,
                 )
             }
@@ -272,7 +282,7 @@ fun CommentListItem(
 @Composable
 fun CommentFocusItem(
     modifier: Modifier = Modifier,
-    comment: Comment,
+    comment: DriveScreenState.PopUpState.CommentState.CommentItemState,
     onItemClick: (Comment) -> Unit,
     onLikeClick: (Comment) -> Unit
 ) {
@@ -286,7 +296,7 @@ fun CommentFocusItem(
             Row {
                 Text(
                     modifier = Modifier.padding(top = 10.dp, end = 10.dp),
-                    text = comment.imoge,
+                    text = comment.data.emoji,
                     textAlign = TextAlign.Center,
                     fontSize = 34.sp,
                     fontFamily = hancomSansFontFamily
@@ -294,7 +304,7 @@ fun CommentFocusItem(
 
                 Column {
                     Text(
-                        text = comment.singleLineReview,
+                        text = comment.data.oneLineReview,
                         fontSize = 14.sp,
                         fontFamily = hancomSansFontFamily,
                         maxLines = 1,
@@ -302,7 +312,7 @@ fun CommentFocusItem(
                     )
                     Text(
                         modifier = Modifier.padding(top = 4.dp),
-                        text = comment.detailedReview,
+                        text = comment.data.detailedReview,
                         fontSize = 10.sp,
                         fontFamily = hancomSansFontFamily,
                         maxLines = 5,
@@ -326,7 +336,7 @@ fun CommentFocusItem(
                     modifier
                         .clip(RoundedCornerShape(12.dp))
                         .clickable {
-                            onLikeClick(comment)
+                            onLikeClick(comment.data)
                         }) {
                     Image(
                         modifier = Modifier
@@ -339,7 +349,7 @@ fun CommentFocusItem(
                     Text(
                         modifier = Modifier
                             .align(alignment = Alignment.CenterVertically)
-                            .padding(start = 0.dp), text = "${comment.like}", fontSize = 10.sp
+                            .padding(start = 0.dp), text = "${comment.data.like}", fontSize = 10.sp
                     )
                 }
             }

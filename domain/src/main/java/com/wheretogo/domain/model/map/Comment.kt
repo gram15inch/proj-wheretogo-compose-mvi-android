@@ -1,14 +1,14 @@
 package com.wheretogo.domain.model.map
 
+import com.wheretogo.domain.DOMAIN_EMPTY
+
 data class Comment(
-    val commentId: Int = -1,
-    val userId: Int = -1,
-    val checkpointId: Int = -1,
-    val imoge: String = "",
+    val commentId: String = DOMAIN_EMPTY,
+    val userId: String = DOMAIN_EMPTY,
+    val groupId: String = DOMAIN_EMPTY,
+    val emoji: String = "",
     val detailedReview: String = "",
-    val singleLineReview: String = "",
-    val date: Long = -1,
-    val like: Int = 0,
-    val isLike: Boolean = false,
-    val isFold: Boolean = false
+    val oneLineReview: String = "",
+    val date: Long = 0,
+    val like: Int = 0
 )

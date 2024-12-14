@@ -155,7 +155,7 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
             OneHandArea {
                 MapPopup(
                     modifier = Modifier.align(Alignment.BottomStart),
-                    data = state.popUpState.commentState.data,
+                    commentState = state.popUpState.commentState,
                     imageUrl = state.popUpState.localImageUrl,
                     isWideSize = isWideSize,
                     isCommentVisible = state.popUpState.isCommentVisible,
