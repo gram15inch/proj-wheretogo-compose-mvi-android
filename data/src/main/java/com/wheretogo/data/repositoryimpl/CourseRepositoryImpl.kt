@@ -30,7 +30,7 @@ class CourseRepositoryImpl @Inject constructor(
     private val likeRemoteDatasource: LikeRemoteDatasource,
     private val checkPointRepository: CheckPointRepositoryImpl
 ) : CourseRepository {
-    private val _cacheRouteGroup = mutableMapOf<Int, List<LatLng>>()// id , hashcode
+    private val _cacheRouteGroup = mutableMapOf<String, List<LatLng>>()// id
 
     override suspend fun getCourse(courseId: String): Course? {
         return courseLocalDatasource.getCourse(courseId).run {
@@ -44,7 +44,7 @@ class CourseRepositoryImpl @Inject constructor(
                         )
                     }
                     val route = async {
-                        _cacheRouteGroup.getOrPut(courseId.hashCode()) {
+                        _cacheRouteGroup.getOrPut(courseId) {
                             routeRemoteDatasource.getRouteInCourse(courseId).points
                         }
                     }

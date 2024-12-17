@@ -1,5 +1,6 @@
 package com.wheretogo.data.datasource
 
+import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.model.user.Profile
 import kotlinx.coroutines.flow.Flow
 
@@ -8,16 +9,17 @@ interface UserLocalDatasource {
 
     suspend fun setRequestLogin(boolean: Boolean)
 
-    suspend fun addBookmark(code: String)
+    suspend fun removeHistory(code: String, type: HistoryType)
 
-    suspend fun removeBookmark(code: String)
+    suspend fun addHistory(code: String, type: HistoryType)
 
-    fun getBookmarkFlow(): Flow<List<String>>
+    fun getHistoryFlow(type: HistoryType): Flow<List<String>>
 
     suspend fun setProfile(profile: Profile)
 
     suspend fun clearUser()
 
-    fun getProfileFlow(): Flow<Profile>
+    suspend fun clearHistory()
 
+    fun getProfileFlow(): Flow<Profile>
 }

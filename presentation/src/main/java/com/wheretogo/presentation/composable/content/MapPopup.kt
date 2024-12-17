@@ -32,11 +32,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.skydoves.landscapist.glide.GlideImage
 import com.wheretogo.domain.model.dummy.getCommentDummy
-import com.wheretogo.domain.model.map.Comment
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.BlurEffect
 import com.wheretogo.presentation.composable.ExtendArea
-import com.wheretogo.presentation.state.DriveScreenState
+import com.wheretogo.presentation.state.DriveScreenState.PopUpState.CommentState
+import com.wheretogo.presentation.state.DriveScreenState.PopUpState.CommentState.CommentItemState
 import com.wheretogo.presentation.theme.hancomMalangFontFamily
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 
@@ -47,9 +47,9 @@ fun PopupPreview() {
     Box(modifier = Modifier) {
         MapPopup(
             modifier = Modifier.align(alignment = Alignment.BottomEnd),
-            DriveScreenState.PopUpState.CommentState(
+            CommentState(
                 getCommentDummy().map {
-                    DriveScreenState.PopUpState.CommentState.CommentItemState(
+                    CommentItemState(
                         data = it,
                         isFold = if (it.like % 2 == 0) true else false,
                         isLike = if (it.like % 2 == 0) false else true
@@ -70,13 +70,13 @@ fun PopupPreview() {
 @Composable
 fun MapPopup(
     modifier: Modifier,
-    commentState: DriveScreenState.PopUpState.CommentState,
+    commentState: CommentState,
     imageUrl: String,
     isWideSize: Boolean,
     isCommentVisible: Boolean,
     onCommentFloatingButtonClick: () -> Unit,
-    onCommentListItemClick: (Comment) -> Unit,
-    onCommentLikeClick: (Comment) -> Unit
+    onCommentListItemClick: (CommentItemState) -> Unit,
+    onCommentLikeClick: (CommentItemState) -> Unit
 ) {
     ExtendArea(
         isExtend = isWideSize,
@@ -134,27 +134,27 @@ fun PopUpImage(modifier: Modifier, url: String) {
 fun PopupCommentList(
     modifier: Modifier,
     isCompact: Boolean,
-    commentItemGroup: List<DriveScreenState.PopUpState.CommentState.CommentItemState>,
-    onLongItemClick: (Comment) -> Unit,
-    onLikeClick: (Comment) -> Unit
+    commentItemGroup: List<CommentItemState>,
+    onLongItemClick: (CommentItemState) -> Unit,
+    onLikeClick: (CommentItemState) -> Unit
 ) {
     Box(
         modifier = modifier
-            .sizeIn(maxWidth = 260.dp, maxHeight = if (isCompact) 350.dp else 500.dp)
+            .sizeIn(maxWidth = 260.dp, maxHeight = if (isCompact) 420.dp else 500.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(colorResource(R.color.white))
             .fillMaxSize(),
     ) {
-
         LazyColumn(
             Modifier
                 .fillMaxSize()
                 .padding(2.dp)
         ) {
-            if (commentItemGroup.isNotEmpty())
+            if (commentItemGroup.isNotEmpty()) {
+                val max = commentItemGroup.maxBy { it.data.like }
                 item {
                     CommentFocusItem(
-                        comment = commentItemGroup.maxBy { it.data.like },
+                        comment = max,
                         onItemClick = { item ->
                             onLongItemClick(item)
                         },
@@ -163,16 +163,17 @@ fun PopupCommentList(
                         }
                     )
                 }
-            items(commentItemGroup) { item ->
-                CommentListItem(
-                    comment = item,
-                    onItemClick = {
-                        onLongItemClick(it)
-                    },
-                    onLikeClick = {
-                        onLikeClick(it)
-                    }
-                )
+                items(commentItemGroup.filter { it.data.commentId != max.data.commentId }) { item ->
+                    CommentListItem(
+                        comment = item,
+                        onItemClick = {
+                            onLongItemClick(it)
+                        },
+                        onLikeClick = {
+                            onLikeClick(it)
+                        }
+                    )
+                }
             }
         }
 
@@ -183,108 +184,111 @@ fun PopupCommentList(
 @Composable
 fun CommentListItem(
     modifier: Modifier = Modifier,
-    comment: DriveScreenState.PopUpState.CommentState.CommentItemState,
-    onItemClick: (Comment) -> Unit,
-    onLikeClick: (Comment) -> Unit
+    comment: CommentItemState,
+    onItemClick: (CommentItemState) -> Unit,
+    onLikeClick: (CommentItemState) -> Unit
 ) {
     Box(modifier = modifier
         .fillMaxWidth()
         .clickable {
-            onItemClick(comment.data)
+            onItemClick(comment)
         }
-        .padding(10.dp)) {
-        Row {
-            Column {
-                Text(
-                    modifier = Modifier.padding(),
-                    text = comment.data.emoji,
-                    textAlign = TextAlign.Center,
-                    fontSize = 13.sp,
-                    fontFamily = hancomSansFontFamily
-                )
-            }
-
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 8.dp)
-            ) {
-                Text(
-                    modifier = Modifier,
-                    text = comment.data.oneLineReview,
-                    fontSize = 13.sp,
-                    fontFamily = hancomMalangFontFamily,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                if (!comment.isFold)
+        .padding(start = 10.dp, end = 10.dp, top = 4.dp)) {
+        Column {
+            Row {
+                Column {
                     Text(
-                        modifier = Modifier.padding(top = 4.dp),
-                        text = comment.data.detailedReview,
-                        fontSize = 10.sp,
-                        fontFamily = hancomSansFontFamily,
-                        maxLines = 5,
-                        overflow = TextOverflow.Ellipsis,
-                        style = TextStyle(
-                            lineHeight = 16.sp
-                        )
-                    )
-                else
-                    Text(
-                        modifier = Modifier.padding(top = 4.dp, start = 1.dp),
-                        text = "접힘 >",
-                        style = TextStyle(
-                            fontSize = 9.sp,
-                            platformStyle = PlatformTextStyle(
-                                includeFontPadding = false
-                            )
-                        ),
-                        fontFamily = hancomSansFontFamily,
-                        color = colorResource(R.color.gray_848484)
-                    )
-                Text(
-                    modifier = Modifier
-                        .align(alignment = Alignment.End)
-                        .padding(start = 5.dp),
-                    text = "하니팜하니",
-                    fontSize = 9.sp,
-                    fontFamily = hancomSansFontFamily
-                )
-            }
-            Column(modifier.padding(top = 4.dp)) {
-                Box(
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .clickable {
-                            onLikeClick(comment.data)
-                        }
-                ) {
-                    Image(
-                        modifier = Modifier
-                            .size(22.dp)
-                            .padding(5.dp),
-                        painter = painterResource(if (comment.isLike) R.drawable.ic_heart_red else R.drawable.ic_heart_bk),
-                        contentDescription = "",
+                        modifier = Modifier.padding(),
+                        text = comment.data.emoji,
+                        textAlign = TextAlign.Center,
+                        fontSize = 13.sp,
+                        fontFamily = hancomSansFontFamily
                     )
                 }
-                Text(
+
+                Column(
                     modifier = Modifier
-                        .align(alignment = Alignment.CenterHorizontally)
-                        .padding(start = 0.dp),
-                    text = "${comment.data.like}",
-                    fontSize = 10.sp,
-                )
+                        .weight(1f)
+                        .padding(start = 8.dp)
+                ) {
+                    Text(
+                        modifier = Modifier,
+                        text = comment.data.oneLineReview,
+                        fontSize = 13.sp,
+                        fontFamily = hancomMalangFontFamily,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    if (!comment.isFold)
+                        Text(
+                            modifier = Modifier.padding(top = 4.dp),
+                            text = comment.data.detailedReview,
+                            fontSize = 10.sp,
+                            fontFamily = hancomSansFontFamily,
+                            maxLines = 5,
+                            overflow = TextOverflow.Ellipsis,
+                            style = TextStyle(
+                                lineHeight = 16.sp
+                            )
+                        )
+                    else
+                        Text(
+                            modifier = Modifier.padding(top = 4.dp, start = 1.dp),
+                            text = "접힘 >",
+                            style = TextStyle(
+                                fontSize = 9.sp,
+                                platformStyle = PlatformTextStyle(
+                                    includeFontPadding = false
+                                )
+                            ),
+                            fontFamily = hancomSansFontFamily,
+                            color = colorResource(R.color.gray_848484)
+                        )
+                }
+                Column(modifier.padding(top = 4.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .clickable {
+                                onLikeClick(comment)
+                            }
+                    ) {
+                        Image(
+                            modifier = Modifier
+                                .size(22.dp)
+                                .padding(5.dp),
+                            painter = painterResource(if (comment.isLike) R.drawable.ic_heart_red else R.drawable.ic_heart_bk),
+                            contentDescription = "",
+                        )
+                    }
+                    Text(
+                        modifier = Modifier
+                            .align(alignment = Alignment.CenterHorizontally)
+                            .padding(start = 0.dp),
+                        text = "${comment.data.like + if (comment.isLike) 1 else 0}",
+                        fontSize = 10.sp,
+                    )
+                }
             }
+            Text(
+                modifier = Modifier
+                    .align(alignment = Alignment.End)
+                    .padding(start = 5.dp),
+                text = comment.data.userName.ifEmpty { "익명의드라이버" },
+                fontSize = 9.sp,
+                fontFamily = hancomSansFontFamily
+            )
         }
+
     }
 }
 
 @Composable
 fun CommentFocusItem(
     modifier: Modifier = Modifier,
-    comment: DriveScreenState.PopUpState.CommentState.CommentItemState,
-    onItemClick: (Comment) -> Unit,
-    onLikeClick: (Comment) -> Unit
+    comment: CommentItemState,
+    onItemClick: (CommentItemState) -> Unit,
+    onLikeClick: (CommentItemState) -> Unit
 ) {
     Box(
         modifier = modifier
@@ -328,7 +332,7 @@ fun CommentFocusItem(
                     modifier = Modifier
                         .align(alignment = Alignment.CenterVertically)
                         .padding(start = 5.dp),
-                    text = "고독한여행가",
+                    text = comment.data.userName.ifEmpty { "익명의드라이버" },
                     fontSize = 9.sp,
                     fontFamily = hancomSansFontFamily
                 )
@@ -336,7 +340,7 @@ fun CommentFocusItem(
                     modifier
                         .clip(RoundedCornerShape(12.dp))
                         .clickable {
-                            onLikeClick(comment.data)
+                            onLikeClick(comment)
                         }) {
                     Image(
                         modifier = Modifier
@@ -349,7 +353,9 @@ fun CommentFocusItem(
                     Text(
                         modifier = Modifier
                             .align(alignment = Alignment.CenterVertically)
-                            .padding(start = 0.dp), text = "${comment.data.like}", fontSize = 10.sp
+                            .padding(start = 0.dp),
+                        text = "${comment.data.like + if (comment.isLike) 1 else 0}",
+                        fontSize = 10.sp
                     )
                 }
             }

@@ -1,4 +1,4 @@
-package com.wheretogo.domain.usecase
+package com.wheretogo.domain.usecase.map
 
 import com.wheretogo.domain.model.map.Course
 import com.wheretogo.domain.model.map.LatLng

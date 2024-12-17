@@ -1,10 +1,10 @@
 package com.wheretogo.presentation.intent
 
-import com.wheretogo.domain.model.map.Comment
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.OverlayTag
 import com.wheretogo.domain.model.map.Viewport
 import com.wheretogo.presentation.state.DriveScreenState.ListState.ListItemState
+import com.wheretogo.presentation.state.DriveScreenState.PopUpState.CommentState.CommentItemState
 
 sealed class DriveScreenIntent {
     //결과
@@ -18,10 +18,10 @@ sealed class DriveScreenIntent {
     //동작
     data class CourseMarkerClick(val tag: OverlayTag) : DriveScreenIntent()
     data class CheckPointMarkerClick(val tag: OverlayTag) : DriveScreenIntent()
-    data class DriveListItemClick(val item: ListItemState) : DriveScreenIntent()
-    data class CommentListItemClick(val comment: Comment) : DriveScreenIntent()
-    data class CommentLikeClick(val comment: Comment) : DriveScreenIntent()
-    data class DriveListItemBookmarkClick(val item: ListItemState) : DriveScreenIntent()
+    data class DriveListItemClick(val itemState: ListItemState) : DriveScreenIntent()
+    data class DriveListItemBookmarkClick(val itemState: ListItemState) : DriveScreenIntent()
+    data class CommentListItemClick(val itemState: CommentItemState) : DriveScreenIntent()
+    data class CommentLikeClick(val itemState: CommentItemState) : DriveScreenIntent()
 
     object FoldFloatingButtonClick : DriveScreenIntent()
     object CommentFloatingButtonClick : DriveScreenIntent()

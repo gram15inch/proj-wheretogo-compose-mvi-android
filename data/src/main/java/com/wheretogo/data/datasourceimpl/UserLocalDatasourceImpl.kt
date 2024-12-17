@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import com.wheretogo.data.datasource.UserLocalDatasource
+import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.model.user.Profile
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -26,7 +27,8 @@ class UserLocalDatasourceImpl @Inject constructor(
     private val accountCreationDate = longPreferencesKey("accountCreationDate_profile")
     private val isAdRemove = booleanPreferencesKey("isAdRemove_profile")
 
-    private val bookmark = stringSetPreferencesKey("bookmark_profile")
+    private val bookmark = stringSetPreferencesKey("bookmark_profile2") // 2 유지
+    private val like = stringSetPreferencesKey("like_profile")
 
 
     override fun isRequestLoginFlow(): Flow<Boolean> {
@@ -42,23 +44,33 @@ class UserLocalDatasourceImpl @Inject constructor(
     }
 
 
-    override suspend fun addBookmark(code: String) {
+    override suspend fun addHistory(code: String, type: HistoryType) {
+        val key = getHistoryKey(type)
         userDataStore.edit { preferences ->
-            preferences[bookmark] = (preferences[bookmark]?.toMutableSet()
-                ?: mutableSetOf()).apply { this += code }
+            preferences[key] =
+                preferences[key]?.toMutableSet()?.apply { this += code } ?: setOf(code)
         }
     }
 
-    override suspend fun removeBookmark(code: String) {
+    override suspend fun removeHistory(code: String, type: HistoryType) {
+        val key = getHistoryKey(type)
         userDataStore.edit { preferences ->
-            preferences[bookmark] = (preferences[bookmark]?.toMutableSet()
-                ?: mutableSetOf()).apply { this -= code }
+            preferences[key] =
+                preferences[key]?.toMutableSet()?.apply { this -= code } ?: emptySet()
         }
     }
 
-    override fun getBookmarkFlow(): Flow<List<String>> {
+    private fun getHistoryKey(type: HistoryType): Preferences.Key<Set<String>> {
+        return when (type) {
+            HistoryType.LIKE -> like
+            HistoryType.BOOKMARK -> bookmark
+        }
+    }
+
+    override fun getHistoryFlow(type: HistoryType): Flow<List<String>> {
+        val key = getHistoryKey(type)
         return userDataStore.data.map { preferences ->
-            preferences[bookmark]?.map { it } ?: emptyList()
+            (preferences[key]?.toSet()?.toList() ?: emptyList<String>())
         }
     }
 
@@ -71,11 +83,15 @@ class UserLocalDatasourceImpl @Inject constructor(
             preferences[lastVisitedDate] = profile.lastVisited
             preferences[accountCreationDate] = profile.accountCreation
             preferences[isAdRemove] = profile.isAdRemove
+
+            preferences[bookmark] = profile.bookMarkGroup.toSet()
+            preferences[like] = profile.likeGroup.toSet()
         }
     }
 
     override suspend fun clearUser() {
         setProfile(Profile())
+
     }
 
     override fun getProfileFlow(): Flow<Profile> {
@@ -89,6 +105,16 @@ class UserLocalDatasourceImpl @Inject constructor(
                 accountCreation = preferences[accountCreationDate] ?: 0L,
                 isAdRemove = preferences[isAdRemove] ?: false
             )
+        }
+    }
+
+    override suspend fun clearHistory() {
+        val likeKey = getHistoryKey(HistoryType.LIKE)
+        val bookmarkKey = getHistoryKey(HistoryType.BOOKMARK)
+
+        userDataStore.edit { preferences ->
+            preferences[likeKey] = emptySet()
+            preferences[bookmarkKey] = emptySet()
         }
     }
 }

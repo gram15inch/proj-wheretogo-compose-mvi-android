@@ -1,19 +1,31 @@
 package com.wheretogo.domain.di
 
-import com.wheretogo.domain.usecase.FetchJourneyWithoutPointsUseCase
-import com.wheretogo.domain.usecase.GetNearByCourseUseCase
-import com.wheretogo.domain.usecase.UserProfileUpdateUseCase
-import com.wheretogo.domain.usecase.UserSignInUseCase
-import com.wheretogo.domain.usecase.UserSignOutUseCase
-import com.wheretogo.domain.usecase.UserSignUpAndSignInUseCase
-import com.wheretogo.domain.usecase.UserSignUpUseCase
+import com.wheretogo.domain.usecase.map.FetchJourneyWithoutPointsUseCase
+import com.wheretogo.domain.usecase.map.GetCheckPointByCourseUseCase
+import com.wheretogo.domain.usecase.map.GetCommentByCheckPointUseCase
+import com.wheretogo.domain.usecase.map.GetHistoryStreamUseCase
+import com.wheretogo.domain.usecase.map.GetImageByCheckpointUseCase
+import com.wheretogo.domain.usecase.map.GetNearByCourseUseCase
+import com.wheretogo.domain.usecase.user.RemoveHistoryUseCase
+import com.wheretogo.domain.usecase.user.UpdateHistoryUseCase
+import com.wheretogo.domain.usecase.user.UserProfileUpdateUseCase
+import com.wheretogo.domain.usecase.user.UserSignInUseCase
+import com.wheretogo.domain.usecase.user.UserSignOutUseCase
+import com.wheretogo.domain.usecase.user.UserSignUpAndSignInUseCase
+import com.wheretogo.domain.usecase.user.UserSignUpUseCase
 import com.wheretogo.domain.usecaseimpl.FetchJourneyWithoutPointsUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.GetNearByCourseUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.UserProfileUpdateUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.UserSignInUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.UserSignOutUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.UserSignUpAndSignInUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.UserSignUpUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.map.GetCheckPointByCourseUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.map.GetCommentByCheckPointUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.map.GetHistoryStreamUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.map.GetImageByCheckpointUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.map.GetNearByCourseUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.user.RemoveHistoryUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.user.UpdateHistoryUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.user.UserProfileUpdateUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.user.UserSignInUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.user.UserSignOutUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.user.UserSignUpAndSignInUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.user.UserSignUpUseCaseImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -44,5 +56,24 @@ abstract class UseCaseModule {
 
     @Binds
     abstract fun bindUserProfileUpdateUseCase(useCaseImpl: UserProfileUpdateUseCaseImpl): UserProfileUpdateUseCase
+
+
+    @Binds
+    abstract fun bindGetCheckPointByCourseUseCase(useCaseImpl: GetCheckPointByCourseUseCaseImpl): GetCheckPointByCourseUseCase
+
+    @Binds
+    abstract fun bindGetCommentByCheckPointUseCase(useCaseImpl: GetCommentByCheckPointUseCaseImpl): GetCommentByCheckPointUseCase
+
+    @Binds
+    abstract fun bindGetHistoryStreamUseCase(useCaseImpl: GetHistoryStreamUseCaseImpl): GetHistoryStreamUseCase
+
+    @Binds
+    abstract fun bindGetImageByCheckpointUseCase(useCaseImpl: GetImageByCheckpointUseCaseImpl): GetImageByCheckpointUseCase
+
+    @Binds
+    abstract fun bindUpdateHistoryUseCase(useCaseImpl: UpdateHistoryUseCaseImpl): UpdateHistoryUseCase
+
+    @Binds
+    abstract fun bindRemoveHistoryUseCase(useCaseImpl: RemoveHistoryUseCaseImpl): RemoveHistoryUseCase
 }
 

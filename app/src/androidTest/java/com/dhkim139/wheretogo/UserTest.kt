@@ -3,16 +3,12 @@ package com.dhkim139.wheretogo
 import androidx.test.platform.app.InstrumentationRegistry
 import com.dhkim139.wheretogo.di.FirebaseModule
 import com.google.firebase.FirebaseApp
-import com.google.firebase.firestore.DocumentReference
 import com.wheretogo.data.datasourceimpl.UserRemoteDatasourceImpl
 import com.wheretogo.domain.model.user.Profile
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.suspendCancellableCoroutine
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 
 class UserTest {
 
@@ -83,7 +79,6 @@ class UserTest {
         remoteDatasource.removeProfile(p1.uid)
     }
 
-
     @Test
     fun removeProfileTest(): Unit = runBlocking {
         val firestore = FirebaseModule.provideFirestore()
@@ -109,14 +104,4 @@ class UserTest {
 
     }
 
-
-    suspend fun <T : Any> DocumentReference.mySet(data: T): Boolean {
-        return suspendCancellableCoroutine { continuation ->
-            this.set(data).addOnSuccessListener {
-                continuation.resume(true)
-            }.addOnFailureListener {
-                continuation.resumeWithException(it)
-            }
-        }
-    }
 }

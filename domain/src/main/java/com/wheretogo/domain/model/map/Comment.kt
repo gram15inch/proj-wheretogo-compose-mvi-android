@@ -5,6 +5,7 @@ import com.wheretogo.domain.DOMAIN_EMPTY
 data class Comment(
     val commentId: String = DOMAIN_EMPTY,
     val userId: String = DOMAIN_EMPTY,
+    val userName: String = "",
     val groupId: String = DOMAIN_EMPTY,
     val emoji: String = "",
     val detailedReview: String = "",

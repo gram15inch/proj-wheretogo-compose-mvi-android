@@ -11,9 +11,9 @@ import javax.inject.Inject
 class CommentRepositoryImpl @Inject constructor(
     private val remoteDatasource: CommentRemoteDatasourceImpl,
 ) : CommentRepository {
-    private val _cacheCommentGroup = mutableMapOf<Int, List<Comment>>()
+    private val _cacheCommentGroup = mutableMapOf<String, List<Comment>>()
     override suspend fun getComment(groupId: String): List<Comment> {
-        return _cacheCommentGroup.getOrPut(groupId.hashCode()) {
+        return _cacheCommentGroup.getOrPut(groupId) {
             remoteDatasource.getCommentGroupInCheckPoint(groupId)?.remoteCommentGroup?.map { it.toComment() }
                 ?: emptyList()
         }

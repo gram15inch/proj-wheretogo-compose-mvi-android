@@ -18,7 +18,7 @@ class RootViewModel @Inject constructor(private val userRepository: UserReposito
 
     init {
         viewModelScope.launch {
-            userRepository.isRequestLoginFlow().collect{
+            userRepository.isRequestLoginStream().collect {
                 _mainScreenState.value = _mainScreenState.value.run {
                     copy(isRequestLogin = it)
                 }

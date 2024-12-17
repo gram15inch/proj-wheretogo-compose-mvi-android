@@ -1,6 +1,5 @@
 package com.wheretogo.presentation.viewmodel
 
-import android.util.Log
 import androidx.credentials.Credential
 import androidx.credentials.GetCredentialResponse
 import androidx.lifecycle.ViewModel
@@ -11,7 +10,7 @@ import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.SignInRequest
 import com.wheretogo.domain.model.user.SignUpRequest
-import com.wheretogo.domain.usecase.UserSignUpAndSignInUseCase
+import com.wheretogo.domain.usecase.user.UserSignUpAndSignInUseCase
 import com.wheretogo.presentation.state.LoginScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -81,6 +80,7 @@ class LoginViewModel @Inject constructor(
                             copy(isToast = false)
                         }
                     }
+
                     UseCaseResponse.Status.Error -> {}
                 }
             }
@@ -93,7 +93,6 @@ class LoginViewModel @Inject constructor(
             _loginScreenState.value = _loginScreenState.value.run {
                 copy(isExit = true)
             }
-            Log.d("tst4", "signInPass")
         }
     }
 

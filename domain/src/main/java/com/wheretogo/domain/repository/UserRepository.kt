@@ -5,19 +5,29 @@ import com.wheretogo.domain.model.user.SignResponse
 import kotlinx.coroutines.flow.Flow
 
 interface UserRepository {
-    suspend fun isRequestLoginFlow(): Flow<Boolean>
+    suspend fun isRequestLoginStream(): Flow<Boolean>
 
     suspend fun setRequestLogin(boolean: Boolean)
 
     suspend fun addBookmark(code: String)
 
+    suspend fun addBookmarkGroup(uId: String, bookmarkGroup: List<String>)
+
     suspend fun removeBookmark(code: String)
 
-    suspend fun getBookmarkFlow(): Flow<List<String>>
+    suspend fun getBookmarkStream(): Flow<List<String>>
 
-    suspend fun getProfileFlow(): Flow<Profile>
+    suspend fun addLike(code: String)
 
-    suspend fun isUserExists(uid: String): Boolean
+    suspend fun addLikeGroup(uId: String, likeGroup: List<String>)
+
+    suspend fun removeLike(code: String)
+
+    suspend fun getLikeStream(): Flow<List<String>>
+
+    suspend fun getProfileStream(): Flow<Profile>
+
+    suspend fun getProfile(uid: String): Profile?
 
     suspend fun setProfile(profile: Profile): Boolean
 

@@ -40,7 +40,6 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
             }
         }
 
-
         Box(
             modifier = Modifier
                 .background(Color.Gray)
@@ -55,7 +54,7 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
 
                 val displayMaxWidth = min(400.dp, maxWidth)
 
-                NavHost(navController = navController, startDestination = "drive") {
+                NavHost(navController = navController, startDestination = "home") {
                     composable("home") { HomeScreen(displayMaxWidth, navController) }
                     composable("drive") { DriveScreen(navController) }
                     composable("bookmark") { BookmarkScreen(navController) }

@@ -31,8 +31,9 @@ fun RemoteComment.toComment(): Comment {
 fun Comment.toRemoteComment(): RemoteComment {
     return RemoteComment(
         commentId = commentId,
-        userId = userId,
         commentGroupId = groupId,
+        userId = userId,
+        userName = userName,
         emoji = emoji,
         oneLineReview = oneLineReview,
         detailedReview = detailedReview,

@@ -15,7 +15,7 @@ import com.wheretogo.data.di.RetrofitClientModule
 import com.wheretogo.data.repositoryimpl.CheckPointRepositoryImpl
 import com.wheretogo.data.repositoryimpl.CourseRepositoryImpl
 import com.wheretogo.domain.model.map.LatLng
-import com.wheretogo.domain.usecaseimpl.GetNearByCourseUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.map.GetNearByCourseUseCaseImpl
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test

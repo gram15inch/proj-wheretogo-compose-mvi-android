@@ -50,7 +50,7 @@ fun getMapOverlay(item: Course): MapOverlay {
     )
 }
 
-fun getMapOverlay(courseId:String, item: CheckPoint): MapOverlay {
+fun getMapOverlay(courseId: String, item: CheckPoint): MapOverlay {
     val overlayTag = OverlayTag(item.checkPointId, courseId, CHECKPOINT_TYPE)
     return MapOverlay(
         overlayTag.overlayId,
@@ -116,39 +116,5 @@ fun getRoundedRectWithShadowBitmap(
     canvas.drawRoundRect(rect, cornerRadius, cornerRadius, bitmapPaint)
 
     return output
-}
-
-class HideOverlayMap(
-    private val innerMap: MutableMap<Int, MapOverlay> = mutableMapOf()
-) : MutableMap<Int, MapOverlay> by innerMap {
-
-    override fun put(key: Int, value: MapOverlay): MapOverlay? {
-        hide(value)
-        return innerMap.put(key, value)
-    }
-
-    override fun remove(key: Int): MapOverlay? {
-        innerMap[key]?.let {
-            show(it)
-        }
-        return innerMap.remove(key)
-    }
-
-    override fun clear() {
-        innerMap.forEach {
-            show(it.value)
-        }
-        innerMap.clear()
-    }
-
-    private fun show(element: MapOverlay) {
-        element.marker.isVisible = true
-        element.pathOverlay.isVisible = true
-    }
-
-    private fun hide(element: MapOverlay) {
-        element.marker.isVisible = false
-        element.pathOverlay.isVisible = false
-    }
 }
 

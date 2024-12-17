@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -30,7 +29,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool
 import com.bumptech.glide.load.resource.bitmap.BitmapTransformation
 import com.bumptech.glide.request.RequestOptions
-import com.bumptech.glide.util.Util
 import com.skydoves.landscapist.ImageOptions
 import com.skydoves.landscapist.glide.GlideImage
 import kotlinx.coroutines.Dispatchers
@@ -40,21 +38,21 @@ import java.security.MessageDigest
 import java.text.DecimalFormat
 
 @Composable
-fun ImageTestScreen(){
+fun ImageTestScreen() {
     var imgs by remember { mutableStateOf(emptyList<File>()) }
     val context = LocalContext.current
 
     LaunchedEffect(rememberCoroutineScope()) {
-       // clearGlideCache(context)
+        // clearGlideCache(context)
         val cacheSubDir = File(context.cacheDir, "thumbnails")
         imgs = getCacheImgs(cacheSubDir)
     }
 
-    FlexibleGrid(imgs,2)
+    FlexibleGrid(imgs, 2)
 
 }
 
-fun getCacheImgs(root:File):List<File>{
+fun getCacheImgs(root: File): List<File> {
     if (!root.exists() || !root.isDirectory) {
         return emptyList()
     }
@@ -76,9 +74,12 @@ fun FlexibleGrid(images: List<File>, columnCount: Int) {
             val size = 100.dp
             //Log.d("tst3","${file.name} / ${file.path}")
             Column {
-                Text(modifier = Modifier.width(size),text="${file.name}")
-                Text(modifier = Modifier.width(size),text="${getImageResolutionFromFile(file).run { "${this!!.first} x ${this.second}" }}")
-                Text(modifier = Modifier.width(size),text="${getFileSizeInReadableFormat(file)}")
+                Text(modifier = Modifier.width(size), text = "${file.name}")
+                Text(
+                    modifier = Modifier.width(size),
+                    text = "${getImageResolutionFromFile(file).run { "${this!!.first} x ${this.second}" }}"
+                )
+                Text(modifier = Modifier.width(size), text = "${getFileSizeInReadableFormat(file)}")
                 GlideImage(
                     modifier = Modifier.size(size),
                     imageModel = { file.path },
@@ -86,7 +87,7 @@ fun FlexibleGrid(images: List<File>, columnCount: Int) {
                         contentScale = ContentScale.Fit,
                         alignment = Alignment.Center
                     ),
-                    requestBuilder={
+                    requestBuilder = {
                         Glide.with(LocalContext.current)
                             .load(file.path)
                             .apply(RequestOptions.bitmapTransform(RotateIfLandscapeTransformation()))
@@ -107,9 +108,11 @@ fun getFileSizeInReadableFormat(file: File): String {
         fileSizeInBytes >= 1024 * 1024 -> {
             "${df.format(fileSizeInBytes / (1024.0 * 1024.0))} MB"
         }
+
         fileSizeInBytes >= 1024 -> {
             "${df.format(fileSizeInBytes / 1024.0)} KB"
         }
+
         else -> {
             "$fileSizeInBytes Bytes"
         }
@@ -126,7 +129,15 @@ class RotateIfLandscapeTransformation : BitmapTransformation() {
     ): Bitmap {
         return if (toTransform.width > toTransform.height) {
             val matrix = Matrix().apply { postRotate(90f) }
-            Bitmap.createBitmap(toTransform, 0, 0, toTransform.width, toTransform.height, matrix, true)
+            Bitmap.createBitmap(
+                toTransform,
+                0,
+                0,
+                toTransform.width,
+                toTransform.height,
+                matrix,
+                true
+            )
         } else {
             toTransform
         }
@@ -138,8 +149,8 @@ class RotateIfLandscapeTransformation : BitmapTransformation() {
 
     override fun equals(other: Any?) = other is RotateIfLandscapeTransformation
 
-    override fun hashCode() = Util.hashCode("rotate_if_landscape".hashCode())
 }
+
 fun getImageResolutionFromFile(file: File): Pair<Int, Int>? {
     return if (file.exists()) {
         val options = BitmapFactory.Options().apply {
@@ -151,6 +162,7 @@ fun getImageResolutionFromFile(file: File): Pair<Int, Int>? {
         null
     }
 }
+
 suspend fun clearGlideCache(context: Context) {
     withContext(Dispatchers.IO) {
         Glide.get(context).clearDiskCache()
