@@ -1,10 +1,10 @@
 package com.wheretogo.domain.di
 
 import com.wheretogo.domain.usecase.map.FetchJourneyWithoutPointsUseCase
-import com.wheretogo.domain.usecase.map.GetCheckPointByCourseUseCase
+import com.wheretogo.domain.usecase.map.GetCheckPointForMarkerUseCase
 import com.wheretogo.domain.usecase.map.GetCommentByCheckPointUseCase
 import com.wheretogo.domain.usecase.map.GetHistoryStreamUseCase
-import com.wheretogo.domain.usecase.map.GetImageByCheckpointUseCase
+import com.wheretogo.domain.usecase.map.GetImageForPopupUseCase
 import com.wheretogo.domain.usecase.map.GetNearByCourseUseCase
 import com.wheretogo.domain.usecase.user.RemoveHistoryUseCase
 import com.wheretogo.domain.usecase.user.UpdateHistoryUseCase
@@ -14,10 +14,10 @@ import com.wheretogo.domain.usecase.user.UserSignOutUseCase
 import com.wheretogo.domain.usecase.user.UserSignUpAndSignInUseCase
 import com.wheretogo.domain.usecase.user.UserSignUpUseCase
 import com.wheretogo.domain.usecaseimpl.FetchJourneyWithoutPointsUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.map.GetCheckPointByCourseUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.map.GetCheckPointForMarkerUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.map.GetCommentByCheckPointUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.map.GetHistoryStreamUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.map.GetImageByCheckpointUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.map.GetImageForPopupUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.map.GetNearByCourseUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.RemoveHistoryUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.UpdateHistoryUseCaseImpl
@@ -59,7 +59,7 @@ abstract class UseCaseModule {
 
 
     @Binds
-    abstract fun bindGetCheckPointByCourseUseCase(useCaseImpl: GetCheckPointByCourseUseCaseImpl): GetCheckPointByCourseUseCase
+    abstract fun bindGetCheckPointForMarkerUseCase(useCaseImpl: GetCheckPointForMarkerUseCaseImpl): GetCheckPointForMarkerUseCase
 
     @Binds
     abstract fun bindGetCommentByCheckPointUseCase(useCaseImpl: GetCommentByCheckPointUseCaseImpl): GetCommentByCheckPointUseCase
@@ -68,7 +68,7 @@ abstract class UseCaseModule {
     abstract fun bindGetHistoryStreamUseCase(useCaseImpl: GetHistoryStreamUseCaseImpl): GetHistoryStreamUseCase
 
     @Binds
-    abstract fun bindGetImageByCheckpointUseCase(useCaseImpl: GetImageByCheckpointUseCaseImpl): GetImageByCheckpointUseCase
+    abstract fun bindGetImageForPopupUseCase(useCaseImpl: GetImageForPopupUseCaseImpl): GetImageForPopupUseCase
 
     @Binds
     abstract fun bindUpdateHistoryUseCase(useCaseImpl: UpdateHistoryUseCaseImpl): UpdateHistoryUseCase

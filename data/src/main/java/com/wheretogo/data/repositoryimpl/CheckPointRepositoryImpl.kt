@@ -1,9 +1,7 @@
 package com.wheretogo.data.repositoryimpl
 
-import com.wheretogo.data.CHECKPOINT_UPDATE_TIME
 import com.wheretogo.data.datasource.CheckPointLocalDatasource
 import com.wheretogo.data.datasource.CheckPointRemoteDatasource
-import com.wheretogo.data.datasource.ImageLocalDatasource
 import com.wheretogo.data.model.checkpoint.LocalCheckPoint
 import com.wheretogo.data.toCheckPoint
 import com.wheretogo.data.toDataMetaCheckPoint
@@ -20,8 +18,7 @@ import javax.inject.Inject
 
 class CheckPointRepositoryImpl @Inject constructor(
     private val checkPointRemoteDatasource: CheckPointRemoteDatasource,
-    private val checkPointLocalDatasource: CheckPointLocalDatasource,
-    private val imageLocalDatasource: ImageLocalDatasource
+    private val checkPointLocalDatasource: CheckPointLocalDatasource
 ) : CheckPointRepository {
 
     override suspend fun setCheckPoint(checkPoint: CheckPoint): Boolean {
@@ -29,49 +26,41 @@ class CheckPointRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getCheckPoint(checkPointId: String): CheckPoint {
-        return loadCheckPoint(checkPointId, "normal")
-            .apply { checkPointLocalDatasource.setCheckPoint(this) }
-            .toCheckPoint()
+        val localCheckPoint = checkPointLocalDatasource.getCheckPoint(checkPointId) ?: run {
+            val remoteCheckPoint = checkPointRemoteDatasource.getCheckPoint(checkPointId)
+            val remotePath = remoteCheckPoint?.imgUrl
+
+            LocalCheckPoint(
+                checkPointId = checkPointId,
+                latLng = remoteCheckPoint?.latLng?.toLatLng() ?: LatLng(),
+                titleComment = remoteCheckPoint?.titleComment ?: "",
+                remoteImgUrl = remotePath ?: "",
+                localImgUrl = "",
+                timestamp = System.currentTimeMillis()
+            ).apply { checkPointLocalDatasource.setCheckPoint(this) }
+        }
+        return localCheckPoint.toCheckPoint()
     }
 
-    override suspend fun getCheckPointGroup(metaCheckPoint: MetaCheckPoint): List<CheckPoint> {
+
+    override suspend fun getCheckPointGroup(
+        metaCheckPoint: MetaCheckPoint,
+        isFetch: Boolean
+    ): List<CheckPoint> {
         return checkPointLocalDatasource.getCheckPointGroup(metaCheckPoint.toDataMetaCheckPoint())
             .run {
-                val isUpdateTime =
-                    (System.currentTimeMillis() - metaCheckPoint.timeStamp) >= CHECKPOINT_UPDATE_TIME
-                if (isUpdateTime) {// 최소 업데이트 주기 확인
-                    metaCheckPoint.loadCheckPointGroup()
+                if (isFetch) {
+                    coroutineScope {
+                        metaCheckPoint.checkPointIdGroup.map { checkPointId ->
+                            async {
+                                getCheckPoint(checkPointId) // 체크포인트 저장
+                            }
+                        }.awaitAll()
+                    }
                 } else {
-                    this@run
-                }.toCheckPoint()
-            }
-    }
-
-    private suspend fun MetaCheckPoint.loadCheckPointGroup(): List<LocalCheckPoint> {
-        return coroutineScope {
-            this@loadCheckPointGroup.checkPointIdGroup.map { checkPointId ->
-                async {
-                    loadCheckPoint(checkPointId, "small")
+                    this@run.toCheckPoint()
                 }
-            }.awaitAll()
-        }
-    }
-
-    private suspend fun loadCheckPoint(checkPointId: String, imageSize: String): LocalCheckPoint {
-        val remoteCheckPoint = checkPointRemoteDatasource.getCheckPoint(checkPointId)
-        val remotePath = remoteCheckPoint?.imgUrl
-        val localPath = remotePath?.run {
-            imageLocalDatasource.getImage(remotePath = remotePath, size = imageSize)
-        }
-
-        return LocalCheckPoint(
-            checkPointId = checkPointId,
-            latLng = remoteCheckPoint?.latLng?.toLatLng() ?: LatLng(),
-            titleComment = remoteCheckPoint?.titleComment ?: "",
-            remoteImgUrl = remotePath ?: "",
-            localImgUrl = localPath ?: "",
-            timestamp = System.currentTimeMillis()
-        ).apply { checkPointLocalDatasource.setCheckPoint(this) } // 체크포인트 저장
+            }
     }
 
 }

@@ -103,7 +103,7 @@ fun LocalCheckPoint.toCheckPoint(): CheckPoint {
 
 fun LocalCourse.toCourse(
     route: List<LatLng> = this.route,
-    checkPoints: List<CheckPoint>,
+    checkPoints: List<CheckPoint> = this.localMetaCheckPoint.toMetaCheckPoint().toCheckPointGroup(),
     like: Int = this.like
 ): Course {
     return Course(
@@ -147,7 +147,7 @@ fun Course.toLocalCourse(
 
 fun RemoteCourse.toLocalCourse(
     route: List<LatLng> = emptyList(),
-    checkPoint: DataMetaCheckPoint = DataMetaCheckPoint(),
+    checkPoint: DataMetaCheckPoint = DataMetaCheckPoint(checkPointIdGroup = this.remoteMetaCheckPoint.checkPointIdGroup),
     like: Int = 0
 ): LocalCourse {
     return LocalCourse(

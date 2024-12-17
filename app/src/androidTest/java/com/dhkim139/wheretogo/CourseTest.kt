@@ -8,7 +8,6 @@ import com.wheretogo.data.datasourceimpl.CheckPointLocalDatasourceImpl
 import com.wheretogo.data.datasourceimpl.CheckPointRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.CourseLocalDatasourceImpl
 import com.wheretogo.data.datasourceimpl.CourseRemoteDatasourceImpl
-import com.wheretogo.data.datasourceimpl.ImageLocalDatasourceImpl
 import com.wheretogo.data.datasourceimpl.LikeRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.RouteRemoteDatasourceImpl
 import com.wheretogo.data.di.ApiServiceModule
@@ -116,19 +115,11 @@ class CourseTest {
         })
         val courseDao =
             DaoDatabaseModule.run { provideCourseDao(provideCourseDatabase(appContext)) }
-        val checkPointDao =
-            DaoDatabaseModule.run { provideCheckPointDao(provideCheckPointDatabase(appContext)) }
-        val checkPointRepository = CheckPointRepositoryImpl(
-            checkPointRemoteDatasource = CheckPointRemoteDatasourceImpl(firestore),
-            checkPointLocalDatasource = CheckPointLocalDatasourceImpl(checkPointDao),
-            imageLocalDatasource = ImageLocalDatasourceImpl(firebaseStorage, appContext)
-        )
         val courseRepository = CourseRepositoryImpl(
             courseRemoteDatasource = CourseRemoteDatasourceImpl(firestore),
             courseLocalDatasource = CourseLocalDatasourceImpl(courseDao),
             routeRemoteDatasource = RouteRemoteDatasourceImpl(firestore, naverApi),
-            likeRemoteDatasource = LikeRemoteDatasourceImpl(firestore),
-            checkPointRepository = checkPointRepository
+            likeRemoteDatasource = LikeRemoteDatasourceImpl(firestore)
         )
         val dc1 = Course(
             courseId = "cs1"
@@ -157,15 +148,13 @@ class CourseTest {
             DaoDatabaseModule.run { provideCheckPointDao(provideCheckPointDatabase(appContext)) }
         val checkPointRepository = CheckPointRepositoryImpl(
             checkPointRemoteDatasource = CheckPointRemoteDatasourceImpl(firestore),
-            checkPointLocalDatasource = CheckPointLocalDatasourceImpl(checkPointDao),
-            imageLocalDatasource = ImageLocalDatasourceImpl(firebaseStorage, appContext)
+            checkPointLocalDatasource = CheckPointLocalDatasourceImpl(checkPointDao)
         )
         val courseRepository = CourseRepositoryImpl(
             courseRemoteDatasource = CourseRemoteDatasourceImpl(firestore),
             courseLocalDatasource = CourseLocalDatasourceImpl(courseDao),
             routeRemoteDatasource = RouteRemoteDatasourceImpl(firestore, naverApi),
-            likeRemoteDatasource = LikeRemoteDatasourceImpl(firestore),
-            checkPointRepository = checkPointRepository
+            likeRemoteDatasource = LikeRemoteDatasourceImpl(firestore)
         )
 
         val dc1 = Course(

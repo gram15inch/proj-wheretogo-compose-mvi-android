@@ -87,11 +87,10 @@ class CheckPointTest {
             DaoDatabaseModule.run { provideCheckPointDao(provideCheckPointDatabase(appContext)) }
         val checkPointRepository = CheckPointRepositoryImpl(
             checkPointRemoteDatasource = CheckPointRemoteDatasourceImpl(firestore),
-            checkPointLocalDatasource = CheckPointLocalDatasourceImpl(checkPointDao),
-            imageLocalDatasource = ImageLocalDatasourceImpl(firebaseStorage, appContext)
+            checkPointLocalDatasource = CheckPointLocalDatasourceImpl(checkPointDao)
         )
 
-        val cp1 = checkPointRepository.getCheckPointGroup(MetaCheckPoint(listOf("cp1"), 0)).first()
+        val cp1 = checkPointRepository.getCheckPointGroup(MetaCheckPoint(listOf("cp1"), 0),true).first()
         Log.d("tst6", "$cp1")
         assertEquals(true, cp1.remoteImgUrl.isNotEmpty())
         assertEquals(true, cp1.titleComment.isNotEmpty())

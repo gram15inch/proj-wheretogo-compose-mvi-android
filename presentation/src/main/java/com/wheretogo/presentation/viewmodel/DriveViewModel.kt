@@ -10,10 +10,10 @@ import com.wheretogo.domain.model.map.MetaCheckPoint
 import com.wheretogo.domain.model.map.OverlayTag
 import com.wheretogo.domain.model.map.Viewport
 import com.wheretogo.domain.toMetaCheckPoint
-import com.wheretogo.domain.usecase.map.GetCheckPointByCourseUseCase
+import com.wheretogo.domain.usecase.map.GetCheckPointForMarkerUseCase
 import com.wheretogo.domain.usecase.map.GetCommentByCheckPointUseCase
 import com.wheretogo.domain.usecase.map.GetHistoryStreamUseCase
-import com.wheretogo.domain.usecase.map.GetImageByCheckpointUseCase
+import com.wheretogo.domain.usecase.map.GetImageForPopupUseCase
 import com.wheretogo.domain.usecase.map.GetNearByCourseUseCase
 import com.wheretogo.domain.usecase.user.RemoveHistoryUseCase
 import com.wheretogo.domain.usecase.user.UpdateHistoryUseCase
@@ -38,9 +38,9 @@ import javax.inject.Inject
 @HiltViewModel
 class DriveViewModel @Inject constructor(
     private val getNearByCourseUseCase: GetNearByCourseUseCase,
-    private val getCheckPointByCourseUseCase: GetCheckPointByCourseUseCase,
+    private val getCheckPointForMarkerUseCase: GetCheckPointForMarkerUseCase,
     private val getCommentByCheckPointUseCase: GetCommentByCheckPointUseCase,
-    private val getImageByCheckPointUseCase: GetImageByCheckpointUseCase,
+    private val getImageForPopupUseCase: GetImageForPopupUseCase,
     private val updateHistoryUseCase: UpdateHistoryUseCase,
     private val removeHistoryUseCase: RemoveHistoryUseCase,
     private val getHistoryStreamUseCase: GetHistoryStreamUseCase
@@ -188,7 +188,7 @@ class DriveViewModel @Inject constructor(
 
     private suspend fun checkPointMarkerClick(tag: OverlayTag) {
         val checkpoint = getCheckPointGroup(tag.parentId).first { it.checkPointId == tag.overlayId }
-        val image = getImageByCheckPointUseCase(checkpoint.remoteImgUrl)
+        val image = getImageForPopupUseCase(checkpoint.remoteImgUrl)
         _driveScreenState.value = _driveScreenState.value.run {
             copy(
                 listState = listState.copy(
@@ -370,7 +370,7 @@ class DriveViewModel @Inject constructor(
                 this@apply.forEach {
                     launch {
                         _cacheCheckPointGroup.getOrPut(it.course.courseId) {
-                            getCheckPointByCourseUseCase(it.course.checkpoints.toMetaCheckPoint())// 체크포인트 미리 불러오기
+                            getCheckPointForMarkerUseCase(it.course.checkpoints.toMetaCheckPoint())// 체크포인트 미리 불러오기
                         }
                     }
                 }
@@ -407,7 +407,7 @@ class DriveViewModel @Inject constructor(
         metaCheckPoint: MetaCheckPoint = MetaCheckPoint()
     ): List<CheckPoint> {
         return _cacheCheckPointGroup.getOrPut(courseId) {
-            getCheckPointByCourseUseCase(metaCheckPoint)
+            getCheckPointForMarkerUseCase(metaCheckPoint)
         }
     }
 
@@ -424,7 +424,7 @@ class DriveViewModel @Inject constructor(
         coroutineScope {
             forEach {
                 launch {
-                    getImageByCheckPointUseCase(it.remoteImgUrl)  // 체크포인트 이미지 미리로드
+                    getImageForPopupUseCase(it.remoteImgUrl)  // 체크포인트 이미지 미리로드
                 }
             }
         }

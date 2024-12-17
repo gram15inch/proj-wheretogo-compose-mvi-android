@@ -9,6 +9,9 @@ interface CheckPointRepository {
 
     suspend fun getCheckPoint(checkPointId: String): CheckPoint
 
-    suspend fun getCheckPointGroup(metaCheckPoint: MetaCheckPoint): List<CheckPoint>
+    suspend fun getCheckPointGroup(
+        metaCheckPoint: MetaCheckPoint,
+        isFetch: Boolean
+    ): List<CheckPoint>
 
 }
