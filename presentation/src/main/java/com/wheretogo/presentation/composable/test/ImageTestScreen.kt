@@ -72,7 +72,6 @@ fun FlexibleGrid(images: List<File>, columnCount: Int) {
         items(images.size) { index ->
             val file = images[index]
             val size = 100.dp
-            //Log.d("tst3","${file.name} / ${file.path}")
             Column {
                 Text(modifier = Modifier.width(size), text = "${file.name}")
                 Text(

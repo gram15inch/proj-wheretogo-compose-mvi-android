@@ -1,8 +1,9 @@
 package com.wheretogo.domain.di
 
+import com.wheretogo.domain.usecase.community.AddCommentByCheckPointUseCase
+import com.wheretogo.domain.usecase.community.GetCommentByCheckPointUseCase
 import com.wheretogo.domain.usecase.map.FetchJourneyWithoutPointsUseCase
 import com.wheretogo.domain.usecase.map.GetCheckPointForMarkerUseCase
-import com.wheretogo.domain.usecase.map.GetCommentByCheckPointUseCase
 import com.wheretogo.domain.usecase.map.GetHistoryStreamUseCase
 import com.wheretogo.domain.usecase.map.GetImageForPopupUseCase
 import com.wheretogo.domain.usecase.map.GetNearByCourseUseCase
@@ -14,8 +15,9 @@ import com.wheretogo.domain.usecase.user.UserSignOutUseCase
 import com.wheretogo.domain.usecase.user.UserSignUpAndSignInUseCase
 import com.wheretogo.domain.usecase.user.UserSignUpUseCase
 import com.wheretogo.domain.usecaseimpl.FetchJourneyWithoutPointsUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.community.AddCommentByCheckPointUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.community.GetCommentByCheckPointUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.map.GetCheckPointForMarkerUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.map.GetCommentByCheckPointUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.map.GetHistoryStreamUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.map.GetImageForPopupUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.map.GetNearByCourseUseCaseImpl
@@ -63,6 +65,9 @@ abstract class UseCaseModule {
 
     @Binds
     abstract fun bindGetCommentByCheckPointUseCase(useCaseImpl: GetCommentByCheckPointUseCaseImpl): GetCommentByCheckPointUseCase
+
+    @Binds
+    abstract fun bindAddCommentByCheckPointUseCase(useCaseImpl: AddCommentByCheckPointUseCaseImpl): AddCommentByCheckPointUseCase
 
     @Binds
     abstract fun bindGetHistoryStreamUseCase(useCaseImpl: GetHistoryStreamUseCaseImpl): GetHistoryStreamUseCase

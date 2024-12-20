@@ -1,7 +1,10 @@
 package com.wheretogo.presentation.state
 
+import androidx.compose.ui.text.input.TextFieldValue
+import com.wheretogo.domain.model.dummy.getEmogiDummy
 import com.wheretogo.domain.model.map.Comment
 import com.wheretogo.domain.model.map.Course
+import com.wheretogo.presentation.CommentType
 import com.wheretogo.presentation.model.MapOverlay
 
 
@@ -37,11 +40,26 @@ data class DriveScreenState(
         val localImageUrl: String = "",
         val commentState: CommentState = CommentState()
     ) {
-        data class CommentState(val commentItemGroup: List<CommentItemState> = emptyList()) {
+        data class CommentState(
+            val commentItemGroup: List<CommentItemState> = emptyList(),
+            val commentAddState: CommentAddState = CommentAddState()
+        ) {
             data class CommentItemState(
                 val data: Comment = Comment(),
                 val isLike: Boolean = false,
                 val isFold: Boolean = true
+            )
+
+            data class CommentAddState(
+                val largeEmoji: String = "",
+                val emogiGroup: List<String> = getEmogiDummy(), //todo 복원하기 emptyList(),
+                val oneLineReview: String = "",
+                val detailReview: String = "",
+                val oneLinePreview: String = "",
+                val isLargeEmogi: Boolean = true,
+                val isEmogiGroup: Boolean = true,
+                val commentType: CommentType = CommentType.ONE,
+                val editText: TextFieldValue = TextFieldValue()
             )
         }
     }

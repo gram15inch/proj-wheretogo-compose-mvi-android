@@ -20,6 +20,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.wheretogo.presentation.composable.test.CommentTestScreen
 import com.wheretogo.presentation.composable.test.DragTestScreen
 import com.wheretogo.presentation.composable.test.ImageTestScreen
 import com.wheretogo.presentation.theme.WhereTogoTheme
@@ -54,7 +55,7 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
 
                 val displayMaxWidth = min(400.dp, maxWidth)
 
-                NavHost(navController = navController, startDestination = "home") {
+                NavHost(navController = navController, startDestination = "drive") {
                     composable("home") { HomeScreen(displayMaxWidth, navController) }
                     composable("drive") { DriveScreen(navController) }
                     composable("bookmark") { BookmarkScreen(navController) }
@@ -64,6 +65,7 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                     { LoginScreen(navController) }
                     composable("test") { ImageTestScreen() }
                     composable("drag") { DragTestScreen() }
+                    composable("comment") { CommentTestScreen() }
                 }
             }
         }

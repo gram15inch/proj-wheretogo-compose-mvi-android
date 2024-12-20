@@ -1,4 +1,4 @@
-package com.wheretogo.domain.usecase.map
+package com.wheretogo.domain.usecase.community
 
 import com.wheretogo.domain.model.map.Comment
 

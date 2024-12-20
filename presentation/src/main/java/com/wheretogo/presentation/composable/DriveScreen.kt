@@ -167,6 +167,18 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
                     },
                     onCommentLikeClick = { item ->
                         viewModel.handleIntent(DriveScreenIntent.CommentLikeClick(item))
+                    },
+                    onCommentAddClick = { item ->
+                        viewModel.handleIntent(DriveScreenIntent.CommentAddClick(item))
+                    },
+                    onCommentEditValueChange = { textFiled ->
+                        viewModel.handleIntent(DriveScreenIntent.CommentEditValueChange(textFiled))
+                    },
+                    onCommentEmogiPress = { emogi ->
+                        viewModel.handleIntent(DriveScreenIntent.CommentEmogiPress(emogi))
+                    },
+                    onCommentTypePress = { type ->
+                        viewModel.handleIntent(DriveScreenIntent.CommentTypePress(type))
                     }
                 )
             }

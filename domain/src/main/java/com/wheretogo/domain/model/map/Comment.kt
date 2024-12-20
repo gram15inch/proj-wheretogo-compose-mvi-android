@@ -8,8 +8,8 @@ data class Comment(
     val userName: String = "",
     val groupId: String = DOMAIN_EMPTY,
     val emoji: String = "",
-    val detailedReview: String = "",
     val oneLineReview: String = "",
+    val detailedReview: String = "",
     val date: Long = 0,
     val like: Int = 0
 )

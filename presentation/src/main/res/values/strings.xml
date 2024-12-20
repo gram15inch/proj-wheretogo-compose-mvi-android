@@ -17,6 +17,12 @@
     <string name="banner_main">월 9,900원\n이곳에 광고를</string>
     <string name="banner_sub">누구나 여기에 광고를 등록할 수 있어요</string>
 
+
+
+    <string name="oneline_review">한줄평</string>
+    <string name="detail_review">상세리뷰</string>
+
+
     <string name="contact_banner">비즈니스 / 광고문의</string>
     <string name="dev_gmail">wherecarhelp@gmail.com</string>
     <string name="title_activity_test">TestActivity</string>
