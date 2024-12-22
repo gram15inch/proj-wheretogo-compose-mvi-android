@@ -1,34 +1,31 @@
 package com.wheretogo.presentation.composable.content
 
-import android.annotation.SuppressLint
-import android.util.Log
 import android.view.MotionEvent
 import androidx.annotation.ColorRes
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -56,8 +53,6 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.pointerInteropFilter
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
@@ -70,7 +65,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.skydoves.landscapist.glide.GlideImage
@@ -80,12 +74,12 @@ import com.wheretogo.presentation.CommentType
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.BlurEffect
 import com.wheretogo.presentation.composable.ExtendArea
+import com.wheretogo.presentation.feature.ImeStickyBox
 import com.wheretogo.presentation.state.DriveScreenState.PopUpState.CommentState
 import com.wheretogo.presentation.state.DriveScreenState.PopUpState.CommentState.CommentAddState
 import com.wheretogo.presentation.state.DriveScreenState.PopUpState.CommentState.CommentItemState
 import com.wheretogo.presentation.theme.hancomMalangFontFamily
 import com.wheretogo.presentation.theme.hancomSansFontFamily
-import kotlin.math.max
 
 
 @Preview
@@ -95,7 +89,9 @@ fun PopupPreview() {
         MapPopup(
             modifier = Modifier.align(alignment = Alignment.BottomEnd),
             CommentState(
-                getCommentDummy().map {
+                isCommentSettingVisible = false,
+                isCommentVisible = true,
+                commentItemGroup = getCommentDummy().map {
                     CommentItemState(
                         data = it,
                         isFold = if (it.like % 2 == 0) true else false,
@@ -109,11 +105,13 @@ fun PopupPreview() {
             ),
             imageUrl = "",
             isWideSize = false,
-            isCommentVisible = true,
             onCommentFloatingButtonClick = {},
             onCommentListItemClick = {},
+            onCommentListItemLongClick = {},
             onCommentLikeClick = {},
             onCommentAddClick = {},
+            onCommentRemoveClick = {},
+            onCommentReportClick = {},
             onCommentEditValueChange = {},
             onCommentEmogiPress = {},
             onCommentTypePress = {}
@@ -128,152 +126,211 @@ fun MapPopup(
     commentState: CommentState,
     imageUrl: String,
     isWideSize: Boolean,
-    isCommentVisible: Boolean,
     onCommentFloatingButtonClick: () -> Unit,
     onCommentListItemClick: (CommentItemState) -> Unit,
+    onCommentListItemLongClick: (CommentItemState) -> Unit,
     onCommentLikeClick: (CommentItemState) -> Unit,
     onCommentAddClick: (CommentAddState) -> Unit,
+    onCommentRemoveClick: (CommentItemState) -> Unit,
+    onCommentReportClick: (CommentItemState) -> Unit,
     onCommentEditValueChange: (TextFieldValue) -> Unit,
     onCommentEmogiPress: (String) -> Unit,
     onCommentTypePress: (CommentType) -> Unit,
 ) {
-    ExtendArea(
-        isExtend = isWideSize,
-        holdContent = {
-            PopUpImage(
-                modifier = modifier.clickable {
-                    onCommentFloatingButtonClick()
-                },
-                url = imageUrl
-            )
-        },
-        moveContent = {
-            FadeAnimation(visible = isCommentVisible && !isWideSize) {
-                BlurEffect(
-                    modifier = Modifier
-                        .sizeIn(maxWidth = 260.dp, maxHeight = 500.dp)
-                        .clip(RoundedCornerShape(16.dp)),
-                    onClick = {
+    var imeContainerHeight by remember { mutableStateOf(0.dp) }
+    Box {
+        ExtendArea( // 넓은 화면에서 확장
+            isExtend = isWideSize,
+            holdContent = {
+                PopUpImage( // 고정
+                    modifier = modifier.clickable {
                         onCommentFloatingButtonClick()
-                    })
-            }
-            SlideAnimation(
-                modifier = modifier
-                    .graphicsLayer(clip = true),
-                visible = isCommentVisible,
-                direction = if (isWideSize) AnimationDirection.CenterRight else AnimationDirection.CenterDown
-            ) {
-                Box(
-                    modifier = Modifier
-                        .sizeIn(maxWidth = 260.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                ) {
-                    var containerHeight by remember { mutableStateOf(0.dp) }
-
-                    Column {
-                        PopupCommentList(
-                            modifier = Modifier
-                                .sizeIn(maxHeight = (if (!isWideSize) 480.dp else 500.dp) - containerHeight),
-                            isCompact = !isWideSize,
-                            commentItemGroup = commentState.commentItemGroup,
-                            onLongItemClick = { item ->
-                                onCommentListItemClick(item)
-                            },
-                            onLikeClick = { item ->
-                                onCommentLikeClick(item)
-                            }
-                        )
-                        Spacer(modifier.height(containerHeight))
-                    }
-
-                    ImeStickyBox(
+                    },
+                    url = imageUrl
+                )
+            },
+            moveContent = { // 이동
+                FadeAnimation(visible = commentState.isCommentVisible && !isWideSize) {
+                    BlurEffect(
                         modifier = Modifier
-                            .align(alignment = Alignment.BottomCenter),
-                        onContainerHeightChange = { height ->
-                            containerHeight = height
-                        }) { imeHeight ->
-                        Column {// 리뷰버튼
-                            ReviewButtonGroup(
-                                modifier = Modifier.run {
-                                    if (imeHeight > 100.dp) this
-                                    else this.height(0.dp)
+                            .sizeIn(maxWidth = 260.dp, maxHeight = 500.dp)
+                            .clip(RoundedCornerShape(16.dp)),
+                        onClick = {
+                            onCommentFloatingButtonClick()
+                        })
+                }
+                SlideAnimation(
+                    modifier = modifier
+                        .graphicsLayer(clip = true),
+                    visible = commentState.isCommentVisible,
+                    direction = if (isWideSize) AnimationDirection.CenterRight else AnimationDirection.CenterDown
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .background(colorResource(R.color.white))
+                            .clip(RoundedCornerShape(16.dp))
+                    ) {
+                        Column {
+                            PopupCommentList(
+                                modifier = Modifier
+                                    .sizeIn(maxHeight = (if (!isWideSize) 480.dp else 500.dp) - imeContainerHeight),
+                                isCompact = !isWideSize,
+                                commentItemGroup = commentState.commentItemGroup,
+                                onItemClick = { item ->
+                                    onCommentListItemClick(item)
                                 },
-                                selectedType = commentState.commentAddState.commentType,
-                                onReviewButtonClick = onCommentTypePress
-                            )
-
-                            // 이모지
-                            CommentEmojiGroupAndOneLinePreivew(
-                                isEmojiGroup = commentState.commentAddState.isEmogiGroup,
-                                emojiGroup = commentState.commentAddState.emogiGroup,
-                                oneLinePreview = commentState.commentAddState.oneLinePreview,
-                                onImogiClick = onCommentEmogiPress
-                            )
-
-                            // 입력 텍스트
-                            CommentTextField(
-                                editText = commentState.commentAddState.editText,
-                                isEmoji = commentState.commentAddState.isLargeEmogi,
-                                emoji = commentState.commentAddState.largeEmoji.ifEmpty {
-                                    commentState.commentAddState.emogiGroup.firstOrNull() ?: ""
+                                onItemLongClick = { item ->
+                                    onCommentListItemLongClick(item)
                                 },
-                                onValueChange = onCommentEditValueChange,
-                                onDone = { onCommentAddClick(commentState.commentAddState) }
+                                onLikeClick = { item ->
+                                    onCommentLikeClick(item)
+                                }
                             )
+                            Spacer(modifier.height(imeContainerHeight))
+                        }
+                        FadeAnimation(visible = commentState.isCommentSettingVisible) {
+                            CommentSetting(
+                                modifier = Modifier
+                                    .sizeIn(
+                                        maxHeight = (if (!isWideSize) 480.dp else 500.dp)
+                                    ),
+                                selectedItem = commentState.selectedCommentSettingItem,
+                                onCommentRemoveClick = onCommentRemoveClick,
+                                onCommentReportClick = onCommentReportClick,
+                                onBackgroundClick = {
+                                    onCommentListItemLongClick(commentState.selectedCommentSettingItem)//todo 실제값변경
+                                })
                         }
                     }
                 }
             }
-        }
-    )
-}
+        )
+        SlideAnimation(
+            modifier = modifier
+                .graphicsLayer(clip = true),
+            visible = commentState.isCommentVisible && !commentState.isCommentSettingVisible,
+            direction = AnimationDirection.CenterDown
+        ) {
+            ImeStickyBox(
+                modifier = Modifier
+                    .padding(top = 1.dp)
+                    .fillMaxWidth()
+                    .align(alignment = Alignment.BottomCenter),
+                onContainerHeightChange = { height ->
+                    imeContainerHeight = height
+                }) { imeHeight ->
+                Column(
+                    modifier = Modifier
+                        .graphicsLayer {
+                            shadowElevation = 8.dp.toPx() // 그림자 높이
+                            shape = RectangleShape // 그림자 모양
+                            clip = false
+                        }
+                        .background(Color.White)
+                ) {// 리뷰버튼
+                    ReviewButtonGroup(
+                        modifier = Modifier.run {
+                            if (imeHeight > 100.dp) this
+                            else this.height(0.dp)
+                        },
+                        selectedType = commentState.commentAddState.commentType,
+                        onReviewButtonClick = onCommentTypePress
+                    )
 
-@SuppressLint("UseOfNonLambdaOffsetOverload")
-@Composable
-fun ImeStickyBox(
-    modifier: Modifier,
-    onContainerHeightChange: (Dp) -> Unit,
-    content: @Composable (Dp) -> Unit
-) {
-    val context = LocalDensity.current
-    val imeInsets = WindowInsets.ime
-    val imeHeight =
-        max(0f, (imeInsets.getBottom(context) / context.density) - 60).dp // 알수없는 키보드 마진 조정 (-60.dp)
-    Box(modifier = modifier
-        .width(260.dp)
-        .wrapContentHeight()
-        .offset(y = -imeHeight)
-        .graphicsLayer {
-            shadowElevation = 8.dp.toPx() // 그림자 높이
-            shape = RectangleShape // 그림자 모양
-            clip = false
+                    // 이모지
+                    CommentEmojiGroupAndOneLinePreivew(
+                        isEmojiGroup = commentState.commentAddState.isEmogiGroup,
+                        emojiGroup = commentState.commentAddState.emogiGroup,
+                        oneLinePreview = commentState.commentAddState.oneLinePreview,
+                        onImogiClick = onCommentEmogiPress
+                    )
+
+                    // 입력 텍스트
+                    CommentTextField(
+                        editText = commentState.commentAddState.editText,
+                        isEmoji = commentState.commentAddState.isLargeEmogi,
+                        emoji = commentState.commentAddState.largeEmoji.ifEmpty {
+                            commentState.commentAddState.emogiGroup.firstOrNull() ?: ""
+                        },
+                        onValueChange = onCommentEditValueChange,
+                        onDone = { onCommentAddClick(commentState.commentAddState) }
+                    )
+                }
+            }
         }
-        .background(Color.White)
-        .onGloballyPositioned { layoutCoordinates ->
-            onContainerHeightChange(with(context) {
-                layoutCoordinates.size.height.toDp()
-            })
-        }
-    ) {
-        content(imeHeight)
     }
 }
 
 @Composable
-fun ReviewButtonGroup(modifier: Modifier, selectedType:CommentType, onReviewButtonClick: (CommentType) -> Unit) {
+fun CommentSetting(
+    modifier: Modifier = Modifier,
+    selectedItem: CommentItemState,
+    onCommentRemoveClick: (CommentItemState) -> Unit,
+    onCommentReportClick: (CommentItemState) -> Unit,
+    onBackgroundClick: () -> Unit
+) {
+    Box(
+        modifier
+            .fillMaxSize()
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() },
+                onClick = {
+                    onBackgroundClick()
+                }
+            )
+            .background(colorResource(R.color.gray_90)),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            modifier = Modifier
+                .wrapContentSize()
+                .background(Color.White),
+        ) {
+
+            if (selectedItem.isUserCreated) {
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .clickable {
+                        onCommentRemoveClick(selectedItem)
+                    }, contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "삭제", fontSize = 16.sp, fontFamily = hancomSansFontFamily)
+                }
+            }
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+                .clickable {
+                    onCommentReportClick(selectedItem)
+                }, contentAlignment = Alignment.Center) {
+                Text(text = "신고", fontSize = 16.sp, fontFamily = hancomSansFontFamily)
+            }
+        }
+    }
+}
+
+
+@Composable
+fun ReviewButtonGroup(
+    modifier: Modifier,
+    selectedType: CommentType,
+    onReviewButtonClick: (CommentType) -> Unit
+) {
     Row(
         modifier = modifier.padding(top = 0.dp, start = 8.dp, end = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         ReviewButton(
             type = CommentType.ONE,
-            selectedType=selectedType,
+            selectedType = selectedType,
             color = R.color.teal_200,
             onReviewButtonClick = onReviewButtonClick
         )
         ReviewButton(
             type = CommentType.DETAIL,
-            selectedType=selectedType,
+            selectedType = selectedType,
             color = R.color.purple_200,
             onReviewButtonClick = onReviewButtonClick
         )
@@ -284,7 +341,7 @@ fun ReviewButtonGroup(modifier: Modifier, selectedType:CommentType, onReviewButt
 @Composable
 fun ReviewButton(
     type: CommentType,
-    selectedType:CommentType,
+    selectedType: CommentType,
     @ColorRes color: Int,
     onReviewButtonClick: (CommentType) -> Unit
 ) {
@@ -306,8 +363,7 @@ fun ReviewButton(
                 when (event.action) {
                     MotionEvent.ACTION_DOWN -> { // 누를 때
                         isPress = true
-                        if (selectedType != type)
-                            onReviewButtonClick(type)
+                        if (selectedType != type) onReviewButtonClick(type)
                         true
                     }
 
@@ -401,12 +457,14 @@ fun CommentEmojiGroupAndOneLinePreivew(
             visible = !isEmojiGroup,
             direction = AnimationDirection.RightCenter
         ) {
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.White)
-                .pointerInput(Unit) {
-                    detectTapGestures()
-                }, contentAlignment = Alignment.CenterStart) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .pointerInput(Unit) {
+                        detectTapGestures()
+                    }, contentAlignment = Alignment.CenterStart
+            ) {
                 Text(
                     text = oneLinePreview,
                     fontFamily = hancomMalangFontFamily,
@@ -470,7 +528,7 @@ fun CommentTextField(
                         if (!isDone) // 키보드 완료시 업데이트 막기
                             onValueChange(newText)
                         else
-                            isDone=false
+                            isDone = false
                     },
                     cursorBrush = SolidColor(Color.Black),
                     maxLines = Int.MAX_VALUE,
@@ -509,12 +567,12 @@ fun PopupCommentList(
     modifier: Modifier,
     isCompact: Boolean,
     commentItemGroup: List<CommentItemState>,
-    onLongItemClick: (CommentItemState) -> Unit,
+    onItemClick: (CommentItemState) -> Unit,
+    onItemLongClick: (CommentItemState) -> Unit,
     onLikeClick: (CommentItemState) -> Unit
 ) {
     Box(
         modifier = modifier
-            .background(colorResource(R.color.white))
             .fillMaxSize(),
     ) {
         LazyColumn(
@@ -527,8 +585,8 @@ fun PopupCommentList(
                 item {
                     CommentFocusItem(
                         comment = max,
-                        onItemClick = { item ->
-                            onLongItemClick(item)
+                        onItemLongClick = { item ->
+                            onItemLongClick(item)
                         },
                         onLikeClick = { item ->
                             onLikeClick(item)
@@ -539,7 +597,10 @@ fun PopupCommentList(
                     CommentListItem(
                         comment = item,
                         onItemClick = {
-                            onLongItemClick(it)
+                            onItemClick(it)
+                        },
+                        onItemLongClick = {
+                            onItemLongClick(it)
                         },
                         onLikeClick = {
                             onLikeClick(it)
@@ -553,19 +614,25 @@ fun PopupCommentList(
 
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CommentListItem(
     modifier: Modifier = Modifier,
     comment: CommentItemState,
     onItemClick: (CommentItemState) -> Unit,
+    onItemLongClick: (CommentItemState) -> Unit,
     onLikeClick: (CommentItemState) -> Unit
 ) {
-    Box(modifier = modifier
-        .fillMaxWidth()
-        .clickable {
-            onItemClick(comment)
-        }
-        .padding(start = 10.dp, end = 10.dp, top = 4.dp)) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .combinedClickable(onClick = {
+                onItemClick(comment)
+            }, onLongClick = {
+                onItemLongClick(comment)
+            })
+            .padding(start = 10.dp, end = 10.dp, top = 4.dp)
+    ) {
         Column {
             Row {
                 Column {
@@ -637,7 +704,7 @@ fun CommentListItem(
                         modifier = Modifier
                             .align(alignment = Alignment.CenterHorizontally)
                             .padding(start = 0.dp),
-                        text = "${comment.data.like + if (comment.isLike) 1 else 0}",
+                        text = "${comment.data.like}",
                         fontSize = 10.sp,
                     )
                 }
@@ -654,20 +721,29 @@ fun CommentListItem(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CommentFocusItem(
     modifier: Modifier = Modifier,
     comment: CommentItemState,
-    onItemClick: (CommentItemState) -> Unit,
+    onItemLongClick: (CommentItemState) -> Unit,
     onLikeClick: (CommentItemState) -> Unit
 ) {
     Box(
         modifier = modifier
             .fillMaxWidth()
-            //.clickable { onItemClick(comment) }
+            .combinedClickable(
+                onClick = {},
+                onLongClick = {
+                    onItemLongClick(comment)
+                }
+            )
             .padding(10.dp)
     ) {
-        Column {
+        Column(
+            modifier
+                .fillMaxWidth()
+        ) {
             Row {
                 Text(
                     modifier = Modifier.padding(top = 10.dp, end = 10.dp),
@@ -724,7 +800,7 @@ fun CommentFocusItem(
                         modifier = Modifier
                             .align(alignment = Alignment.CenterVertically)
                             .padding(start = 0.dp),
-                        text = "${comment.data.like + if (comment.isLike) 1 else 0}",
+                        text = "${comment.data.like}",
                         fontSize = 10.sp
                     )
                 }

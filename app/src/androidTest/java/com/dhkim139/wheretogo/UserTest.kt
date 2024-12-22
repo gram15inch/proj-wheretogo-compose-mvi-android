@@ -4,6 +4,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.dhkim139.wheretogo.di.FirebaseModule
 import com.google.firebase.FirebaseApp
 import com.wheretogo.data.datasourceimpl.UserRemoteDatasourceImpl
+import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.model.user.Profile
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.runBlocking
@@ -102,6 +103,18 @@ class UserTest {
 
         assertEquals(null, remoteDatasource.getProfile(p1.uid))
 
+    }
+
+    @Test
+    fun setHistoryTest(): Unit = runBlocking {
+        val firestore = FirebaseModule.provideFirestore()
+        val remoteDatasource = UserRemoteDatasourceImpl(firestore)
+
+        remoteDatasource.addHistory(
+            uid = "xXGqqUYVViM42AoWPPDoYc0gAG12",
+            historyId = "his1",
+            type = HistoryType.COMMENT
+        )
     }
 
 }

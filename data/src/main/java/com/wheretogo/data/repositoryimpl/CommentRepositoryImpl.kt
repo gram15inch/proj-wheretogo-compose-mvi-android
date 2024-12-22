@@ -1,6 +1,6 @@
 package com.wheretogo.data.repositoryimpl
 
-import com.wheretogo.data.datasourceimpl.CommentRemoteDatasourceImpl
+import com.wheretogo.data.datasource.CommentRemoteDatasource
 import com.wheretogo.data.model.comment.RemoteCommentGroupWrapper
 import com.wheretogo.data.toComment
 import com.wheretogo.data.toRemoteComment
@@ -9,21 +9,31 @@ import com.wheretogo.domain.repository.CommentRepository
 import javax.inject.Inject
 
 class CommentRepositoryImpl @Inject constructor(
-    private val remoteDatasource: CommentRemoteDatasourceImpl,
+    private val remoteDatasource: CommentRemoteDatasource,
 ) : CommentRepository {
-    private val _cacheCommentGroup = mutableMapOf<String, List<Comment>>()
+    private val _cacheCommentGroup = mutableMapOf<String, List<Comment>>() // 체크포인트id
     override suspend fun getComment(groupId: String): List<Comment> {
         return _cacheCommentGroup.getOrPut(groupId) {
-            remoteDatasource.getCommentGroupInCheckPoint(groupId)?.remoteCommentGroup?.map { it.toComment() }
-                ?: emptyList()
+            remoteDatasource.getCommentGroupInCheckPoint(groupId)
+                ?.remoteCommentGroup
+                ?.map { it.toComment() } ?: emptyList()
         }
     }
 
-    override suspend fun setComment(groupId: String, group: List<Comment>) {
+    override suspend fun addComment(comment: Comment) {
+        val commentGroup = _cacheCommentGroup.getOrPut(comment.groupId) {
+            listOf()
+        } + comment
+        _cacheCommentGroup.put(comment.groupId, commentGroup)
+        remoteDatasource.setCommentInCheckPoint(comment)
+    }
+
+    override suspend fun setCommentGroup(groupId: String, group: List<Comment>) {
+        _cacheCommentGroup.put(groupId, group)
         remoteDatasource.setCommentGroupInCheckPoint(
             RemoteCommentGroupWrapper(
-                groupId,
-                group.map { it.toRemoteComment() })
+                groupId = groupId,
+                remoteCommentGroup = group.map { it.toRemoteComment() })
         )
     }
 

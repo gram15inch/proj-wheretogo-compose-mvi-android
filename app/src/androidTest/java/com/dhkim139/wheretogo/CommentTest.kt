@@ -8,6 +8,7 @@ import com.wheretogo.data.model.comment.RemoteCommentGroupWrapper
 import com.wheretogo.data.repositoryimpl.CommentRepositoryImpl
 import com.wheretogo.data.toRemoteComment
 import com.wheretogo.domain.model.dummy.getCommentDummy
+import com.wheretogo.domain.model.map.Comment
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeAll
@@ -29,11 +30,35 @@ class CommentTest {
     fun setCommentTest(): Unit = runBlocking {
         val firestore = FirebaseModule.provideFirestore()
         val datasource = CommentRemoteDatasourceImpl(firestore)
+        val comment = Comment(
+            commentId = "cm11",
+            groupId = "cp10",
+            oneLineReview = "hi"
+        )
+        datasource.setCommentInCheckPoint(comment)
+    }
+
+    @Test
+    fun removeCommentTest(): Unit = runBlocking {
+        val firestore = FirebaseModule.provideFirestore()
+        val datasource = CommentRemoteDatasourceImpl(firestore)
+        val comment = Comment(
+            commentId = "cm11",
+            groupId = "cp10",
+            oneLineReview = "hi"
+        )
+        datasource.removeCommentInCheckPoint(comment)
+    }
+
+    @Test
+    fun setCommentGroupTest(): Unit = runBlocking {
+        val firestore = FirebaseModule.provideFirestore()
+        val datasource = CommentRemoteDatasourceImpl(firestore)
 
         val list = (1..12).map {
             RemoteCommentGroupWrapper("cp$it",
                 getCommentDummy("cp$it").map {
-                    it.toRemoteComment()
+                    it.toRemoteComment().copy(timestamp = System.currentTimeMillis())
                 }
             )
         }

@@ -9,7 +9,5 @@ data class Profile(
     val authCompany: String = DOMAIN_EMPTY,
     val lastVisited: Long = 0L,
     val accountCreation: Long = 0L,
-    val likeGroup: List<String> = emptyList(),
-    val bookMarkGroup: List<String> = emptyList(),
     val isAdRemove: Boolean = false
 )

@@ -2,6 +2,7 @@ package com.wheretogo.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.repository.UserRepository
 import com.wheretogo.presentation.state.BookmarkScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -34,13 +35,13 @@ class BookmarkViewModel @Inject constructor(
 
     fun addBookmark(code: String) {
         viewModelScope.launch {
-            userRepository.addBookmark(code)
+            userRepository.addHistory(code, HistoryType.BOOKMARK)
         }
     }
 
     fun removeBookmark(code: String) {
         viewModelScope.launch {
-            userRepository.removeBookmark(code)
+            userRepository.removeHistory(code, HistoryType.BOOKMARK)
         }
     }
 }

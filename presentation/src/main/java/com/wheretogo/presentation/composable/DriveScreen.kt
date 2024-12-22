@@ -128,13 +128,13 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
     ) {
         FadeAnimation(
             modifier = Modifier
-                .align(alignment = Alignment.BottomEnd)
-                .padding(horizontal = 12.dp),
+                .align(alignment = Alignment.BottomEnd),
             visible = state.listState.isVisible
         ) {
             OneHandArea {
                 DriveList(
-                    modifier = Modifier.align(alignment = Alignment.BottomEnd),
+                    modifier = Modifier.align(alignment = Alignment.BottomEnd)
+                        .padding(horizontal = 12.dp),
                     listItemGroup = state.listState.listItemGroup,
                     onItemClick = { selectedItem ->
                         viewModel.handleIntent(DriveScreenIntent.DriveListItemClick(selectedItem))
@@ -148,8 +148,7 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
 
         FadeAnimation(
             modifier = Modifier
-                .align(alignment = Alignment.BottomEnd)
-                .padding(6.dp),
+                .align(alignment = Alignment.BottomEnd),
             visible = state.popUpState.isVisible
         ) {
             OneHandArea {
@@ -158,18 +157,26 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
                     commentState = state.popUpState.commentState,
                     imageUrl = state.popUpState.localImageUrl,
                     isWideSize = isWideSize,
-                    isCommentVisible = state.popUpState.isCommentVisible,
                     onCommentFloatingButtonClick = {
                         viewModel.handleIntent(DriveScreenIntent.CommentFloatingButtonClick)
                     },
                     onCommentListItemClick = { item ->
                         viewModel.handleIntent(DriveScreenIntent.CommentListItemClick(item))
                     },
+                    onCommentListItemLongClick = { item ->
+                        viewModel.handleIntent(DriveScreenIntent.CommentListItemLongClick(item))
+                    },
                     onCommentLikeClick = { item ->
                         viewModel.handleIntent(DriveScreenIntent.CommentLikeClick(item))
                     },
                     onCommentAddClick = { item ->
                         viewModel.handleIntent(DriveScreenIntent.CommentAddClick(item))
+                    },
+                    onCommentRemoveClick = { item ->
+                        viewModel.handleIntent(DriveScreenIntent.CommentRemoveClick(item))
+                    },
+                    onCommentReportClick = { item ->
+                        viewModel.handleIntent(DriveScreenIntent.CommentReportClick(item))
                     },
                     onCommentEditValueChange = { textFiled ->
                         viewModel.handleIntent(DriveScreenIntent.CommentEditValueChange(textFiled))
@@ -183,13 +190,13 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
                 )
             }
         }
-
+        val isNotComment=!state.popUpState.commentState.isCommentVisible
         FloatingButtons(
             modifier = Modifier.fillMaxSize(),
             course = state.listState.clickItem.course,
-            isCommentVisible = state.floatingButtonState.isCommentVisible,
-            isExportVisible = state.floatingButtonState.isExportVisible,
-            isFoldVisible = state.floatingButtonState.isFoldVisible,
+            isCommentVisible = state.floatingButtonState.isCommentVisible && isNotComment,
+            isExportVisible = state.floatingButtonState.isExportVisible && isNotComment,
+            isFoldVisible = state.floatingButtonState.isFoldVisible && isNotComment,
             isExportBackPlate = state.floatingButtonState.isBackPlateVisible,
             onCommentClick = {
                 viewModel.handleIntent(DriveScreenIntent.CommentFloatingButtonClick)
@@ -221,7 +228,7 @@ fun BlurEffect(modifier: Modifier = Modifier, onClick: () -> Unit) {
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(color = colorResource(R.color.gray_50))
+            .background(color = colorResource(R.color.gray_80))
             .clickable(
                 indication = null,
                 interactionSource = interactionSource

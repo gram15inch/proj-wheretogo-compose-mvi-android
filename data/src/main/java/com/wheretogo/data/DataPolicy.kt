@@ -11,6 +11,7 @@ enum class FireStoreTableName() {
     PROFILE_TABLE,
     LIKE_HISTORY_TABLE,
     BOOKMARK_TABLE,
+    HISTORY_TABLE,
 
     COURSE_TABLE,
     CHECKPOINT_TABLE,

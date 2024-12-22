@@ -19,12 +19,14 @@ fun RemoteComment.toComment(): Comment {
     return Comment(
         commentId = commentId,
         userId = userId,
+        userName = userName,
         groupId = commentGroupId,
         emoji = emoji,
         oneLineReview = oneLineReview,
         detailedReview = detailedReview,
         date = date,
-        like = like
+        like = like,
+        timestamp = timestamp
     )
 }
 
@@ -38,7 +40,8 @@ fun Comment.toRemoteComment(): RemoteComment {
         oneLineReview = oneLineReview,
         detailedReview = detailedReview,
         date = date,
-        like = like
+        like = like,
+        timestamp = timestamp
     )
 }
 

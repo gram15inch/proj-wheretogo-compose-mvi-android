@@ -1,5 +1,6 @@
 package com.wheretogo.domain.repository
 
+import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.SignResponse
 import kotlinx.coroutines.flow.Flow
@@ -9,21 +10,13 @@ interface UserRepository {
 
     suspend fun setRequestLogin(boolean: Boolean)
 
-    suspend fun addBookmark(code: String)
+    suspend fun addHistory(historyId: String, type: HistoryType)
 
-    suspend fun addBookmarkGroup(uId: String, bookmarkGroup: List<String>)
+    suspend fun setHistoryGroup(uId: String, historyGroup: List<String>, type: HistoryType)
 
-    suspend fun removeBookmark(code: String)
+    suspend fun removeHistory(id: String, type: HistoryType)
 
-    suspend fun getBookmarkStream(): Flow<List<String>>
-
-    suspend fun addLike(code: String)
-
-    suspend fun addLikeGroup(uId: String, likeGroup: List<String>)
-
-    suspend fun removeLike(code: String)
-
-    suspend fun getLikeStream(): Flow<List<String>>
+    suspend fun getHistoryIdStream(type: HistoryType): Flow<List<String>>
 
     suspend fun getProfileStream(): Flow<Profile>
 

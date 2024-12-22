@@ -13,12 +13,14 @@ import com.wheretogo.domain.model.map.MetaCheckPoint
 import com.wheretogo.domain.model.map.OverlayTag
 import com.wheretogo.domain.model.map.Viewport
 import com.wheretogo.domain.toMetaCheckPoint
-import com.wheretogo.domain.usecase.community.AddCommentByCheckPointUseCase
-import com.wheretogo.domain.usecase.community.GetCommentByCheckPointUseCase
+import com.wheretogo.domain.usecase.community.AddCommentToCheckPointUseCase
+import com.wheretogo.domain.usecase.community.GetCommentForCheckPointUseCase
+import com.wheretogo.domain.usecase.community.RemoveCommentToCheckPointUseCase
+import com.wheretogo.domain.usecase.community.ReportCommentUseCase
 import com.wheretogo.domain.usecase.map.GetCheckPointForMarkerUseCase
-import com.wheretogo.domain.usecase.map.GetHistoryStreamUseCase
 import com.wheretogo.domain.usecase.map.GetImageForPopupUseCase
 import com.wheretogo.domain.usecase.map.GetNearByCourseUseCase
+import com.wheretogo.domain.usecase.user.GetHistoryStreamUseCase
 import com.wheretogo.domain.usecase.user.RemoveHistoryUseCase
 import com.wheretogo.domain.usecase.user.UpdateHistoryUseCase
 import com.wheretogo.presentation.CommentType
@@ -27,8 +29,10 @@ import com.wheretogo.presentation.feature.naver.getMapOverlay
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.state.DriveScreenState
+import com.wheretogo.presentation.state.DriveScreenState.PopUpState.CommentState.CommentAddState
 import com.wheretogo.presentation.state.DriveScreenState.PopUpState.CommentState.CommentItemState
 import com.wheretogo.presentation.toComment
+import com.wheretogo.presentation.toCommentAddState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.async
@@ -39,23 +43,26 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class DriveViewModel @Inject constructor(
     private val getNearByCourseUseCase: GetNearByCourseUseCase,
     private val getCheckPointForMarkerUseCase: GetCheckPointForMarkerUseCase,
-    private val getCommentByCheckPointUseCase: GetCommentByCheckPointUseCase,
-    private val addCommentByCheckPointUseCase: AddCommentByCheckPointUseCase,
+    private val getCommentForCheckPointUseCase: GetCommentForCheckPointUseCase,
+    private val addCommentToCheckPointUseCase: AddCommentToCheckPointUseCase,
+    private val removeCommentToCheckPointUseCase: RemoveCommentToCheckPointUseCase,
+    private val reportCommentUseCase: ReportCommentUseCase,
     private val getImageForPopupUseCase: GetImageForPopupUseCase,
     private val updateHistoryUseCase: UpdateHistoryUseCase,
     private val removeHistoryUseCase: RemoveHistoryUseCase,
     private val getHistoryStreamUseCase: GetHistoryStreamUseCase
 ) : ViewModel() {
     private val _driveScreenState = MutableStateFlow(DriveScreenState())
-    private val _cacheCourseMapOverlayGroup = mutableMapOf<String, MapOverlay>() // id
-    private val _cacheCheckPointMapOverlayGroup = mutableMapOf<String, MapOverlay>() // id
-    private val _cacheCheckPointGroup = mutableMapOf<String, List<CheckPoint>>() // id
+    private val _cacheCourseMapOverlayGroup = mutableMapOf<String, MapOverlay>() // courseId
+    private val _cacheCheckPointMapOverlayGroup = mutableMapOf<String, MapOverlay>() // courseId
+    private val _cacheCheckPointGroup = mutableMapOf<String, List<CheckPoint>>() // courseId
 
     private val _latestCourseMapOverlayGroup = mutableSetOf<MapOverlay>()
     private var _latestItemState = DriveScreenState.ListState.ListItemState()
@@ -87,9 +94,11 @@ class DriveViewModel @Inject constructor(
 
                     val commentGroup = popUpState.commentState.commentItemGroup.map {
                         val isLike = it.data.commentId in history.likeGroup
+                        val isUserCreated = it.data.commentId in history.commentGroup
                         it.copy(
                             data = it.data,
-                            isLike = isLike
+                            isLike = isLike,
+                            isUserCreated = isUserCreated
                         )
                     }
 
@@ -129,8 +138,11 @@ class DriveViewModel @Inject constructor(
                 is DriveScreenIntent.DriveListItemClick -> driveListItemClick(intent.itemState)
                 is DriveScreenIntent.DriveListItemBookmarkClick -> driveListItemBookmarkClick(intent.itemState)
                 is DriveScreenIntent.CommentListItemClick -> commentListItemClick(intent.itemState)
+                is DriveScreenIntent.CommentListItemLongClick -> commentListItemLongClick(intent.itemState)
                 is DriveScreenIntent.CommentLikeClick -> commentLikeClick(intent.itemState)
                 is DriveScreenIntent.CommentAddClick -> commentAddClick(intent.itemState)
+                is DriveScreenIntent.CommentRemoveClick -> commentRemoveClick(intent.itemState)
+                is DriveScreenIntent.CommentReportClick -> commentReportClick(intent.itemState)
                 is DriveScreenIntent.CommentEditValueChange -> commentEditValueChange(intent.textFiled)
                 is DriveScreenIntent.CommentEmogiPress -> commentEmogiPress(intent.emogi)
                 is DriveScreenIntent.CommentTypePress -> commentTypePress(intent.type)
@@ -138,20 +150,6 @@ class DriveViewModel @Inject constructor(
                 is DriveScreenIntent.CommentFloatingButtonClick -> commentFloatingButtonClick()
                 is DriveScreenIntent.ExportMapFloatingButtonClick -> exportMapFloatingButtonClick()
             }
-        }
-    }
-
-    //개발중
-    private suspend fun commentAddClick(itemState: DriveScreenState.PopUpState.CommentState.CommentAddState) {
-        addCommentByCheckPointUseCase(itemState.toComment())
-        _driveScreenState.value = _driveScreenState.value.run {
-            this.copy(
-                popUpState = popUpState.copy(
-                    commentState = popUpState.commentState.copy(
-                        commentAddState = DriveScreenState.PopUpState.CommentState.CommentAddState()
-                    )
-                )
-            )
         }
     }
 
@@ -266,11 +264,13 @@ class DriveViewModel @Inject constructor(
         _driveScreenState.value = _driveScreenState.value.copy(
             popUpState = _driveScreenState.value.popUpState.copy(
                 isVisible = false,
-                isCommentVisible = false
+                commentState = _driveScreenState.value.popUpState.commentState.copy(
+                    isCommentVisible = false
+                )
             ),
             floatingButtonState = _driveScreenState.value.floatingButtonState.copy(
                 isCommentVisible = false
-            )
+            ),
         )
     }
 
@@ -337,6 +337,28 @@ class DriveViewModel @Inject constructor(
         _driveScreenState.value = _driveScreenState.value.copy(isLoading = false)
     }
 
+    private suspend fun driveListItemLongClick(state: DriveScreenState.ListState.ListItemState) {
+
+
+        _driveScreenState.value = _driveScreenState.value.run {
+            copy(
+                mapState = mapState.copy(
+                    //  mapOverlayGroup = overlayGroup
+                ),
+                listState = listState.copy(
+                    isVisible = false,
+                    clickItem = state
+                ),
+                floatingButtonState = floatingButtonState.copy(
+                    isFoldVisible = true,
+                    isExportVisible = true
+                )
+            )
+        }
+        _driveScreenState.value = _driveScreenState.value.copy(isLoading = false)
+    }
+
+
     private suspend fun driveListItemBookmarkClick(itemState: DriveScreenState.ListState.ListItemState) {
         if (itemState.isBookmark)
             removeHistoryUseCase(itemState.course.courseId, HistoryType.BOOKMARK)
@@ -360,11 +382,109 @@ class DriveViewModel @Inject constructor(
         }
     }
 
+    private fun commentListItemLongClick(itemState: CommentItemState) {
+        val isCommentSettingVisible =
+            _driveScreenState.value.popUpState.commentState.isCommentSettingVisible
+
+
+        _driveScreenState.value = _driveScreenState.value.run {
+            copy(
+                popUpState = popUpState.copy(
+                    commentState = popUpState.commentState.copy(
+                        isCommentSettingVisible = !isCommentSettingVisible,
+                        selectedCommentSettingItem = itemState
+                    ),
+                )
+            )
+        }
+    }
+
     private suspend fun commentLikeClick(itemState: CommentItemState) {
         if (itemState.isLike)
             removeHistoryUseCase(itemState.data.commentId, HistoryType.LIKE)
-        else
+        else {
             updateHistoryUseCase(itemState.data.commentId, HistoryType.LIKE)
+        }
+
+        val newCommentStaetGroup =
+            _driveScreenState.value.popUpState.commentState.commentItemGroup.map {
+                if (it.data.commentId == itemState.data.commentId)
+                    it.copy(data = it.data.copy(like = it.data.like + if (itemState.isLike) -1 else 1))
+                else
+                    it
+            }
+
+        _driveScreenState.value = _driveScreenState.value.run {
+            copy(
+                popUpState = popUpState.copy(
+                    commentState = popUpState.commentState.copy(commentItemGroup = newCommentStaetGroup)
+                )
+            )
+        }
+
+        addCommentToCheckPointUseCase(commentGroup = newCommentStaetGroup.map { it.data })
+    }
+
+
+    private suspend fun commentAddClick(itemState: CommentAddState) {
+        val comment = itemState.toComment().copy(commentId = UUID.randomUUID().toString())
+        addCommentToCheckPointUseCase(comment)
+        _driveScreenState.value = _driveScreenState.value.run {
+            this.copy(
+                popUpState = popUpState.copy(
+                    commentState = popUpState.commentState.copy(
+                        commentAddState = comment.toCommentAddState(),
+                        commentItemGroup = getCommentForCheckPointUseCase(checkPointId = comment.groupId).map {
+                            CommentItemState(
+                                data = it,
+                                isLike = false,
+                                isFold = comment.detailedReview.length >= 70
+                            )
+                        }
+                    )
+                )
+            )
+        }
+    }
+
+    private suspend fun commentRemoveClick(itemState: CommentItemState) {
+        removeCommentToCheckPointUseCase(itemState.data)
+        val checkPointId = _driveScreenState.value.popUpState.checkPointId
+        val commentItemState =
+            getCommentForCheckPointUseCase(checkPointId).map {
+                val isLike = it.commentId in getHistoryStreamUseCase().first().likeGroup
+                CommentItemState(
+                    data = it,
+                    isLike = isLike,
+                    isFold = it.detailedReview.length >= 70
+                )
+            }
+        _driveScreenState.value = _driveScreenState.value.run {
+            this.copy(
+                popUpState = popUpState.copy(
+                    commentState = popUpState.commentState.copy(
+                        isCommentSettingVisible = false,
+                        selectedCommentSettingItem = CommentItemState(),
+                        commentItemGroup = commentItemState
+                    )
+                )
+            )
+        }
+    }
+
+    private suspend fun commentReportClick(itemState: CommentItemState) {
+
+        reportCommentUseCase(itemState.data)
+        _driveScreenState.value = _driveScreenState.value.run {
+            this.copy(
+                popUpState = popUpState.copy(
+                    commentState = popUpState.commentState.copy(
+                        isCommentSettingVisible = false,
+                        selectedCommentSettingItem = CommentItemState()
+                    )
+                )
+            )
+        }
     }
 
 
@@ -414,8 +534,9 @@ class DriveViewModel @Inject constructor(
     }
 
     private suspend fun commentFloatingButtonClick() {
+        val checkPointId = _driveScreenState.value.popUpState.checkPointId
         val commentItemState =
-            getCommentByCheckPointUseCase(_driveScreenState.value.popUpState.checkPointId).map {
+            getCommentForCheckPointUseCase(checkPointId).map {
                 val isLike = it.commentId in getHistoryStreamUseCase().first().likeGroup
                 CommentItemState(
                     data = it,
@@ -427,10 +548,11 @@ class DriveViewModel @Inject constructor(
         _driveScreenState.value = _driveScreenState.value.run {
             copy(
                 popUpState = popUpState.copy(
-                    isCommentVisible = !popUpState.isCommentVisible,
                     commentState = popUpState.commentState.copy(
+                        isCommentVisible = !popUpState.commentState.isCommentVisible,
                         commentItemGroup = commentItemState,
-                        commentAddState = DriveScreenState.PopUpState.CommentState.CommentAddState(
+                        commentAddState = CommentAddState(
+                            groupId = checkPointId,
                             emogiGroup = emogiGroup,
                             largeEmoji = emogiGroup.firstOrNull() ?: ""
                         )
@@ -539,7 +661,7 @@ class DriveViewModel @Inject constructor(
         coroutineScope {
             forEach {
                 launch {
-                    getCommentByCheckPointUseCase(it.checkPointId)
+                    getCommentForCheckPointUseCase(it.checkPointId)
                 }
             }
         }

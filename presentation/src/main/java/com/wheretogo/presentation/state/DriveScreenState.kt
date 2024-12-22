@@ -35,22 +35,27 @@ data class DriveScreenState(
 
     data class PopUpState(
         val isVisible: Boolean = false,
-        val isCommentVisible: Boolean = false,
         val checkPointId: String = "",
         val localImageUrl: String = "",
         val commentState: CommentState = CommentState()
     ) {
         data class CommentState(
+            val isCommentVisible: Boolean = false,
+            val isCommentSettingVisible: Boolean = false,
+            val selectedCommentSettingItem: CommentItemState = CommentItemState(),
             val commentItemGroup: List<CommentItemState> = emptyList(),
             val commentAddState: CommentAddState = CommentAddState()
         ) {
             data class CommentItemState(
                 val data: Comment = Comment(),
                 val isLike: Boolean = false,
-                val isFold: Boolean = true
+                val isFold: Boolean = true,
+                val isUserCreated: Boolean = false
             )
 
             data class CommentAddState(
+                val commentId: String = "",
+                val groupId: String = "",
                 val largeEmoji: String = "",
                 val emogiGroup: List<String> = getEmogiDummy(), //todo 복원하기 emptyList(),
                 val oneLineReview: String = "",

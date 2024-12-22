@@ -1,4 +1,4 @@
-package com.wheretogo.domain.usecase.map
+package com.wheretogo.domain.usecase.user
 
 import com.wheretogo.domain.model.map.History
 import kotlinx.coroutines.flow.Flow

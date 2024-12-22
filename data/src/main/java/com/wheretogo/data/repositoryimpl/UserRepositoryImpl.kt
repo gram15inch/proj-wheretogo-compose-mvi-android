@@ -2,8 +2,7 @@ package com.wheretogo.data.repositoryimpl
 
 import com.wheretogo.data.datasource.UserLocalDatasource
 import com.wheretogo.data.datasource.UserRemoteDatasource
-import com.wheretogo.data.model.comment.RemoteBookmarkGroupWrapper
-import com.wheretogo.data.model.comment.RemoteLikeGroupWrapper
+import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
 import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.SignResponse
@@ -15,8 +14,7 @@ import javax.inject.Inject
 class UserRepositoryImpl @Inject constructor(
     private val userLocalDatasource: UserLocalDatasource,
     private val userRemoteDatasource: UserRemoteDatasource
-) :
-    UserRepository {
+) : UserRepository {
 
     override suspend fun isRequestLoginStream(): Flow<Boolean> {
         return userLocalDatasource.isRequestLoginFlow()
@@ -26,75 +24,45 @@ class UserRepositoryImpl @Inject constructor(
         userLocalDatasource.setRequestLogin(boolean)
     }
 
-    override suspend fun addBookmark(code: String) {
-        userLocalDatasource.addHistory(code, HistoryType.BOOKMARK)
-        userRemoteDatasource.setBookmarkGroup(
-            wrapper = RemoteBookmarkGroupWrapper(
-                getProfileStream().first().uid,
-                getBookmarkStream().first()
-            )
+    override suspend fun addHistory(historyId: String, type: HistoryType) {
+        userLocalDatasource.addHistory(historyId, type)
+        userRemoteDatasource.addHistory(
+            uid = getProfileStream().first().uid,
+            historyId = historyId,
+            type = type
+
         )
     }
 
-    override suspend fun addBookmarkGroup(uId: String, bookmarkGroup: List<String>) {
-        bookmarkGroup.forEach {
-            userLocalDatasource.addHistory(it, HistoryType.BOOKMARK)
+    override suspend fun setHistoryGroup(
+        uId: String,
+        historyGroup: List<String>,
+        type: HistoryType
+    ) {
+        historyGroup.forEach {
+            userLocalDatasource.addHistory(it, type)
         }
 
-        val wrapper = RemoteBookmarkGroupWrapper(
-            uId,
-            userLocalDatasource.getHistoryFlow(HistoryType.BOOKMARK).first()
+        val wrapper = RemoteHistoryGroupWrapper(
+            userLocalDatasource.getHistoryFlow(type).first(),
+            type
         )
-        userRemoteDatasource.setBookmarkGroup(wrapper)
+        userRemoteDatasource.setHistoryGroup(uId, wrapper)
     }
 
-    override suspend fun removeBookmark(code: String) {
-        userLocalDatasource.removeHistory(code, HistoryType.BOOKMARK)
-        userRemoteDatasource.setBookmarkGroup(
-            wrapper = RemoteBookmarkGroupWrapper(
-                getProfileStream().first().uid,
-                getBookmarkStream().first()
+    override suspend fun removeHistory(id: String, type: HistoryType) {
+        userLocalDatasource.removeHistory(id, type)
+        userRemoteDatasource.setHistoryGroup(
+            uid = getProfileStream().first().uid,
+            wrapper = RemoteHistoryGroupWrapper(
+                getHistoryIdStream(type).first(),
+                type
             )
         )
     }
 
-    override suspend fun getBookmarkStream(): Flow<List<String>> {
-        return userLocalDatasource.getHistoryFlow(HistoryType.BOOKMARK)
-    }
-
-    override suspend fun addLike(code: String) {
-        userLocalDatasource.addHistory(code, HistoryType.LIKE)
-        userRemoteDatasource.setLikeGroup(
-            wrapper = RemoteLikeGroupWrapper(
-                getProfileStream().first().uid,
-                getLikeStream().first()
-            )
-        )
-    }
-
-    override suspend fun addLikeGroup(uId: String, likeGroup: List<String>) {
-        likeGroup.forEach {
-            userLocalDatasource.addHistory(it, HistoryType.LIKE)
-        }
-        val wrapper = RemoteLikeGroupWrapper(
-            uId,
-            userLocalDatasource.getHistoryFlow(HistoryType.LIKE).first()
-        )
-        userRemoteDatasource.setLikeGroup(wrapper)
-    }
-
-    override suspend fun removeLike(code: String) {
-        userLocalDatasource.removeHistory(code, HistoryType.LIKE)
-        userRemoteDatasource.setLikeGroup(
-            wrapper = RemoteLikeGroupWrapper(
-                getProfileStream().first().uid,
-                getLikeStream().first()
-            )
-        )
-    }
-
-    override suspend fun getLikeStream(): Flow<List<String>> {
-        return userLocalDatasource.getHistoryFlow(HistoryType.LIKE)
+    override suspend fun getHistoryIdStream(type: HistoryType): Flow<List<String>> {
+        return userLocalDatasource.getHistoryFlow(type)
     }
 
     override suspend fun getProfileStream(): Flow<Profile> {
@@ -127,7 +95,8 @@ class UserRepositoryImpl @Inject constructor(
 
     override suspend fun signIn(uid: String): SignResponse {
         return try {
-            val profile = userRemoteDatasource.getProfileWithLikeAndBookmark(uid)
+            val profile = userRemoteDatasource.getProfile(uid)
+
             if (profile != null) {
                 userLocalDatasource.setProfile(profile)
                 SignResponse(SignResponse.Status.Success, profile)

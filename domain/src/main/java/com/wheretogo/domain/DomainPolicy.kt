@@ -15,6 +15,6 @@ const val DOMAIN_EMPTY = ""
 enum class AUTH_COMPANY { GOOGLE }
 
 enum class HistoryType {
-    LIKE, BOOKMARK
+    COMMENT, LIKE, BOOKMARK
 }
 

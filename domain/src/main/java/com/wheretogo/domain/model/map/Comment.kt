@@ -11,5 +11,6 @@ data class Comment(
     val oneLineReview: String = "",
     val detailedReview: String = "",
     val date: Long = 0,
-    val like: Int = 0
+    val like: Int = 0,
+    val timestamp: Long = 0
 )
