@@ -109,12 +109,18 @@ class UserTest {
     fun setHistoryTest(): Unit = runBlocking {
         val firestore = FirebaseModule.provideFirestore()
         val remoteDatasource = UserRemoteDatasourceImpl(firestore)
-
+        val uid = "xXGqqUYVViM42AoWPPDoYc0gAG12"
+        val hid = "rp_comment1"
         remoteDatasource.addHistory(
-            uid = "xXGqqUYVViM42AoWPPDoYc0gAG12",
-            historyId = "his1",
-            type = HistoryType.COMMENT
+            uid = uid,
+            historyId = hid,
+            type = HistoryType.REPORT_COMMENT
         )
+
+        val hid2 = remoteDatasource.getHistoryGroup(uid, HistoryType.REPORT_COMMENT)
+
+        assertEquals(true, hid2.isNotEmpty())
+        assertEquals(hid, hid2.first())
     }
 
 }

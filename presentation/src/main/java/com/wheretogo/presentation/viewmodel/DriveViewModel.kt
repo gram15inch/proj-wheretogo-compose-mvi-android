@@ -95,6 +95,7 @@ class DriveViewModel @Inject constructor(
                     val commentGroup = popUpState.commentState.commentItemGroup.map {
                         val isLike = it.data.commentId in history.likeGroup
                         val isUserCreated = it.data.commentId in history.commentGroup
+
                         it.copy(
                             data = it.data,
                             isLike = isLike,
@@ -339,7 +340,6 @@ class DriveViewModel @Inject constructor(
 
     private suspend fun driveListItemLongClick(state: DriveScreenState.ListState.ListItemState) {
 
-
         _driveScreenState.value = _driveScreenState.value.run {
             copy(
                 mapState = mapState.copy(
@@ -358,7 +358,7 @@ class DriveViewModel @Inject constructor(
         _driveScreenState.value = _driveScreenState.value.copy(isLoading = false)
     }
 
-
+    // PopupCommentList
     private suspend fun driveListItemBookmarkClick(itemState: DriveScreenState.ListState.ListItemState) {
         if (itemState.isBookmark)
             removeHistoryUseCase(itemState.course.courseId, HistoryType.BOOKMARK)
@@ -385,8 +385,6 @@ class DriveViewModel @Inject constructor(
     private fun commentListItemLongClick(itemState: CommentItemState) {
         val isCommentSettingVisible =
             _driveScreenState.value.popUpState.commentState.isCommentSettingVisible
-
-
         _driveScreenState.value = _driveScreenState.value.run {
             copy(
                 popUpState = popUpState.copy(
@@ -413,7 +411,6 @@ class DriveViewModel @Inject constructor(
                 else
                     it
             }
-
         _driveScreenState.value = _driveScreenState.value.run {
             copy(
                 popUpState = popUpState.copy(
@@ -447,25 +444,18 @@ class DriveViewModel @Inject constructor(
         }
     }
 
+    // CommentSetting
     private suspend fun commentRemoveClick(itemState: CommentItemState) {
         removeCommentToCheckPointUseCase(itemState.data)
         val checkPointId = _driveScreenState.value.popUpState.checkPointId
-        val commentItemState =
-            getCommentForCheckPointUseCase(checkPointId).map {
-                val isLike = it.commentId in getHistoryStreamUseCase().first().likeGroup
-                CommentItemState(
-                    data = it,
-                    isLike = isLike,
-                    isFold = it.detailedReview.length >= 70
-                )
-            }
+        val commentItemGroup = getCommentItemGroup(checkPointId)
         _driveScreenState.value = _driveScreenState.value.run {
             this.copy(
                 popUpState = popUpState.copy(
                     commentState = popUpState.commentState.copy(
                         isCommentSettingVisible = false,
                         selectedCommentSettingItem = CommentItemState(),
-                        commentItemGroup = commentItemState
+                        commentItemGroup = commentItemGroup
                     )
                 )
             )
@@ -473,12 +463,13 @@ class DriveViewModel @Inject constructor(
     }
 
     private suspend fun commentReportClick(itemState: CommentItemState) {
-
         reportCommentUseCase(itemState.data)
+        val commentItemGroup = getCommentItemGroup(itemState.data.groupId)
         _driveScreenState.value = _driveScreenState.value.run {
             this.copy(
                 popUpState = popUpState.copy(
                     commentState = popUpState.commentState.copy(
+                        commentItemGroup = commentItemGroup,
                         isCommentSettingVisible = false,
                         selectedCommentSettingItem = CommentItemState()
                     )
@@ -535,15 +526,7 @@ class DriveViewModel @Inject constructor(
 
     private suspend fun commentFloatingButtonClick() {
         val checkPointId = _driveScreenState.value.popUpState.checkPointId
-        val commentItemState =
-            getCommentForCheckPointUseCase(checkPointId).map {
-                val isLike = it.commentId in getHistoryStreamUseCase().first().likeGroup
-                CommentItemState(
-                    data = it,
-                    isLike = isLike,
-                    isFold = it.detailedReview.length >= 70
-                )
-            }
+        val commentItemState = getCommentItemGroup(checkPointId)
         val emogiGroup = getEmogiDummy()
         _driveScreenState.value = _driveScreenState.value.run {
             copy(
@@ -575,6 +558,17 @@ class DriveViewModel @Inject constructor(
 
 
     // 유틸
+
+    private suspend fun getCommentItemGroup(checkPointId: String): List<CommentItemState> {
+        return getCommentForCheckPointUseCase(checkPointId).map {
+            val isLike = it.commentId in getHistoryStreamUseCase().first().likeGroup
+            CommentItemState(
+                data = it,
+                isLike = isLike,
+                isFold = it.detailedReview.length >= 70
+            )
+        }
+    }
 
     private suspend fun getNearByListDataGroup(
         center: LatLng,

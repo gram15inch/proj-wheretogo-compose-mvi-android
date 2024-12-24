@@ -7,6 +7,10 @@ import com.wheretogo.data.model.course.DataMetaCheckPoint
 import com.wheretogo.data.model.course.LocalCourse
 import com.wheretogo.data.model.course.RemoteCourse
 import com.wheretogo.data.model.map.DataLatLng
+import com.wheretogo.data.model.report.RemoteReport
+import com.wheretogo.domain.ReportStatus
+import com.wheretogo.domain.ReportType
+import com.wheretogo.domain.model.community.Report
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.Comment
 import com.wheretogo.domain.model.map.Course
@@ -14,6 +18,34 @@ import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.MetaCheckPoint
 import com.wheretogo.domain.toGeoHash
 
+
+fun Report.toRemoteReport(): RemoteReport {
+    return RemoteReport(
+        reportId = reportId,
+        type = type.name,
+        userId = userId,
+        contentId = contentId,
+        targetUserId = targetUserId,
+        targetUserName = targetUserName,
+        reason = reason,
+        status = status.name,
+        timestamp = timestamp
+    )
+}
+
+fun RemoteReport.toReport(): Report {
+    return Report(
+        reportId = reportId,
+        type = ReportType.valueOf(type),
+        userId = userId,
+        contentId = contentId,
+        targetUserId = targetUserId,
+        targetUserName = targetUserName,
+        reason = reason,
+        status = ReportStatus.valueOf(status),
+        timestamp = timestamp
+    )
+}
 
 fun RemoteComment.toComment(): Comment {
     return Comment(

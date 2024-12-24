@@ -6,7 +6,7 @@ const val DAY = 86400000L
 const val CHECKPOINT_UPDATE_TIME = DAY
 
 //파이어스토어 테이블명
-enum class FireStoreTableName() {
+enum class FireStoreTableName {
     USER_TABLE,
     PROFILE_TABLE,
     LIKE_HISTORY_TABLE,
@@ -19,7 +19,8 @@ enum class FireStoreTableName() {
     ROUTE_TABLE,
     LIKE_TABLE,
     COURSE_LIKE_TABLE,
-    COMMENT_TABLE
+    COMMENT_TABLE,
+    REPORT_TABLE
 }
 
 fun FireStoreTableName.name(): String {

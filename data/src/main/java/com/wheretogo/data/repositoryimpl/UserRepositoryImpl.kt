@@ -36,7 +36,7 @@ class UserRepositoryImpl @Inject constructor(
 
     override suspend fun setHistoryGroup(
         uId: String,
-        historyGroup: List<String>,
+        historyGroup: HashSet<String>,
         type: HistoryType
     ) {
         historyGroup.forEach {
@@ -44,7 +44,7 @@ class UserRepositoryImpl @Inject constructor(
         }
 
         val wrapper = RemoteHistoryGroupWrapper(
-            userLocalDatasource.getHistoryFlow(type).first(),
+            userLocalDatasource.getHistoryFlow(type).first().toList(),
             type
         )
         userRemoteDatasource.setHistoryGroup(uId, wrapper)
@@ -55,13 +55,13 @@ class UserRepositoryImpl @Inject constructor(
         userRemoteDatasource.setHistoryGroup(
             uid = getProfileStream().first().uid,
             wrapper = RemoteHistoryGroupWrapper(
-                getHistoryIdStream(type).first(),
+                getHistoryIdStream(type).first().toList(),
                 type
             )
         )
     }
 
-    override suspend fun getHistoryIdStream(type: HistoryType): Flow<List<String>> {
+    override suspend fun getHistoryIdStream(type: HistoryType): Flow<HashSet<String>> {
         return userLocalDatasource.getHistoryFlow(type)
     }
 

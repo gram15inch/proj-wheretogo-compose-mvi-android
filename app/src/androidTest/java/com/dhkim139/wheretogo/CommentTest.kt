@@ -4,11 +4,11 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.dhkim139.wheretogo.di.FirebaseModule
 import com.google.firebase.FirebaseApp
 import com.wheretogo.data.datasourceimpl.CommentRemoteDatasourceImpl
+import com.wheretogo.data.model.comment.RemoteComment
 import com.wheretogo.data.model.comment.RemoteCommentGroupWrapper
 import com.wheretogo.data.repositoryimpl.CommentRepositoryImpl
 import com.wheretogo.data.toRemoteComment
 import com.wheretogo.domain.model.dummy.getCommentDummy
-import com.wheretogo.domain.model.map.Comment
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeAll
@@ -30,9 +30,9 @@ class CommentTest {
     fun setCommentTest(): Unit = runBlocking {
         val firestore = FirebaseModule.provideFirestore()
         val datasource = CommentRemoteDatasourceImpl(firestore)
-        val comment = Comment(
+        val comment = RemoteComment(
             commentId = "cm11",
-            groupId = "cp10",
+            commentGroupId = "cp10",
             oneLineReview = "hi"
         )
         datasource.setCommentInCheckPoint(comment)
@@ -42,9 +42,9 @@ class CommentTest {
     fun removeCommentTest(): Unit = runBlocking {
         val firestore = FirebaseModule.provideFirestore()
         val datasource = CommentRemoteDatasourceImpl(firestore)
-        val comment = Comment(
+        val comment = RemoteComment(
             commentId = "cm11",
-            groupId = "cp10",
+            commentGroupId = "cp10",
             oneLineReview = "hi"
         )
         datasource.removeCommentInCheckPoint(comment)

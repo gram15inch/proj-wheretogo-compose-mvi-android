@@ -12,11 +12,11 @@ interface UserRepository {
 
     suspend fun addHistory(historyId: String, type: HistoryType)
 
-    suspend fun setHistoryGroup(uId: String, historyGroup: List<String>, type: HistoryType)
+    suspend fun setHistoryGroup(uId: String, historyGroup: HashSet<String>, type: HistoryType)
 
     suspend fun removeHistory(id: String, type: HistoryType)
 
-    suspend fun getHistoryIdStream(type: HistoryType): Flow<List<String>>
+    suspend fun getHistoryIdStream(type: HistoryType): Flow<HashSet<String>>
 
     suspend fun getProfileStream(): Flow<Profile>
 

@@ -13,9 +13,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -76,7 +76,7 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
             text = "${state.mapState.mapOverlayGroup.size}",
             fontSize = 50.sp
         )
-        delayLottieAnimation(
+        DelayLottieAnimation(
             modifier = Modifier
                 .size(50.dp)
                 .align(alignment = Alignment.TopEnd),
@@ -121,19 +121,22 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
         })
     }
 
+
     Box(
         modifier = Modifier
             .systemBarsPadding()
-            .fillMaxSize()
+            .fillMaxSize(),
+        contentAlignment = Alignment.BottomCenter
     ) {
-        FadeAnimation(
-            modifier = Modifier
-                .align(alignment = Alignment.BottomEnd),
-            visible = state.listState.isVisible
-        ) {
-            OneHandArea {
+        OneHandArea {
+            FadeAnimation(
+                modifier = Modifier
+                    .align(alignment = Alignment.BottomEnd),
+                visible = state.listState.isVisible
+            ) {
                 DriveList(
-                    modifier = Modifier.align(alignment = Alignment.BottomEnd)
+                    modifier = Modifier
+                        .align(alignment = Alignment.BottomCenter)
                         .padding(horizontal = 12.dp),
                     listItemGroup = state.listState.listItemGroup,
                     onItemClick = { selectedItem ->
@@ -144,14 +147,12 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
                     }
                 )
             }
-        }
 
-        FadeAnimation(
-            modifier = Modifier
-                .align(alignment = Alignment.BottomEnd),
-            visible = state.popUpState.isVisible
-        ) {
-            OneHandArea {
+            FadeAnimation(
+                modifier = Modifier
+                    .align(alignment = Alignment.BottomStart),
+                visible = state.popUpState.isVisible
+            ) {
                 MapPopup(
                     modifier = Modifier.align(Alignment.BottomStart),
                     commentState = state.popUpState.commentState,
@@ -189,25 +190,25 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
                     }
                 )
             }
+            val isNotComment = !state.popUpState.commentState.isCommentVisible
+            FloatingButtons(
+                modifier = Modifier.fillMaxSize(),
+                course = state.listState.clickItem.course,
+                isCommentVisible = state.floatingButtonState.isCommentVisible && isNotComment,
+                isExportVisible = state.floatingButtonState.isExportVisible && isNotComment,
+                isFoldVisible = state.floatingButtonState.isFoldVisible && isNotComment,
+                isExportBackPlate = state.floatingButtonState.isBackPlateVisible,
+                onCommentClick = {
+                    viewModel.handleIntent(DriveScreenIntent.CommentFloatingButtonClick)
+                },
+                onExportMapClick = {
+                    viewModel.handleIntent(DriveScreenIntent.ExportMapFloatingButtonClick)
+                },
+                onFoldClick = {
+                    viewModel.handleIntent(DriveScreenIntent.FoldFloatingButtonClick)
+                }
+            )
         }
-        val isNotComment=!state.popUpState.commentState.isCommentVisible
-        FloatingButtons(
-            modifier = Modifier.fillMaxSize(),
-            course = state.listState.clickItem.course,
-            isCommentVisible = state.floatingButtonState.isCommentVisible && isNotComment,
-            isExportVisible = state.floatingButtonState.isExportVisible && isNotComment,
-            isFoldVisible = state.floatingButtonState.isFoldVisible && isNotComment,
-            isExportBackPlate = state.floatingButtonState.isBackPlateVisible,
-            onCommentClick = {
-                viewModel.handleIntent(DriveScreenIntent.CommentFloatingButtonClick)
-            },
-            onExportMapClick = {
-                viewModel.handleIntent(DriveScreenIntent.ExportMapFloatingButtonClick)
-            },
-            onFoldClick = {
-                viewModel.handleIntent(DriveScreenIntent.FoldFloatingButtonClick)
-            }
-        )
     }
 }
 
@@ -216,7 +217,7 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
 fun OneHandArea(content: @Composable () -> Unit) {
     Box(
         modifier = Modifier
-            .width(650.dp)
+            .sizeIn(maxWidth = 650.dp)
     ) {
         content()
     }
@@ -261,14 +262,13 @@ fun ExtendArea(
 @Composable
 fun screenSize(isWidth: Boolean): Dp {
     val configuration = LocalConfiguration.current
-
     val screenWidthDp = configuration.screenWidthDp
     val screenHeightDp = configuration.screenHeightDp
     return if (isWidth) screenWidthDp.dp else screenHeightDp.dp
 }
 
 @Composable
-fun delayLottieAnimation(modifier: Modifier, isVisible: Boolean, delay: Long) {
+fun DelayLottieAnimation(modifier: Modifier, isVisible: Boolean, delay: Long) {
     var shouldShowAnimation by remember { mutableStateOf(true) }
     var animation by remember { mutableStateOf<Job?>(null) }
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.lt_loading))

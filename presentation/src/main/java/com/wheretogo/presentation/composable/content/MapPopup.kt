@@ -167,25 +167,44 @@ fun MapPopup(
                 ) {
                     Box(
                         modifier = Modifier
-                            .background(colorResource(R.color.white))
                             .clip(RoundedCornerShape(16.dp))
+                            .background(colorResource(R.color.white))
                     ) {
                         Column {
-                            PopupCommentList(
-                                modifier = Modifier
-                                    .sizeIn(maxHeight = (if (!isWideSize) 480.dp else 500.dp) - imeContainerHeight),
-                                isCompact = !isWideSize,
-                                commentItemGroup = commentState.commentItemGroup,
-                                onItemClick = { item ->
-                                    onCommentListItemClick(item)
-                                },
-                                onItemLongClick = { item ->
-                                    onCommentListItemLongClick(item)
-                                },
-                                onLikeClick = { item ->
-                                    onCommentLikeClick(item)
+                            val maxHeight =
+                                (if (!isWideSize) 480.dp else 500.dp) - imeContainerHeight
+                            if (commentState.commentItemGroup.isNotEmpty()) {
+                                PopupCommentList(
+                                    modifier = Modifier
+                                        .sizeIn(maxHeight = maxHeight),
+                                    isCompact = !isWideSize,
+                                    commentItemGroup = commentState.commentItemGroup,
+                                    onItemClick = { item ->
+                                        onCommentListItemClick(item)
+                                    },
+                                    onItemLongClick = { item ->
+                                        onCommentListItemLongClick(item)
+                                    },
+                                    onLikeClick = { item ->
+                                        onCommentLikeClick(item)
+                                    }
+                                )
+                            } else {
+                                Box(
+                                    modifier = Modifier.sizeIn(maxHeight = maxHeight),
+                                ) {
+                                    Box(
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = "첫 발자국을 남겨보세요.",
+                                            fontFamily = hancomMalangFontFamily,
+                                            fontSize = 14.sp
+                                        )
+                                    }
                                 }
-                            )
+                            }
                             Spacer(modifier.height(imeContainerHeight))
                         }
                         FadeAnimation(visible = commentState.isCommentSettingVisible) {
@@ -206,8 +225,7 @@ fun MapPopup(
             }
         )
         SlideAnimation(
-            modifier = modifier
-                .graphicsLayer(clip = true),
+            modifier = modifier,
             visible = commentState.isCommentVisible && !commentState.isCommentSettingVisible,
             direction = AnimationDirection.CenterDown
         ) {
@@ -216,7 +234,7 @@ fun MapPopup(
                     .padding(top = 1.dp)
                     .fillMaxWidth()
                     .align(alignment = Alignment.BottomCenter),
-                onContainerHeightChange = { height ->
+                onBoxHeightChange = { height ->
                     imeContainerHeight = height
                 }) { imeHeight ->
                 Column(
@@ -238,7 +256,7 @@ fun MapPopup(
                     )
 
                     // 이모지
-                    CommentEmojiGroupAndOneLinePreivew(
+                    CommentEmojiGroupAndOneLinePreview(
                         isEmojiGroup = commentState.commentAddState.isEmogiGroup,
                         emojiGroup = commentState.commentAddState.emogiGroup,
                         oneLinePreview = commentState.commentAddState.oneLinePreview,
@@ -289,12 +307,13 @@ fun CommentSetting(
         ) {
 
             if (selectedItem.isUserCreated) {
-                Box(modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-                    .clickable {
-                        onCommentRemoveClick(selectedItem)
-                    }, contentAlignment = Alignment.Center
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                        .clickable {
+                            onCommentRemoveClick(selectedItem)
+                        }, contentAlignment = Alignment.Center
                 ) {
                     Text(text = "삭제", fontSize = 16.sp, fontFamily = hancomSansFontFamily)
                 }
@@ -304,7 +323,8 @@ fun CommentSetting(
                 .height(50.dp)
                 .clickable {
                     onCommentReportClick(selectedItem)
-                }, contentAlignment = Alignment.Center) {
+                }, contentAlignment = Alignment.Center
+            ) {
                 Text(text = "신고", fontSize = 16.sp, fontFamily = hancomSansFontFamily)
             }
         }
@@ -394,7 +414,7 @@ fun ReviewButton(
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun CommentEmojiGroupAndOneLinePreivew(
+fun CommentEmojiGroupAndOneLinePreview(
     isEmojiGroup: Boolean,
     emojiGroup: List<String>,
     oneLinePreview: String,

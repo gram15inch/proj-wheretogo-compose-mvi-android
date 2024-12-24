@@ -7,6 +7,7 @@ import com.wheretogo.data.datasource.CourseLocalDatasource
 import com.wheretogo.data.datasource.CourseRemoteDatasource
 import com.wheretogo.data.datasource.ImageLocalDatasource
 import com.wheretogo.data.datasource.LikeRemoteDatasource
+import com.wheretogo.data.datasource.ReportRemoteDatasource
 import com.wheretogo.data.datasource.RouteRemoteDatasource
 import com.wheretogo.data.datasource.UserLocalDatasource
 import com.wheretogo.data.datasource.UserRemoteDatasource
@@ -17,6 +18,7 @@ import com.wheretogo.data.datasourceimpl.CourseLocalDatasourceImpl
 import com.wheretogo.data.datasourceimpl.CourseRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.ImageLocalDatasourceImpl
 import com.wheretogo.data.datasourceimpl.LikeRemoteDatasourceImpl
+import com.wheretogo.data.datasourceimpl.ReportRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.RouteRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.UserLocalDatasourceImpl
 import com.wheretogo.data.datasourceimpl.UserRemoteDatasourceImpl
@@ -59,5 +61,8 @@ abstract class DatasourceModule {
 
     @Binds
     abstract fun bindCommentRemoteDatasource(datasource: CommentRemoteDatasourceImpl): CommentRemoteDatasource
+
+    @Binds
+    abstract fun bindReportRemoteDatasource(datasource: ReportRemoteDatasourceImpl): ReportRemoteDatasource
 
 }

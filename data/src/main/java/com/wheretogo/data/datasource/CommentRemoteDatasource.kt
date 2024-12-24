@@ -1,8 +1,8 @@
 package com.wheretogo.data.datasource
 
 
+import com.wheretogo.data.model.comment.RemoteComment
 import com.wheretogo.data.model.comment.RemoteCommentGroupWrapper
-import com.wheretogo.domain.model.map.Comment
 
 interface CommentRemoteDatasource {
 
@@ -10,7 +10,7 @@ interface CommentRemoteDatasource {
 
     suspend fun setCommentGroupInCheckPoint(wrapper: RemoteCommentGroupWrapper): Boolean
 
-    suspend fun setCommentInCheckPoint(comment: Comment): Boolean
+    suspend fun setCommentInCheckPoint(comment: RemoteComment): Boolean
 
-    suspend fun removeCommentInCheckPoint(comment: Comment): Boolean
+    suspend fun removeCommentInCheckPoint(comment: RemoteComment): Boolean
 }

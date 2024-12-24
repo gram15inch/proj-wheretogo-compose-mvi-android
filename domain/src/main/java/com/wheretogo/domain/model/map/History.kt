@@ -1,7 +1,8 @@
 package com.wheretogo.domain.model.map
 
 data class History(
-    val commentGroup: List<String> = emptyList(),
-    val likeGroup: List<String> = emptyList(),
-    val bookmarkGroup: List<String> = emptyList()
+    val commentGroup: HashSet<String> = hashSetOf(),
+    val likeGroup: HashSet<String> = hashSetOf(),
+    val bookmarkGroup: HashSet<String> = hashSetOf(),
+    val reportCommentGroup: HashSet<String> = hashSetOf(),
 )

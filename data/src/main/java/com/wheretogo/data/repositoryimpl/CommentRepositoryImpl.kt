@@ -25,7 +25,15 @@ class CommentRepositoryImpl @Inject constructor(
             listOf()
         } + comment
         _cacheCommentGroup.put(comment.groupId, commentGroup)
-        remoteDatasource.setCommentInCheckPoint(comment)
+        remoteDatasource.setCommentInCheckPoint(comment.toRemoteComment())
+    }
+
+    override suspend fun removeComment(comment: Comment) {
+        val commentGroup = _cacheCommentGroup.getOrPut(comment.groupId) {
+            listOf()
+        } - comment
+        _cacheCommentGroup.put(comment.groupId, commentGroup)
+        remoteDatasource.removeCommentInCheckPoint(comment.toRemoteComment())
     }
 
     override suspend fun setCommentGroup(groupId: String, group: List<Comment>) {

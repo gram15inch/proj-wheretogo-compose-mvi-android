@@ -31,6 +31,7 @@ class UserLocalDatasourceImpl @Inject constructor(
     private val bookmark = stringSetPreferencesKey("bookmark_profile2") // 2 유지
     private val like = stringSetPreferencesKey("like_profile")
     private val comment = stringSetPreferencesKey("comment_profile")
+    private val reportComment = stringSetPreferencesKey("report_comment_profile")
 
 
     override fun isRequestLoginFlow(): Flow<Boolean> {
@@ -67,13 +68,14 @@ class UserLocalDatasourceImpl @Inject constructor(
             HistoryType.LIKE -> like
             HistoryType.BOOKMARK -> bookmark
             HistoryType.COMMENT -> comment
+            HistoryType.REPORT_COMMENT -> reportComment
         }
     }
 
-    override fun getHistoryFlow(type: HistoryType): Flow<List<String>> {
+    override fun getHistoryFlow(type: HistoryType): Flow<HashSet<String>> {
         val key = getHistoryKey(type)
         return userDataStore.data.map { preferences ->
-            (preferences[key]?.toSet()?.toList() ?: emptyList<String>())
+            preferences[key]?.toHashSet() ?: hashSetOf()
         }
     }
 
@@ -91,9 +93,9 @@ class UserLocalDatasourceImpl @Inject constructor(
 
     override suspend fun setHistory(history: History) {
         userDataStore.edit { preferences ->
-            preferences[bookmark] = history.bookmarkGroup.toSet()
-            preferences[like] = history.likeGroup.toSet()
-            preferences[comment] = history.commentGroup.toSet()
+            preferences[bookmark] = history.bookmarkGroup
+            preferences[like] = history.likeGroup
+            preferences[comment] = history.commentGroup
         }
     }
 

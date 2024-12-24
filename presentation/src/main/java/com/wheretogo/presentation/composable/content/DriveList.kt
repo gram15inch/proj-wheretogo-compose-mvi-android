@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -70,7 +69,6 @@ fun DriveList(
         items(listItemGroup) { item ->
             DriveListItem(
                 modifier = Modifier
-                    .widthIn(650.dp)
                     .clickable {
                         onItemClick(item)
                     },

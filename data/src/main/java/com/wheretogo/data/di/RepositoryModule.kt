@@ -5,12 +5,14 @@ import com.wheretogo.data.repositoryimpl.CheckPointRepositoryImpl
 import com.wheretogo.data.repositoryimpl.CommentRepositoryImpl
 import com.wheretogo.data.repositoryimpl.CourseRepositoryImpl
 import com.wheretogo.data.repositoryimpl.ImageRepositoryImpl
+import com.wheretogo.data.repositoryimpl.ReportRepositoryImpl
 import com.wheretogo.data.repositoryimpl.UserRepositoryImpl
 import com.wheretogo.domain.repository.AuthRepository
 import com.wheretogo.domain.repository.CheckPointRepository
 import com.wheretogo.domain.repository.CommentRepository
 import com.wheretogo.domain.repository.CourseRepository
 import com.wheretogo.domain.repository.ImageRepository
+import com.wheretogo.domain.repository.ReportRepository
 import com.wheretogo.domain.repository.UserRepository
 import dagger.Binds
 import dagger.Module
@@ -45,5 +47,9 @@ abstract class RepositoryModule {
     @Singleton
     @Binds
     abstract fun bindCommentRepository(repositoryImpl: CommentRepositoryImpl): CommentRepository
+
+    @Singleton
+    @Binds
+    abstract fun bindReportRepository(repositoryImpl: ReportRepositoryImpl): ReportRepository
 
 }

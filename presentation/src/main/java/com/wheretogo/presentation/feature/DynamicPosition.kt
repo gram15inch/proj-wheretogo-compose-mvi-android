@@ -19,18 +19,17 @@ import kotlin.math.max
 @Composable
 fun ImeStickyBox(
     modifier: Modifier = Modifier,
-    onContainerHeightChange: (Dp) -> Unit,
+    onBoxHeightChange: (Dp) -> Unit,
     content: @Composable (Dp) -> Unit
 ) {
     val context = LocalDensity.current
     val imeInsets = WindowInsets.ime
-    val imeHeight =
-        max(0f, (imeInsets.getBottom(context) / context.density) - 60).dp // 알수없는 키보드 마진 조정 (-60.dp)
+    val imeHeight = max(0f, (imeInsets.getBottom(context) / context.density) - 47).dp
     Box(modifier = modifier
         .wrapContentHeight()
         .offset(y = -imeHeight)
         .onGloballyPositioned { layoutCoordinates ->
-            onContainerHeightChange(with(context) {
+            onBoxHeightChange(with(context) {
                 layoutCoordinates.size.height.toDp()
             })
         }
