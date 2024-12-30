@@ -12,12 +12,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
 enum class AnimationDirection {
-    CenterRight, RightCenter, CenterDown
+    CenterRight, RightCenter, CenterDown, CenterUp
 }
 
 @Composable
 fun SlideAnimation(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     visible: Boolean,
     direction: AnimationDirection,
     content: @Composable () -> Unit
@@ -46,7 +46,18 @@ fun SlideAnimation(
                     easing = androidx.compose.animation.core.FastOutSlowInEasing
                 )
             ) + fadeIn(
-                animationSpec = tween(durationMillis = 300)
+                animationSpec = tween(durationMillis = 100)
+            )
+        }
+
+        AnimationDirection.CenterUp -> {
+            slideInVertically(
+                initialOffsetY = { fullHeight -> -fullHeight },
+                animationSpec = tween(
+                    easing = androidx.compose.animation.core.FastOutSlowInEasing
+                )
+            ) + fadeIn(
+                animationSpec = tween(durationMillis = 100)
             )
         }
 
@@ -81,9 +92,21 @@ fun SlideAnimation(
                     easing = androidx.compose.animation.core.FastOutSlowInEasing
                 )
             ) + fadeOut(
-                animationSpec = tween(durationMillis = 300)
+                animationSpec = tween(durationMillis = 100)
             )
         }
+
+        AnimationDirection.CenterUp -> {
+            slideOutVertically(
+                targetOffsetY = { fullHeight -> -fullHeight },
+                animationSpec = tween(
+                    easing = androidx.compose.animation.core.FastOutSlowInEasing
+                )
+            ) + fadeOut(
+                animationSpec = tween(durationMillis = 100)
+            )
+        }
+
 
         else -> {
             slideOutHorizontally(

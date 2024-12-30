@@ -13,5 +13,9 @@ interface RouteRemoteDatasource {
 
     fun getRouteId(courseId: String): String
 
-    suspend fun getRouteByNaver(waypoints: List<LatLng>): List<LatLng>
+    suspend fun getPoints(waypoints: List<LatLng>): List<LatLng>
+
+    suspend fun getRouteByNaver(waypoints: List<LatLng>): RemoteRoute
+
+    suspend fun getAddress(latlng: LatLng): String
 }

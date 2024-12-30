@@ -63,6 +63,7 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                         enterTransition = { slideInVertically(initialOffsetY = { it }) },
                         exitTransition = { slideOutVertically(targetOffsetY = { it }) })
                     { LoginScreen(navController) }
+                    composable("courseAdd") { CourseAddScreen(navController) }
                     composable("test") { ImageTestScreen() }
                     composable("drag") { DragTestScreen() }
                     composable("comment") { CommentTestScreen() }

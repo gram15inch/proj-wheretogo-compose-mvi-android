@@ -4,6 +4,8 @@ import com.wheretogo.domain.usecase.community.AddCommentToCheckPointUseCase
 import com.wheretogo.domain.usecase.community.GetCommentForCheckPointUseCase
 import com.wheretogo.domain.usecase.community.RemoveCommentToCheckPointUseCase
 import com.wheretogo.domain.usecase.community.ReportCommentUseCase
+import com.wheretogo.domain.usecase.map.AddCourseUseCase
+import com.wheretogo.domain.usecase.map.CreateRouteUseCase
 import com.wheretogo.domain.usecase.map.FetchJourneyWithoutPointsUseCase
 import com.wheretogo.domain.usecase.map.GetCheckPointForMarkerUseCase
 import com.wheretogo.domain.usecase.map.GetImageForPopupUseCase
@@ -21,6 +23,8 @@ import com.wheretogo.domain.usecaseimpl.community.AddCommentToCheckPointUseCaseI
 import com.wheretogo.domain.usecaseimpl.community.GetCommentForCheckPointUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.community.RemoveCommentToCheckPointUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.community.ReportCommentUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.map.AddCourseUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.map.CreateRouteUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.map.GetCheckPointForMarkerUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.map.GetImageForPopupUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.map.GetNearByCourseUseCaseImpl
@@ -90,5 +94,11 @@ abstract class UseCaseModule {
 
     @Binds
     abstract fun bindRemoveHistoryUseCase(useCaseImpl: RemoveHistoryUseCaseImpl): RemoveHistoryUseCase
+
+    @Binds
+    abstract fun bindCreateRouteUseCase(useCaseImpl: CreateRouteUseCaseImpl): CreateRouteUseCase
+
+    @Binds
+    abstract fun bindAddCourseUseCase(useCaseImpl: AddCourseUseCaseImpl): AddCourseUseCase
 }
 

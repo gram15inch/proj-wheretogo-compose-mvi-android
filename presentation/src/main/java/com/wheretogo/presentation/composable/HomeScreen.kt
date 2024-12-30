@@ -134,13 +134,15 @@ fun Body(bodyMaxWidth: Dp, navigate: (String) -> Unit) {
                 maxWidth = rowWidth,
                 content = {
                     ContentTextImage(
-                        stringResource(R.string.ranking_main),
-                        stringResource(R.string.ranking_sub),
+                        stringResource(R.string.course_add_main),
+                        stringResource(R.string.course_add_sub),
                         0.dp,
                         null
                     )
                 },
-                click = {})
+                click = {
+                    navigate("courseAdd")
+                })
             GridButton(
                 3, 1,
                 maxWidth = rowWidth,

@@ -11,7 +11,6 @@ import com.wheretogo.domain.model.map.Course
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.MetaCheckPoint
 import com.wheretogo.domain.model.map.OverlayTag
-import com.wheretogo.domain.model.map.Viewport
 import com.wheretogo.domain.toMetaCheckPoint
 import com.wheretogo.domain.usecase.community.AddCommentToCheckPointUseCase
 import com.wheretogo.domain.usecase.community.GetCommentForCheckPointUseCase
@@ -28,6 +27,7 @@ import com.wheretogo.presentation.feature.map.distanceTo
 import com.wheretogo.presentation.feature.naver.getMapOverlay
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.model.MapOverlay
+import com.wheretogo.presentation.state.CameraState
 import com.wheretogo.presentation.state.DriveScreenState
 import com.wheretogo.presentation.state.DriveScreenState.PopUpState.CommentState.CommentAddState
 import com.wheretogo.presentation.state.DriveScreenState.PopUpState.CommentState.CommentItemState
@@ -128,7 +128,7 @@ class DriveViewModel @Inject constructor(
             when (intent) {
                 //결과
                 is DriveScreenIntent.MapIsReady -> mapIsReady()
-                is DriveScreenIntent.UpdateCamera -> updateCamara(intent.latLng, intent.viewPort)
+                is DriveScreenIntent.UpdateCamera -> updateCamara(intent.cameraState)
                 is DriveScreenIntent.UpdateLocation -> updateLocation(intent.latLng)
                 is DriveScreenIntent.DismissPopup -> dismissPopup()
                 is DriveScreenIntent.OverlayRenderComplete -> overlayRenderComplete(intent.isRendered)
@@ -235,12 +235,13 @@ class DriveViewModel @Inject constructor(
         )
     }
 
-    private suspend fun updateCamara(latLng: LatLng, viewPort: Viewport) {
-        if (_latestCamera.distanceTo(latLng) >= 1) {
-            _latestCamera = latLng
-            val courseGroup = getNearByCourseUseCase(latLng)
+    private suspend fun updateCamara(cameraState: CameraState) {
+        if (_latestCamera.distanceTo(cameraState.latLng) >= 1) {
+            _latestCamera = cameraState.latLng
+            val courseGroup = getNearByCourseUseCase(cameraState.latLng)
             val overlayGroup = getOverlayGroup(courseGroup)
-            val listItemGroup = getNearByListDataGroup(center = latLng, meter = 3000, courseGroup)
+            val listItemGroup =
+                getNearByListDataGroup(center = cameraState.latLng, meter = 3000, courseGroup)
 
             if (!_driveScreenState.value.floatingButtonState.isFoldVisible) {
                 _driveScreenState.value = _driveScreenState.value.copy(

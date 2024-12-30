@@ -8,6 +8,7 @@ import com.wheretogo.data.model.course.LocalCourse
 import com.wheretogo.data.model.course.RemoteCourse
 import com.wheretogo.data.model.map.DataLatLng
 import com.wheretogo.data.model.report.RemoteReport
+import com.wheretogo.data.model.route.RemoteRoute
 import com.wheretogo.domain.ReportStatus
 import com.wheretogo.domain.ReportType
 import com.wheretogo.domain.model.community.Report
@@ -16,8 +17,27 @@ import com.wheretogo.domain.model.map.Comment
 import com.wheretogo.domain.model.map.Course
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.MetaCheckPoint
+import com.wheretogo.domain.model.map.Route
 import com.wheretogo.domain.toGeoHash
 
+
+fun Route.toRoute(): RemoteRoute {
+    return RemoteRoute(
+        courseId = courseId,
+        points = points,
+        duration = duration,
+        distance = distance
+    )
+}
+
+fun RemoteRoute.toRoute(): Route {
+    return Route(
+        courseId = courseId,
+        points = points,
+        duration = duration,
+        distance = distance
+    )
+}
 
 fun Report.toRemoteReport(): RemoteReport {
     return RemoteReport(
@@ -145,7 +165,7 @@ fun LocalCourse.toCourse(
         courseId = courseId,
         courseName = courseName,
         waypoints = waypoints,
-        route = route,
+        points = route,
         checkpoints = checkPoints,
         duration = duration,
         tag = tag,
@@ -167,7 +187,7 @@ fun Course.toLocalCourse(
         longitude = cameraLatLng.longitude,
         geoHash = cameraLatLng.toGeoHash(6),
         waypoints = waypoints,
-        route = route,
+        route = points,
         localMetaCheckPoint = checkPoint,
         duration = duration,
         tag = tag,
@@ -233,7 +253,7 @@ fun RemoteCourse.toCourse(
         courseId = courseId,
         courseName = courseName,
         waypoints = waypoints,
-        route = route,
+        points = route,
         checkpoints = checkPoint,
         duration = duration,
         tag = tag,

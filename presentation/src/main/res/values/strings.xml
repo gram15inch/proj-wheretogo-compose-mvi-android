@@ -8,6 +8,8 @@
 
     <string name="ranking_main">실시간 랭킹</string>
     <string name="ranking_sub">지금 떠오르는 코스는?</string>
+    <string name="course_add_main">코스등록</string>
+    <string name="course_add_sub">나만의 코스를 공유해요</string>
     <string name="bookmark_main">즐겨찾기</string>
     <string name="bookmark_sub">나의 추억들</string>
     <string name="sports_main">스포츠</string>
@@ -21,6 +23,34 @@
 
     <string name="oneline_review">한줄평</string>
     <string name="detail_review">상세리뷰</string>
+
+
+    <string name="category">유형</string>
+    <string name="level">난이도</string>
+    <string name="duration">소요시간</string>
+    <string name="recommend">추천</string>
+
+    <string name="unknown">알수없음</string>
+
+    <string name="drive">드라이브</string>
+    <string name="sports">스포츠</string>
+    <string name="training">도로연수</string>
+    <string name="beginner">초보</string>
+    <string name="lover">애호가</string>
+    <string name="expert">숙련자</string>
+    <string name="pro">프로</string>
+    <string name="solo">혼자</string>
+    <string name="friend">친구</string>
+    <string name="family">가족</string>
+    <string name="couple">연인</string>
+
+    <string name="minute">~%d분</string>
+    <string name="hour">%d시간+</string>
+
+    <string name="done">완료</string>
+    <string name="next_step">다음단계</string>
+
+
 
 
     <string name="contact_banner">비즈니스 / 광고문의</string>

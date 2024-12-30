@@ -1,8 +1,13 @@
 package com.wheretogo.presentation
 
 
+import com.wheretogo.domain.CourseDetail
+
+import com.wheretogo.domain.RouteDetailType
 import com.wheretogo.domain.model.map.Comment
 import com.wheretogo.domain.model.map.LatLng
+import com.wheretogo.domain.model.map.RouteWaypointItem
+import com.wheretogo.presentation.state.CourseAddScreenState.RouteWaypointItemState
 import com.wheretogo.presentation.state.DriveScreenState.PopUpState.CommentState.CommentAddState
 import com.kakao.vectormap.LatLng as KakaoLatLng
 import com.naver.maps.geometry.LatLng as NaverLatLng
@@ -44,4 +49,59 @@ fun Comment.toCommentAddState(): CommentAddState {
         oneLineReview = oneLineReview,
         detailReview = detailedReview,
     )
+}
+
+fun RouteWaypointItem.toRouteWaypointItemState(): RouteWaypointItemState {
+    return RouteWaypointItemState(
+        data = this
+    )
+}
+
+fun RouteWaypointItemState.toRouteWaypointItem(): RouteWaypointItem {
+    return this.data
+}
+
+fun RouteDetailType.toStrRes(): Int {
+    return when (this) {
+        RouteDetailType.TAG -> R.string.category
+        RouteDetailType.LEVEL -> R.string.level
+        RouteDetailType.RECOMMEND -> R.string.recommend
+    }
+}
+
+fun CourseDetail.toStrRes(): Int {
+    return when (this.type) {
+        RouteDetailType.TAG -> {
+            when (this) {
+                CourseDetail.DRIVE -> R.string.drive
+                CourseDetail.SPORT -> R.string.sports
+                CourseDetail.TRAINING -> R.string.training
+                else -> R.string.drive
+            }
+        }
+
+        RouteDetailType.LEVEL -> {
+            when (this) {
+                CourseDetail.BEGINNER -> R.string.beginner
+                CourseDetail.LOVER -> R.string.lover
+                CourseDetail.EXPERT -> R.string.expert
+                CourseDetail.PRO -> R.string.pro
+                else -> R.string.beginner
+            }
+        }
+
+        RouteDetailType.RECOMMEND -> {
+            when (this) {
+                CourseDetail.SOLO -> R.string.solo
+                CourseDetail.FRIEND -> R.string.friend
+                CourseDetail.FAMILY -> R.string.family
+                CourseDetail.COUPLE -> R.string.couple
+                else -> R.string.solo
+            }
+        }
+
+        else -> {
+            R.string.unknown
+        }
+    }
 }

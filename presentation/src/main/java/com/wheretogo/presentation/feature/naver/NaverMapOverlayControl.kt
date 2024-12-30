@@ -24,7 +24,7 @@ import com.wheretogo.presentation.toNaver
 
 
 fun getMapOverlay(item: Course): MapOverlay {
-    val naverPoints = item.route.toNaver()
+    val naverPoints = item.points.toNaver()
     val overlayTag = OverlayTag(item.courseId, item.courseId, COURSE_TYPE)
     return MapOverlay(
         overlayTag.overlayId,

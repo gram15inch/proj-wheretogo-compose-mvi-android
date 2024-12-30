@@ -50,7 +50,7 @@ import com.wheretogo.presentation.theme.hancomSansFontFamily
 @Composable
 fun FloatingButtonPreview() {
     FloatingButtons(modifier = Modifier
-        .background(colorResource(R.color.gray_80)),
+        .background(colorResource(R.color.gray_C7C7C7_80)),
         Course(), true, true, true, true,
         {}, {}, {})
 }

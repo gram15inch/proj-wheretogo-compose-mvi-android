@@ -52,6 +52,7 @@ import com.wheretogo.presentation.composable.content.FloatingButtons
 import com.wheretogo.presentation.composable.content.MapPopup
 import com.wheretogo.presentation.composable.content.NaverMap
 import com.wheretogo.presentation.intent.DriveScreenIntent
+import com.wheretogo.presentation.model.ContentPadding
 import com.wheretogo.presentation.viewmodel.DriveViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -99,8 +100,8 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
         onLocationMove = { latLng ->
             viewModel.handleIntent(DriveScreenIntent.UpdateLocation(latLng))
         },
-        onCameraMove = { latLng, vp ->
-            viewModel.handleIntent(DriveScreenIntent.UpdateCamera(latLng, vp))
+        onCameraMove = { camera ->
+            viewModel.handleIntent(DriveScreenIntent.UpdateCamera(camera))
         },
         onCourseMarkerClick = { overlay ->
             val marker = overlay as Marker
@@ -112,7 +113,10 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
         },
         onOverlayRenderComplete = { isRendered ->
             viewModel.handleIntent(DriveScreenIntent.OverlayRenderComplete(isRendered))
-        }
+        },
+        contentPadding = ContentPadding(
+            bottom = 100.dp
+        )
     )
 
     FadeAnimation(visible = state.popUpState.isVisible) {
@@ -229,7 +233,7 @@ fun BlurEffect(modifier: Modifier = Modifier, onClick: () -> Unit) {
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(color = colorResource(R.color.gray_80))
+            .background(color = colorResource(R.color.gray_C7C7C7_80))
             .clickable(
                 indication = null,
                 interactionSource = interactionSource

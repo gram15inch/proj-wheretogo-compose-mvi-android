@@ -22,14 +22,14 @@ fun ImeStickyBox(
     onBoxHeightChange: (Dp) -> Unit,
     content: @Composable (Dp) -> Unit
 ) {
-    val context = LocalDensity.current
+    val dencity = LocalDensity.current
     val imeInsets = WindowInsets.ime
-    val imeHeight = max(0f, (imeInsets.getBottom(context) / context.density) - 47).dp
+    val imeHeight = max(0f, (imeInsets.getBottom(dencity) / dencity.density) - 47).dp
     Box(modifier = modifier
         .wrapContentHeight()
         .offset(y = -imeHeight)
         .onGloballyPositioned { layoutCoordinates ->
-            onBoxHeightChange(with(context) {
+            onBoxHeightChange(with(dencity) {
                 layoutCoordinates.size.height.toDp()
             })
         }

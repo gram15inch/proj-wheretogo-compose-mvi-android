@@ -5,7 +5,6 @@ import com.wheretogo.data.BuildConfig
 import com.wheretogo.data.FireStoreTableName
 import com.wheretogo.data.datasource.RouteRemoteDatasource
 import com.wheretogo.data.datasourceimpl.service.NaverMapApiService
-import com.wheretogo.data.model.course.RemoteCourse
 import com.wheretogo.data.model.route.RemoteRoute
 import com.wheretogo.data.name
 import com.wheretogo.domain.model.map.LatLng
@@ -70,7 +69,7 @@ class RouteRemoteDatasourceImpl @Inject constructor(
         return "${courseId}_route"
     }
 
-    override suspend fun getRouteByNaver(waypoints: List<LatLng>): List<LatLng> {
+    override suspend fun getPoints(waypoints: List<LatLng>): List<LatLng> {
         return if (waypoints.size >= 2) {
             val msg = naverApiService.getRouteWayPoint(
                 BuildConfig.NAVER_CLIENT_ID_KEY,
@@ -101,53 +100,48 @@ class RouteRemoteDatasourceImpl @Inject constructor(
         return str
     }
 
-    data class LatLngGeo(val latitude: Double, val longitude: Double, val geohash: String)
-
-    suspend fun setGeoTest(): Boolean {
-        fun getGeoHase(num: Int): String {
-            val random = (0..9).random()
-            return when (num) {
-                0 -> {
-                    "wyd7u$random"
-                }
-
-                1 -> {
-                    "wydfu$random"
-                }
-
-                else -> {
-                    "wyg7u$random"
-                }
-            }
-        }
-
-        val list = mutableListOf<RemoteCourse>()
-        (1..100).forEach {
-            list.add(
-                RemoteCourse(
-                    courseId = "cs$it",
-                    geoHash = getGeoHase(it % 3)
-                )
+    override suspend fun getRouteByNaver(waypoints: List<LatLng>): RemoteRoute {
+        return if (waypoints.size >= 2) {
+            val msg = naverApiService.getRouteWayPoint(
+                BuildConfig.NAVER_CLIENT_ID_KEY,
+                BuildConfig.NAVER_CLIENT_SECRET_KEY,
+                start = convertLatLng(waypoints.first()),
+                goal = convertLatLng(waypoints.last()),
+                waypoints = convertWaypoints(waypoints.drop(1).dropLast(1))
             )
-        }
 
-
-        val points = list
-
-        val isNotEmpty = points.isNotEmpty()
-        val batch = firestore.batch()
-        points.forEach {
-            val doc = firestore.collection("TEST_POINT_GEO2_TABLE").document()
-            batch.set(doc, it)
-        }
-        return isNotEmpty && suspendCancellableCoroutine { continuation ->
-            batch.commit().addOnSuccessListener {
-                continuation.resume(true)
-            }.addOnFailureListener {
-                continuation.resume(false)
+            if (msg.body()?.currentDateTime != null) {
+                val points = msg.body()!!.route.traoptimal.map { it.path }.first()
+                    .map { LatLng(it[1], it[0]) }
+                val duration = msg.body()!!.route.traoptimal.first().summary.duration
+                val distance = msg.body()!!.route.traoptimal.first().summary.distance
+                return RemoteRoute(
+                    duration = duration,
+                    distance = distance,
+                    points = points
+                )
+            } else {
+                return RemoteRoute()
             }
-        }
+        } else
+            RemoteRoute()
     }
 
+    override suspend fun getAddress(latlng: LatLng): String {
+        val msg = naverApiService.getAddress(
+            clientId = BuildConfig.NAVER_CLIENT_ID_KEY,
+            clientSecret = BuildConfig.NAVER_CLIENT_SECRET_KEY,
+            coords = convertLatLng(latlng),
+            output = "json"
+        )
 
+        if (msg.code() == 200) {
+            val region = msg.body()?.results?.firstOrNull()?.region
+            val addr =
+                region?.run { "${area1.name} ${area2.name} ${area3.name} ${area4.name}" } ?: ""
+            return addr
+        } else {
+            return ""
+        }
+    }
 }

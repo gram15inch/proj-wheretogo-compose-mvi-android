@@ -9,6 +9,7 @@ import com.wheretogo.data.di.ApiServiceModule
 import com.wheretogo.data.di.RetrofitClientModule
 import com.wheretogo.data.model.route.RemoteRoute
 import com.wheretogo.domain.model.dummy.getCourseDummy
+import com.wheretogo.domain.model.map.LatLng
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeAll
@@ -25,6 +26,11 @@ class RouteTest {
                 FirebaseApp.initializeApp(appContext)
             }
             assertEquals("com.dhkim139.wheretogo", appContext.packageName)
+            StrictMode.setThreadPolicy(
+                StrictMode.ThreadPolicy.Builder()
+                    .permitAll() // 모든 네트워크 작업 허용
+                    .build()
+            )
         }
     }
 
@@ -51,11 +57,7 @@ class RouteTest {
 
     @Test
     fun getRouteByNaverTest(): Unit = runBlocking {
-        StrictMode.setThreadPolicy(
-            StrictMode.ThreadPolicy.Builder()
-                .permitAll() // 모든 네트워크 작업 허용
-                .build()
-        )
+
         val firestore = FirebaseModule.provideFirestore()
         val naverApi = ApiServiceModule.provideNaverMapApiService(RetrofitClientModule.run {
             provideRetrofit(provideMoshi(), provideClient())
@@ -66,7 +68,7 @@ class RouteTest {
         val rtGroup = listOf(getCourseDummy()).first().map {
             RemoteRoute(
                 courseId = it.courseId,
-                points = datasource.getRouteByNaver(it.waypoints)
+                points = datasource.getPoints(it.waypoints)
             )
         }
 
@@ -81,18 +83,16 @@ class RouteTest {
     }
 
     @Test
-    fun routeSearchPriceTest(): Unit = runBlocking {
+    fun reverseGeocodingTest(): Unit = runBlocking {
         val firestore = FirebaseModule.provideFirestore()
         val naverApi = ApiServiceModule.provideNaverMapApiService(RetrofitClientModule.run {
             provideRetrofit(provideMoshi(), provideClient())
         })
 
         val datasource = RouteRemoteDatasourceImpl(firestore, naverApi)
+        val r = datasource.getAddress(LatLng(37.56661, 126.978388))
+        assertEquals(true, r.isNotEmpty())
 
-        // datasource.getGeoTest(100.0)
-        assertEquals(true, datasource.setGeoTest())
-        /*    assertNotEquals(0, datasource.getGeoTest(100.0))
-            delay(3000)
-            assertNotEquals(0, datasource.getGeoTest(150.0))*/
+
     }
 }

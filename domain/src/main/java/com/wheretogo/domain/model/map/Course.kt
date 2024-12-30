@@ -7,7 +7,7 @@ data class Course(
     val courseName: String = "",
     val waypoints: List<LatLng> = emptyList(),
     val checkpoints: List<CheckPoint> = emptyList(), // 주입
-    val route: List<LatLng> = emptyList(), // 주입
+    val points: List<LatLng> = emptyList(), // 주입
     val duration: String = "",
     val tag: String = "",
     val level: String = "",

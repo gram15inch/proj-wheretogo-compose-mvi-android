@@ -12,6 +12,15 @@ val hancomSansFontFamily = FontFamily(
     Font(R.font.hancom_sans_semibold_0, FontWeight.SemiBold)
 )
 
+
+val interBoldFontFamily = FontFamily(
+    Font(R.font.inter_black, FontWeight.Bold)
+)
+
+val interFontFamily = FontFamily(
+    Font(R.font.inter_variable_fontt, FontWeight.Medium)
+)
+
 val hancomMalangFontFamily = FontFamily(
     Font(R.font.hancom_malangmalang_bold, FontWeight.Bold)
 )

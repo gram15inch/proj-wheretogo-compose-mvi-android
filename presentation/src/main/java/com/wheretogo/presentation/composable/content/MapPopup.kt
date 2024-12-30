@@ -7,7 +7,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -21,20 +20,15 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -49,18 +43,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.pointerInteropFilter
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -297,7 +287,7 @@ fun CommentSetting(
                     onBackgroundClick()
                 }
             )
-            .background(colorResource(R.color.gray_90)),
+            .background(colorResource(R.color.gray_C7C7C7_90)),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -318,12 +308,13 @@ fun CommentSetting(
                     Text(text = "삭제", fontSize = 16.sp, fontFamily = hancomSansFontFamily)
                 }
             }
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp)
-                .clickable {
-                    onCommentReportClick(selectedItem)
-                }, contentAlignment = Alignment.Center
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .clickable {
+                        onCommentReportClick(selectedItem)
+                    }, contentAlignment = Alignment.Center
             ) {
                 Text(text = "신고", fontSize = 16.sp, fontFamily = hancomSansFontFamily)
             }
@@ -494,82 +485,6 @@ fun CommentEmojiGroupAndOneLinePreview(
         }
     }
 
-}
-
-@Composable
-fun CommentTextField(
-    editText: TextFieldValue,
-    isEmoji: Boolean,
-    emoji: String,
-    onValueChange: (TextFieldValue) -> Unit,
-    onDone: () -> Unit,
-) {
-    Row {
-        Box(
-            modifier = Modifier
-                .run { if (isEmoji) this else this.width(0.dp) }
-                .height(50.dp)
-                .padding(start = 8.dp),
-            contentAlignment = Alignment.CenterStart
-        ) {
-            Text(
-                modifier = Modifier,
-                text = emoji,
-                textAlign = TextAlign.Center,
-                style = TextStyle(
-                    fontSize = 28.sp,
-                    lineHeight = 28.sp
-                ),
-            )
-        }
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(50.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Box(
-                modifier = Modifier
-                    .wrapContentSize()
-                    .clip(RoundedCornerShape(30.dp))
-                    .padding(top = 10.dp, bottom = 10.dp, start = 10.dp, end = 10.dp)
-                    .border(1.dp, Color.Gray, RoundedCornerShape(30.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                val keyboard = LocalSoftwareKeyboardController.current
-                val focuse = LocalFocusManager.current
-                var isDone by remember { mutableStateOf(false) }
-                BasicTextField(
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .fillMaxWidth(),
-                    value = editText,
-                    onValueChange = { newText ->
-                        if (!isDone) // 키보드 완료시 업데이트 막기
-                            onValueChange(newText)
-                        else
-                            isDone = false
-                    },
-                    cursorBrush = SolidColor(Color.Black),
-                    maxLines = Int.MAX_VALUE,
-                    textStyle = TextStyle(
-                        fontSize = 11.sp
-                    ),
-                    keyboardOptions = KeyboardOptions(
-                        imeAction = ImeAction.Done
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onDone = {
-                            keyboard?.hide()
-                            focuse.clearFocus()
-                            isDone = true
-                            onDone()
-                        }
-                    ),
-                )
-            }
-        }
-    }
 }
 
 

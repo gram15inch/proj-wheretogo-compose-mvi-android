@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -30,16 +31,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.wheretogo.domain.CourseDetail
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.state.DriveScreenState.ListState.ListItemState
 import com.wheretogo.presentation.theme.White100
 import com.wheretogo.presentation.theme.hancomSansFontFamily
+import com.wheretogo.presentation.toStrRes
 
 
 @Preview
@@ -62,7 +66,7 @@ fun DriveList(
 ) {
     val listState = rememberLazyListState()
     LazyColumn(
-        modifier = modifier,
+        modifier = modifier.heightIn(max = 280.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
         state = listState
     ) {
@@ -117,7 +121,9 @@ fun DriveListItem(
                 ) {
                     driveItemAttribute(
                         modifier = Modifier.weight(1f),
-                        content = listItem.course.tag,
+                        content = stringResource(
+                            CourseDetail.fromCode(listItem.course.tag).toStrRes()
+                        ),
                         type = "태그"
                     )
                     driveItemAttribute(
@@ -128,13 +134,17 @@ fun DriveListItem(
                     if (listItem.course.level == "")
                         driveItemAttribute(
                             modifier = Modifier.weight(1f),
-                            content = listItem.course.relation,
+                            content = stringResource(
+                                CourseDetail.fromCode(listItem.course.relation).toStrRes()
+                            ),
                             type = "인원"
                         )
                     else
                         driveItemAttribute(
                             modifier = Modifier.weight(1f),
-                            content = listItem.course.level,
+                            content = stringResource(
+                                CourseDetail.fromCode(listItem.course.level).toStrRes()
+                            ),
                             type = "난이도"
                         )
                     driveItemAttribute(
