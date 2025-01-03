@@ -1,9 +1,7 @@
 package com.wheretogo.data.repositoryimpl
 
-import com.wheretogo.data.LikeObject
 import com.wheretogo.data.datasource.CourseLocalDatasource
 import com.wheretogo.data.datasource.CourseRemoteDatasource
-import com.wheretogo.data.datasource.LikeRemoteDatasource
 import com.wheretogo.data.datasource.RouteRemoteDatasource
 import com.wheretogo.data.model.meta.LocalMetaGeoHash
 import com.wheretogo.data.toCheckPointGroup
@@ -14,7 +12,6 @@ import com.wheretogo.data.toRemoteCourse
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.Course
 import com.wheretogo.domain.model.map.LatLng
-import com.wheretogo.domain.model.map.MetaCheckPoint
 import com.wheretogo.domain.repository.CourseRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -24,38 +21,17 @@ import javax.inject.Inject
 class CourseRepositoryImpl @Inject constructor(
     private val courseRemoteDatasource: CourseRemoteDatasource,
     private val courseLocalDatasource: CourseLocalDatasource,
-    private val routeRemoteDatasource: RouteRemoteDatasource,
-    private val likeRemoteDatasource: LikeRemoteDatasource
+    private val routeRemoteDatasource: RouteRemoteDatasource
 ) : CourseRepository {
     private val _cacheRouteGroup = mutableMapOf<String, List<LatLng>>()// id
 
     override suspend fun getCourse(courseId: String): Course? {
-        return courseLocalDatasource.getCourse(courseId).run {
-            courseRemoteDatasource.getCourse(courseId)?.run { // 저장된 코스 없을때 불러오기
-                coroutineScope {
-                    val route = async {
-                        _cacheRouteGroup.getOrPut(courseId) {
-                            routeRemoteDatasource.getRouteInCourse(courseId).points
-                        }
-                    }
-
-                    val like = async {
-                        likeRemoteDatasource.getLikeInObject(
-                            type = LikeObject.COURSE_LIKE,
-                            objectId = courseId
-                        ).like
-                    }
-
-                    this@run.toLocalCourse(
-                        checkPoint = remoteMetaCheckPoint.copy(timeStamp = System.currentTimeMillis()), // 체크포인트 업데이트 시간 최신화
-                        route = route.await(),
-                        like = like.await(),
-                    ).apply {
-                        courseLocalDatasource.setCourse(this) // 불러온 코스 저장
-                    }.toCourse()
-                }
-            }
+        val course = courseLocalDatasource.getCourse(courseId)?.toCourse()?:run{
+            courseRemoteDatasource.getCourse(courseId)?.run {
+                this.toLocalCourse(route = routeRemoteDatasource.getRouteInCourse(courseId).points)
+            }?.toCourse()
         }
+        return course
     }
 
     override suspend fun getCourseGroupByGeoHash(geoHash: String): List<Course> {
@@ -98,13 +74,6 @@ class CourseRepositoryImpl @Inject constructor(
     ) {
         courseRemoteDatasource.setCourse(course.toRemoteCourse())
         courseLocalDatasource.setCourse(course.toLocalCourse())
-    }
-
-    override suspend fun updateMetaCheckPoint(
-        courseId: String,
-        metaCheckPoint: MetaCheckPoint
-    ) {
-
     }
 }
 

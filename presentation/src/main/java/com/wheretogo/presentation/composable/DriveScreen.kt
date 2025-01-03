@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -24,11 +25,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -42,15 +45,18 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
-import com.naver.maps.map.NaverMap
 import com.naver.maps.map.overlay.Marker
 import com.wheretogo.domain.parseMarkerTag
 import com.wheretogo.presentation.R
+import com.wheretogo.presentation.composable.content.CheckpointAddBottomSheet
+import com.wheretogo.presentation.composable.content.DescriptionTextField
 import com.wheretogo.presentation.composable.content.DriveList
 import com.wheretogo.presentation.composable.content.FadeAnimation
 import com.wheretogo.presentation.composable.content.FloatingButtons
 import com.wheretogo.presentation.composable.content.MapPopup
 import com.wheretogo.presentation.composable.content.NaverMap
+import com.wheretogo.presentation.feature.ImeStickyBox
+import com.wheretogo.presentation.feature.naver.setCurrentLocation
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.model.ContentPadding
 import com.wheretogo.presentation.viewmodel.DriveViewModel
@@ -59,10 +65,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltViewModel()) {
+fun DriveScreen(
+    navController: NavController,
+    viewModel: DriveViewModel = hiltViewModel()
+) {
     val state by viewModel.driveScreenState.collectAsState()
-    var naverMap by remember { mutableStateOf<NaverMap?>(null) }
     val isWideSize = screenSize(true) > 650.dp
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     BackHandler {
         navController.navigateUp()
     }
@@ -94,11 +104,8 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
             .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Bottom)),
         overlayMap = state.mapState.mapOverlayGroup,
         onMapAsync = { map ->
-            naverMap = map
             viewModel.handleIntent(DriveScreenIntent.MapIsReady)
-        },
-        onLocationMove = { latLng ->
-            viewModel.handleIntent(DriveScreenIntent.UpdateLocation(latLng))
+            coroutineScope.launch { map.setCurrentLocation(context) }
         },
         onCameraMove = { camera ->
             viewModel.handleIntent(DriveScreenIntent.UpdateCamera(camera))
@@ -162,7 +169,7 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
                     commentState = state.popUpState.commentState,
                     imageUrl = state.popUpState.localImageUrl,
                     isWideSize = isWideSize,
-                    onCommentFloatingButtonClick = {
+                    onPopupImageClick = {
                         viewModel.handleIntent(DriveScreenIntent.CommentFloatingButtonClick)
                     },
                     onCommentListItemClick = { item ->
@@ -194,16 +201,35 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
                     }
                 )
             }
+
+            CheckpointAddBottomSheet(
+                modifier = Modifier.align(Alignment.BottomCenter),
+                state = state.bottomSheetState,
+                onBottomSheetClose = {
+                    viewModel.handleIntent(DriveScreenIntent.BottomSheetClose)
+                },
+                onSliderChange = {
+                    viewModel.handleIntent(DriveScreenIntent.CheckpointLocationSliderChange(it))
+                },
+                onImageChange = {
+                    viewModel.handleIntent(DriveScreenIntent.CheckpointImageChange(it))
+                }
+            )
+
             val isNotComment = !state.popUpState.commentState.isCommentVisible
             FloatingButtons(
                 modifier = Modifier.fillMaxSize(),
                 course = state.listState.clickItem.course,
                 isCommentVisible = state.floatingButtonState.isCommentVisible && isNotComment,
+                isCheckpointAddVisible = state.floatingButtonState.isCheckpointAddVisible && isNotComment,
                 isExportVisible = state.floatingButtonState.isExportVisible && isNotComment,
-                isFoldVisible = state.floatingButtonState.isFoldVisible && isNotComment,
                 isExportBackPlate = state.floatingButtonState.isBackPlateVisible,
+                isFoldVisible = state.floatingButtonState.isFoldVisible && isNotComment,
                 onCommentClick = {
                     viewModel.handleIntent(DriveScreenIntent.CommentFloatingButtonClick)
+                },
+                onCheckpointAddClick = {
+                    viewModel.handleIntent(DriveScreenIntent.CheckpointAddFloatingButtonClick)
                 },
                 onExportMapClick = {
                     viewModel.handleIntent(DriveScreenIntent.ExportMapFloatingButtonClick)
@@ -212,6 +238,21 @@ fun DriveScreen(navController: NavController, viewModel: DriveViewModel = hiltVi
                     viewModel.handleIntent(DriveScreenIntent.FoldFloatingButtonClick)
                 }
             )
+
+            ImeStickyBox(modifier = Modifier.align(alignment = Alignment.BottomCenter)) {
+                DescriptionTextField(
+                    modifier = Modifier.heightIn(min = 60.dp),
+                    isVisible = state.bottomSheetState.isVisible && it > 30.dp,
+                    focusRequester = state.bottomSheetState.focusRequester,
+                    text = state.bottomSheetState.description,
+                    onTextChange = {
+                        viewModel.handleIntent(DriveScreenIntent.CheckpointDescriptionChange(it))
+                    },
+                    onEnterClick = {
+                        viewModel.handleIntent(DriveScreenIntent.CheckpointDescriptionEnterClick)
+                    }
+                )
+            }
         }
     }
 }

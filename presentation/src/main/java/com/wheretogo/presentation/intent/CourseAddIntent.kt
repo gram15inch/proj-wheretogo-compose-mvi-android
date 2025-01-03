@@ -8,7 +8,7 @@ import com.wheretogo.presentation.state.CourseAddScreenState
 sealed class CourseAddIntent {
     data class UpdatedCamera(val cameraState: CameraState) : CourseAddIntent()
     data class MapClick(val latLng: LatLng) : CourseAddIntent()
-    data class CourseAddMarkerClick(val marker: Marker) : CourseAddIntent()
+    data class CourseMarkerClick(val marker: Marker) : CourseAddIntent()
     data object MarkerRemoveFloatingClick : CourseAddIntent()
     data object MarkerMoveFloatingClick : CourseAddIntent()
     data object RouteCreateClick : CourseAddIntent()

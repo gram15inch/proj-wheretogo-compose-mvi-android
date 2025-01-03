@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -50,9 +51,10 @@ import com.wheretogo.presentation.theme.hancomSansFontFamily
 @Composable
 fun FloatingButtonPreview() {
     FloatingButtons(modifier = Modifier
+        .width(300.dp)
         .background(colorResource(R.color.gray_C7C7C7_80)),
-        Course(), true, true, true, true,
-        {}, {}, {})
+        Course(), true, true, true, true, true,
+        {}, {}, {}, {})
 }
 
 
@@ -61,10 +63,12 @@ fun FloatingButtons(
     modifier: Modifier = Modifier,
     course: Course,
     isCommentVisible: Boolean,
+    isCheckpointAddVisible: Boolean,
     isExportVisible: Boolean,
     isFoldVisible: Boolean,
     isExportBackPlate: Boolean,
     onCommentClick: () -> Unit,
+    onCheckpointAddClick: () -> Unit,
     onExportMapClick: () -> Unit,
     onFoldClick: () -> Unit
 ) {
@@ -76,7 +80,7 @@ fun FloatingButtons(
         val buttonEndPadding = 12.dp
         Column(
             horizontalAlignment = Alignment.End,
-            verticalArrangement = Arrangement.spacedBy(if (isExportBackPlate) 0.dp else 9.dp),
+            verticalArrangement = Arrangement.spacedBy(if (isExportBackPlate) 0.dp else 10.dp),
             modifier = Modifier
                 .padding(vertical = 12.dp)
                 .fillMaxWidth()
@@ -89,6 +93,24 @@ fun FloatingButtons(
                 Box(modifier = Modifier.padding(end = buttonEndPadding)) {
                     CircleButton(icon = R.drawable.ic_comment) {
                         onCommentClick()
+                    }
+                }
+
+            }
+
+            SlideAnimation(
+                modifier = Modifier,
+                visible = isCheckpointAddVisible,
+                direction = AnimationDirection.RightCenter
+            ) {
+                Box(
+                    modifier = Modifier.padding(
+                        top = if (isExportBackPlate) 10.dp else 0.dp,
+                        end = buttonEndPadding
+                    )
+                ) {
+                    CircleButton(icon = R.drawable.ic_marker_add) {
+                        onCheckpointAddClick()
                     }
                 }
 
@@ -155,7 +177,7 @@ fun CircleButton(
     Button(
         onClick = onClick,
         modifier = modifier
-            .size(62.dp),
+            .size(60.dp),
         shape = CircleShape,
         colors = ButtonDefaults.buttonColors(contentColor = color),
         contentPadding = PaddingValues(0.dp)
@@ -181,7 +203,7 @@ fun CirclePlateButton(
 ) {
     var targetOffset by remember { mutableStateOf(0.dp) }
     val animatedOffset by animateDpAsState(targetValue = targetOffset)
-    val circleSize = 62.dp
+    val circleSize = 60.dp
     val squareSize = 52.dp
     val backPlateHeight = 80.dp
 

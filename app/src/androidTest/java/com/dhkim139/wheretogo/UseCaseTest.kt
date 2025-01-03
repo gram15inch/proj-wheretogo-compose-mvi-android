@@ -32,8 +32,7 @@ class UseCaseTest {
         val courseRepository = CourseRepositoryImpl(
             courseRemoteDatasource = CourseRemoteDatasourceImpl(firestore),
             courseLocalDatasource = CourseLocalDatasourceImpl(courseDao),
-            routeRemoteDatasource = RouteRemoteDatasourceImpl(firestore, naverApi),
-            likeRemoteDatasource = LikeRemoteDatasourceImpl(firestore)
+            routeRemoteDatasource = RouteRemoteDatasourceImpl(firestore, naverApi)
         )
 
         val location = LatLng(37.2755481129516, 127.11608496870285)

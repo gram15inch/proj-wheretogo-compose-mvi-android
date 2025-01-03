@@ -42,7 +42,7 @@ fun CommentTestScreen(viewModel: DriveViewModel = hiltViewModel()) {
             ),
             imageUrl = "",
             isWideSize = false,
-            onCommentFloatingButtonClick = {},
+            onPopupImageClick = {},
             onCommentListItemClick = {},
             onCommentListItemLongClick = { viewModel.handleIntent(DriveScreenIntent.CommentListItemLongClick(it)) },
             onCommentLikeClick = {},

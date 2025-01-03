@@ -8,7 +8,6 @@ import com.wheretogo.data.datasourceimpl.CheckPointLocalDatasourceImpl
 import com.wheretogo.data.datasourceimpl.CheckPointRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.CourseLocalDatasourceImpl
 import com.wheretogo.data.datasourceimpl.CourseRemoteDatasourceImpl
-import com.wheretogo.data.datasourceimpl.LikeRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.RouteRemoteDatasourceImpl
 import com.wheretogo.data.di.ApiServiceModule
 import com.wheretogo.data.di.DaoDatabaseModule
@@ -118,8 +117,7 @@ class CourseTest {
         val courseRepository = CourseRepositoryImpl(
             courseRemoteDatasource = CourseRemoteDatasourceImpl(firestore),
             courseLocalDatasource = CourseLocalDatasourceImpl(courseDao),
-            routeRemoteDatasource = RouteRemoteDatasourceImpl(firestore, naverApi),
-            likeRemoteDatasource = LikeRemoteDatasourceImpl(firestore)
+            routeRemoteDatasource = RouteRemoteDatasourceImpl(firestore, naverApi)
         )
         val dc1 = Course(
             courseId = "cs1"
@@ -153,8 +151,7 @@ class CourseTest {
         val courseRepository = CourseRepositoryImpl(
             courseRemoteDatasource = CourseRemoteDatasourceImpl(firestore),
             courseLocalDatasource = CourseLocalDatasourceImpl(courseDao),
-            routeRemoteDatasource = RouteRemoteDatasourceImpl(firestore, naverApi),
-            likeRemoteDatasource = LikeRemoteDatasourceImpl(firestore)
+            routeRemoteDatasource = RouteRemoteDatasourceImpl(firestore, naverApi)
         )
 
         val dc1 = Course(

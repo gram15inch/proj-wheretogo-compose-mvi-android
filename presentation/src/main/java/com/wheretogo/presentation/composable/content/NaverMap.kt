@@ -19,15 +19,14 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.naver.maps.map.CameraAnimation
+import com.naver.maps.map.CameraPosition
 import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapView
 import com.naver.maps.map.NaverMap
-import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.Overlay
 import com.naver.maps.map.util.FusedLocationSource
-import com.wheretogo.domain.CHECKPOINT_TYPE
-import com.wheretogo.domain.COURSE_TYPE
+import com.wheretogo.domain.OverlayType
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.Viewport
 import com.wheretogo.presentation.CameraStatus
@@ -35,7 +34,6 @@ import com.wheretogo.presentation.feature.map.distanceTo
 import com.wheretogo.presentation.model.ContentPadding
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.state.CameraState
-import com.wheretogo.presentation.state.CourseAddScreenState
 import com.wheretogo.presentation.toDomainLatLng
 import com.wheretogo.presentation.toNaver
 import kotlinx.coroutines.async
@@ -44,18 +42,17 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun NaverMap(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     overlayMap: Set<MapOverlay> = emptySet(),
+    contentPadding: ContentPadding = ContentPadding(),
+    cameraState: CameraState = CameraState(),
     onMapAsync: (NaverMap) -> Unit = {},
     onLocationMove: (LatLng) -> Unit = {},
     onCameraMove: (CameraState) -> Unit = { a -> },
+    onMapClickListener: (LatLng) -> Unit = {},
     onCourseMarkerClick: (Overlay) -> Unit = {},
     onCheckPointMarkerClick: (Overlay) -> Unit = {},
-    onOverlayRenderComplete: (Boolean) -> Unit = {},
-    onMapClickListener: (LatLng) -> Unit = {},
-    contentPadding: ContentPadding = ContentPadding(),
-    courseAddScreenState: CourseAddScreenState = CourseAddScreenState(), // todo 임시
-    onCourseAddMarkerClick: (Marker) -> Unit = { a -> },
+    onOverlayRenderComplete: (Boolean) -> Unit = {}
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current
@@ -82,7 +79,6 @@ fun NaverMap(
                         isLocationButtonEnabled = true
                         isZoomControlEnabled = false
                         naverMap.minZoom = 11.0
-                        naverMap.locationTrackingMode = LocationTrackingMode.NoFollow
                     }
 
                     addOnLocationChangeListener { location ->
@@ -131,75 +127,72 @@ fun NaverMap(
             lifecycleOwner.lifecycle.removeObserver(lifecycleObserver)
         }
     }
-    mapView.getMapAsync { map ->
+    mapView.getMapAsync { naverMap ->
         coroutineScope.launch {
             var isRendered = false
-            overlayMap.map {
+            overlayMap.map { overlay ->
                 async {
-                    val path = async {
-                        it.pathOverlay.apply {
-                            if (coords.isNotEmpty()) {
-                                this.map = this.map ?: map
-                            }
-                        }
-                    }
-
                     val marker = async {
-                        it.marker.apply {
-                            if (it.marker.position.latitude.toString() != "NaN") {
-                                this.map = this.map ?: run {
-                                    if (!isRendered)
-                                        isRendered = true
-                                    map
-                                }
-                                if (this.onClickListener == null) {
-
-                                    this.setOnClickListener { overlay ->
-                                        when (it.type) {
-                                            CHECKPOINT_TYPE -> {
-                                                onCheckPointMarkerClick(overlay)
-                                            }
-
-                                            COURSE_TYPE -> {
-                                                onCourseMarkerClick(overlay)
-                                            }
+                        overlay.markerGroup.forEach {
+                            if (it.position.latitude.toString() != "NaN") {
+                                isRendered = true
+                                it.map = naverMap
+                                it.setOnClickListener { marker ->
+                                    when (overlay.type) {
+                                        OverlayType.CHECKPOINT -> {
+                                            onCheckPointMarkerClick(marker)
                                         }
-                                        false
+
+                                        OverlayType.COURSE -> {
+                                            onCourseMarkerClick(marker)
+                                        }
+
+                                        else -> {}
                                     }
+                                    true
                                 }
                             }
                         }
                     }
-                    path.await()
-                    marker.await()
-                }
-            }.awaitAll()
-            if (isRendered)
-                onOverlayRenderComplete(true)
-
-            courseAddScreenState.apply {
-                markerLatlngGroup.forEach { marker ->
-                    marker.map = map
-                    marker.setOnClickListener {
-                        onCourseAddMarkerClick(marker)
-                        true
+                    val path = async {
+                        overlay.path?.apply {
+                            if (coords.isNotEmpty()) {
+                                isRendered = true
+                                this.map = naverMap
+                            }
+                        }
                     }
-                    path?.map = map
+                    marker.await()
+                    path.await()
                 }
-                if (cameraState.status == CameraStatus.TRACK) {
-                    map.moveCamera(
-                        CameraUpdate.zoomTo(cameraState.zoom).animate(
-                            CameraAnimation.Easing
-                        )
-                    )
-                    map.moveCamera(
-                        CameraUpdate.scrollTo(cameraState.latLng.toNaver()).animate(
-                            CameraAnimation.Easing
-                        )
-                    )
-                }
+            }.awaitAll().apply {
+                if (isRendered)
+                    onOverlayRenderComplete(true)
             }
 
+            cameraState.apply {
+                when (status) {
+                    CameraStatus.TRACK -> {
+                        naverMap.moveCamera(
+                            CameraUpdate.zoomTo(cameraState.zoom).animate(
+                                CameraAnimation.Easing
+                            )
+                        )
+                        naverMap.moveCamera(
+                            CameraUpdate.scrollTo(cameraState.latLng.toNaver()).animate(
+                                CameraAnimation.Easing
+                            )
+                        )
+                    }
+
+                    CameraStatus.INIT -> {
+                        naverMap.cameraPosition =
+                            CameraPosition(cameraState.latLng.toNaver(), cameraState.zoom)
+                    }
+
+                    else -> {}
+                }
+            }
         }
     }
     AndroidView(modifier = modifier, factory = { mapView })
@@ -227,8 +220,7 @@ private fun MapView.syncLifecycle(source: LifecycleOwner, event: Lifecycle.Event
                 getMapAsync { naverMap ->
                     context.getMyLocationSource().apply {
                         naverMap.locationSource = this
-                    }.let {
-                        naverMap.locationTrackingMode = LocationTrackingMode.Follow
+                        naverMap.locationTrackingMode = LocationTrackingMode.NoFollow
                     }
                 }
             }

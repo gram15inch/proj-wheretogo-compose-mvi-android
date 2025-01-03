@@ -36,12 +36,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.colorResource
@@ -55,11 +55,15 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.naver.maps.map.overlay.Marker
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.content.AnimationDirection
+import com.wheretogo.presentation.composable.content.DragHandle
 import com.wheretogo.presentation.composable.content.FadeAnimation
 import com.wheretogo.presentation.composable.content.NaverMap
 import com.wheretogo.presentation.composable.content.SlideAnimation
+import com.wheretogo.presentation.feature.eventConsumption
+import com.wheretogo.presentation.feature.naver.setCurrentLocation
 import com.wheretogo.presentation.intent.CourseAddIntent
 import com.wheretogo.presentation.model.ContentPadding
 import com.wheretogo.presentation.state.CourseAddScreenState
@@ -68,6 +72,7 @@ import com.wheretogo.presentation.theme.interBoldFontFamily
 import com.wheretogo.presentation.theme.interFontFamily
 import com.wheretogo.presentation.toStrRes
 import com.wheretogo.presentation.viewmodel.CourseAddViewModel
+import kotlinx.coroutines.launch
 import kotlin.math.min
 
 @Composable
@@ -75,10 +80,11 @@ fun CourseAddScreen(
     navController: NavController,
     viewModel: CourseAddViewModel = hiltViewModel()
 ) {
-    val state = viewModel.courseAddScreenState.collectAsState()
+    val state by viewModel.courseAddScreenState.collectAsState()
     val context = LocalContext.current
     var isNotMove by remember { mutableStateOf(true) }
-    if (state.value.isCourseAddDone) {
+    val coroutineScope = rememberCoroutineScope()
+    if (state.isCourseAddDone) {
         if (isNotMove) {
             navController.navigate("home")
             isNotMove = false
@@ -89,28 +95,26 @@ fun CourseAddScreen(
             .fillMaxSize()
             .navigationBarsPadding()
     ) {
+
         NaverMap(
-            modifier =
-            Modifier
+            modifier = Modifier
                 .zIndex(0f)
                 .fillMaxSize()
                 .height(300.dp)
                 .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Bottom))
                 .background(color = Color.Green),
-            onCameraMove = { camera ->
-                viewModel.handleIntent(CourseAddIntent.UpdatedCamera(camera))
+            overlayMap = setOf(state.mapOverlay),
+            onMapAsync = { map ->
+                coroutineScope.launch { map.setCurrentLocation(context) }
             },
-            onMapClickListener = { latlng ->
-                viewModel.handleIntent(CourseAddIntent.MapClick(latlng))
-            },
-            onCourseAddMarkerClick = { marker ->
-                viewModel.handleIntent(CourseAddIntent.CourseAddMarkerClick(marker))
-            },
-            contentPadding = context.getMapPadding(),
-            courseAddScreenState = state.value
+            cameraState = state.cameraState,
+            onCameraMove = { viewModel.handleIntent(CourseAddIntent.UpdatedCamera(it)) },
+            onMapClickListener = { viewModel.handleIntent(CourseAddIntent.MapClick(it)) },
+            onCourseMarkerClick = { viewModel.handleIntent(CourseAddIntent.CourseMarkerClick(it as Marker)) },
+            contentPadding = context.getMapPadding()
         )
-        if (state.value.isFloatMarker)
-            Box(
+        if (state.isFloatMarker)
+            Box(// 중앙 마커
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(350.dp),
@@ -127,31 +131,19 @@ fun CourseAddScreen(
             modifier = Modifier.align(Alignment.BottomEnd),
             horizontalAlignment = Alignment.End
         ) {
-            if (state.value.isFloatingButton)
-                Column(
-                    modifier = Modifier.padding(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(14.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(50.dp)
-                            .clip(CircleShape)
-                            .background(Color.Green)
-                            .clickable {
-                                viewModel.handleIntent(CourseAddIntent.MarkerMoveFloatingClick)
-                            })
-                    Box(
-                        modifier = Modifier
-                            .size(50.dp)
-                            .clip(CircleShape)
-                            .background(Color.Blue)
-                            .clickable {
-                                viewModel.handleIntent(CourseAddIntent.MarkerRemoveFloatingClick)
-                            })
-                }
-            AddBottomSheet(
+            if (state.isFloatingButton) {
+                FloatingButtonGroup(
+                    onMarkerMoveClick = {
+                        viewModel.handleIntent(CourseAddIntent.MarkerMoveFloatingClick)
+                    },
+                    onMarkerRemoveClick = {
+                        viewModel.handleIntent(CourseAddIntent.MarkerRemoveFloatingClick)
+                    }
+                )
+            }
+            CourseAddBottomSheet(
                 modifier = Modifier,
-                courseAddScreenState = state.value,
+                courseAddScreenState = state,
                 onRouteCreateClick = { viewModel.handleIntent(CourseAddIntent.RouteCreateClick) },
                 onRouteDetailItemClick = {
                     viewModel.handleIntent(
@@ -178,11 +170,39 @@ fun CourseAddScreen(
 @Preview
 @Composable
 fun CourseAddScreenPreview() {
-    AddBottomSheet(modifier = Modifier, CourseAddScreenState(), {}, {}, {}, {}, {})
+    CourseAddBottomSheet(modifier = Modifier, CourseAddScreenState(), {}, {}, {}, {}, {})
 }
 
 @Composable
-fun AddBottomSheet(
+fun FloatingButtonGroup(
+    onMarkerMoveClick: () -> Unit,
+    onMarkerRemoveClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier.padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(50.dp)
+                .clip(CircleShape)
+                .background(Color.Green)
+                .clickable {
+                    onMarkerMoveClick()
+                })
+        Box(
+            modifier = Modifier
+                .size(50.dp)
+                .clip(CircleShape)
+                .background(Color.Blue)
+                .clickable {
+                    onMarkerRemoveClick()
+                })
+    }
+}
+
+@Composable
+fun CourseAddBottomSheet(
     modifier: Modifier = Modifier,
     courseAddScreenState: CourseAddScreenState,
     onRouteDetailItemClick: (RouteDetailItemState) -> Unit,
@@ -203,6 +223,7 @@ fun AddBottomSheet(
     ) {
         Column {
             Box(modifier = Modifier.height(340.dp)) {
+                DragHandle()
                 SlideAnimation(
                     visible = !courseAddScreenState.isDetailContent,
                     direction = AnimationDirection.CenterUp
@@ -242,16 +263,6 @@ fun AddBottomSheet(
     }
 }
 
-@Composable
-fun Modifier.eventConsumption(): Modifier {
-    return this.pointerInput(Unit) {
-        awaitPointerEventScope {
-            while (true) {
-                awaitPointerEvent()
-            }
-        }
-    }
-}
 
 @Composable
 fun CommendButton(
@@ -477,7 +488,7 @@ fun RouteWaypointContent(
     }
 }
 
-
+@Composable
 fun Context.getMapPadding(): ContentPadding {
 
 

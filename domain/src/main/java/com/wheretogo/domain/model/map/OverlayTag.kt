@@ -1,3 +1,9 @@
 package com.wheretogo.domain.model.map
 
-data class OverlayTag(val overlayId: String, val parentId: String = "", val itemType: Int = -1)
+import com.wheretogo.domain.OverlayType
+
+data class OverlayTag(
+    val overlayId: String,
+    val parentId: String = "",
+    val type: OverlayType = OverlayType.NONE
+)

@@ -2,7 +2,6 @@ package com.wheretogo.domain.repository
 
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.Course
-import com.wheretogo.domain.model.map.MetaCheckPoint
 
 interface CourseRepository {
     suspend fun getCourse(courseId: String): Course?
@@ -13,6 +12,4 @@ interface CourseRepository {
         course: Course,
         checkPoints: List<CheckPoint> = emptyList()
     )
-
-    suspend fun updateMetaCheckPoint(courseId: String, metaCheckPoint: MetaCheckPoint)
 }

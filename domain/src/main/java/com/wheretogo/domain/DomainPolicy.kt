@@ -14,6 +14,10 @@ const val DOMAIN_EMPTY = ""
 
 enum class AUTH_COMPANY { GOOGLE }
 
+enum class OverlayType {
+    NONE, COURSE, CHECKPOINT, PATH
+}
+
 enum class HistoryType {
     COMMENT, LIKE, BOOKMARK, REPORT_COMMENT
 }

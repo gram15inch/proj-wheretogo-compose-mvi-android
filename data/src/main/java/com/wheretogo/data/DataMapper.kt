@@ -246,7 +246,7 @@ fun Course.toRemoteCourse(
 
 fun RemoteCourse.toCourse(
     route: List<LatLng> = emptyList(),
-    checkPoint: List<CheckPoint>,
+    checkPoint: List<CheckPoint> = emptyList(),
     like: Int = 0
 ): Course {
     return Course(

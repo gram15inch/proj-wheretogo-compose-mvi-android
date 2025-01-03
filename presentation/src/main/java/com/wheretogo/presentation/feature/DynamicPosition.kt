@@ -19,12 +19,12 @@ import kotlin.math.max
 @Composable
 fun ImeStickyBox(
     modifier: Modifier = Modifier,
-    onBoxHeightChange: (Dp) -> Unit,
+    onBoxHeightChange: (Dp) -> Unit = {},
     content: @Composable (Dp) -> Unit
 ) {
     val dencity = LocalDensity.current
     val imeInsets = WindowInsets.ime
-    val imeHeight = max(0f, (imeInsets.getBottom(dencity) / dencity.density) - 47).dp
+    val imeHeight = max(0f, (imeInsets.getBottom(dencity) / dencity.density) - 55).dp
     Box(modifier = modifier
         .wrapContentHeight()
         .offset(y = -imeHeight)

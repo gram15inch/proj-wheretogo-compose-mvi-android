@@ -42,7 +42,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.pointerInteropFilter
@@ -65,6 +64,7 @@ import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.BlurEffect
 import com.wheretogo.presentation.composable.ExtendArea
 import com.wheretogo.presentation.feature.ImeStickyBox
+import com.wheretogo.presentation.feature.topShadow
 import com.wheretogo.presentation.state.DriveScreenState.PopUpState.CommentState
 import com.wheretogo.presentation.state.DriveScreenState.PopUpState.CommentState.CommentAddState
 import com.wheretogo.presentation.state.DriveScreenState.PopUpState.CommentState.CommentItemState
@@ -95,7 +95,7 @@ fun PopupPreview() {
             ),
             imageUrl = "",
             isWideSize = false,
-            onCommentFloatingButtonClick = {},
+            onPopupImageClick = {},
             onCommentListItemClick = {},
             onCommentListItemLongClick = {},
             onCommentLikeClick = {},
@@ -116,7 +116,7 @@ fun MapPopup(
     commentState: CommentState,
     imageUrl: String,
     isWideSize: Boolean,
-    onCommentFloatingButtonClick: () -> Unit,
+    onPopupImageClick: () -> Unit,
     onCommentListItemClick: (CommentItemState) -> Unit,
     onCommentListItemLongClick: (CommentItemState) -> Unit,
     onCommentLikeClick: (CommentItemState) -> Unit,
@@ -134,7 +134,7 @@ fun MapPopup(
             holdContent = {
                 PopUpImage( // 고정
                     modifier = modifier.clickable {
-                        onCommentFloatingButtonClick()
+                        onPopupImageClick()
                     },
                     url = imageUrl
                 )
@@ -146,7 +146,7 @@ fun MapPopup(
                             .sizeIn(maxWidth = 260.dp, maxHeight = 500.dp)
                             .clip(RoundedCornerShape(16.dp)),
                         onClick = {
-                            onCommentFloatingButtonClick()
+                            onPopupImageClick()
                         })
                 }
                 SlideAnimation(
@@ -229,11 +229,7 @@ fun MapPopup(
                 }) { imeHeight ->
                 Column(
                     modifier = Modifier
-                        .graphicsLayer {
-                            shadowElevation = 8.dp.toPx() // 그림자 높이
-                            shape = RectangleShape // 그림자 모양
-                            clip = false
-                        }
+                        .topShadow()
                         .background(Color.White)
                 ) {// 리뷰버튼
                     ReviewButtonGroup(

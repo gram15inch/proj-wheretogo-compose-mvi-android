@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.PathOverlay
+import com.wheretogo.domain.OverlayType
 import com.wheretogo.domain.RouteDetailType
 import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.map.Course
@@ -12,6 +13,7 @@ import com.wheretogo.domain.usecase.map.AddCourseUseCase
 import com.wheretogo.domain.usecase.map.CreateRouteUseCase
 import com.wheretogo.presentation.CameraStatus
 import com.wheretogo.presentation.intent.CourseAddIntent
+import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.state.CameraState
 import com.wheretogo.presentation.state.CourseAddScreenState
 import com.wheretogo.presentation.toDomainLatLng
@@ -51,7 +53,7 @@ class CourseAddViewModel @Inject constructor(
                 is CourseAddIntent.NameEditValueChange -> nameEditValueChange(intent.text)
 
                 is CourseAddIntent.MapClick -> mapClick(intent.latLng)
-                is CourseAddIntent.CourseAddMarkerClick -> courseAddMarkerClick(intent.marker)
+                is CourseAddIntent.CourseMarkerClick -> courseAddMarkerClick(intent.marker)
                 is CourseAddIntent.MarkerRemoveFloatingClick -> markerRemoveFloatingClick()
                 is CourseAddIntent.MarkerMoveFloatingClick -> markerMoveFloatingClick()
                 is CourseAddIntent.RouteCreateClick -> routeCreateClick()
@@ -66,7 +68,7 @@ class CourseAddViewModel @Inject constructor(
         if (text.length <= 17) {
             _courseAddScreenState.value = _courseAddScreenState.value.run {
                 val isWaypointDone =
-                    text.isNotEmpty() && waypoints.size >= 2 && points.isNotEmpty() && path != null
+                    text.isNotEmpty() && waypoints.size >= 2 && points.isNotEmpty() && mapOverlay.path != null
                 copy(
                     courseName = text,
                     isWaypointDone = isWaypointDone,
@@ -110,8 +112,8 @@ class CourseAddViewModel @Inject constructor(
 
     private fun mapClick(latlng: LatLng) {
         _courseAddScreenState.value = _courseAddScreenState.value.run {
-            if (markerLatlngGroup.size < 5) {
-                val newMarkerGroup = markerLatlngGroup + Marker().apply {
+            if (mapOverlay.markerGroup .size < 5) {
+                val newMarkerGroup = mapOverlay.markerGroup + Marker().apply {
                     tag = "${latlng.latitude}${latlng.longitude}"
                     position = latlng.toNaver()
                 }
@@ -119,14 +121,18 @@ class CourseAddViewModel @Inject constructor(
                 val newPath = if (newMarkerGroup.size < 2) {
                     null
                 } else {
-                    path?.apply { coords = newMarkerGroup.map { it.position } }
+                    mapOverlay.path?.apply { coords = newMarkerGroup.map { it.position } }
                         ?: PathOverlay().apply { coords = newMarkerGroup.map { it.position } }
                 }
-
+                val newMapOverlay = MapOverlay(
+                    overlayId = "",
+                    type = OverlayType.COURSE,
+                    path = newPath,
+                    markerGroup = newMarkerGroup
+                )
                 copy(
                     waypoints = waypoints + latlng,
-                    markerLatlngGroup = newMarkerGroup,
-                    path = newPath
+                    mapOverlay = newMapOverlay
                 )
             } else this
         }
@@ -145,23 +151,29 @@ class CourseAddViewModel @Inject constructor(
     private fun markerRemoveFloatingClick() {
         _courseAddScreenState.value = _courseAddScreenState.value.run {
             val newMarkerGroup =
-                markerLatlngGroup.filter { it.tag != selectedMarkerItem?.apply { map = null }?.tag }
+                mapOverlay.markerGroup.filter { it.tag != selectedMarkerItem?.apply { map = null }?.tag }
             val newPath = if (newMarkerGroup.size < 2) {
-                path?.map = null
+                mapOverlay.path?.map = null
                 null
             } else {
-                path?.apply { coords = newMarkerGroup.map { it.position } }
+                mapOverlay.path?.apply { coords = newMarkerGroup.map { it.position } }
                     ?: PathOverlay().apply { coords = newMarkerGroup.map { it.position } }
             }
             val newWaypoints =
                 if (selectedMarkerItem != null) waypoints - selectedMarkerItem.position.toDomainLatLng() else waypoints
 
+            val newMapOverlay = MapOverlay(
+                overlayId = "",
+                type = OverlayType.COURSE,
+                path = newPath,
+                markerGroup = newMarkerGroup
+            )
+
             copy(
                 waypoints = newWaypoints,
-                markerLatlngGroup = newMarkerGroup,
                 waypointItemStateGroup = emptyList(),
+                mapOverlay = newMapOverlay,
                 duration = 0,
-                path = newPath,
                 isFloatMarker = false,
                 isFloatingButton = false,
                 isWaypointDone = false,
@@ -174,7 +186,7 @@ class CourseAddViewModel @Inject constructor(
     private fun markerMoveFloatingClick() {
         if (_courseAddScreenState.value.selectedMarkerItem != null)
             _courseAddScreenState.value = _courseAddScreenState.value.run {
-                val newMarkerGroup = markerLatlngGroup.map {
+                val newMarkerGroup = mapOverlay.markerGroup.map {
                     if (it.tag == selectedMarkerItem?.tag) {
                         if (isFloatMarker) {
                             it.map = null
@@ -190,18 +202,22 @@ class CourseAddViewModel @Inject constructor(
                 }
 
                 val newPath = if (newMarkerGroup.size < 2) {
-                    path?.map = null
+                    mapOverlay.path?.map = null
                     null
                 } else {
-                    path?.apply { coords = newMarkerGroup.map { it.position } }
+                    mapOverlay.path?.apply { coords = newMarkerGroup.map { it.position } }
                         ?: PathOverlay().apply { coords = newMarkerGroup.map { it.position } }
                 }
-
-                copy(
-                    markerLatlngGroup = newMarkerGroup,
-                    waypointItemStateGroup = emptyList(),
-                    duration = 0,
+                val newMapOverlay = MapOverlay(
+                    overlayId = "",
+                    type = OverlayType.COURSE,
                     path = newPath,
+                    markerGroup = newMarkerGroup
+                )
+                copy(
+                    waypointItemStateGroup = emptyList(),
+                    mapOverlay = newMapOverlay,
+                    duration = 0,
                     isFloatingButton = !isFloatMarker,
                     isFloatMarker = !isFloatMarker,
                     isWaypointDone = false,
@@ -219,20 +235,25 @@ class CourseAddViewModel @Inject constructor(
             val newRoute = createRouteUseCase(waypoints)
             val naverPoints = newRoute.points.toNaver()
             val newWaypointItemState = newRoute.waypointItems.map { it.toRouteWaypointItemState() }
-            val newPath = if (markerLatlngGroup.size < 2) {
-                path?.map = null
+            val newPath = if (mapOverlay.markerGroup.size < 2) {
+                mapOverlay.path?.map = null
                 null
             } else {
                 if (newRoute.points.size >= 2)
-                    path?.apply { coords = naverPoints }
+                    mapOverlay.path?.apply { coords = naverPoints }
                         ?: PathOverlay().apply { coords = naverPoints }
                 else
                     null
             }
             val isWaypointDone =
                 courseName.isNotEmpty() && waypoints.size >= 2 && naverPoints.isNotEmpty() && newPath != null
+
+            val newMapOverlay = mapOverlay.copy(
+                path = newPath
+            )
+
             copy(
-                path = newPath,
+                mapOverlay = newMapOverlay,
                 points = newRoute.points,
                 duration = newRoute.duration,
                 waypointItemStateGroup = newWaypointItemState,

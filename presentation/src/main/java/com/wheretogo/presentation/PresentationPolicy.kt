@@ -7,5 +7,5 @@ enum class CommentType(@StringRes val typeRes: Int) {
 }
 
 enum class CameraStatus {
-    TRACK, NONE
+    NONE, TRACK, INIT
 }

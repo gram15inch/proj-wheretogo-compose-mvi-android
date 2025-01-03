@@ -15,3 +15,4 @@ fun LatLng.distanceTo(latLng: LatLng): Int { // meter
         )
     }[0].toInt()
 }
+

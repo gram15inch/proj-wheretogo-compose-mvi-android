@@ -12,12 +12,14 @@ data class DriveScreenState(
     val mapState: MapState = MapState(),
     val listState: ListState = ListState(),
     val popUpState: PopUpState = PopUpState(),
+    val bottomSheetState: BottomSheetState = BottomSheetState(),
     val floatingButtonState: FloatingButtonState = FloatingButtonState(),
     val isLoading: Boolean = true,
     val error: String? = null
 ) {
     data class MapState(
         val isMapReady: Boolean = false,
+        val cameraState: CameraState = CameraState(),
         val mapOverlayGroup: Set<MapOverlay> = emptySet()
     )
 
@@ -70,9 +72,10 @@ data class DriveScreenState(
     }
 
     data class FloatingButtonState(
-        val isFoldVisible: Boolean = false,
         val isCommentVisible: Boolean = false,
+        val isCheckpointAddVisible: Boolean = false,
         val isExportVisible: Boolean = false,
-        val isBackPlateVisible: Boolean = false
+        val isBackPlateVisible: Boolean = false,
+        val isFoldVisible: Boolean = false
     )
 }

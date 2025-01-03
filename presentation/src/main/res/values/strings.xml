@@ -51,6 +51,10 @@
     <string name="next_step">다음단계</string>
 
 
+    <string name="checkpoint">체크포인트</string>
+    <string name="photo">사진</string>
+    <string name="description">설명</string>
+    <string name="submit">등록</string>
 
 
     <string name="contact_banner">비즈니스 / 광고문의</string>

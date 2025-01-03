@@ -25,11 +25,11 @@ fun parseMarkerTag(stringTag: String): OverlayTag {
     return OverlayTag(
         overlayId = items.getOrNull(0) ?: "",
         parentId = items.getOrNull(1) ?: "",
-        itemType = items.getOrNull(2)?.toInt() ?: -1,
+        type = items.getOrNull(2)?.run { OverlayType.valueOf(this) } ?: OverlayType.NONE,
     )
 }
 
-fun OverlayTag.toStringTag() = "${this.overlayId}/${this.parentId}/${this.itemType}"
+fun OverlayTag.toStringTag() = "${this.overlayId}/${this.parentId}/${this.type}"
 
 
 fun formatMillisToDate(millis: Long, pattern: String = USER_DATE_FORMAT): String {

@@ -1,6 +1,8 @@
 package com.wheretogo.presentation.composable
 
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -20,6 +22,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.wheretogo.presentation.composable.test.CheckPointAddScreen
 import com.wheretogo.presentation.composable.test.CommentTestScreen
 import com.wheretogo.presentation.composable.test.DragTestScreen
 import com.wheretogo.presentation.composable.test.ImageTestScreen
@@ -52,18 +55,24 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                     .fillMaxHeight()
                     .background(White100)
             ) {
-
                 val displayMaxWidth = min(400.dp, maxWidth)
-
                 NavHost(navController = navController, startDestination = "home") {
                     composable("home") { HomeScreen(displayMaxWidth, navController) }
-                    composable("drive") { DriveScreen(navController) }
+                    composable("drive",
+                        enterTransition = { slideInHorizontally(initialOffsetX = { it }) },
+                        exitTransition = { slideOutHorizontally(targetOffsetX = { it }) }
+                    ) { DriveScreen(navController) }
                     composable("bookmark") { BookmarkScreen(navController) }
                     composable("login",
                         enterTransition = { slideInVertically(initialOffsetY = { it }) },
-                        exitTransition = { slideOutVertically(targetOffsetY = { it }) })
+                        exitTransition = { slideOutVertically(targetOffsetY = { it }) }
+                    )
                     { LoginScreen(navController) }
-                    composable("courseAdd") { CourseAddScreen(navController) }
+                    composable("courseAdd",
+                        enterTransition = { slideInVertically(initialOffsetY = { it }) },
+                        exitTransition = { slideOutVertically(targetOffsetY = { it }) }
+                    ) { CourseAddScreen(navController) }
+                    composable("checkpointAdd") { CheckPointAddScreen() }
                     composable("test") { ImageTestScreen() }
                     composable("drag") { DragTestScreen() }
                     composable("comment") { CommentTestScreen() }
