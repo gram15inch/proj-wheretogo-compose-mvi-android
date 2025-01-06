@@ -1,6 +1,7 @@
 package com.wheretogo.presentation.viewmodel
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
@@ -8,18 +9,20 @@ import androidx.lifecycle.viewModelScope
 import com.naver.maps.map.overlay.Marker
 import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.OverlayType
+import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.dummy.getEmogiDummy
 import com.wheretogo.domain.model.map.CheckPoint
+import com.wheretogo.domain.model.map.CheckPointAddRequest
 import com.wheretogo.domain.model.map.Course
 import com.wheretogo.domain.model.map.LatLng
-import com.wheretogo.domain.model.map.MetaCheckPoint
 import com.wheretogo.domain.model.map.OverlayTag
-import com.wheretogo.domain.toMetaCheckPoint
 import com.wheretogo.domain.usecase.community.AddCommentToCheckPointUseCase
 import com.wheretogo.domain.usecase.community.GetCommentForCheckPointUseCase
+import com.wheretogo.domain.usecase.community.GetImageInfoUseCase
 import com.wheretogo.domain.usecase.community.RemoveCommentToCheckPointUseCase
 import com.wheretogo.domain.usecase.community.ReportCommentUseCase
-import com.wheretogo.domain.usecase.map.GetCheckPointForMarkerUseCase
+import com.wheretogo.domain.usecase.map.AddCheckpointToCourseUseCase
+import com.wheretogo.domain.usecase.map.GetCheckpointForMarkerUseCase
 import com.wheretogo.domain.usecase.map.GetImageForPopupUseCase
 import com.wheretogo.domain.usecase.map.GetNearByCourseUseCase
 import com.wheretogo.domain.usecase.user.GetHistoryStreamUseCase
@@ -36,6 +39,7 @@ import com.wheretogo.presentation.state.DriveScreenState.PopUpState.CommentState
 import com.wheretogo.presentation.state.DriveScreenState.PopUpState.CommentState.CommentItemState
 import com.wheretogo.presentation.toComment
 import com.wheretogo.presentation.toCommentAddState
+import com.wheretogo.presentation.toDomainLatLng
 import com.wheretogo.presentation.toNaver
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -54,7 +58,7 @@ import kotlin.math.round
 @HiltViewModel
 class DriveViewModel @Inject constructor(
     private val getNearByCourseUseCase: GetNearByCourseUseCase,
-    private val getCheckPointForMarkerUseCase: GetCheckPointForMarkerUseCase,
+    private val getCheckPointForMarkerUseCase: GetCheckpointForMarkerUseCase,
     private val getCommentForCheckPointUseCase: GetCommentForCheckPointUseCase,
     private val addCommentToCheckPointUseCase: AddCommentToCheckPointUseCase,
     private val removeCommentToCheckPointUseCase: RemoveCommentToCheckPointUseCase,
@@ -62,12 +66,13 @@ class DriveViewModel @Inject constructor(
     private val getImageForPopupUseCase: GetImageForPopupUseCase,
     private val updateHistoryUseCase: UpdateHistoryUseCase,
     private val removeHistoryUseCase: RemoveHistoryUseCase,
-    private val getHistoryStreamUseCase: GetHistoryStreamUseCase
+    private val getHistoryStreamUseCase: GetHistoryStreamUseCase,
+    private val addCheckpointToCourseUseCase: AddCheckpointToCourseUseCase,
+    private val getImageInfoUseCase: GetImageInfoUseCase
 ) : ViewModel() {
     private val _driveScreenState = MutableStateFlow(DriveScreenState())
     private val _cacheCourseMapOverlayGroup = mutableMapOf<String, MapOverlay>() // courseId
     private val _cacheCheckPointMapOverlayGroup = mutableMapOf<String, MapOverlay>() // courseId
-    private val _cacheCheckPointGroup = mutableMapOf<String, List<CheckPoint>>() // courseId
     val driveScreenState: StateFlow<DriveScreenState> = _driveScreenState
 
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
@@ -125,7 +130,47 @@ class DriveViewModel @Inject constructor(
 
                 is DriveScreenIntent.CheckpointDescriptionEnterClick -> checkpointDescriptionEnterClick()
                 is DriveScreenIntent.CheckpointImageChange -> checkpointImageChange(intent.imgUri)
+                is DriveScreenIntent.CheckpointSubmitClick -> checkpointSubmitClick()
+            }
+        }
+    }
 
+    private suspend fun checkpointSubmitClick() {
+        Log.d("tst8", "checkpointSubmitClick")
+        _driveScreenState.value.apply {
+            val courseId = listState.clickItem.course.courseId
+            val oldCheckpointIdGroup = listState.clickItem.course.checkpointIdGroup
+            val newCheckpointAddRequest = CheckPointAddRequest(
+                courseId = courseId,
+                checkpointIdGroup = oldCheckpointIdGroup,
+                latLng = bottomSheetState.addMarker.markerGroup.first().position.toDomainLatLng(),
+                imageUri = bottomSheetState.imgUri,
+                imageName = bottomSheetState.imgInfo?.fileName ?: "",
+                description = bottomSheetState.description
+            )
+
+            when (addCheckpointToCourseUseCase(newCheckpointAddRequest).status) {
+                UseCaseResponse.Status.Success -> {
+                    bottomSheetClose()
+                    val course = listState.clickItem.course
+                    val checkPointGroup = getCheckPointForMarkerUseCase(courseId)
+                    _driveScreenState.value = _driveScreenState.value.run {
+                        val newMapOverlayGroup =
+                            mapState.mapOverlayGroup + getOverlayGroup(
+                                course.courseId,
+                                checkPointGroup,
+                                true
+                            )
+                        copy(
+                            mapState = mapState.copy(mapOverlayGroup = newMapOverlayGroup)
+                        )
+                    }
+
+                }
+
+                else -> {
+                    Log.d("tst8", "fail")
+                }
             }
         }
     }
@@ -137,7 +182,6 @@ class DriveViewModel @Inject constructor(
                     val listItemGroup = listState.copy().listItemGroup.map {
                         it.copy(isBookmark = it.course.courseId in history.bookmarkGroup)
                     }
-
                     val commentGroup = popUpState.commentState.commentItemGroup.map {
                         val isLike = it.data.commentId in history.likeGroup
                         val isUserCreated = it.data.commentId in history.commentGroup
@@ -314,9 +358,11 @@ class DriveViewModel @Inject constructor(
     }
 
     private suspend fun checkPointMarkerClick(tag: OverlayTag) {
-        val checkpoint = getCheckPointGroup(tag.parentId).first { it.checkPointId == tag.overlayId }
-        val image = getImageForPopupUseCase(checkpoint.remoteImgUrl)
         _driveScreenState.value = _driveScreenState.value.run {
+            val course = listState.clickItem.course
+            val checkpoint =
+                getCheckPointForMarkerUseCase(course.courseId).first { it.checkPointId == tag.overlayId }
+            val image = getImageForPopupUseCase(checkpoint.imageName)
             copy(
                 listState = listState.copy(
                     isVisible = false
@@ -324,7 +370,7 @@ class DriveViewModel @Inject constructor(
                 popUpState = popUpState.copy(
                     isVisible = true,
                     checkPointId = checkpoint.checkPointId,
-                    localImageUrl = image,
+                    imageUri = image,
                 ),
                 floatingButtonState = floatingButtonState.copy(
                     isFoldVisible = true,
@@ -336,13 +382,12 @@ class DriveViewModel @Inject constructor(
     }
 
     private suspend fun driveListItemClick(state: DriveScreenState.ListState.ListItemState) {
-        _driveScreenState.value = _driveScreenState.value.copy(isLoading = true)
         val course = state.course
-
+        _driveScreenState.value = _driveScreenState.value.copy(isLoading = true)
         _driveScreenState.value.mapState.mapOverlayGroup.hideCourseMapOverlayWithout(course.courseId)
 
-        val checkPointGroup =
-            getCheckPointGroup(course.courseId, course.checkpoints.toMetaCheckPoint())
+        val checkPointGroup = getCheckPointForMarkerUseCase(course.courseId)
+        Log.d("tst9", "itemClick size:${checkPointGroup.size}")
         _driveScreenState.value = _driveScreenState.value.run {
             val newMapOverlayGroup =
                 mapState.mapOverlayGroup + getOverlayGroup(course.courseId, checkPointGroup, true)
@@ -498,16 +543,11 @@ class DriveViewModel @Inject constructor(
                         it.path?.isVisible = true
                     }
                 }
-                /* launch {
-                     _cacheCheckPointMapOverlayGroup.forEach {
-                         it.value.markerGroup.forEach { it.isVisible = false }
-                     }
-                 }*/
-
+                val checkpointGroup = getCheckPointForMarkerUseCase(course.courseId) // todo 지우기
                 val newMapData =
                     mapState.mapOverlayGroup - getOverlayGroup(
                         course.courseId,
-                        course.checkpoints,
+                        checkpointGroup,
                         false
                     ).toSet()
                 copy(
@@ -645,14 +685,17 @@ class DriveViewModel @Inject constructor(
         }
     }
 
-    private fun checkpointImageChange(imgUri: Uri?) {
-        _driveScreenState.value = _driveScreenState.value.run {
-            val newBottomSheetState = bottomSheetState.run {
-                copy(
-                    imgUri = imgUri
-                )
+    private suspend fun checkpointImageChange(imgUri: Uri?) {
+        imgUri?.let {
+            _driveScreenState.value = _driveScreenState.value.run {
+                val newBottomSheetState = bottomSheetState.run {
+                    copy(
+                        imgUri = imgUri,
+                        imgInfo = getImageInfoUseCase(imgUri)
+                    )
+                }
+                copy(bottomSheetState = newBottomSheetState)
             }
-            copy(bottomSheetState = newBottomSheetState)
         }
     }
 
@@ -690,9 +733,7 @@ class DriveViewModel @Inject constructor(
             coroutineScope {
                 this@apply.forEach {
                     launch {
-                        _cacheCheckPointGroup.getOrPut(it.course.courseId) {
-                            getCheckPointForMarkerUseCase(it.course.checkpoints.toMetaCheckPoint())// 체크포인트 미리 불러오기
-                        }
+                        getCheckPointForMarkerUseCase(it.course.courseId)// 체크포인트 미리 불러오기
                     }
                 }
             }
@@ -723,15 +764,6 @@ class DriveViewModel @Inject constructor(
         }.toSet()
     }
 
-    private suspend fun getCheckPointGroup(
-        courseId: String,
-        metaCheckPoint: MetaCheckPoint = MetaCheckPoint()
-    ): List<CheckPoint> {
-        return _cacheCheckPointGroup.getOrPut(courseId) {
-            getCheckPointForMarkerUseCase(metaCheckPoint)
-        }
-    }
-
     private fun Set<MapOverlay>.hideCourseMapOverlayWithout(withoutOverlyId: String) {
         onEach {
             if (it.overlayId != withoutOverlyId) {
@@ -745,7 +777,7 @@ class DriveViewModel @Inject constructor(
         coroutineScope {
             forEach {
                 launch {
-                    getImageForPopupUseCase(it.remoteImgUrl)  // 체크포인트 이미지 미리로드
+                    getImageForPopupUseCase(it.imageName)  // 체크포인트 이미지 미리로드
                 }
             }
         }

@@ -4,12 +4,11 @@ import com.wheretogo.data.datasource.CheckPointLocalDatasource
 import com.wheretogo.data.datasource.CheckPointRemoteDatasource
 import com.wheretogo.data.model.checkpoint.LocalCheckPoint
 import com.wheretogo.data.toCheckPoint
-import com.wheretogo.data.toDataMetaCheckPoint
 import com.wheretogo.data.toLatLng
+import com.wheretogo.data.toLocalCheckPoint
 import com.wheretogo.data.toRemoteCheckPoint
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.LatLng
-import com.wheretogo.domain.model.map.MetaCheckPoint
 import com.wheretogo.domain.repository.CheckPointRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -22,20 +21,22 @@ class CheckPointRepositoryImpl @Inject constructor(
 ) : CheckPointRepository {
 
     override suspend fun setCheckPoint(checkPoint: CheckPoint): Boolean {
-        return checkPointRemoteDatasource.setCheckPoint(checkPoint.toRemoteCheckPoint())
+        return checkPointRemoteDatasource.setCheckPoint(checkPoint.toRemoteCheckPoint()).apply {
+            checkPointLocalDatasource.setCheckPoint(checkPoint.toLocalCheckPoint())
+        }
     }
 
     override suspend fun getCheckPoint(checkPointId: String): CheckPoint {
         val localCheckPoint = checkPointLocalDatasource.getCheckPoint(checkPointId) ?: run {
             val remoteCheckPoint = checkPointRemoteDatasource.getCheckPoint(checkPointId)
-            val remotePath = remoteCheckPoint?.imgUrl
+            val remotePath = remoteCheckPoint?.imageName
 
             LocalCheckPoint(
                 checkPointId = checkPointId,
                 latLng = remoteCheckPoint?.latLng?.toLatLng() ?: LatLng(),
                 titleComment = remoteCheckPoint?.titleComment ?: "",
-                remoteImgUrl = remotePath ?: "",
-                localImgUrl = "",
+                imageName = remotePath ?: "",
+                imageLocalPath = "",
                 timestamp = System.currentTimeMillis()
             ).apply { checkPointLocalDatasource.setCheckPoint(this) }
         }
@@ -44,23 +45,17 @@ class CheckPointRepositoryImpl @Inject constructor(
 
 
     override suspend fun getCheckPointGroup(
-        metaCheckPoint: MetaCheckPoint,
-        isFetch: Boolean
+        checkpointIdGroup: List<String>
     ): List<CheckPoint> {
-        return checkPointLocalDatasource.getCheckPointGroup(metaCheckPoint.toDataMetaCheckPoint())
+        return checkPointLocalDatasource.getCheckPointGroup(checkpointIdGroup)
             .run {
-                if (isFetch) {
-                    coroutineScope {
-                        metaCheckPoint.checkPointIdGroup.map { checkPointId ->
-                            async {
-                                getCheckPoint(checkPointId) // 체크포인트 저장
-                            }
-                        }.awaitAll()
-                    }
-                } else {
-                    this@run.toCheckPoint()
+                coroutineScope {
+                    checkpointIdGroup.map { checkPointId ->
+                        async {
+                            getCheckPoint(checkPointId) // 체크포인트 저장
+                        }
+                    }.awaitAll()
                 }
             }
     }
-
 }

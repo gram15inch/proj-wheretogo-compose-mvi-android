@@ -167,7 +167,7 @@ fun DriveScreen(
                 MapPopup(
                     modifier = Modifier.align(Alignment.BottomStart),
                     commentState = state.popUpState.commentState,
-                    imageUrl = state.popUpState.localImageUrl,
+                    imageUri = state.popUpState.imageUri,
                     isWideSize = isWideSize,
                     onPopupImageClick = {
                         viewModel.handleIntent(DriveScreenIntent.CommentFloatingButtonClick)
@@ -205,6 +205,9 @@ fun DriveScreen(
             CheckpointAddBottomSheet(
                 modifier = Modifier.align(Alignment.BottomCenter),
                 state = state.bottomSheetState,
+                onSubmitClick = {
+                    viewModel.handleIntent(DriveScreenIntent.CheckpointSubmitClick)
+                },
                 onBottomSheetClose = {
                     viewModel.handleIntent(DriveScreenIntent.BottomSheetClose)
                 },

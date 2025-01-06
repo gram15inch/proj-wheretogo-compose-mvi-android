@@ -1,5 +1,6 @@
 package com.wheretogo.data.datasource
 
+import com.wheretogo.data.model.course.DataMetaCheckPoint
 import com.wheretogo.data.model.course.RemoteCourse
 
 interface CourseRemoteDatasource {
@@ -11,4 +12,6 @@ interface CourseRemoteDatasource {
     suspend fun setCourse(course: RemoteCourse): Boolean
 
     suspend fun removeCourse(courseId: String): Boolean
+
+    suspend fun updateMetaCheckpoint(courseId: String, metaCheckPoint: DataMetaCheckPoint): Boolean
 }

@@ -8,6 +8,8 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.wheretogo.domain.AUTH_COMPANY
 import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.user.Profile
+import com.wheretogo.domain.model.user.ProfilePrivate
+import com.wheretogo.domain.model.user.ProfilePublic
 import com.wheretogo.domain.model.user.SignInRequest
 import com.wheretogo.domain.model.user.SignUpRequest
 import com.wheretogo.domain.usecase.user.UserSignUpAndSignInUseCase
@@ -40,25 +42,30 @@ class LoginViewModel @Inject constructor(
 
     fun signUpAndSignIn(result: GetCredentialResponse) {
         viewModelScope.launch(exceptionHandler) {
-
             val googleCredential = getGoogleIdTokenCredential(result.credential)
             if (googleCredential != null) {
                 val signInRequest = SignInRequest(token = googleCredential.idToken)
                 val signUpRequest = SignUpRequest(
                     profile = Profile(
-                        mail = googleCredential.id,
-                        name = googleCredential.displayName ?: "익명의드라이버",
-                        authCompany = AUTH_COMPANY.GOOGLE.name,
-                        lastVisited = System.currentTimeMillis(),
-                        accountCreation = System.currentTimeMillis(),
-                        isAdRemove = false
+                        public = ProfilePublic(
+                            name = googleCredential.displayName ?: "익명의드라이버",
+                        ),
+                        private = ProfilePrivate(
+                            mail = googleCredential.id,
+                            authCompany = AUTH_COMPANY.GOOGLE.name,
+                            lastVisited = System.currentTimeMillis(),
+                            accountCreation = System.currentTimeMillis(),
+                            isAdRemove = false
+                        )
+
                     ),
                     token = googleCredential.idToken
                 )
-
-                when (userSignUpAndSignInUseCase(signUpRequest, signInRequest).status) {
+                val result = userSignUpAndSignInUseCase(signUpRequest, signInRequest)
+                when (result.status) {
 
                     UseCaseResponse.Status.Success -> {
+
                         _loginScreenState.value = _loginScreenState.value.run {
                             copy(
                                 isExit = true,
@@ -81,7 +88,18 @@ class LoginViewModel @Inject constructor(
                         }
                     }
 
-                    UseCaseResponse.Status.Error -> {}
+                    UseCaseResponse.Status.Error -> {
+                        _loginScreenState.value = _loginScreenState.value.run {
+                            copy(
+                                isExit = false,
+                                isToast = true,
+                                toastMsg = "로그인 오류 ${result.msg}"
+                            )
+                        }
+                        _loginScreenState.value = _loginScreenState.value.run {
+                            copy(isToast = false)
+                        }
+                    }
                 }
             }
         }

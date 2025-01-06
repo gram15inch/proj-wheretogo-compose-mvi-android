@@ -2,7 +2,7 @@ package com.wheretogo.data.datasourceimpl
 
 import com.google.firebase.firestore.FirebaseFirestore
 import com.wheretogo.data.BuildConfig
-import com.wheretogo.data.FireStoreTableName
+import com.wheretogo.data.FireStoreCollections
 import com.wheretogo.data.datasource.RouteRemoteDatasource
 import com.wheretogo.data.datasourceimpl.service.NaverMapApiService
 import com.wheretogo.data.model.route.RemoteRoute
@@ -17,8 +17,8 @@ class RouteRemoteDatasourceImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val naverApiService: NaverMapApiService,
 ) : RouteRemoteDatasource {
-    private val courseTable = FireStoreTableName.COURSE_TABLE.name()
-    private val routeTable = FireStoreTableName.ROUTE_TABLE.name()
+    private val courseTable = FireStoreCollections.COURSE.name()
+    private val routeTable = FireStoreCollections.ROUTE.name()
 
     override suspend fun getRouteInCourse(courseId: String): RemoteRoute {
         return suspendCancellableCoroutine { continuation ->

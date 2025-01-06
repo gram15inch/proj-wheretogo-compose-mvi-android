@@ -48,5 +48,6 @@ sealed class DriveScreenIntent {
     data class CheckpointDescriptionChange(val text: String) : DriveScreenIntent()
     data object CheckpointDescriptionEnterClick : DriveScreenIntent()
     data class CheckpointImageChange(val imgUri: Uri?) : DriveScreenIntent()
+    data object CheckpointSubmitClick : DriveScreenIntent()
 
 }

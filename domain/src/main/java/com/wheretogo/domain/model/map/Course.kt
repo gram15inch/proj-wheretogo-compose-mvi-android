@@ -6,7 +6,7 @@ data class Course(
     val courseId: String = DOMAIN_EMPTY,
     val courseName: String = "",
     val waypoints: List<LatLng> = emptyList(),
-    val checkpoints: List<CheckPoint> = emptyList(), // 주입
+    val checkpointIdGroup: List<String> = emptyList(),
     val points: List<LatLng> = emptyList(), // 주입
     val duration: String = "",
     val tag: String = "",

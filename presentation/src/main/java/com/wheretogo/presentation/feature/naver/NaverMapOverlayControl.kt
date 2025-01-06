@@ -60,16 +60,18 @@ fun getMapOverlay(courseId: String, item: CheckPoint): MapOverlay {
             this.captionTextSize = 16f
             position = item.latLng.toNaver()
             isHideCollidedMarkers = true
-            if (item.localImgUrl.isNotEmpty())
+            if (item.imageLocalPath.isNotEmpty()) {
+                val bitmap = BitmapFactory.decodeFile(item.imageLocalPath)
                 icon = OverlayImage.fromBitmap(
                     getRoundedRectWithShadowBitmap(
-                        BitmapFactory.decodeFile(item.localImgUrl),
+                        bitmap,
                         30f,
                         8f,
                         Color.BLACK,
                         Color.WHITE
                     )
                 )
+            }
             tag = overlayTag.toStringTag()
         }),
         PathOverlay()

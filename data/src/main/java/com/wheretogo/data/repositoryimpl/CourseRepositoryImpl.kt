@@ -4,14 +4,14 @@ import com.wheretogo.data.datasource.CourseLocalDatasource
 import com.wheretogo.data.datasource.CourseRemoteDatasource
 import com.wheretogo.data.datasource.RouteRemoteDatasource
 import com.wheretogo.data.model.meta.LocalMetaGeoHash
-import com.wheretogo.data.toCheckPointGroup
 import com.wheretogo.data.toCourse
+import com.wheretogo.data.toDataMetaCheckPoint
 import com.wheretogo.data.toLocalCourse
-import com.wheretogo.data.toMetaCheckPoint
 import com.wheretogo.data.toRemoteCourse
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.Course
 import com.wheretogo.domain.model.map.LatLng
+import com.wheretogo.domain.model.map.MetaCheckPoint
 import com.wheretogo.domain.repository.CourseRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -26,7 +26,7 @@ class CourseRepositoryImpl @Inject constructor(
     private val _cacheRouteGroup = mutableMapOf<String, List<LatLng>>()// id
 
     override suspend fun getCourse(courseId: String): Course? {
-        val course = courseLocalDatasource.getCourse(courseId)?.toCourse()?:run{
+        val course = courseLocalDatasource.getCourse(courseId)?.toCourse() ?: run {
             courseRemoteDatasource.getCourse(courseId)?.run {
                 this.toLocalCourse(route = routeRemoteDatasource.getRouteInCourse(courseId).points)
             }?.toCourse()
@@ -64,7 +64,7 @@ class CourseRepositoryImpl @Inject constructor(
                     }
                 }
         }.map {
-            it.toCourse(checkPoints = it.localMetaCheckPoint.toMetaCheckPoint().toCheckPointGroup())
+            it.toCourse()
         }
     }
 
@@ -74,6 +74,21 @@ class CourseRepositoryImpl @Inject constructor(
     ) {
         courseRemoteDatasource.setCourse(course.toRemoteCourse())
         courseLocalDatasource.setCourse(course.toLocalCourse())
+    }
+
+    override suspend fun updateMetaCheckpoint(
+        courseId: String,
+        metaCheckPoint: MetaCheckPoint
+    ): Boolean {
+        return courseRemoteDatasource.updateMetaCheckpoint(
+            courseId,
+            metaCheckPoint.toDataMetaCheckPoint()
+        ).apply {
+            courseLocalDatasource.updateMetaCheckPoint(
+                courseId,
+                metaCheckPoint.toDataMetaCheckPoint()
+            )
+        }
     }
 }
 

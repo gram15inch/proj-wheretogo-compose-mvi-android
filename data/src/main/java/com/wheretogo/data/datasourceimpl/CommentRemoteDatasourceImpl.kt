@@ -3,7 +3,7 @@ package com.wheretogo.data.datasourceimpl
 
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
-import com.wheretogo.data.FireStoreTableName
+import com.wheretogo.data.FireStoreCollections
 import com.wheretogo.data.datasource.CommentRemoteDatasource
 import com.wheretogo.data.model.comment.RemoteComment
 import com.wheretogo.data.model.comment.RemoteCommentGroupWrapper
@@ -16,7 +16,7 @@ import kotlin.coroutines.resumeWithException
 class CommentRemoteDatasourceImpl @Inject constructor(
     private val firestore: FirebaseFirestore
 ) : CommentRemoteDatasource {
-    private val commentTable = FireStoreTableName.COMMENT_TABLE.name()
+    private val commentTable = FireStoreCollections.COMMENT.name()
 
     override suspend fun getCommentGroupInCheckPoint(groupId: String): RemoteCommentGroupWrapper? {
         return suspendCancellableCoroutine { continuation ->

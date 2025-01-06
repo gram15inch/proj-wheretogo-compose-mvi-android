@@ -104,21 +104,24 @@ fun DataMetaCheckPoint.toMetaCheckPoint(timestamp: Long = timeStamp): MetaCheckP
 fun CheckPoint.toRemoteCheckPoint(): RemoteCheckPoint {
     return RemoteCheckPoint(
         checkPointId = checkPointId,
+        userId = userId,
         latLng = latLng.toDataLatLng(),
         titleComment = titleComment,
-        imgUrl = remoteImgUrl
+        imageName = imageName,
+        description = description
     )
 }
 
-fun CheckPoint.toLocalCheckPoint(
-    localImgUrl: String = this.localImgUrl,
-): LocalCheckPoint {
+fun CheckPoint.toLocalCheckPoint(): LocalCheckPoint {
     return LocalCheckPoint(
         checkPointId = checkPointId,
+        userId = userId,
         latLng = latLng,
         titleComment = titleComment,
-        remoteImgUrl = remoteImgUrl,
-        localImgUrl = localImgUrl
+        imageName = imageName,
+        imageLocalPath = this.imageLocalPath,
+        description = description,
+        timestamp = System.currentTimeMillis()
     )
 }
 
@@ -127,7 +130,8 @@ fun RemoteCheckPoint.toCheckPoint(): CheckPoint {
         checkPointId = checkPointId,
         latLng = latLng.toLatLng(),
         titleComment = titleComment,
-        remoteImgUrl = imgUrl
+        imageName = imageName,
+        description = description
     )
 }
 
@@ -139,8 +143,9 @@ fun RemoteCheckPoint.toLocalCheckPoint(
         checkPointId = checkPointId,
         latLng = latLng.toLatLng(),
         titleComment = titleComment,
-        remoteImgUrl = imgUrl,
-        localImgUrl = localImgUrl,
+        imageName = imageName,
+        imageLocalPath = localImgUrl,
+        description = description,
         timestamp = timestamp
     )
 }
@@ -150,15 +155,14 @@ fun LocalCheckPoint.toCheckPoint(): CheckPoint {
         checkPointId = checkPointId,
         latLng = latLng,
         titleComment = titleComment,
-        remoteImgUrl = remoteImgUrl,
-        localImgUrl = localImgUrl,
+        imageName = imageName,
+        imageLocalPath = imageLocalPath,
     )
 }
 
 
 fun LocalCourse.toCourse(
     route: List<LatLng> = this.route,
-    checkPoints: List<CheckPoint> = this.localMetaCheckPoint.toMetaCheckPoint().toCheckPointGroup(),
     like: Int = this.like
 ): Course {
     return Course(
@@ -166,7 +170,7 @@ fun LocalCourse.toCourse(
         courseName = courseName,
         waypoints = waypoints,
         points = route,
-        checkpoints = checkPoints,
+        checkpointIdGroup = localMetaCheckPoint.checkPointIdGroup,
         duration = duration,
         tag = tag,
         level = level,
@@ -195,14 +199,14 @@ fun Course.toLocalCourse(
         relation = relation,
         cameraLatLng = cameraLatLng,
         zoom = zoom,
-        like = like
+        like = like,
     )
 }
 
 
 fun RemoteCourse.toLocalCourse(
     route: List<LatLng> = emptyList(),
-    checkPoint: DataMetaCheckPoint = DataMetaCheckPoint(checkPointIdGroup = this.remoteMetaCheckPoint.checkPointIdGroup),
+    checkPoint: DataMetaCheckPoint = DataMetaCheckPoint(checkPointIdGroup = this.dataMetaCheckPoint.checkPointIdGroup),
     like: Int = 0
 ): LocalCourse {
     return LocalCourse(
@@ -234,7 +238,7 @@ fun Course.toRemoteCourse(
         longitude = cameraLatLng.longitude,
         geoHash = cameraLatLng.toGeoHash(6),
         waypoints = waypoints,
-        remoteMetaCheckPoint = checkPoint,
+        dataMetaCheckPoint = checkPoint,
         duration = duration,
         tag = tag,
         level = level,
@@ -246,7 +250,6 @@ fun Course.toRemoteCourse(
 
 fun RemoteCourse.toCourse(
     route: List<LatLng> = emptyList(),
-    checkPoint: List<CheckPoint> = emptyList(),
     like: Int = 0
 ): Course {
     return Course(
@@ -254,7 +257,7 @@ fun RemoteCourse.toCourse(
         courseName = courseName,
         waypoints = waypoints,
         points = route,
-        checkpoints = checkPoint,
+        checkpointIdGroup = dataMetaCheckPoint.checkPointIdGroup,
         duration = duration,
         tag = tag,
         level = level,
@@ -271,8 +274,8 @@ fun List<LocalCheckPoint>.toCheckPoint(): List<CheckPoint> {
             checkPointId = it.checkPointId,
             latLng = it.latLng,
             titleComment = it.titleComment,
-            remoteImgUrl = it.remoteImgUrl,
-            localImgUrl = it.localImgUrl
+            imageName = it.imageName,
+            imageLocalPath = it.imageLocalPath
         )
     }
 }
@@ -283,8 +286,8 @@ fun List<CheckPoint>.toLocalCheckPoint(): List<LocalCheckPoint> {
             checkPointId = it.checkPointId,
             latLng = it.latLng,
             titleComment = it.titleComment,
-            remoteImgUrl = it.remoteImgUrl,
-            localImgUrl = it.localImgUrl
+            imageName = it.imageName,
+            imageLocalPath = it.imageLocalPath
         )
     }
 }

@@ -1,5 +1,6 @@
 package com.wheretogo.presentation.state
 
+import android.net.Uri
 import androidx.compose.ui.text.input.TextFieldValue
 import com.wheretogo.domain.model.dummy.getEmogiDummy
 import com.wheretogo.domain.model.map.Comment
@@ -38,7 +39,7 @@ data class DriveScreenState(
     data class PopUpState(
         val isVisible: Boolean = false,
         val checkPointId: String = "",
-        val localImageUrl: String = "",
+        val imageUri: Uri? = null,
         val commentState: CommentState = CommentState()
     ) {
         data class CommentState(

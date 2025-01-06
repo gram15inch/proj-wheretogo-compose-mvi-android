@@ -1,7 +1,7 @@
 package com.wheretogo.data.datasourceimpl
 
 import com.google.firebase.firestore.FirebaseFirestore
-import com.wheretogo.data.FireStoreTableName
+import com.wheretogo.data.FireStoreCollections
 import com.wheretogo.data.LikeObject
 import com.wheretogo.data.datasource.LikeRemoteDatasource
 import com.wheretogo.data.model.course.RemoteLike
@@ -14,8 +14,8 @@ import kotlin.coroutines.resumeWithException
 class LikeRemoteDatasourceImpl @Inject constructor(
     private val firestore: FirebaseFirestore
 ) : LikeRemoteDatasource {
-    private val courseTable = FireStoreTableName.CHECKPOINT_TABLE.name()
-    private val likeTable = FireStoreTableName.LIKE_TABLE.name()
+    private val courseTable = FireStoreCollections.CHECKPOINT.name()
+    private val likeTable = FireStoreCollections.LIKE.name()
 
     override suspend fun getLikeInObject(type: LikeObject, objectId: String): RemoteLike {
 

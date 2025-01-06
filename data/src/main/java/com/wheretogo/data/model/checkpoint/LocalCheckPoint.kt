@@ -11,9 +11,11 @@ import com.wheretogo.domain.model.map.LatLng
 data class LocalCheckPoint(
     @PrimaryKey
     val checkPointId: String = DATA_NULL,
+    val userId: String = "",
     val latLng: LatLng = LatLng(),
     val titleComment: String = "",
-    val remoteImgUrl: String = "",
-    val localImgUrl: String = "",
+    val imageName: String = "",
+    val imageLocalPath: String = "",
+    val description: String = "",
     val timestamp: Long = 0L
 )

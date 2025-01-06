@@ -43,7 +43,7 @@ class CourseLocalDatasourceImpl @Inject constructor(
         courseId: String,
         dataMetaCheckPoint: DataMetaCheckPoint
     ) {
-
+        courseDao.updateMetaCheckPoint(courseId, dataMetaCheckPoint)
     }
 
 }

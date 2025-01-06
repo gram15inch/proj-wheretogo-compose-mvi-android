@@ -5,25 +5,25 @@ const val DATA_NULL = ""
 const val DAY = 86400000L
 const val CHECKPOINT_UPDATE_TIME = DAY
 
-//파이어스토어 테이블명
-enum class FireStoreTableName {
-    USER_TABLE,
-    PROFILE_TABLE,
-    LIKE_HISTORY_TABLE,
-    BOOKMARK_TABLE,
-    HISTORY_TABLE,
+//파이어스토어 컬렉션명
+enum class FireStoreCollections {
+    USER,
+    BOOKMARK,
+    HISTORY,
 
-    COURSE_TABLE,
-    CHECKPOINT_TABLE,
-    META_CHECKPOINT_TABLE,
-    ROUTE_TABLE,
-    LIKE_TABLE,
-    COURSE_LIKE_TABLE,
-    COMMENT_TABLE,
-    REPORT_TABLE
+    COURSE,
+    CHECKPOINT,
+    ROUTE,
+    LIKE,
+
+    COMMENT,
+    REPORT,
+
+    PUBLIC,
+    PRIVATE,
 }
 
-fun FireStoreTableName.name(): String {
+fun FireStoreCollections.name(): String {
     return if (BuildConfig.DEBUG)
         "TEST_" + this.name
     else

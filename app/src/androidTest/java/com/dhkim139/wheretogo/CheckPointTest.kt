@@ -11,7 +11,6 @@ import com.dhkim139.wheretogo.di.FirebaseModule
 import com.google.firebase.FirebaseApp
 import com.wheretogo.data.datasourceimpl.CheckPointLocalDatasourceImpl
 import com.wheretogo.data.datasourceimpl.CheckPointRemoteDatasourceImpl
-import com.wheretogo.data.datasourceimpl.ImageLocalDatasourceImpl
 import com.wheretogo.data.di.DaoDatabaseModule
 import com.wheretogo.data.model.checkpoint.RemoteCheckPoint
 import com.wheretogo.data.model.dummy.cs1
@@ -19,7 +18,6 @@ import com.wheretogo.data.model.dummy.cs2
 import com.wheretogo.data.model.dummy.cs6
 import com.wheretogo.data.model.map.DataLatLng
 import com.wheretogo.data.repositoryimpl.CheckPointRepositoryImpl
-import com.wheretogo.domain.model.map.MetaCheckPoint
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertNotEquals
@@ -49,6 +47,40 @@ class CheckPointTest {
 
 
     @Test
+    fun initCheckPoint(): Unit = runBlocking {
+        val firestore = FirebaseModule.provideFirestore()
+        val datasource = CheckPointRemoteDatasourceImpl(firestore)
+
+        val cs1 = cs1.map {
+            it.copy(
+                titleComment = "\uD83D\uDE0A 주위가 조용해요.",
+                imageName = "photo_original.jpg"
+            )
+        }
+        val cs2 = cs2.map {
+            it.copy(
+                titleComment = "\uD83D\uDE0C 경치가 좋아요.",
+                imageName = "photo_original.jpg"
+            )
+        }
+        val cs6 = cs6.map {
+            it.copy(
+                titleComment = "\uD83D\uDE1A 또 가고싶어요.",
+                imageName = "photo_original.jpg"
+            )
+        }
+        cs1.forEach {
+            assertEquals(true, datasource.setCheckPoint(it))
+        }
+        cs2.forEach {
+            assertEquals(true, datasource.setCheckPoint(it))
+        }
+        cs6.forEach {
+            assertEquals(true, datasource.setCheckPoint(it))
+        }
+    }
+
+    @Test
     fun checkPointTest(): Unit = runBlocking {
         val firestore = FirebaseModule.provideFirestore()
         val datasource = CheckPointRemoteDatasourceImpl(firestore)
@@ -57,7 +89,7 @@ class CheckPointTest {
             checkPointId = "cp1",
             latLng = DataLatLng(123.321, 123.456),
             titleComment = "cp1 comment",
-            imgUrl = "https://testImg12312312312.com/test"
+            imageName = "https://testImg12312312312.com/test"
         )
 
         assertEquals(true, datasource.setCheckPoint(cp1))
@@ -73,7 +105,7 @@ class CheckPointTest {
 
         val cp1 = datasource.getCheckPoint("cp1")
         Log.d("tst6", "$cp1")
-        assertEquals(true, cp1?.imgUrl?.isNotEmpty())
+        assertEquals(true, cp1?.imageName?.isNotEmpty())
         assertEquals(true, cp1?.titleComment?.isNotEmpty())
         assertNotEquals(0.0, cp1?.latLng?.latitude)
     }
@@ -90,47 +122,12 @@ class CheckPointTest {
             checkPointLocalDatasource = CheckPointLocalDatasourceImpl(checkPointDao)
         )
 
-        val cp1 = checkPointRepository.getCheckPointGroup(MetaCheckPoint(listOf("cp1"), 0),true).first()
+        val cp1 = checkPointRepository.getCheckPointGroup(listOf("cp1")).first()
         Log.d("tst6", "$cp1")
-        assertEquals(true, cp1.remoteImgUrl.isNotEmpty())
+        assertEquals(true, cp1.imageName.isNotEmpty())
         assertEquals(true, cp1.titleComment.isNotEmpty())
         assertNotEquals(0.0, cp1.latLng.latitude)
 
-    }
-
-    @Test
-    fun initCheckPoint(): Unit = runBlocking {
-        val firestore = FirebaseModule.provideFirestore()
-        val datasource = CheckPointRemoteDatasourceImpl(firestore)
-
-        val cs1 = cs1.map {
-            it.copy(
-                titleComment = "\uD83D\uDE0A 주위가 조용해요.",
-                imgUrl = "photo_original.jpg"
-            )
-        }
-        val cs2 = cs2.map {
-            it.copy(
-                titleComment = "\uD83D\uDE0C 경치가 좋아요.",
-                imgUrl = "photo_original.jpg"
-            )
-        }
-        val cs6 = cs6.map {
-            it.copy(
-                titleComment = "\uD83D\uDE1A 또 가고싶어요.",
-                imgUrl = "photo_original.jpg"
-            )
-        }
-        // file:///data/user/0/com.dhkim139.wheretogo/cache/down_photo_original_768x1024_70.jpg
-        cs1.forEach {
-            assertEquals(true, datasource.setCheckPoint(it))
-        }
-        cs2.forEach {
-            assertEquals(true, datasource.setCheckPoint(it))
-        }
-        cs6.forEach {
-            assertEquals(true, datasource.setCheckPoint(it))
-        }
     }
 
 
@@ -192,15 +189,5 @@ class CheckPointTest {
         assertEquals(true, file.exists())
     }
 
-    @Test
-    fun downloadTest(): Unit = runBlocking {
-        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        val datasource =
-            ImageLocalDatasourceImpl(FirebaseModule.provideFirebaseStorage(), appContext)
-        val remotePath = "checkpoint/photo_original_768x1024_70.jpg"
-
-        val path = datasource.getImage(remotePath, "small")
-        assertEquals("cache_photo_original_768x1024_70.jpg", path.split("/").last())
-    }
 
 }

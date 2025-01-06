@@ -4,12 +4,14 @@ package com.wheretogo.domain
 import com.firebase.geofire.GeoFireUtils
 import com.firebase.geofire.GeoLocation
 import com.wheretogo.domain.model.map.CheckPoint
+import com.wheretogo.domain.model.map.CheckPointAddRequest
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.MetaCheckPoint
 import com.wheretogo.domain.model.map.OverlayTag
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.UUID
 
 fun LatLng.toGeoHash(length: Int): String {
     return GeoFireUtils.getGeoHashForLocation(GeoLocation(latitude, longitude), length)
@@ -50,5 +52,17 @@ fun List<CheckPoint>.toMetaCheckPoint(
     return MetaCheckPoint(
         checkPointIdGroup = map { it.checkPointId },
         timeStamp = timestamp
+    )
+}
+
+fun CheckPointAddRequest.toCheckpoint(
+    userId: String = ""
+): CheckPoint {
+    return CheckPoint(
+        checkPointId = UUID.randomUUID().toString(),
+        userId = userId,
+        latLng = latLng,
+        imageName = imageName,
+        description = description
     )
 }

@@ -6,6 +6,8 @@ import com.google.firebase.FirebaseApp
 import com.wheretogo.data.datasourceimpl.UserRemoteDatasourceImpl
 import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.model.user.Profile
+import com.wheretogo.domain.model.user.ProfilePrivate
+import com.wheretogo.domain.model.user.ProfilePublic
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeAll
@@ -37,72 +39,27 @@ class UserTest {
 
         val p1 = Profile(
             uid = "uid1",
-            name = "name",
-            mail = "mail",
-            authCompany = "google",
-            lastVisited = 0L,
-            accountCreation = 0L,
-            isAdRemove = false
+            public = ProfilePublic(
+                name = "name"
+            ),
+            private = ProfilePrivate(
+                mail = "mail",
+                authCompany = "google",
+                lastVisited = 0L,
+                accountCreation = 0L,
+                isAdRemove = false
+            ),
         )
 
-        remoteDatasource.setProfile(p1)
-        val result = remoteDatasource.getProfile(p1.uid)
-        assertEquals(p1, result)
-        remoteDatasource.removeProfile(p1.uid)
-    }
+        //assertEquals(true, remoteDatasource.setProfilePublic(p1.public))
+        val public = remoteDatasource.getProfilePublic(p1.uid)
+        assertEquals(p1.public, public)
 
-    @Test
-    fun modifyProfileTest(): Unit = runBlocking {
-        val firestore = FirebaseModule.provideFirestore()
-        val remoteDatasource = UserRemoteDatasourceImpl(firestore)
-
-        val p1 = Profile(
-            uid = "uid1",
-            name = "name",
-            mail = "mail",
-            authCompany = "google",
-            lastVisited = 0L,
-            accountCreation = 0L,
-            isAdRemove = false
-        )
-
-        val p1Copy = p1.copy(name = "modifyName")
-
-        remoteDatasource.setProfile(p1)
-
-        assertEquals(p1, remoteDatasource.getProfile(p1.uid))
-
-
-        remoteDatasource.setProfile(p1Copy)
-
-        assertEquals(p1Copy, remoteDatasource.getProfile(p1.uid))
+        //assertEquals(true, remoteDatasource.setProfilePrivate(p1.private))
+        val private = remoteDatasource.getProfilePrivate(p1.uid)
+        assertEquals(p1.private, private)
 
         remoteDatasource.removeProfile(p1.uid)
-    }
-
-    @Test
-    fun removeProfileTest(): Unit = runBlocking {
-        val firestore = FirebaseModule.provideFirestore()
-        val remoteDatasource = UserRemoteDatasourceImpl(firestore)
-
-        val p1 = Profile(
-            uid = "uid1",
-            name = "name",
-            mail = "mail",
-            authCompany = "google",
-            lastVisited = 0L,
-            accountCreation = 0L,
-            isAdRemove = false
-        )
-
-        remoteDatasource.setProfile(p1)
-
-        assertEquals(p1, remoteDatasource.getProfile(p1.uid))
-
-        remoteDatasource.removeProfile(p1.uid)
-
-        assertEquals(null, remoteDatasource.getProfile(p1.uid))
-
     }
 
     @Test

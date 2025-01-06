@@ -30,6 +30,7 @@ fun CheckPointAddScreen() {
         CheckpointAddBottomSheet(
             modifier = Modifier.align(Alignment.BottomCenter),
             state = state,
+            onSubmitClick = {},
             onBottomSheetClose = {},
             onSliderChange = {},
             onImageChange = {}

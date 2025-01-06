@@ -1,7 +1,7 @@
 package com.wheretogo.data.datasourceimpl
 
 import com.google.firebase.firestore.FirebaseFirestore
-import com.wheretogo.data.FireStoreTableName
+import com.wheretogo.data.FireStoreCollections
 import com.wheretogo.data.datasource.CheckPointRemoteDatasource
 import com.wheretogo.data.model.checkpoint.RemoteCheckPoint
 import com.wheretogo.data.name
@@ -13,7 +13,7 @@ import kotlin.coroutines.resumeWithException
 class CheckPointRemoteDatasourceImpl @Inject constructor(
     private val firestore: FirebaseFirestore
 ) : CheckPointRemoteDatasource {
-    private val checkPointTable = FireStoreTableName.CHECKPOINT_TABLE.name()
+    private val checkPointTable = FireStoreCollections.CHECKPOINT.name()
 
     override suspend fun getCheckPointGroup(checkPoints: List<String>): List<RemoteCheckPoint> {
         return suspendCancellableCoroutine { continuation ->

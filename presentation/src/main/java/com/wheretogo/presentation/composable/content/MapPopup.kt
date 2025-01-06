@@ -1,5 +1,6 @@
 package com.wheretogo.presentation.composable.content
 
+import android.net.Uri
 import android.view.MotionEvent
 import androidx.annotation.ColorRes
 import androidx.compose.animation.core.Animatable
@@ -45,6 +46,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.pointerInteropFilter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -56,6 +58,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.skydoves.landscapist.ImageOptions
 import com.skydoves.landscapist.glide.GlideImage
 import com.wheretogo.domain.model.dummy.getCommentDummy
 import com.wheretogo.domain.model.dummy.getEmogiDummy
@@ -93,7 +96,7 @@ fun PopupPreview() {
                     emogiGroup = getEmogiDummy()
                 )
             ),
-            imageUrl = "",
+            imageUri = Uri.parse(""),
             isWideSize = false,
             onPopupImageClick = {},
             onCommentListItemClick = {},
@@ -114,7 +117,7 @@ fun PopupPreview() {
 fun MapPopup(
     modifier: Modifier,
     commentState: CommentState,
-    imageUrl: String,
+    imageUri: Uri?,
     isWideSize: Boolean,
     onPopupImageClick: () -> Unit,
     onCommentListItemClick: (CommentItemState) -> Unit,
@@ -136,7 +139,7 @@ fun MapPopup(
                     modifier = modifier.clickable {
                         onPopupImageClick()
                     },
-                    url = imageUrl
+                    uri = imageUri
                 )
             },
             moveContent = { // 이동
@@ -485,12 +488,30 @@ fun CommentEmojiGroupAndOneLinePreview(
 
 
 @Composable
-fun PopUpImage(modifier: Modifier, url: String) {
-    GlideImage(modifier = modifier
-        .sizeIn(maxWidth = 260.dp, maxHeight = 500.dp)
-        .clip(RoundedCornerShape(16.dp)),
-        imageModel = { url }
-    )
+fun PopUpImage(modifier: Modifier, uri: Uri?) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.Black)
+            .sizeIn(maxWidth = 260.dp, maxHeight = 500.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        if (uri != null)
+            GlideImage(
+                modifier = Modifier.fillMaxSize(),
+                imageModel = { uri },
+                imageOptions = ImageOptions(contentScale = ContentScale.FillHeight)
+            )
+        else
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Image(
+                    modifier = Modifier.size(70.dp),
+                    painter = painterResource(R.drawable.ic_picture),
+                    contentDescription = ""
+                )
+            }
+    }
+
 }
 
 @Composable

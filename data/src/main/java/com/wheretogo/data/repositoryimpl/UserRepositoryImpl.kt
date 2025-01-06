@@ -5,8 +5,12 @@ import com.wheretogo.data.datasource.UserRemoteDatasource
 import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
 import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.model.user.Profile
+import com.wheretogo.domain.model.user.ProfilePrivate
+import com.wheretogo.domain.model.user.ProfilePublic
 import com.wheretogo.domain.model.user.SignResponse
 import com.wheretogo.domain.repository.UserRepository
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
@@ -69,12 +73,18 @@ class UserRepositoryImpl @Inject constructor(
         return userLocalDatasource.getProfileFlow()
     }
 
-    override suspend fun getProfile(uid: String): Profile? {
-        return userRemoteDatasource.getProfile(uid)
+    override suspend fun getPublicProfile(uid: String): ProfilePublic? {
+        return userRemoteDatasource.getProfilePublic(uid)
+    }
+
+    override suspend fun getProfilePrivate(uid: String): ProfilePrivate? {
+        return userRemoteDatasource.getProfilePrivate(uid)
     }
 
     override suspend fun setProfile(profile: Profile): Boolean {
-        if (userRemoteDatasource.setProfile(profile)) {
+        if (userRemoteDatasource.setProfilePrivate(profile.uid, profile.private)
+            && userRemoteDatasource.setProfilePublic(profile.uid, profile.public)
+        ) {
             userLocalDatasource.setProfile(profile)
             return true
         }
@@ -83,28 +93,36 @@ class UserRepositoryImpl @Inject constructor(
 
     override suspend fun signUp(profile: Profile): SignResponse {
         return try {
-            if (userRemoteDatasource.setProfile(profile)) {
+            if (setProfile(profile)) {
                 SignResponse(SignResponse.Status.Success, profile)
             } else {
                 SignResponse(SignResponse.Status.Fail)
             }
         } catch (e: Exception) {
-            SignResponse(SignResponse.Status.Error)
+            SignResponse(SignResponse.Status.Error, msg = e.message ?: "")
         }
     }
 
     override suspend fun signIn(uid: String): SignResponse {
         return try {
-            val profile = userRemoteDatasource.getProfile(uid)
+            val profile = coroutineScope {
+                val public = async { userRemoteDatasource.getProfilePublic(uid) }
+                val private = async { userRemoteDatasource.getProfilePrivate(uid) }
+                Profile(
+                    uid,
+                    public = public.await() ?: return@coroutineScope null,
+                    private = private.await() ?: return@coroutineScope null
+                )
+            }
 
             if (profile != null) {
-                userLocalDatasource.setProfile(profile)
+                setProfile(profile)
                 SignResponse(SignResponse.Status.Success, profile)
             } else {
                 SignResponse(SignResponse.Status.Fail)
             }
         } catch (e: Exception) {
-            SignResponse(SignResponse.Status.Error)
+            SignResponse(SignResponse.Status.Error, msg = e.message ?: "")
         }
     }
 

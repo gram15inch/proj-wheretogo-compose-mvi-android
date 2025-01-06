@@ -1,5 +1,6 @@
 package com.wheretogo.presentation.composable.test
 
+import android.net.Uri
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -40,7 +41,7 @@ fun CommentTestScreen(viewModel: DriveViewModel = hiltViewModel()) {
                     )
                 }
             ),
-            imageUrl = "",
+            imageUri = Uri.parse(""),
             isWideSize = false,
             onPopupImageClick = {},
             onCommentListItemClick = {},

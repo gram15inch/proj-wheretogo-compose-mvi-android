@@ -60,3 +60,7 @@ enum class ReportStatus {
     PENDING, REVIEWED, REJECTED, ACCEPTED
 }
 
+enum class ImageSize(val pathName: String, val width: Int, val height: Int) {
+    NORMAL("normal", 1500, 1500), SMALL("small", 200, 200)
+}
+

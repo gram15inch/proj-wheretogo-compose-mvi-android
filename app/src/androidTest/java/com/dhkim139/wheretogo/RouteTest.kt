@@ -28,35 +28,14 @@ class RouteTest {
             assertEquals("com.dhkim139.wheretogo", appContext.packageName)
             StrictMode.setThreadPolicy(
                 StrictMode.ThreadPolicy.Builder()
-                    .permitAll() // 모든 네트워크 작업 허용
+                    .permitAll()
                     .build()
             )
         }
     }
 
     @Test
-    fun routeTest(): Unit = runBlocking {
-        val firestore = FirebaseModule.provideFirestore()
-        val naverApi = ApiServiceModule.provideNaverMapApiService(RetrofitClientModule.run {
-            provideRetrofit(provideMoshi(), provideClient())
-        })
-        val datasource = RouteRemoteDatasourceImpl(firestore, naverApi)
-        val rt1 = RemoteRoute(
-            courseId = "cs1"
-        )
-
-        assertEquals(true, datasource.setRouteInCourse(rt1))
-        val rt2 = datasource.getRouteInCourse("cs1")
-
-        assertEquals(rt1, rt2)
-        assertEquals(true, datasource.removeRouteInCourse("cs1"))
-
-        val rt3 = datasource.getRouteInCourse("cs1")
-        assertEquals(true, rt3.points.isEmpty())
-    }
-
-    @Test
-    fun getRouteByNaverTest(): Unit = runBlocking {
+    fun initRouteByNaverTest(): Unit = runBlocking {
 
         val firestore = FirebaseModule.provideFirestore()
         val naverApi = ApiServiceModule.provideNaverMapApiService(RetrofitClientModule.run {
@@ -81,6 +60,28 @@ class RouteTest {
             assertEquals(route, datasource.getRouteInCourse(route.courseId))
         }
     }
+
+    @Test
+    fun routeTest(): Unit = runBlocking {
+        val firestore = FirebaseModule.provideFirestore()
+        val naverApi = ApiServiceModule.provideNaverMapApiService(RetrofitClientModule.run {
+            provideRetrofit(provideMoshi(), provideClient())
+        })
+        val datasource = RouteRemoteDatasourceImpl(firestore, naverApi)
+        val rt1 = RemoteRoute(
+            courseId = "cs1"
+        )
+
+        assertEquals(true, datasource.setRouteInCourse(rt1))
+        val rt2 = datasource.getRouteInCourse("cs1")
+
+        assertEquals(rt1, rt2)
+        assertEquals(true, datasource.removeRouteInCourse("cs1"))
+
+        val rt3 = datasource.getRouteInCourse("cs1")
+        assertEquals(true, rt3.points.isEmpty())
+    }
+
 
     @Test
     fun reverseGeocodingTest(): Unit = runBlocking {

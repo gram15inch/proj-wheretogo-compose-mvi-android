@@ -12,14 +12,13 @@ import com.wheretogo.data.datasourceimpl.RouteRemoteDatasourceImpl
 import com.wheretogo.data.di.ApiServiceModule
 import com.wheretogo.data.di.DaoDatabaseModule
 import com.wheretogo.data.di.RetrofitClientModule
+import com.wheretogo.data.model.course.DataMetaCheckPoint
 import com.wheretogo.data.model.course.RemoteCourse
 import com.wheretogo.data.repositoryimpl.CheckPointRepositoryImpl
 import com.wheretogo.data.repositoryimpl.CourseRepositoryImpl
-import com.wheretogo.data.toDataMetaCheckPoint
 import com.wheretogo.data.toRemoteCourse
 import com.wheretogo.domain.model.dummy.getCourseDummy
 import com.wheretogo.domain.model.map.Course
-import com.wheretogo.domain.toMetaCheckPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -48,10 +47,10 @@ class CourseTest {
         getCourseDummy().forEach { course ->
             val r = datasource.setCourse(
                 course.toRemoteCourse().copy(
-                    remoteMetaCheckPoint = course.checkpoints.toMetaCheckPoint()
-                        .toDataMetaCheckPoint(
-                            timeStamp = System.currentTimeMillis()
-                        )
+                    dataMetaCheckPoint = DataMetaCheckPoint(
+                        course.checkpointIdGroup,
+                        timeStamp = System.currentTimeMillis()
+                    )
                 )
             )
             assertEquals(true, r)
@@ -85,8 +84,8 @@ class CourseTest {
 
 
         val cs2 = datasource.getCourse("cs1")!!
-        assertEquals(true, cs2.remoteMetaCheckPoint.checkPointIdGroup.isNotEmpty())
-        Log.d("tst5", "${cs2.remoteMetaCheckPoint}")
+        assertEquals(true, cs2.dataMetaCheckPoint.checkPointIdGroup.isNotEmpty())
+        Log.d("tst5", "${cs2.dataMetaCheckPoint}")
     }
 
     @Test
@@ -100,7 +99,7 @@ class CourseTest {
         val end = "$start\uf8ff"
         val csg1 = datasource.getCourseGroupByGeoHash(start, end)
         assertEquals(true, csg1.isNotEmpty())
-        assertNotEquals(0, csg1.first().remoteMetaCheckPoint.checkPointIdGroup.size)
+        assertNotEquals(0, csg1.first().dataMetaCheckPoint.checkPointIdGroup.size)
         //assertEquals(cs1.courseId, csg1.first().courseId)
     }
 
@@ -108,7 +107,6 @@ class CourseTest {
     fun repositoryGetCourseTest(): Unit = runBlocking {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         val firestore = FirebaseModule.provideFirestore()
-        val firebaseStorage = FirebaseModule.provideFirebaseStorage()
         val naverApi = ApiServiceModule.provideNaverMapApiService(RetrofitClientModule.run {
             provideRetrofit(provideMoshi(), provideClient())
         })
@@ -123,13 +121,9 @@ class CourseTest {
             courseId = "cs1"
         )
         val cs1 = courseRepository.getCourse(dc1.courseId)
-        val cpg1 = cs1?.checkpoints ?: emptyList()
+        val cpg1 = cs1?.checkpointIdGroup ?: emptyList()
         Log.d("tst5", "${cpg1.size}")
-        Log.d("tst5", "${cpg1.first().localImgUrl} ${cpg1.first().remoteImgUrl}")
-        Log.d("tst5", "${cpg1.first().latLng}")
         assertEquals(true, cpg1.isNotEmpty())
-        assertEquals(true, cpg1.first().localImgUrl.isNotEmpty())
-        assertNotEquals(0.0, cpg1.first().latLng.latitude)
     }
 
     @Test
@@ -160,7 +154,7 @@ class CourseTest {
         val csg1 = courseRepository.getCourseGroupByGeoHash("wyd7")
         assertEquals(1, csg1.size)
         assertEquals(dc1.courseId, csg1.first().courseId)
-        assertNotEquals(0, csg1.first().checkpoints.size)
+        assertNotEquals(0, csg1.first().checkpointIdGroup.size)
 
         delay(1000)
         val csg2 = courseRepository.getCourseGroupByGeoHash("wyd7")

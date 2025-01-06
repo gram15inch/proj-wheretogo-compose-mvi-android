@@ -1,7 +1,6 @@
 package com.wheretogo.domain.repository
 
 import com.wheretogo.domain.model.map.CheckPoint
-import com.wheretogo.domain.model.map.MetaCheckPoint
 
 interface CheckPointRepository {
 
@@ -10,8 +9,7 @@ interface CheckPointRepository {
     suspend fun getCheckPoint(checkPointId: String): CheckPoint
 
     suspend fun getCheckPointGroup(
-        metaCheckPoint: MetaCheckPoint,
-        isFetch: Boolean
+        checkpointIdGroup: List<String>
     ): List<CheckPoint>
 
 }

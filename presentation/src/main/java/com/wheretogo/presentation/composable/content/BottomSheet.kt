@@ -20,7 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -29,7 +28,6 @@ import androidx.compose.ui.unit.sp
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.eventConsumption
 import com.wheretogo.presentation.feature.formatFileSizeToMB
-import com.wheretogo.presentation.feature.getFileInfoFromUri
 import com.wheretogo.presentation.state.BottomSheetState
 import com.wheretogo.presentation.theme.interBoldFontFamily
 
@@ -38,6 +36,7 @@ fun CheckpointAddBottomSheet(
     modifier: Modifier = Modifier,
     state: BottomSheetState,
     onBottomSheetClose: () -> Unit,
+    onSubmitClick: () -> Unit,
     onSliderChange: (Float) -> Unit,
     onImageChange: (Uri?) -> Unit
 ) {
@@ -63,7 +62,11 @@ fun CheckpointAddBottomSheet(
                         .padding(start = 10.dp, end = 10.dp)
                         .fillMaxWidth()
                 ) {
-                    Text(text = stringResource(R.string.checkpoint), fontSize = 16.sp, fontFamily = interBoldFontFamily)
+                    Text(
+                        text = stringResource(R.string.checkpoint),
+                        fontSize = 16.sp,
+                        fontFamily = interBoldFontFamily
+                    )
                     LocationSlider(
                         percentage = state.sliderPercent,
                         onSliderChange = onSliderChange
@@ -74,8 +77,12 @@ fun CheckpointAddBottomSheet(
                         onImageChange(uri)
                     }
 
-                    Text(text = stringResource(R.string.photo), fontSize = 16.sp, fontFamily = interBoldFontFamily)
-                    val context = LocalContext.current
+                    Text(
+                        text = stringResource(R.string.photo),
+                        fontSize = 16.sp,
+                        fontFamily = interBoldFontFamily
+                    )
+
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(16.dp))
@@ -89,15 +96,16 @@ fun CheckpointAddBottomSheet(
 
                     ) {
                         val text =
-                            if (state.imgUri != null) getFileInfoFromUri(
-                                context.contentResolver,
-                                state.imgUri
-                            ).run { "${first} ${formatFileSizeToMB(second!!)}" }
-                            else ""
+                            state.imgInfo?.let { "${it.fileName}  ${formatFileSizeToMB(it.byte)}" }
+                                ?: ""
                         Text(modifier = Modifier.padding(start = 10.dp), text = text)
                     }
 
-                    Text(text = stringResource(R.string.description), fontSize = 16.sp, fontFamily = interBoldFontFamily)
+                    Text(
+                        text = stringResource(R.string.description),
+                        fontSize = 16.sp,
+                        fontFamily = interBoldFontFamily
+                    )
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(16.dp))
@@ -124,7 +132,8 @@ fun CheckpointAddBottomSheet(
                         .padding(10.dp)
                         .clip(RoundedCornerShape(16.dp))
                         .height(60.dp)
-                        .background(colorResource(R.color.blue)),
+                        .background(colorResource(R.color.blue))
+                        .clickable { onSubmitClick() },
                     contentAlignment = Alignment.Center
                 ) {
                     Text(stringResource(R.string.submit))
