@@ -136,7 +136,6 @@ class DriveViewModel @Inject constructor(
     }
 
     private suspend fun checkpointSubmitClick() {
-        Log.d("tst8", "checkpointSubmitClick")
         _driveScreenState.value.apply {
             val courseId = listState.clickItem.course.courseId
             val oldCheckpointIdGroup = listState.clickItem.course.checkpointIdGroup
@@ -168,9 +167,7 @@ class DriveViewModel @Inject constructor(
 
                 }
 
-                else -> {
-                    Log.d("tst8", "fail")
-                }
+                else -> {}
             }
         }
     }

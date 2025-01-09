@@ -449,7 +449,7 @@ fun RouteWaypointContent(
                                 .wrapContentHeight()
                                 .border(
                                     width = 1.dp,
-                                    color = colorResource(R.color.gray_808080),
+                                    color = colorResource(R.color.gray_6F6F6F),
                                     shape = RoundedCornerShape(16.dp)
                                 )
                                 .animateItem()

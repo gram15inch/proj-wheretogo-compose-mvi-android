@@ -60,4 +60,14 @@
     <string name="contact_banner">비즈니스 / 광고문의</string>
     <string name="dev_gmail">wherecarhelp@gmail.com</string>
     <string name="title_activity_test">TestActivity</string>
+
+
+    <string name="login">로그인</string>
+    <string name="explore_without_login">로그인 없이 앱 둘러보기</string>
+
+
+    // 이미지 설명
+    <string name="google_logo">google logo</string>
+
+
 </resources>

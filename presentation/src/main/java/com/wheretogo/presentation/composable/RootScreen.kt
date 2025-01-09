@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -18,10 +17,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
+import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.wheretogo.presentation.composable.content.AnimationDirection
+import com.wheretogo.presentation.composable.content.SlideAnimation
 import com.wheretogo.presentation.composable.test.CheckPointAddScreen
 import com.wheretogo.presentation.composable.test.CommentTestScreen
 import com.wheretogo.presentation.composable.test.DragTestScreen
@@ -36,20 +38,20 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
         val navController = rememberNavController()
         val state by viewModel.rootScreenState.collectAsState()
 
-        LaunchedEffect(state.isRequestLogin) {
-            if (state.isRequestLogin) {
-                navController.navigate("login") {
-                    popUpTo("home") { inclusive = true }
-                }
-            }
-        }
-
         Box(
             modifier = Modifier
                 .background(Color.Gray)
                 .fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
+            SlideAnimation(
+                modifier = Modifier.zIndex(1f),
+                visible = state.isRequestLogin,
+                direction = AnimationDirection.CenterDown
+            ) {
+                LoginScreen()
+            }
+
             BoxWithConstraints(
                 modifier = Modifier
                     .fillMaxHeight()
@@ -63,11 +65,6 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                         exitTransition = { slideOutHorizontally(targetOffsetX = { it }) }
                     ) { DriveScreen(navController) }
                     composable("bookmark") { BookmarkScreen(navController) }
-                    composable("login",
-                        enterTransition = { slideInVertically(initialOffsetY = { it }) },
-                        exitTransition = { slideOutVertically(targetOffsetY = { it }) }
-                    )
-                    { LoginScreen(navController) }
                     composable("courseAdd",
                         enterTransition = { slideInVertically(initialOffsetY = { it }) },
                         exitTransition = { slideOutVertically(targetOffsetY = { it }) }
@@ -78,6 +75,8 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                     composable("comment") { CommentTestScreen() }
                 }
             }
+
+
         }
     }
 }
