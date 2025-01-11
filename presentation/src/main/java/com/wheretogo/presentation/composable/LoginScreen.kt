@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.wheretogo.presentation.R
-import com.wheretogo.presentation.feature.eventConsumption
+import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.feature.getGoogleCredential
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 import com.wheretogo.presentation.theme.interFontFamily
@@ -93,7 +93,7 @@ fun LoginContent(
     Box(
         modifier = Modifier
             .background(Color.White)
-            .eventConsumption()
+            .consumptionEvent()
             .systemBarsPadding()
             .fillMaxSize(),
         contentAlignment = Alignment.Center

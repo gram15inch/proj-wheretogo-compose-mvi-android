@@ -118,7 +118,7 @@ class CourseTest {
             routeRemoteDatasource = RouteRemoteDatasourceImpl(firestore, naverApi)
         )
         val dc1 = Course(
-            courseId = "cs1"
+            courseId = "cs1",
         )
         val cs1 = courseRepository.getCourse(dc1.courseId)
         val cpg1 = cs1?.checkpointIdGroup ?: emptyList()
@@ -149,7 +149,7 @@ class CourseTest {
         )
 
         val dc1 = Course(
-            courseId = "cs1"
+            courseId = "cs1",
         )
         val csg1 = courseRepository.getCourseGroupByGeoHash("wyd7")
         assertEquals(1, csg1.size)

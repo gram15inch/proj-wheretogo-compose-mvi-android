@@ -4,5 +4,5 @@ import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.Route
 
 interface CreateRouteUseCase {
-    suspend operator fun invoke(waypoints: List<LatLng>): Route
+    suspend operator fun invoke(waypoints: List<LatLng>): Route?
 }

@@ -12,19 +12,31 @@ interface UserRepository {
 
     suspend fun setRequestLogin(boolean: Boolean)
 
-    suspend fun addHistory(historyId: String, type: HistoryType)
+    suspend fun addHistory(
+        userId: String = "",
+        historyId: String,
+        type: HistoryType
+    )
 
-    suspend fun setHistoryGroup(uId: String, historyGroup: HashSet<String>, type: HistoryType)
+    suspend fun setHistoryGroup(
+        userId: String = "",
+        historyGroup: HashSet<String>,
+        type: HistoryType
+    )
 
-    suspend fun removeHistory(id: String, type: HistoryType)
+    suspend fun removeHistory(
+        userId: String,
+        historyId: String,
+        type: HistoryType
+    )
 
     suspend fun getHistoryIdStream(type: HistoryType): Flow<HashSet<String>>
 
     suspend fun getProfileStream(): Flow<Profile>
 
-    suspend fun getPublicProfile(uid: String): ProfilePublic?
+    suspend fun getPublicProfile(userId: String): ProfilePublic?
 
-    suspend fun getProfilePrivate(uid: String): ProfilePrivate?
+    suspend fun getProfilePrivate(userId: String): ProfilePrivate?
 
     suspend fun setProfile(profile: Profile): Boolean
 

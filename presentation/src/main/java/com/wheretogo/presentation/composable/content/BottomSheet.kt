@@ -26,7 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wheretogo.presentation.R
-import com.wheretogo.presentation.feature.eventConsumption
+import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.feature.formatFileSizeToMB
 import com.wheretogo.presentation.state.BottomSheetState
 import com.wheretogo.presentation.theme.interBoldFontFamily
@@ -50,7 +50,7 @@ fun CheckpointAddBottomSheet(
             modifier = modifier
                 .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
                 .fillMaxWidth()
-                .eventConsumption()
+                .consumptionEvent()
                 .statusBarsPadding()
                 .background(Color.White)
 

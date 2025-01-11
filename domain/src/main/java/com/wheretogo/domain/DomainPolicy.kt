@@ -64,3 +64,10 @@ enum class ImageSize(val pathName: String, val width: Int, val height: Int) {
     NORMAL("normal", 1500, 1500), SMALL("small", 200, 200)
 }
 
+enum class UseCaseFailType {
+    INVALID_USER, INVALID_DATA
+}
+
+
+class UserNotExistException(message: String) : NoSuchElementException(message)
+

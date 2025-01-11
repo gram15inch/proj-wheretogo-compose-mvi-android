@@ -2,7 +2,6 @@ package com.wheretogo.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.repository.UserRepository
 import com.wheretogo.presentation.state.BookmarkScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,28 +19,16 @@ class BookmarkViewModel @Inject constructor(
     private val _bookMarkScreenState = MutableStateFlow(BookmarkScreenState())
     val bookMarkScreenState: StateFlow<BookmarkScreenState> = _bookMarkScreenState
 
-    init {
+
+    fun addBookmark(bookmarkId: String) {
         viewModelScope.launch {
-            /*   userRepository.getBookmarkFlow2().collect { bookmarks ->
-                   val data = bookmarks.mapNotNull { bk ->
-                       journeyRepository.getJourney(bk)
-                   }.map { it.copy(isBookmark = true) }
-                   _bookMarkScreenState.value = _bookMarkScreenState.value.copy(data = data)
-               }*/
 
-        }
-
-    }
-
-    fun addBookmark(code: String) {
-        viewModelScope.launch {
-            userRepository.addHistory(code, HistoryType.BOOKMARK)
         }
     }
 
-    fun removeBookmark(code: String) {
+    fun removeBookmark(bookmarkId: String) {
         viewModelScope.launch {
-            userRepository.removeHistory(code, HistoryType.BOOKMARK)
+
         }
     }
 }

@@ -67,6 +67,7 @@ import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.BlurEffect
 import com.wheretogo.presentation.composable.ExtendArea
 import com.wheretogo.presentation.feature.ImeStickyBox
+import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.feature.topShadow
 import com.wheretogo.presentation.state.DriveScreenState.PopUpState.CommentState
 import com.wheretogo.presentation.state.DriveScreenState.PopUpState.CommentState.CommentAddState
@@ -224,6 +225,7 @@ fun MapPopup(
         ) {
             ImeStickyBox(
                 modifier = Modifier
+                    .consumptionEvent()
                     .padding(top = 1.dp)
                     .fillMaxWidth()
                     .align(alignment = Alignment.BottomCenter),

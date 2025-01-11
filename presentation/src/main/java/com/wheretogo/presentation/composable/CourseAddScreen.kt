@@ -62,7 +62,7 @@ import com.wheretogo.presentation.composable.content.DragHandle
 import com.wheretogo.presentation.composable.content.FadeAnimation
 import com.wheretogo.presentation.composable.content.NaverMap
 import com.wheretogo.presentation.composable.content.SlideAnimation
-import com.wheretogo.presentation.feature.eventConsumption
+import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.feature.naver.setCurrentLocation
 import com.wheretogo.presentation.intent.CourseAddIntent
 import com.wheretogo.presentation.model.ContentPadding
@@ -214,7 +214,7 @@ fun CourseAddBottomSheet(
     val context = LocalContext.current
     Box(
         modifier = modifier
-            .eventConsumption()
+            .consumptionEvent()
             .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
             .widthIn(context.getAddPopUpWidthDp())
             .heightIn(context.getAddPopUpHeightDp())

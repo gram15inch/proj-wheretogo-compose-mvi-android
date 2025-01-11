@@ -112,7 +112,7 @@ class CourseAddViewModel @Inject constructor(
 
     private fun mapClick(latlng: LatLng) {
         _courseAddScreenState.value = _courseAddScreenState.value.run {
-            if (mapOverlay.markerGroup .size < 5) {
+            if (mapOverlay.markerGroup.size < 5) {
                 val newMarkerGroup = mapOverlay.markerGroup + Marker().apply {
                     tag = "${latlng.latitude}${latlng.longitude}"
                     position = latlng.toNaver()
@@ -151,7 +151,11 @@ class CourseAddViewModel @Inject constructor(
     private fun markerRemoveFloatingClick() {
         _courseAddScreenState.value = _courseAddScreenState.value.run {
             val newMarkerGroup =
-                mapOverlay.markerGroup.filter { it.tag != selectedMarkerItem?.apply { map = null }?.tag }
+                mapOverlay.markerGroup.filter {
+                    it.tag != selectedMarkerItem?.apply {
+                        map = null
+                    }?.tag
+                }
             val newPath = if (newMarkerGroup.size < 2) {
                 mapOverlay.path?.map = null
                 null
@@ -232,7 +236,7 @@ class CourseAddViewModel @Inject constructor(
 
     private suspend fun routeCreateClick() {
         _courseAddScreenState.value = _courseAddScreenState.value.run {
-            val newRoute = createRouteUseCase(waypoints)
+            val newRoute = createRouteUseCase(waypoints) ?: return
             val naverPoints = newRoute.points.toNaver()
             val newWaypointItemState = newRoute.waypointItems.map { it.toRouteWaypointItemState() }
             val newPath = if (mapOverlay.markerGroup.size < 2) {

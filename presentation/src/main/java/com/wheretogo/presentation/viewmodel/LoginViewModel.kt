@@ -87,19 +87,6 @@ class LoginViewModel @Inject constructor(
                             copy(isToast = false)
                         }
                     }
-
-                    UseCaseResponse.Status.Error -> {
-                        _loginScreenState.value = _loginScreenState.value.run {
-                            copy(
-                                isExit = false,
-                                isToast = true,
-                                toastMsg = "로그인 오류 ${result.msg}"
-                            )
-                        }
-                        _loginScreenState.value = _loginScreenState.value.run {
-                            copy(isToast = false)
-                        }
-                    }
                 }
             }
         }

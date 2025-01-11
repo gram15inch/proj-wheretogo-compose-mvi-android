@@ -4,6 +4,7 @@ import com.wheretogo.data.datasource.CommentRemoteDatasource
 import com.wheretogo.data.model.comment.RemoteCommentGroupWrapper
 import com.wheretogo.data.toComment
 import com.wheretogo.data.toRemoteComment
+import com.wheretogo.domain.UserNotExistException
 import com.wheretogo.domain.model.map.Comment
 import com.wheretogo.domain.repository.CommentRepository
 import javax.inject.Inject
@@ -21,6 +22,9 @@ class CommentRepositoryImpl @Inject constructor(
     }
 
     override suspend fun addComment(comment: Comment) {
+        comment.userId.isEmpty()
+            .let { if (it) throw UserNotExistException("inValid userId: ${comment.userId}") }
+        require(comment.groupId.isNotEmpty()) { "inValid groupId: ${comment.groupId}" }
         val commentGroup = _cacheCommentGroup.getOrPut(comment.groupId) {
             listOf()
         } + comment

@@ -168,9 +168,10 @@ fun LocalCourse.toCourse(
     return Course(
         courseId = courseId,
         courseName = courseName,
+        userId = userId,
         waypoints = waypoints,
-        points = route,
         checkpointIdGroup = localMetaCheckPoint.checkPointIdGroup,
+        points = route,
         duration = duration,
         tag = tag,
         level = level,
@@ -187,6 +188,7 @@ fun Course.toLocalCourse(
     return LocalCourse(
         courseId = courseId,
         courseName = courseName,
+        userId = userId,
         latitude = cameraLatLng.latitude,
         longitude = cameraLatLng.longitude,
         geoHash = cameraLatLng.toGeoHash(6),
@@ -199,7 +201,7 @@ fun Course.toLocalCourse(
         relation = relation,
         cameraLatLng = cameraLatLng,
         zoom = zoom,
-        like = like,
+        like = like
     )
 }
 
@@ -224,7 +226,7 @@ fun RemoteCourse.toLocalCourse(
         relation = relation,
         cameraLatLng = cameraLatLng,
         zoom = zoom,
-        like = like
+        like = like,
     )
 }
 
@@ -234,6 +236,7 @@ fun Course.toRemoteCourse(
     return RemoteCourse(
         courseId = courseId,
         courseName = courseName,
+        userId = userId,
         latitude = cameraLatLng.latitude,
         longitude = cameraLatLng.longitude,
         geoHash = cameraLatLng.toGeoHash(6),
@@ -255,9 +258,10 @@ fun RemoteCourse.toCourse(
     return Course(
         courseId = courseId,
         courseName = courseName,
+        userId = userId,
         waypoints = waypoints,
-        points = route,
         checkpointIdGroup = dataMetaCheckPoint.checkPointIdGroup,
+        points = route,
         duration = duration,
         tag = tag,
         level = level,

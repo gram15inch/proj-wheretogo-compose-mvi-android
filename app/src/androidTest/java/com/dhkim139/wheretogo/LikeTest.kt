@@ -30,7 +30,7 @@ class LikeTest {
         val firestore = FirebaseModule.provideFirestore()
         val datasource = LikeRemoteDatasourceImpl(firestore)
         val cs1 = RemoteCourse(
-            courseId = "cs1"
+            courseId = "cs1",
         )
         val l1 = RemoteLike(
             like = 1,

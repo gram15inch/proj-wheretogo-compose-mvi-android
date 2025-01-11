@@ -78,7 +78,7 @@ fun NaverMap(
                     uiSettings.apply {
                         isLocationButtonEnabled = true
                         isZoomControlEnabled = false
-                        naverMap.minZoom = 11.0
+                        naverMap.minZoom = 8.0
                     }
 
                     addOnLocationChangeListener { location ->

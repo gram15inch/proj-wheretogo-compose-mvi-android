@@ -57,6 +57,7 @@ fun getCourseDummy(): List<Course> {
         Course(
             courseId = "cs1",
             courseName = "기흥호수공원 순환",
+            userId = "uid1",
             waypoints = w1,
             checkpointIdGroup = getCheckPointDummy("cs1").map { it.checkPointId },
             duration = "15",
@@ -69,6 +70,7 @@ fun getCourseDummy(): List<Course> {
         Course(
             courseId = "cs2",
             courseName = "광교호수공원 순환",
+            userId = "uid1",
             waypoints = w2,
             checkpointIdGroup = getCheckPointDummy("cs2").map { it.checkPointId },
             duration = "15",
@@ -81,6 +83,7 @@ fun getCourseDummy(): List<Course> {
         Course(
             courseId = "cs3",
             courseName = "에버랜드 장미원 <-> 1bw 주차장",
+            userId = "uid1",
             waypoints = w3,
             checkpointIdGroup = getCheckPointDummy().map { it.checkPointId },
             duration = "15",
@@ -93,6 +96,7 @@ fun getCourseDummy(): List<Course> {
         Course(
             courseId = "cs4",
             courseName = "에버랜드 장미원 <-> 백련사",
+            userId = "uid1",
             waypoints = w4,
             checkpointIdGroup = getCheckPointDummy().map { it.checkPointId },
             duration = "15",
@@ -105,6 +109,7 @@ fun getCourseDummy(): List<Course> {
         Course(
             courseId = "cs5",
             courseName = "기흥역 <-> 역북램프 공영주차장",
+            userId = "uid1",
             waypoints = w5,
             checkpointIdGroup = getCheckPointDummy().map { it.checkPointId },
             duration = "15",
@@ -118,6 +123,7 @@ fun getCourseDummy(): List<Course> {
         Course(
             courseId = "cs6",
             courseName = "기흥역 <-> 용인 운전면허시험 <-> 신갈오거리",
+            userId = "uid1",
             waypoints = w6,
             checkpointIdGroup = getCheckPointDummy("cs6").map { it.checkPointId },
             duration = "15",
@@ -131,6 +137,7 @@ fun getCourseDummy(): List<Course> {
         Course(
             courseId = "cs7",
             courseName = "에버랜드1b주차장 <-> 용인 스피드웨이",
+            userId = "uid1",
             waypoints = w7,
             checkpointIdGroup = getCheckPointDummy().map { it.checkPointId },
             duration = "15",

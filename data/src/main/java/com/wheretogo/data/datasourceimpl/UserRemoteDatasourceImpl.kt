@@ -1,5 +1,6 @@
 package com.wheretogo.data.datasourceimpl
 
+import android.util.Log
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
@@ -29,6 +30,7 @@ class UserRemoteDatasourceImpl @Inject constructor(
     private val reportTable = FireStoreCollections.REPORT.name()
     private val public = FireStoreCollections.PUBLIC.name()
     private val private = FireStoreCollections.PRIVATE.name()
+
 
     override suspend fun setProfilePublic(uid: String, profile: ProfilePublic): Boolean {
         return suspendCancellableCoroutine { continuation ->
@@ -101,6 +103,7 @@ class UserRemoteDatasourceImpl @Inject constructor(
     }
 
     override suspend fun setHistoryGroup(uid: String, wrapper: RemoteHistoryGroupWrapper): Boolean {
+        Log.d("tst8", "uid: ${uid}")
         val typeTable = when (wrapper.type) {
             HistoryType.LIKE -> likeTypeTable
             HistoryType.BOOKMARK -> bookMarkTypeTable
@@ -120,6 +123,7 @@ class UserRemoteDatasourceImpl @Inject constructor(
     }
 
     override suspend fun addHistory(uid: String, historyId: String, type: HistoryType): Boolean {
+
         val typeTable = when (type) {
             HistoryType.LIKE -> likeTypeTable
             HistoryType.BOOKMARK -> bookMarkTypeTable

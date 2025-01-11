@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.naver.maps.map.overlay.Marker
 import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.OverlayType
+import com.wheretogo.domain.UseCaseFailType
 import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.dummy.getEmogiDummy
 import com.wheretogo.domain.model.map.CheckPoint
@@ -28,6 +29,7 @@ import com.wheretogo.domain.usecase.map.GetNearByCourseUseCase
 import com.wheretogo.domain.usecase.user.GetHistoryStreamUseCase
 import com.wheretogo.domain.usecase.user.RemoveHistoryUseCase
 import com.wheretogo.domain.usecase.user.UpdateHistoryUseCase
+import com.wheretogo.domain.usecaseimpl.community.ModifyLikeUseCaseImpl
 import com.wheretogo.presentation.CommentType
 import com.wheretogo.presentation.feature.map.distanceTo
 import com.wheretogo.presentation.feature.naver.getMapOverlay
@@ -66,6 +68,7 @@ class DriveViewModel @Inject constructor(
     private val getImageForPopupUseCase: GetImageForPopupUseCase,
     private val updateHistoryUseCase: UpdateHistoryUseCase,
     private val removeHistoryUseCase: RemoveHistoryUseCase,
+    private val modifyLikeUseCase: ModifyLikeUseCaseImpl,
     private val getHistoryStreamUseCase: GetHistoryStreamUseCase,
     private val addCheckpointToCourseUseCase: AddCheckpointToCourseUseCase,
     private val getImageInfoUseCase: GetImageInfoUseCase
@@ -120,14 +123,8 @@ class DriveViewModel @Inject constructor(
 
                 //바텀시트
                 is DriveScreenIntent.BottomSheetClose -> bottomSheetClose()
-                is DriveScreenIntent.CheckpointLocationSliderChange -> checkpointLocationSliderChange(
-                    intent.percent
-                )
-
-                is DriveScreenIntent.CheckpointDescriptionChange -> checkpointDescriptionChange(
-                    intent.text
-                )
-
+                is DriveScreenIntent.CheckpointLocationSliderChange -> checkpointLocationSliderChange(intent.percent)
+                is DriveScreenIntent.CheckpointDescriptionChange -> checkpointDescriptionChange(intent.text)
                 is DriveScreenIntent.CheckpointDescriptionEnterClick -> checkpointDescriptionEnterClick()
                 is DriveScreenIntent.CheckpointImageChange -> checkpointImageChange(intent.imgUri)
                 is DriveScreenIntent.CheckpointSubmitClick -> checkpointSubmitClick()
@@ -384,7 +381,6 @@ class DriveViewModel @Inject constructor(
         _driveScreenState.value.mapState.mapOverlayGroup.hideCourseMapOverlayWithout(course.courseId)
 
         val checkPointGroup = getCheckPointForMarkerUseCase(course.courseId)
-        Log.d("tst9", "itemClick size:${checkPointGroup.size}")
         _driveScreenState.value = _driveScreenState.value.run {
             val newMapOverlayGroup =
                 mapState.mapOverlayGroup + getOverlayGroup(course.courseId, checkPointGroup, true)
@@ -449,49 +445,62 @@ class DriveViewModel @Inject constructor(
     }
 
     private suspend fun commentLikeClick(itemState: CommentItemState) {
-        if (itemState.isLike)
-            removeHistoryUseCase(itemState.data.commentId, HistoryType.LIKE)
-        else {
-            updateHistoryUseCase(itemState.data.commentId, HistoryType.LIKE)
-        }
+        if (modifyLikeUseCase(comment = itemState.data, !itemState.isLike)) {
+            val newCommentStateGroup =
+                _driveScreenState.value.popUpState.commentState.commentItemGroup.map {
+                    if (it.data.commentId == itemState.data.commentId)
+                        it.copy(data = it.data.copy(like = it.data.like + if (itemState.isLike) -1 else 1))
+                    else
+                        it
+                }
 
-        val newCommentStaetGroup =
-            _driveScreenState.value.popUpState.commentState.commentItemGroup.map {
-                if (it.data.commentId == itemState.data.commentId)
-                    it.copy(data = it.data.copy(like = it.data.like + if (itemState.isLike) -1 else 1))
-                else
-                    it
-            }
-        _driveScreenState.value = _driveScreenState.value.run {
-            copy(
-                popUpState = popUpState.copy(
-                    commentState = popUpState.commentState.copy(commentItemGroup = newCommentStaetGroup)
+            _driveScreenState.value = _driveScreenState.value.run {
+                copy(
+                    popUpState = popUpState.copy(
+                        commentState = popUpState.commentState.copy(commentItemGroup = newCommentStateGroup)
+                    )
                 )
-            )
-        }
+            }
 
-        addCommentToCheckPointUseCase(commentGroup = newCommentStaetGroup.map { it.data })
+        }
     }
 
 
     private suspend fun commentAddClick(itemState: CommentAddState) {
         val comment = itemState.toComment().copy(commentId = UUID.randomUUID().toString())
-        addCommentToCheckPointUseCase(comment)
-        _driveScreenState.value = _driveScreenState.value.run {
-            this.copy(
-                popUpState = popUpState.copy(
-                    commentState = popUpState.commentState.copy(
-                        commentAddState = comment.toCommentAddState(),
-                        commentItemGroup = getCommentForCheckPointUseCase(checkPointId = comment.groupId).map {
-                            CommentItemState(
-                                data = it,
-                                isLike = false,
-                                isFold = comment.detailedReview.length >= 70
+        val response = addCommentToCheckPointUseCase(comment)
+        when (response.status) {
+            UseCaseResponse.Status.Success -> {
+                _driveScreenState.value = _driveScreenState.value.run {
+                    this.copy(
+                        popUpState = popUpState.copy(
+                            commentState = popUpState.commentState.copy(
+                                commentAddState = comment.toCommentAddState(),
+                                commentItemGroup = getCommentForCheckPointUseCase(checkPointId = comment.groupId).map {
+                                    CommentItemState(
+                                        data = it,
+                                        isLike = false,
+                                        isFold = comment.detailedReview.length >= 70
+                                    )
+                                }
                             )
-                        }
+                        )
                     )
-                )
-            )
+                }
+            }
+
+            else -> {
+                when (response.failType) {
+                    UseCaseFailType.INVALID_USER -> {
+                        Log.d("tst8", "msg: ${response.msg}")
+                    }
+
+                    else -> {
+                        Log.d("tst8", "msg: ${response.msg}")
+                        bottomSheetClose()
+                    }
+                }
+            }
         }
     }
 

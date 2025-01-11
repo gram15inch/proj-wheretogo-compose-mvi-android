@@ -1,5 +1,11 @@
 package com.wheretogo.domain.model
 
-data class UseCaseResponse(val status: Status, val msg: String = "") {
-    enum class Status { Success, Fail, Error }
+import com.wheretogo.domain.UseCaseFailType
+
+data class UseCaseResponse(
+    val status: Status,
+    val failType: UseCaseFailType? = null,
+    val msg: String = ""
+) {
+    enum class Status { Success, Fail }
 }

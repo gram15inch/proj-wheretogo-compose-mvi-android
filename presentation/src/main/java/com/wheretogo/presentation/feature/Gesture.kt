@@ -65,7 +65,7 @@ suspend fun detectDrag(
 
 
 @Composable
-fun Modifier.eventConsumption(): Modifier {
+fun Modifier.consumptionEvent(): Modifier {
     return this.pointerInput(Unit) {
         awaitPointerEventScope {
             while (true) {
