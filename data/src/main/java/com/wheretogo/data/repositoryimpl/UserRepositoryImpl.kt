@@ -43,7 +43,6 @@ class UserRepositoryImpl @Inject constructor(
             uid = userId,
             historyId = historyId,
             type = type
-
         )
 
     }
@@ -111,7 +110,7 @@ class UserRepositoryImpl @Inject constructor(
         return false
     }
 
-    override suspend fun signUp(profile: Profile): SignResponse { //todo 트라이 캐치 없애기
+    override suspend fun signUp(profile: Profile): SignResponse {
         return if (setProfile(profile)) {
             SignResponse(SignResponse.Status.Success, profile)
         } else {
@@ -142,6 +141,15 @@ class UserRepositoryImpl @Inject constructor(
     override suspend fun signOut(): SignResponse {
         userLocalDatasource.clearUser()
         userLocalDatasource.clearHistory()
+
         return SignResponse(SignResponse.Status.Success)
+    }
+
+    override suspend fun deleteUser(userId: String): Boolean {
+        return if (userRemoteDatasource.deleteProfile(userId)) {
+            signOut()
+            true
+        } else
+            false
     }
 }

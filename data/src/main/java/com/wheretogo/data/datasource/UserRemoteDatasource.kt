@@ -10,8 +10,10 @@ interface UserRemoteDatasource {
     suspend fun setProfilePrivate(uid: String, profile: ProfilePrivate): Boolean
     suspend fun getProfilePublic(uid: String): ProfilePublic?
     suspend fun getProfilePrivate(uid: String): ProfilePrivate?
+    suspend fun deleteProfile(uid: String): Boolean
 
     suspend fun addHistory(uid: String, historyId: String, type: HistoryType): Boolean
     suspend fun getHistoryGroup(uid: String, type: HistoryType): HashSet<String>
     suspend fun setHistoryGroup(uid: String, wrapper: RemoteHistoryGroupWrapper): Boolean
+
 }

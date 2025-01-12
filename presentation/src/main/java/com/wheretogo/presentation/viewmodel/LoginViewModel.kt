@@ -41,6 +41,7 @@ class LoginViewModel @Inject constructor(
     }
 
     fun signUpAndSignIn(result: GetCredentialResponse) {
+        _loginScreenState.value = _loginScreenState.value.copy(isLoading = true)
         viewModelScope.launch(exceptionHandler) {
             val googleCredential = getGoogleIdTokenCredential(result.credential)
             if (googleCredential != null) {
@@ -70,6 +71,7 @@ class LoginViewModel @Inject constructor(
                             copy(
                                 isExit = true,
                                 isToast = true,
+                                isLoading = false,
                                 toastMsg = "반갑습니다 ${googleCredential.displayName}님."
                             )
                         }
@@ -80,11 +82,15 @@ class LoginViewModel @Inject constructor(
                             copy(
                                 isExit = false,
                                 isToast = true,
+                                isLoading = false,
                                 toastMsg = "로그인 실패"
                             )
                         }
                         _loginScreenState.value = _loginScreenState.value.run {
-                            copy(isToast = false)
+                            copy(
+                                isToast = false,
+                                isLoading = false
+                            )
                         }
                     }
                 }

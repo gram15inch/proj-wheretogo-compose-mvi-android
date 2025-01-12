@@ -1,7 +1,10 @@
 package com.wheretogo.presentation.composable
 
+import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,8 +13,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,6 +27,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -28,10 +37,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePublic
 import com.wheretogo.presentation.InfoType
 import com.wheretogo.presentation.R
+import com.wheretogo.presentation.intent.SettingIntent
 import com.wheretogo.presentation.parseLogoImgRes
 import com.wheretogo.presentation.state.SettingScreenState
 import com.wheretogo.presentation.theme.hancomMalangFontFamily
@@ -39,14 +50,15 @@ import com.wheretogo.presentation.theme.hancomSansFontFamily
 import com.wheretogo.presentation.viewmodel.SettingViewModel
 
 @Composable
-fun SettingScreen(viewModel: SettingViewModel = hiltViewModel()) {
+fun SettingScreen(navController: NavController, viewModel: SettingViewModel = hiltViewModel()) {
     val state by viewModel.settingScreenState.collectAsState()
     SettingContent(
-        state,
-        onNickNameChangeButtonClick = {},
-        onUserDeleteButtonClick = {},
-        onWebInfoButtonClick = { },
-        onLogoutButtonClick = { }
+        navController = navController,
+        settingState = state,
+        onUserNameChangeButtonClick = { viewModel.handleIntent(SettingIntent.UsernameChangeClick) },
+        onUserDeleteButtonClick = { viewModel.handleIntent(SettingIntent.UserDeleteClick) },
+        onWebInfoButtonClick = { viewModel.handleIntent(SettingIntent.InfoClick(it)) },
+        onLogoutButtonClick = { viewModel.handleIntent(SettingIntent.LogoutClick) }
     )
 }
 
@@ -60,7 +72,9 @@ fun SettingContentPreview() {
             .height(500.dp)
     ) {
         SettingContent(
+            navController = null,
             settingState = SettingScreenState().copy(
+                isProfile = true,
                 profile = Profile(
                     public = ProfilePublic(name = "닉네임")
                 )
@@ -71,74 +85,82 @@ fun SettingContentPreview() {
 
 @Composable
 fun SettingContent(
+    navController: NavController?,
     settingState: SettingScreenState = SettingScreenState(),
-    onNickNameChangeButtonClick: () -> Unit = {},
+    onUserNameChangeButtonClick: () -> Unit = {},
     onLogoutButtonClick: () -> Unit = {},
     onWebInfoButtonClick: (InfoType) -> Unit = {},
     onUserDeleteButtonClick: () -> Unit = {},
-
+) {
+    Column(
+        modifier = Modifier
+            .navigationBarsPadding()
+            .statusBarsPadding()
+            .fillMaxSize()
+            .background(Color.White)
     ) {
-    Column {
         Box(
             modifier = Modifier
-                .padding(20.dp)
+                .padding(start = 15.dp, top = 20.dp, bottom = 10.dp)
                 .fillMaxWidth()
-                .height(60.dp),
+                .height(40.dp),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            Box(modifier = Modifier
+                .size(30.dp)
+                .clip(CircleShape)
+                .clickable {
+                    navController?.navigateUp()
+                }, contentAlignment = Alignment.CenterStart) {
+                Image(
+                    modifier = Modifier.size(22.dp),
+                    painter = painterResource(R.drawable.ic_enter),
+                    contentDescription = ""
+                )
+            }
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 20.dp, bottom = 20.dp, end = 20.dp)
+                .heightIn(min = 60.dp),
             contentAlignment = Alignment.Center
         ) {
-            Row(verticalAlignment = Alignment.Bottom) {
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                ) {
-                    Box(modifier = Modifier.clickable {
-                        onNickNameChangeButtonClick()
-                    }) {
-                        Row(
-                            modifier = Modifier.padding(3.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = settingState.profile.public.name,
-                                fontFamily = hancomMalangFontFamily,
-                                fontSize = 20.sp
-                            )
-                            Image(
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .padding(start = 3.dp),
-                                painter = painterResource(R.drawable.ic_marker_add),
-                                contentDescription = ""
-                            )
-                        }
-                    }
-
-                    Box(modifier = Modifier.padding(start = 3.dp, top = 6.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Image(
-                                modifier = Modifier.size(17.dp),
-                                painter = painterResource(parseLogoImgRes(settingState.profile.private.authCompany)),
-                                contentDescription = ""
-                            )
-                            Text(
-                                modifier = Modifier.padding(start = 3.dp),
-                                fontFamily = hancomMalangFontFamily,
-                                text = "칭호"
-                            )
-                        }
-                    }
-                }
+            val profile = settingState.profile
+            if (settingState.isProfile)
+                ProfileSection(
+                    name = profile.public.name,
+                    authCompany = profile.private.authCompany,
+                    onUserNameChangeButtonClick = onUserNameChangeButtonClick,
+                    onLogoutButtonClick = onLogoutButtonClick
+                )
+            else {
                 Box(
                     modifier = Modifier
+                        .fillMaxWidth()
+                        .height(60.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .border(
+                            width = 1.3.dp,
+                            shape = RoundedCornerShape(16.dp),
+                            color = colorResource(R.color.gray_C7C7C7_80)
+                        )
                         .clickable {
                             onLogoutButtonClick()
-                        },
+                        }
                 ) {
-                    Text(
-                        modifier = Modifier.padding(5.dp),
-                        text = stringResource(R.string.logout),
-                        fontFamily = hancomMalangFontFamily
-                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(start = 20.dp),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        Text(
+                            text = "로그인이 필요합니다",
+                            fontFamily = hancomSansFontFamily,
+                            fontSize = 16.sp
+                        )
+                    }
                 }
             }
         }
@@ -185,23 +207,89 @@ fun SettingContent(
             thickness = 2.dp,
             color = colorResource(R.color.gray_C7C7C7_80)
         )
-        Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-            Box(modifier = Modifier
-                .padding(5.dp)
-                .clickable {
-                    onUserDeleteButtonClick()
-                }) {
-                Text(
-                    modifier = Modifier.padding(5.dp),
-                    text = stringResource(R.string.delete_user),
-                    fontFamily = hancomSansFontFamily,
-                    color = Color.Red
-                )
-            }
+        if (settingState.isProfile)
+            Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                Box(modifier = Modifier
+                    .padding(5.dp)
+                    .clickable {
+                        onUserDeleteButtonClick()
+                    }) {
+                    Text(
+                        modifier = Modifier.padding(5.dp),
+                        text = stringResource(R.string.delete_user),
+                        fontFamily = hancomSansFontFamily,
+                        color = Color.Red
+                    )
+                }
 
-        }
+            }
     }
 
+}
+
+@Composable
+fun ProfileSection(
+    name: String,
+    authCompany: String,
+    onUserNameChangeButtonClick: () -> Unit,
+    onLogoutButtonClick: () -> Unit
+) {
+    Row(verticalAlignment = Alignment.Bottom) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+        ) {
+            Box(modifier = Modifier.clickable {
+                onUserNameChangeButtonClick()
+            }) {
+                Row(
+                    modifier = Modifier.padding(3.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = name,
+                        fontFamily = hancomMalangFontFamily,
+                        fontSize = 24.sp
+                    )
+                    Image(
+                        modifier = Modifier
+                            .size(20.dp)
+                            .padding(start = 3.dp),
+                        painter = painterResource(R.drawable.ic_marker_add),
+                        contentDescription = ""
+                    )
+                }
+            }
+
+            Box(modifier = Modifier.padding(start = 3.dp, top = 6.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Image(
+                        modifier = Modifier.size(17.dp),
+                        painter = painterResource(parseLogoImgRes(authCompany)),
+                        contentDescription = ""
+                    )
+                    Text(
+                        modifier = Modifier.padding(start = 3.dp),
+                        fontFamily = hancomSansFontFamily,
+                        fontSize = 15.sp,
+                        text = "칭호"
+                    )
+                }
+            }
+        }
+        Box(
+            modifier = Modifier
+                .clickable {
+                    onLogoutButtonClick()
+                },
+        ) {
+            Text(
+                modifier = Modifier.padding(5.dp),
+                text = stringResource(R.string.logout),
+                fontFamily = hancomSansFontFamily
+            )
+        }
+    }
 }
 
 @Composable
@@ -234,7 +322,7 @@ fun InfoButton(text: Int, icon: Int, type: InfoType, onInfoButtonClick: (InfoTyp
 }
 
 @Composable
-fun WebViewScreen(url: String) {
+fun WebViebwScreen(url: String) {
     AndroidView(
         factory = { context ->
             WebView(context).apply {
@@ -242,6 +330,7 @@ fun WebViewScreen(url: String) {
                 settings.domStorageEnabled = true
                 settings.loadWithOverviewMode = true
                 settings.useWideViewPort = true
+                settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
                 loadUrl(url)
             }
         },

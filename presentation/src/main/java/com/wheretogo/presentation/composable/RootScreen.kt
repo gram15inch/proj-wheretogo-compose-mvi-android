@@ -25,9 +25,6 @@ import androidx.navigation.compose.rememberNavController
 import com.wheretogo.presentation.composable.content.AnimationDirection
 import com.wheretogo.presentation.composable.content.SlideAnimation
 import com.wheretogo.presentation.composable.test.CheckPointAddScreen
-import com.wheretogo.presentation.composable.test.CommentTestScreen
-import com.wheretogo.presentation.composable.test.DragTestScreen
-import com.wheretogo.presentation.composable.test.ImageTestScreen
 import com.wheretogo.presentation.theme.WhereTogoTheme
 import com.wheretogo.presentation.theme.White100
 import com.wheretogo.presentation.viewmodel.RootViewModel
@@ -70,9 +67,10 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                         exitTransition = { slideOutVertically(targetOffsetY = { it }) }
                     ) { CourseAddScreen(navController) }
                     composable("checkpointAdd") { CheckPointAddScreen() }
-                    composable("test") { ImageTestScreen() }
-                    composable("drag") { DragTestScreen() }
-                    composable("comment") { CommentTestScreen() }
+                    composable("setting",
+                        enterTransition = { slideInHorizontally(initialOffsetX = { it }) },
+                        exitTransition = { slideOutHorizontally(targetOffsetX = { it }) }
+                    ) { SettingScreen(navController) }
                 }
             }
 

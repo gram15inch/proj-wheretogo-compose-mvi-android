@@ -20,13 +20,11 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -39,16 +37,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.airbnb.lottie.compose.LottieAnimation
-import com.airbnb.lottie.compose.LottieClipSpec
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.LottieConstants
-import com.airbnb.lottie.compose.animateLottieCompositionAsState
-import com.airbnb.lottie.compose.rememberLottieComposition
 import com.naver.maps.map.overlay.Marker
 import com.wheretogo.domain.parseMarkerTag
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.content.CheckpointAddBottomSheet
+import com.wheretogo.presentation.composable.content.DelayLottieAnimation
 import com.wheretogo.presentation.composable.content.DescriptionTextField
 import com.wheretogo.presentation.composable.content.DriveList
 import com.wheretogo.presentation.composable.content.FadeAnimation
@@ -60,8 +53,6 @@ import com.wheretogo.presentation.feature.naver.setCurrentLocation
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.model.ContentPadding
 import com.wheretogo.presentation.viewmodel.DriveViewModel
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -91,6 +82,7 @@ fun DriveScreen(
             modifier = Modifier
                 .size(50.dp)
                 .align(alignment = Alignment.TopEnd),
+            ltRes = R.raw.lt_loading,
             isVisible = state.isLoading,
             delay = 300
         )
@@ -315,36 +307,6 @@ fun screenSize(isWidth: Boolean): Dp {
     return if (isWidth) screenWidthDp.dp else screenHeightDp.dp
 }
 
-@Composable
-fun DelayLottieAnimation(modifier: Modifier, isVisible: Boolean, delay: Long) {
-    var shouldShowAnimation by remember { mutableStateOf(true) }
-    var animation by remember { mutableStateOf<Job?>(null) }
-    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.lt_loading))
-    val progress by animateLottieCompositionAsState(
-        composition = composition,
-        iterations = LottieConstants.IterateForever,
-        clipSpec = LottieClipSpec.Progress(0f, 0.4f),
-    )
 
-    LaunchedEffect(isVisible) {
-        if (isVisible) {
-            if (animation == null)
-                animation = launch {
-                    delay(delay)
-                    shouldShowAnimation = true
-                }
-        } else {
-            animation?.cancel()
-            animation = null
-            shouldShowAnimation = false
-        }
-    }
-    if (shouldShowAnimation)
-        LottieAnimation(
-            modifier = modifier,
-            composition = composition,
-            progress = { progress },
-        )
-}
 
 

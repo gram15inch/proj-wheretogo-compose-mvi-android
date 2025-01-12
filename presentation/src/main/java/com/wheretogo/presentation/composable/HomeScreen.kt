@@ -70,7 +70,7 @@ fun HomeScreen(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         TopBar(displayMaxWidth, onSettingClick = {
-            viewModel.settingClick()
+            navController.navigate("setting")
         })
         Body(displayMaxWidth - outPadding * 2) { screen ->
             navController.navigate(screen)

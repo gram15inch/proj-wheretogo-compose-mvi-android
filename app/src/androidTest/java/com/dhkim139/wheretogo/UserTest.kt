@@ -51,15 +51,15 @@ class UserTest {
             ),
         )
 
-        //assertEquals(true, remoteDatasource.setProfilePublic(p1.public))
+        assertEquals(true, remoteDatasource.setProfilePublic(p1.uid, p1.public))
         val public = remoteDatasource.getProfilePublic(p1.uid)
         assertEquals(p1.public, public)
 
-        //assertEquals(true, remoteDatasource.setProfilePrivate(p1.private))
+        assertEquals(true, remoteDatasource.setProfilePrivate(p1.uid, p1.private))
         val private = remoteDatasource.getProfilePrivate(p1.uid)
         assertEquals(p1.private, private)
 
-        remoteDatasource.removeProfile(p1.uid)
+        assertEquals(true, remoteDatasource.deleteProfile(p1.uid))
     }
 
     @Test

@@ -41,8 +41,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.wheretogo.presentation.R
+import com.wheretogo.presentation.composable.content.DelayLottieAnimation
 import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.feature.getGoogleCredential
+import com.wheretogo.presentation.state.LoginScreenState
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 import com.wheretogo.presentation.theme.interFontFamily
 import com.wheretogo.presentation.viewmodel.LoginViewModel
@@ -64,6 +66,7 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
     }
 
     LoginContent(
+        state,
         onGoogleLoginClick = {
             coroutineScope.launch {
                 viewModel.signUpAndSignIn(getGoogleCredential(context))
@@ -86,6 +89,7 @@ fun LoginContentPreview() {
 
 @Composable
 fun LoginContent(
+    state: LoginScreenState = LoginScreenState(),
     onGoogleLoginClick: () -> Unit = {},
     onLoginPassClick: () -> Unit = {}
 ) {
@@ -120,7 +124,7 @@ fun LoginContent(
                     )
             }
             Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                LoginButton(R.drawable.ic_google, R.string.login) {
+                LoginButton(R.drawable.ic_google, R.string.login, state.isLoading) {
                     onGoogleLoginClick()
                 }
             }
@@ -131,22 +135,23 @@ fun LoginContent(
                     .weight(1f)
             )
         }
-        Text(
-            modifier = Modifier
-                .padding(bottom = 10.dp)
-                .align(alignment = Alignment.BottomCenter)
-                .clickable {
-                    onLoginPassClick()
-                },
-            text = stringResource(R.string.explore_without_login),
-            fontFamily = interFontFamily,
-            color = colorResource(R.color.gray_6F6F6F)
-        )
+        if (!state.isLoading)
+            Text(
+                modifier = Modifier
+                    .padding(bottom = 10.dp)
+                    .align(alignment = Alignment.BottomCenter)
+                    .clickable {
+                        onLoginPassClick()
+                    },
+                text = stringResource(R.string.explore_without_login),
+                fontFamily = interFontFamily,
+                color = colorResource(R.color.gray_6F6F6F)
+            )
     }
 }
 
 @Composable
-fun LoginButton(icon: Int, text: Int, onClick: () -> Unit) {
+fun LoginButton(icon: Int, text: Int, isLoading: Boolean, onClick: () -> Unit) {
     val round = 20.dp
     Box(
         modifier = Modifier
@@ -160,28 +165,39 @@ fun LoginButton(icon: Int, text: Int, onClick: () -> Unit) {
             .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                modifier = Modifier.size(50.dp),
-                painter = painterResource(icon),
-                contentDescription = stringResource(R.string.google_logo)
-            )
-            Text(
+        if (!isLoading)
+            Row(
                 modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 30.dp),
-                text = stringResource(text),
-                fontFamily = hancomSansFontFamily,
-                color = colorResource(R.color.gray_6F6F6F),
-                textAlign = TextAlign.Center,
-                fontSize = 18.sp
-            )
-        }
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    modifier = Modifier.size(50.dp),
+                    painter = painterResource(icon),
+                    contentDescription = stringResource(R.string.google_logo)
+                )
+                Text(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 30.dp),
+                    text = stringResource(text),
+                    fontFamily = hancomSansFontFamily,
+                    color = colorResource(R.color.gray_6F6F6F),
+                    textAlign = TextAlign.Center,
+                    fontSize = 18.sp
+                )
+            }
+        else
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                DelayLottieAnimation(
+                    modifier = Modifier
+                        .size(50.dp),
+                    ltRes = R.raw.lt_loading,
+                    isVisible = true,
+                    delay = 300
+                )
+            }
 
     }
 }

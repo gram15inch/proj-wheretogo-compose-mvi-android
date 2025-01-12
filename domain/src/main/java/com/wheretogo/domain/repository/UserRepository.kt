@@ -45,4 +45,6 @@ interface UserRepository {
     suspend fun signIn(uid: String): SignResponse
 
     suspend fun signOut(): SignResponse
+
+    suspend fun deleteUser(userId: String): Boolean
 }
