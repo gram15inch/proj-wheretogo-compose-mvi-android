@@ -5,7 +5,7 @@ import androidx.credentials.GetCredentialResponse
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
-import com.wheretogo.domain.AUTH_COMPANY
+import com.wheretogo.domain.AuthCompany
 import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePrivate
@@ -52,7 +52,7 @@ class LoginViewModel @Inject constructor(
                         ),
                         private = ProfilePrivate(
                             mail = googleCredential.id,
-                            authCompany = AUTH_COMPANY.GOOGLE.name,
+                            authCompany = AuthCompany.GOOGLE.name,
                             lastVisited = System.currentTimeMillis(),
                             accountCreation = System.currentTimeMillis(),
                             isAdRemove = false

@@ -9,3 +9,7 @@ enum class CommentType(@StringRes val typeRes: Int) {
 enum class CameraStatus {
     NONE, TRACK, INIT
 }
+
+enum class InfoType {
+    PRIVACY, LICENCE, TERMS
+}

@@ -63,8 +63,13 @@
 
 
     <string name="login">로그인</string>
+    <string name="logout"> 로그아웃 </string>
     <string name="explore_without_login">로그인 없이 앱 둘러보기</string>
 
+    <string name="privacy"> 개인정보처리방침 </string>
+    <string name="open_licence"> 오픈 라이선스 </string>
+    <string name="terms"> 이용약관 </string>
+    <string name="delete_user"> 계정삭제 </string>
 
     // 이미지 설명
     <string name="google_logo">google logo</string>

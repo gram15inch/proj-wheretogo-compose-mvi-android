@@ -1,6 +1,7 @@
 package com.wheretogo.presentation
 
 
+import com.wheretogo.domain.AuthCompany
 import com.wheretogo.domain.CourseDetail
 
 import com.wheretogo.domain.RouteDetailType
@@ -102,6 +103,20 @@ fun CourseDetail.toStrRes(): Int {
 
         else -> {
             R.string.unknown
+        }
+    }
+}
+
+fun parseLogoImgRes(company: String): Int {
+    val auth = try {
+        AuthCompany.valueOf(company)
+    } catch (e: Exception) {
+        AuthCompany.GOOGLE
+    }
+
+    return when (auth) {
+        AuthCompany.GOOGLE -> {
+            R.drawable.ic_google
         }
     }
 }

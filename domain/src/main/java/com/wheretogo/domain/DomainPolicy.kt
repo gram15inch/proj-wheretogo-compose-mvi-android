@@ -12,7 +12,7 @@ const val USER_DATE_FORMAT = "yyyy-MM-dd"
 const val DOMAIN_EMPTY = ""
 
 
-enum class AUTH_COMPANY { GOOGLE }
+enum class AuthCompany { GOOGLE }
 
 enum class OverlayType {
     NONE, COURSE, CHECKPOINT, PATH
