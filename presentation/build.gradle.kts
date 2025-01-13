@@ -112,6 +112,7 @@ dependencies {
 
     implementation ("com.firebase:geofire-android:3.2.0")
     implementation ("com.firebase:geofire-android-common:3.2.0")
+    implementation ("androidx.browser:browser:1.8.0")
 }
 
 fun getAppKey(propertyKey: String): String {

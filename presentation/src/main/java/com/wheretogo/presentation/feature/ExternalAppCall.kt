@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import androidx.browser.customtabs.CustomTabsIntent
 import com.skt.Tmap.TMapTapi
 import com.wheretogo.domain.model.map.Course
 import com.wheretogo.presentation.BuildConfig
@@ -96,4 +97,9 @@ fun Context.openPlayStore(url: String) {
         val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
         startActivity(webIntent)
     }
+}
+
+fun openWeb(context: Context, url: String) {
+    val customTabsIntent = CustomTabsIntent.Builder().build()
+    customTabsIntent.launchUrl(context, Uri.parse(url))
 }

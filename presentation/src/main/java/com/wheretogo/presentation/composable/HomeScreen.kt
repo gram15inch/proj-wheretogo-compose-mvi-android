@@ -25,7 +25,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -39,7 +41,9 @@ import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
+import com.wheretogo.presentation.InfoType
 import com.wheretogo.presentation.R
+import com.wheretogo.presentation.feature.openWeb
 import com.wheretogo.presentation.theme.Black100
 import com.wheretogo.presentation.theme.Blue200
 import com.wheretogo.presentation.theme.Gray100
@@ -110,6 +114,7 @@ fun TopBar(maxWidth: Dp, onSettingClick: () -> Unit) {
 
 @Composable
 fun Body(bodyMaxWidth: Dp, navigate: (String) -> Unit) {
+    val context = LocalContext.current
     val gridGap = 12.dp
     Column(verticalArrangement = Arrangement.spacedBy(gridGap)) {
         GridButton(
@@ -166,7 +171,9 @@ fun Body(bodyMaxWidth: Dp, navigate: (String) -> Unit) {
                     stringResource(R.string.visit_first_sub), 0.dp, null
                 )
             },
-            click = {})
+            click = {
+                openWeb(context, InfoType.GUIDE.url)
+            })
         GridButton(
             5, 2,
             maxWidth = bodyMaxWidth,
@@ -193,9 +200,9 @@ fun GridButton(
         modifier = Modifier
             .width(boxWidth)
             .height(row * 40.dp)
+            .clip(shape = RoundedCornerShape(10.dp))
             .clickable { click.invoke() },
-        shape = RoundedCornerShape(10.dp), // 둥근 모서리 적용
-        color = Color.White, // 배경색 적용
+        color = Color.White,
     ) {
         content()
     }

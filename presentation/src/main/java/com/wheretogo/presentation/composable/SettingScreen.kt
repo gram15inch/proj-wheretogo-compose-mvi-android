@@ -1,7 +1,5 @@
 package com.wheretogo.presentation.composable
 
-import android.webkit.WebSettings
-import android.webkit.WebView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -29,19 +27,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePublic
 import com.wheretogo.presentation.InfoType
 import com.wheretogo.presentation.R
+import com.wheretogo.presentation.feature.openWeb
 import com.wheretogo.presentation.intent.SettingIntent
 import com.wheretogo.presentation.parseLogoImgRes
 import com.wheretogo.presentation.state.SettingScreenState
@@ -111,7 +110,8 @@ fun SettingContent(
                 .clip(CircleShape)
                 .clickable {
                     navController?.navigateUp()
-                }, contentAlignment = Alignment.CenterStart) {
+                }, contentAlignment = Alignment.CenterStart
+            ) {
                 Image(
                     modifier = Modifier.size(22.dp),
                     painter = painterResource(R.drawable.ic_enter),
@@ -294,12 +294,14 @@ fun ProfileSection(
 
 @Composable
 fun InfoButton(text: Int, icon: Int, type: InfoType, onInfoButtonClick: (InfoType) -> Unit) {
+    val context = LocalContext.current
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(40.dp)
             .clickable {
                 onInfoButtonClick(type)
+                openWeb(context, type.url)
             },
         contentAlignment = Alignment.Center
     ) {
@@ -319,21 +321,4 @@ fun InfoButton(text: Int, icon: Int, type: InfoType, onInfoButtonClick: (InfoTyp
             )
         }
     }
-}
-
-@Composable
-fun WebViebwScreen(url: String) {
-    AndroidView(
-        factory = { context ->
-            WebView(context).apply {
-                settings.javaScriptEnabled = true
-                settings.domStorageEnabled = true
-                settings.loadWithOverviewMode = true
-                settings.useWideViewPort = true
-                settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-                loadUrl(url)
-            }
-        },
-        modifier = Modifier.fillMaxSize()
-    )
 }
