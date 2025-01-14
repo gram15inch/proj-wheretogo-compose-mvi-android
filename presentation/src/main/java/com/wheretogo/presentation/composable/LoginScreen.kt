@@ -1,7 +1,6 @@
 package com.wheretogo.presentation.composable
 
 import android.widget.Toast
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -9,7 +8,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,6 +16,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -30,22 +29,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.content.DelayLottieAnimation
 import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.feature.getGoogleCredential
 import com.wheretogo.presentation.state.LoginScreenState
-import com.wheretogo.presentation.theme.hancomSansFontFamily
 import com.wheretogo.presentation.theme.interFontFamily
 import com.wheretogo.presentation.viewmodel.LoginViewModel
 import kotlinx.coroutines.launch
@@ -69,7 +66,8 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
         state,
         onGoogleLoginClick = {
             coroutineScope.launch {
-                viewModel.signUpAndSignIn(getGoogleCredential(context))
+                getGoogleCredential(context)?.let { viewModel.signUpAndSignIn(it) }
+
             }
         },
         onLoginPassClick = {
@@ -124,7 +122,7 @@ fun LoginContent(
                     )
             }
             Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                LoginButton(R.drawable.ic_google, R.string.login, state.isLoading) {
+                GoogleLoginButton(state.isLoading) {
                     onGoogleLoginClick()
                 }
             }
@@ -151,45 +149,33 @@ fun LoginContent(
 }
 
 @Composable
-fun LoginButton(icon: Int, text: Int, isLoading: Boolean, onClick: () -> Unit) {
-    val round = 20.dp
+fun GoogleLoginButton(isLoading: Boolean, onClick: () -> Unit) {
     Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(70.dp)
-            .border(
-                border = BorderStroke(1.2.dp, color = colorResource(R.color.gray_848484)),
-                shape = RoundedCornerShape(round)
-            )
-            .clip(RoundedCornerShape(round))
-            .clickable { onClick() },
+            .fillMaxWidth(),
         contentAlignment = Alignment.Center
     ) {
         if (!isLoading)
-            Row(
+            Image(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Image(
-                    modifier = Modifier.size(50.dp),
-                    painter = painterResource(icon),
-                    contentDescription = stringResource(R.string.google_logo)
-                )
-                Text(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 30.dp),
-                    text = stringResource(text),
-                    fontFamily = hancomSansFontFamily,
-                    color = colorResource(R.color.gray_6F6F6F),
-                    textAlign = TextAlign.Center,
-                    fontSize = 18.sp
-                )
-            }
+                    .width(250.dp)
+                    .clickable {
+                        onClick()
+                    },
+                painter = painterResource(R.drawable.ic_google_cn_light),
+                contentScale = ContentScale.FillWidth,
+                contentDescription = ""
+            )
         else
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .width(250.dp)
+                    .border(
+                        width = 1.2.dp,
+                        color = colorResource(R.color.gray_848484),
+                        shape = RoundedCornerShape(4.dp)
+                    ), contentAlignment = Alignment.Center
+            ) {
                 DelayLottieAnimation(
                     modifier = Modifier
                         .size(50.dp),

@@ -193,12 +193,12 @@ fun EnterButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
             .clip(RoundedCornerShape(16.dp))
             .background(colorResource(R.color.blue))
             .clickable { onClick() }
-            .padding(vertical = 1.dp, horizontal = 15.dp),
+            .padding(vertical = 3.dp, horizontal = 15.dp),
         contentAlignment = Alignment.Center
     ) {
         Image(
-            modifier = Modifier.size(width = 28.dp, height = 32.dp),
-            painter = painterResource(R.drawable.ic_enter),
+            modifier = Modifier.width(24.dp),
+            painter = painterResource(R.drawable.ic_arrow_up),
             contentDescription = ""
         )
     }

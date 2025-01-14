@@ -27,12 +27,12 @@ enum class ReportType {
 }
 
 enum class RouteDetailType(val code: Int) {
-    TAG(101), LEVEL(102), RECOMMEND(104)
+    UNKNOWN(100), TAG(101), LEVEL(102), RECOMMEND(104)
 }
 
 
 enum class CourseDetail(val code: String, val type: RouteDetailType) {
-    NONE("none", RouteDetailType.TAG),
+    NONE("none", RouteDetailType.UNKNOWN),
 
     DRIVE("${RouteDetailType.TAG}-0001", RouteDetailType.TAG),
     SPORT("${RouteDetailType.TAG}-0002", RouteDetailType.TAG),

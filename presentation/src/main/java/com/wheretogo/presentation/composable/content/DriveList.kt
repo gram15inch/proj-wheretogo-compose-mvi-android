@@ -35,10 +35,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wheretogo.domain.CourseDetail
+import com.wheretogo.domain.model.map.Course
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.state.DriveScreenState.ListState.ListItemState
 import com.wheretogo.presentation.theme.White100
@@ -51,7 +53,11 @@ import com.wheretogo.presentation.toStrRes
 fun DriveListPreview() {
     DriveList(
         modifier = Modifier,
-        emptyList(),
+        listOf(ListItemState(
+            course = Course(
+                courseName = "노르테유 스카이웨이"
+            )
+        )),
         onItemClick = {},
         onBookmarkClick = {}
     )
@@ -108,14 +114,32 @@ fun DriveListItem(
                 .padding(8.dp)
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    text = listItem.course.courseName,
-                    textAlign = TextAlign.Center,
-                    fontFamily = hancomSansFontFamily,
-                    fontSize = 16.5.sp
-                )
+                Row(modifier=Modifier.fillMaxWidth()) {
+                    Text(
+                        modifier = Modifier.weight(1f),
+                        text = listItem.course.courseName,
+                        textAlign = TextAlign.Center,
+                        overflow = TextOverflow.Ellipsis,
+                        fontFamily = hancomSansFontFamily,
+                        fontSize = 16.5.sp
+                    )
+                    Box(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .clickable {
+                                onBookmarkClick(listItem)
+                            }
+                    ) {
+                        Image(
+                            modifier = Modifier
+                                .size(26.dp)
+                                .padding(5.dp),
+                            painter = painterResource(if (listItem.isBookmark) R.drawable.ic_bookmark else R.drawable.ic_bookmark),
+                            contentDescription = "",
+                        )
+                    }
+
+                }
                 Row(
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -153,23 +177,6 @@ fun DriveListItem(
                         type = "소요시간"
                     )
                 }
-            }
-
-            Box(
-                modifier = Modifier
-                    .align(alignment = Alignment.TopEnd)
-                    .clip(CircleShape)
-                    .clickable {
-                        onBookmarkClick(listItem)
-                    }
-            ) {
-                Image(
-                    modifier = Modifier
-                        .size(26.dp)
-                        .padding(5.dp),
-                    painter = painterResource(if (listItem.isBookmark) R.drawable.ic_heart_red else R.drawable.ic_heart_bk),
-                    contentDescription = "",
-                )
             }
         }
     }

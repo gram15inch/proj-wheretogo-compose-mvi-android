@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -91,7 +92,7 @@ fun FloatingButtons(
                 direction = AnimationDirection.RightCenter
             ) {
                 Box(modifier = Modifier.padding(end = buttonEndPadding)) {
-                    CircleButton(icon = R.drawable.ic_comment) {
+                    CircleButton(icon = R.drawable.ic_message) {
                         onCommentClick()
                     }
                 }
@@ -109,7 +110,7 @@ fun FloatingButtons(
                         end = buttonEndPadding
                     )
                 ) {
-                    CircleButton(icon = R.drawable.ic_marker_add) {
+                    CircleButton(icon = R.drawable.ic_location) {
                         onCheckpointAddClick()
                     }
                 }
@@ -124,7 +125,7 @@ fun FloatingButtons(
                 Box(modifier = Modifier.graphicsLayer(clip = false)) {
                     CirclePlateButton(
                         modifier = Modifier.align(Alignment.CenterEnd),
-                        icon = R.drawable.ic_setting,
+                        icon = R.drawable.ic_share,
                         isBackPlate = isExportBackPlate && isExportVisible,
                         buttonEndPadding = buttonEndPadding,
                         onNaverClick = {
@@ -156,7 +157,7 @@ fun FloatingButtons(
                 ) {
                     CircleButton(
                         modifier = Modifier,
-                        icon = R.drawable.ic_fold_up
+                        icon = R.drawable.ic_close
                     ) {
                         onFoldClick()
                     }
@@ -171,7 +172,7 @@ fun FloatingButtons(
 fun CircleButton(
     modifier: Modifier = Modifier,
     @DrawableRes icon: Int,
-    color: Color = Color.Blue,
+    color: Color = colorResource(R.color.blue),
     onClick: () -> Unit
 ) {
     Button(
@@ -179,13 +180,13 @@ fun CircleButton(
         modifier = modifier
             .size(60.dp),
         shape = CircleShape,
-        colors = ButtonDefaults.buttonColors(contentColor = color),
+        colors = ButtonDefaults.buttonColors(containerColor = color),
         contentPadding = PaddingValues(0.dp)
     ) {
         Image(
             painter = painterResource(id = icon),
             contentDescription = "Icon Description",
-            modifier = Modifier.size(32.dp)
+            modifier = Modifier.size(28.dp)
         )
     }
 }
@@ -248,7 +249,7 @@ fun CirclePlateButton(
             ) {
                 SquareButton(
                     modifier = Modifier.size(squareSize),
-                    icon = R.drawable.ic_setting,
+                    icon = R.drawable.ig_kakao,
                     caption = "카카오맵"
                 ) {
                     onKaKaoClick()
@@ -256,7 +257,7 @@ fun CirclePlateButton(
 
                 SquareButton(
                     modifier = Modifier.size(squareSize),
-                    icon = R.drawable.ic_comment,
+                    icon = R.drawable.ig_naver,
                     caption = "네이버맵"
                 ) {
                     onNaverClick()
@@ -264,7 +265,7 @@ fun CirclePlateButton(
 
                 SquareButton(
                     modifier = Modifier.size(squareSize),
-                    icon = R.drawable.ic_comment,
+                    icon = R.drawable.ig_tmap,
                     caption = "티맵"
                 ) {
                     onTClick()
@@ -310,7 +311,7 @@ fun SquareButton(
             Image(
                 painter = painterResource(id = icon),
                 contentDescription = "Icon Description",
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.fillMaxSize()
             )
         }
         Text(

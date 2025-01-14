@@ -90,21 +90,23 @@ fun TopBar(maxWidth: Dp, onSettingClick: () -> Unit) {
     Row(
         modifier = Modifier
             .width(maxWidth)
-            .padding(5.dp),
+            .padding(top = 5.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
+            modifier = Modifier.padding(start = 3.dp),
             text = stringResource(R.string.where_to_go),
             fontSize = 24.sp,
             fontFamily = hancomMalangFontFamily,
             color = Gray100
         )
         Image(
-            painter = painterResource(id = R.drawable.ic_setting), // 이미지 리소스
+            painter = painterResource(id = R.drawable.ic_menu_burger), // 이미지 리소스
             contentDescription = "Background Image",
             modifier = Modifier
-                .size(28.dp)
+                .padding(end = 8.dp)
+                .size(26.dp)
                 .clickable {
                     onSettingClick()
                 }

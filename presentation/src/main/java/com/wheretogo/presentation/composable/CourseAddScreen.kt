@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -120,11 +121,10 @@ fun CourseAddScreen(
                     .height(350.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(45.dp)
-                        .clip(CircleShape)
-                        .background(Color.Green)
+                Image(
+                    modifier = Modifier.width(30.dp),
+                    painter = painterResource(R.drawable.ic_marker),
+                    contentDescription = ""
                 )
             }
         Column(
@@ -186,18 +186,24 @@ fun FloatingButtonGroup(
             modifier = Modifier
                 .size(50.dp)
                 .clip(CircleShape)
-                .background(Color.Green)
+                .background(color = colorResource(R.color.blue))
                 .clickable {
                     onMarkerMoveClick()
-                })
+                }, contentAlignment = Alignment.Center
+        ) {
+            Image(painter = painterResource(R.drawable.ic_location), "")
+        }
         Box(
             modifier = Modifier
                 .size(50.dp)
                 .clip(CircleShape)
-                .background(Color.Blue)
+                .background(color = colorResource(R.color.blue))
                 .clickable {
                     onMarkerRemoveClick()
-                })
+                }, contentAlignment = Alignment.Center
+        ) {
+            Image(painter = painterResource(R.drawable.ic_close), "")
+        }
     }
 }
 
@@ -384,8 +390,11 @@ fun RouteWaypointContent(
                 )
                 Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(colorResource(R.color.gray_C7C7C7_80))
+                        .border(
+                            width = 1.dp,
+                            shape = RoundedCornerShape(16.dp),
+                            color = colorResource(R.color.gray_B9B9B9)
+                        )
                         .align(Alignment.TopEnd)
                         .clickable { onRouteCreateClick() },
                     contentAlignment = Alignment.Center

@@ -113,8 +113,8 @@ fun SettingContent(
                 }, contentAlignment = Alignment.CenterStart
             ) {
                 Image(
-                    modifier = Modifier.size(22.dp),
-                    painter = painterResource(R.drawable.ic_enter),
+                    modifier = Modifier.size(32.dp),
+                    painter = painterResource(R.drawable.ic_left),
                     contentDescription = ""
                 )
             }
@@ -184,19 +184,19 @@ fun SettingContent(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 InfoButton(
                     R.string.terms,
-                    R.drawable.ic_picture,
+                    R.drawable.ic_terms,
                     InfoType.TERMS,
                     onWebInfoButtonClick
                 )
                 InfoButton(
                     R.string.privacy,
-                    R.drawable.ic_picture,
+                    R.drawable.ic_privacy,
                     InfoType.PRIVACY,
                     onWebInfoButtonClick
                 )
                 InfoButton(
                     R.string.open_licence,
-                    R.drawable.ic_picture,
+                    R.drawable.ic_licence,
                     InfoType.LICENCE,
                     onWebInfoButtonClick
                 )
@@ -255,7 +255,7 @@ fun ProfileSection(
                         modifier = Modifier
                             .size(20.dp)
                             .padding(start = 3.dp),
-                        painter = painterResource(R.drawable.ic_marker_add),
+                        painter = painterResource(R.drawable.ic_edit),
                         contentDescription = ""
                     )
                 }

@@ -10,26 +10,30 @@ import com.wheretogo.presentation.BuildConfig
 import java.security.MessageDigest
 import java.util.UUID
 
-suspend fun getGoogleCredential(context:Context) : GetCredentialResponse {
-    val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
-        .setFilterByAuthorizedAccounts(false)
-        .setServerClientId(BuildConfig.GOOGLE_WEB_CLIENT_ID_KEY)
-        .setAutoSelectEnabled(true)
-        //.setNonce(generateNonce())
-        .build()
+suspend fun getGoogleCredential(context: Context): GetCredentialResponse? {
+    return try {
+        val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
+            .setFilterByAuthorizedAccounts(false)
+            .setServerClientId(BuildConfig.GOOGLE_WEB_CLIENT_ID_KEY)
+            .setAutoSelectEnabled(true)
+            //.setNonce(generateNonce())
+            .build()
 
-    val credentialManager = CredentialManager.create(context)
-    val request: GetCredentialRequest = GetCredentialRequest.Builder()
-        .addCredentialOption(googleIdOption)
-        .build()
+        val credentialManager = CredentialManager.create(context)
+        val request: GetCredentialRequest = GetCredentialRequest.Builder()
+            .addCredentialOption(googleIdOption)
+            .build()
 
 
-    val result = credentialManager.getCredential(
-        request = request,
-        context = context,
-    )
+        val result = credentialManager.getCredential(
+            request = request,
+            context = context,
+        )
 
-    return result
+        result
+    } catch (e: Exception) {
+        null
+    }
 }
 
 fun generateNonce(): String {

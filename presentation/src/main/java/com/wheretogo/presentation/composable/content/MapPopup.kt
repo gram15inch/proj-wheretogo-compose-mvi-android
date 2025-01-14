@@ -650,7 +650,7 @@ fun CommentListItem(
                             modifier = Modifier
                                 .size(22.dp)
                                 .padding(5.dp),
-                            painter = painterResource(if (comment.isLike) R.drawable.ic_heart_red else R.drawable.ic_heart_bk),
+                            painter = painterResource(if (comment.isLike) R.drawable.ic_heart else R.drawable.ic_heart),
                             contentDescription = "",
                         )
                     }
@@ -747,7 +747,7 @@ fun CommentFocusItem(
                             .size(22.dp)
                             .padding(5.dp)
                             .align(alignment = Alignment.CenterVertically),
-                        painter = painterResource(if (comment.isLike) R.drawable.ic_heart_red else R.drawable.ic_heart_bk),
+                        painter = painterResource(if (comment.isLike) R.drawable.ic_heart else R.drawable.ic_heart),
                         contentDescription = "",
                     )
                     Text(

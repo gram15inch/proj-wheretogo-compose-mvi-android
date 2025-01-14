@@ -67,6 +67,7 @@ fun RouteDetailType.toStrRes(): Int {
         RouteDetailType.TAG -> R.string.category
         RouteDetailType.LEVEL -> R.string.level
         RouteDetailType.RECOMMEND -> R.string.recommend
+        else -> R.string.unknown
     }
 }
 
@@ -116,7 +117,7 @@ fun parseLogoImgRes(company: String): Int {
 
     return when (auth) {
         AuthCompany.GOOGLE -> {
-            R.drawable.ic_google
+            R.drawable.ic_heart
         }
     }
 }
