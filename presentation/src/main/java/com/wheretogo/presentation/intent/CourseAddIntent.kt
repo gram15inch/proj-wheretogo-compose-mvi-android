@@ -15,5 +15,6 @@ sealed class CourseAddIntent {
     data object CommendClick : CourseAddIntent()
     data class RouteDetailItemClick(val item: CourseAddScreenState.RouteDetailItemState) : CourseAddIntent()
     data object DetailBackClick : CourseAddIntent()
+    data object DragClick : CourseAddIntent()
     data class NameEditValueChange(val text: String) : CourseAddIntent()
 }

@@ -23,6 +23,7 @@ data class CourseAddScreenState(
     val isWaypointDone: Boolean = false,
     val isDetailDone: Boolean = false,
     val isCourseAddDone: Boolean = false,
+    val isBottomSheetDown: Boolean = false,
     val toastMsg: String = "",
     val cameraState: CameraState = CameraState(),
     val detailItemStateGroup: List<RouteDetailItemState> = getRouteDetailItemGroup()

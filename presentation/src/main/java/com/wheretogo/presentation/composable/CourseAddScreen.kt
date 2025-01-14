@@ -1,6 +1,8 @@
 package com.wheretogo.presentation.composable
 
 import android.content.Context
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -14,23 +16,24 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -85,18 +88,39 @@ fun CourseAddScreen(
     val context = LocalContext.current
     var isNotMove by remember { mutableStateOf(true) }
     val coroutineScope = rememberCoroutineScope()
+    val bottomSheetHeight by animateDpAsState(
+        targetValue = if (state.isBottomSheetDown) 60.dp else 400.dp,
+        animationSpec = tween(durationMillis = 350)
+    )
+
     if (state.isCourseAddDone) {
         if (isNotMove) {
             navController.navigate("home")
             isNotMove = false
         }
     }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .navigationBarsPadding()
     ) {
-
+        if (state.isFloatMarker)
+            Box(// 중앙 마커
+                modifier = Modifier
+                    .fillMaxSize()
+                    .zIndex(1f)
+                    .padding(bottom = bottomSheetHeight),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    modifier = Modifier
+                        .width(30.dp)
+                        .padding(bottom = 30.dp),
+                    painter = painterResource(R.drawable.ic_marker),
+                    contentDescription = ""
+                )
+            }
         NaverMap(
             modifier = Modifier
                 .zIndex(0f)
@@ -112,21 +136,17 @@ fun CourseAddScreen(
             onCameraMove = { viewModel.handleIntent(CourseAddIntent.UpdatedCamera(it)) },
             onMapClickListener = { viewModel.handleIntent(CourseAddIntent.MapClick(it)) },
             onCourseMarkerClick = { viewModel.handleIntent(CourseAddIntent.CourseMarkerClick(it as Marker)) },
-            contentPadding = context.getMapPadding()
+            contentPadding = ContentPadding(
+                bottom = bottomSheetHeight
+            )
         )
-        if (state.isFloatMarker)
-            Box(// 중앙 마커
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(350.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    modifier = Modifier.width(30.dp),
-                    painter = painterResource(R.drawable.ic_marker),
-                    contentDescription = ""
-                )
-            }
+    }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding()
+            .navigationBarsPadding()
+    ) {
         Column(
             modifier = Modifier.align(Alignment.BottomEnd),
             horizontalAlignment = Alignment.End
@@ -142,8 +162,8 @@ fun CourseAddScreen(
                 )
             }
             CourseAddBottomSheet(
-                modifier = Modifier,
-                courseAddScreenState = state,
+                height = bottomSheetHeight,
+                state = state,
                 onRouteCreateClick = { viewModel.handleIntent(CourseAddIntent.RouteCreateClick) },
                 onRouteDetailItemClick = {
                     viewModel.handleIntent(
@@ -154,6 +174,7 @@ fun CourseAddScreen(
                 },
                 onCommendClick = { viewModel.handleIntent(CourseAddIntent.CommendClick) },
                 onBackClick = { viewModel.handleIntent(CourseAddIntent.DetailBackClick) },
+                onDragClick = { viewModel.handleIntent(CourseAddIntent.DragClick) },
                 onNameEditValueChange = {
                     viewModel.handleIntent(
                         CourseAddIntent.NameEditValueChange(
@@ -170,7 +191,16 @@ fun CourseAddScreen(
 @Preview
 @Composable
 fun CourseAddScreenPreview() {
-    CourseAddBottomSheet(modifier = Modifier, CourseAddScreenState(), {}, {}, {}, {}, {})
+    CourseAddBottomSheet(
+        modifier = Modifier,
+        CourseAddScreenState(),
+        height = 400.dp,
+        {},
+        {},
+        {},
+        {},
+        {},
+        {})
 }
 
 @Composable
@@ -210,59 +240,65 @@ fun FloatingButtonGroup(
 @Composable
 fun CourseAddBottomSheet(
     modifier: Modifier = Modifier,
-    courseAddScreenState: CourseAddScreenState,
+    state: CourseAddScreenState,
+    height: Dp,
     onRouteDetailItemClick: (RouteDetailItemState) -> Unit,
     onRouteCreateClick: () -> Unit,
     onCommendClick: () -> Unit,
     onBackClick: () -> Unit,
+    onDragClick: () -> Unit,
     onNameEditValueChange: (String) -> Unit,
 ) {
     val context = LocalContext.current
-    Box(
+    val scrollState = rememberScrollState()
+    Column(
         modifier = modifier
-            .consumptionEvent()
             .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
             .widthIn(context.getAddPopUpWidthDp())
-            .heightIn(context.getAddPopUpHeightDp())
+            .height(height)
+            .consumptionEvent()
+            .verticalScroll(scrollState)
             .background(colorResource(R.color.white))
 
     ) {
+        val contentHeight = min(height.value.toInt(), 340).dp
         Column {
-            Box(modifier = Modifier.height(340.dp)) {
-                DragHandle()
+            Box(modifier = Modifier.height(contentHeight)) {
+                DragHandle(Modifier.clickable { onDragClick() })
                 SlideAnimation(
-                    visible = !courseAddScreenState.isDetailContent,
+                    visible = !state.isDetailContent,
                     direction = AnimationDirection.CenterUp
                 ) {
                     RouteWaypointContent(
                         modifier = Modifier
                             .padding(top = 15.dp, start = 15.dp, end = 15.dp, bottom = 5.dp)
                             .fillMaxWidth(),
-                        routeName = courseAddScreenState.courseName,
-                        duration = courseAddScreenState.duration,
-                        waypointItemStateGroup = courseAddScreenState.waypointItemStateGroup,
+                        routeName = state.courseName,
+                        duration = state.duration,
+                        waypointItemStateGroup = state.waypointItemStateGroup,
                         onRouteCreateClick = onRouteCreateClick,
                         onNameEditValueChange = onNameEditValueChange,
                     )
                 }
 
                 SlideAnimation(
-                    visible = courseAddScreenState.isDetailContent,
+                    visible = state.isDetailContent,
                     direction = AnimationDirection.CenterDown
                 ) {
                     RouteDetailContent(
                         modifier = Modifier
                             .padding(15.dp)
-                            .fillMaxWidth(),
-                        routeDetailItemStateGroup = courseAddScreenState.detailItemStateGroup,
+                            .fillMaxSize(),
+                        routeDetailItemStateGroup = state.detailItemStateGroup,
                         onRouteDetailItemClick = onRouteDetailItemClick,
                         onBackClick = onBackClick
                     )
                 }
             }
             CommendButton(
-                isDetailContent = courseAddScreenState.isDetailContent,
-                isDone = courseAddScreenState.isCommendActive,
+                modifier = Modifier.height(60.dp),
+                isDetailContent = state.isDetailContent,
+                isDone = state.isCommendActive,
                 onCommendClick = onCommendClick
             )
         }
@@ -272,13 +308,13 @@ fun CourseAddBottomSheet(
 
 @Composable
 fun CommendButton(
+    modifier: Modifier,
     isDone: Boolean,
     isDetailContent: Boolean,
     onCommendClick: () -> Unit
 ) {
     Box(
-        modifier = Modifier
-            .padding(10.dp),
+        modifier = modifier.padding(horizontal = 15.dp, vertical = 5.dp),
         contentAlignment = Alignment.BottomCenter
     ) {
         val text = if (isDetailContent) R.string.done else R.string.next_step
@@ -286,8 +322,7 @@ fun CommendButton(
         val backColor = if (isDone) R.color.blue else R.color.gray_C7C7C7_80
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(60.dp)
+                .fillMaxSize()
                 .clip(RoundedCornerShape(16.dp))
                 .background(colorResource(backColor))
                 .clickable {
@@ -455,7 +490,7 @@ fun RouteWaypointContent(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .wrapContentHeight()
+                                .weight(1f)
                                 .border(
                                     width = 1.dp,
                                     color = colorResource(R.color.gray_6F6F6F),

@@ -64,16 +64,6 @@ fun NaverMap(
             getMapAsync { naverMap ->
                 naverMap.apply {
                     onMapAsync(this)
-                    contentPadding.apply {
-                        with(density) {
-                            setContentPadding(
-                                start.toPx().toInt(),
-                                top.toPx().toInt(),
-                                end.toPx().toInt(),
-                                bottom.toPx().toInt()
-                            )
-                        }
-                    }
 
                     uiSettings.apply {
                         isLocationButtonEnabled = true
@@ -130,6 +120,16 @@ fun NaverMap(
     mapView.getMapAsync { naverMap ->
         coroutineScope.launch {
             var isRendered = false
+            contentPadding.apply {
+                with(density) {
+                    naverMap.setContentPadding(
+                        start.toPx().toInt(),
+                        top.toPx().toInt(),
+                        end.toPx().toInt(),
+                        bottom.toPx().toInt()
+                    )
+                }
+            }
             overlayMap.map { overlay ->
                 async {
                     val marker = async {

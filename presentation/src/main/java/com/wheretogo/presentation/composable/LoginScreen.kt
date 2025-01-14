@@ -1,6 +1,7 @@
 package com.wheretogo.presentation.composable
 
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -53,7 +54,7 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
     val state by viewModel.loginScreenState.collectAsState()
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-
+    BackHandler {}
 
     LaunchedEffect(state.isToast) {
         if (state.isToast) {

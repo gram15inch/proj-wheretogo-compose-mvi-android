@@ -60,6 +60,7 @@ class CourseAddViewModel @Inject constructor(
                 is CourseAddIntent.RouteDetailItemClick -> routeDetailItemClick(intent.item)
                 is CourseAddIntent.CommendClick -> commendClick()
                 is CourseAddIntent.DetailBackClick -> detailBackClick()
+                is CourseAddIntent.DragClick -> dragClick()
             }
         }
     }
@@ -306,6 +307,14 @@ class CourseAddViewModel @Inject constructor(
             copy(
                 isDetailContent = false,
                 isCommendActive = isWaypointDone
+            )
+        }
+    }
+
+    private fun dragClick() {
+        _courseAddScreenState.value = _courseAddScreenState.value.run {
+            copy(
+                isBottomSheetDown = !isBottomSheetDown
             )
         }
     }

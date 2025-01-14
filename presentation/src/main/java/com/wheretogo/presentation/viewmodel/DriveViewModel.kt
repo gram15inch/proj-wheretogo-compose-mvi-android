@@ -20,6 +20,7 @@ import com.wheretogo.domain.model.map.OverlayTag
 import com.wheretogo.domain.usecase.community.AddCommentToCheckPointUseCase
 import com.wheretogo.domain.usecase.community.GetCommentForCheckPointUseCase
 import com.wheretogo.domain.usecase.community.GetImageInfoUseCase
+import com.wheretogo.domain.usecase.community.ModifyLikeUseCase
 import com.wheretogo.domain.usecase.community.RemoveCommentToCheckPointUseCase
 import com.wheretogo.domain.usecase.community.ReportCommentUseCase
 import com.wheretogo.domain.usecase.map.AddCheckpointToCourseUseCase
@@ -29,7 +30,6 @@ import com.wheretogo.domain.usecase.map.GetNearByCourseUseCase
 import com.wheretogo.domain.usecase.user.GetHistoryStreamUseCase
 import com.wheretogo.domain.usecase.user.RemoveHistoryUseCase
 import com.wheretogo.domain.usecase.user.UpdateHistoryUseCase
-import com.wheretogo.domain.usecaseimpl.community.ModifyLikeUseCaseImpl
 import com.wheretogo.presentation.CommentType
 import com.wheretogo.presentation.feature.geo.distanceTo
 import com.wheretogo.presentation.feature.naver.getMapOverlay
@@ -68,7 +68,7 @@ class DriveViewModel @Inject constructor(
     private val getImageForPopupUseCase: GetImageForPopupUseCase,
     private val updateHistoryUseCase: UpdateHistoryUseCase,
     private val removeHistoryUseCase: RemoveHistoryUseCase,
-    private val modifyLikeUseCase: ModifyLikeUseCaseImpl,
+    private val modifyLikeUseCase: ModifyLikeUseCase,
     private val getHistoryStreamUseCase: GetHistoryStreamUseCase,
     private val addCheckpointToCourseUseCase: AddCheckpointToCourseUseCase,
     private val getImageInfoUseCase: GetImageInfoUseCase
@@ -123,8 +123,14 @@ class DriveViewModel @Inject constructor(
 
                 //바텀시트
                 is DriveScreenIntent.BottomSheetClose -> bottomSheetClose()
-                is DriveScreenIntent.CheckpointLocationSliderChange -> checkpointLocationSliderChange(intent.percent)
-                is DriveScreenIntent.CheckpointDescriptionChange -> checkpointDescriptionChange(intent.text)
+                is DriveScreenIntent.CheckpointLocationSliderChange -> checkpointLocationSliderChange(
+                    intent.percent
+                )
+
+                is DriveScreenIntent.CheckpointDescriptionChange -> checkpointDescriptionChange(
+                    intent.text
+                )
+
                 is DriveScreenIntent.CheckpointDescriptionEnterClick -> checkpointDescriptionEnterClick()
                 is DriveScreenIntent.CheckpointImageChange -> checkpointImageChange(intent.imgUri)
                 is DriveScreenIntent.CheckpointSubmitClick -> checkpointSubmitClick()

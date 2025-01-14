@@ -64,8 +64,8 @@ import com.wheretogo.domain.model.dummy.getCommentDummy
 import com.wheretogo.domain.model.dummy.getEmogiDummy
 import com.wheretogo.presentation.CommentType
 import com.wheretogo.presentation.R
-import com.wheretogo.presentation.composable.BlurEffect
 import com.wheretogo.presentation.composable.ExtendArea
+import com.wheretogo.presentation.feature.BlurEffect
 import com.wheretogo.presentation.feature.ImeStickyBox
 import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.feature.topShadow
@@ -120,7 +120,7 @@ fun MapPopup(
     commentState: CommentState,
     imageUri: Uri?,
     isWideSize: Boolean,
-    onPopupImageClick: () -> Unit,
+    onPopupImageClick: () -> Unit ={},
     onCommentListItemClick: (CommentItemState) -> Unit,
     onCommentListItemLongClick: (CommentItemState) -> Unit,
     onCommentLikeClick: (CommentItemState) -> Unit,
