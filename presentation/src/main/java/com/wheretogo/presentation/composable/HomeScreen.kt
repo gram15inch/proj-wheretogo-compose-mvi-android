@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -57,7 +58,6 @@ import com.wheretogo.presentation.viewmodel.HomeViewModel
 
 @Composable
 fun HomeScreen(
-    displayMaxWidth: Dp,
     navController: NavController,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
@@ -66,30 +66,30 @@ fun HomeScreen(
     Column(
         modifier = Modifier
             .systemBarsPadding()
+            .fillMaxWidth()
             .fillMaxHeight()
-            .width(displayMaxWidth)
             .padding(outPadding)
             .background(White100)
             .verticalScroll(scrollState),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        TopBar(displayMaxWidth, onSettingClick = {
+        TopBar(onSettingClick = {
             navController.navigate("setting")
         })
-        Body(displayMaxWidth - outPadding * 2) { screen ->
+        Body { screen ->
             navController.navigate(screen)
         }
         Spacer(modifier = Modifier.weight(1f))
-        BottomBar(displayMaxWidth)
+        BottomBar()
     }
 }
 
 
 @Composable
-fun TopBar(maxWidth: Dp, onSettingClick: () -> Unit) {
+fun TopBar(onSettingClick: () -> Unit) {
     Row(
         modifier = Modifier
-            .width(maxWidth)
+            .fillMaxWidth()
             .padding(top = 5.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -115,14 +115,13 @@ fun TopBar(maxWidth: Dp, onSettingClick: () -> Unit) {
 }
 
 @Composable
-fun Body(bodyMaxWidth: Dp, navigate: (String) -> Unit) {
+fun Body(navigate: (String) -> Unit) {
     val context = LocalContext.current
     val gridGap = 12.dp
     Column(verticalArrangement = Arrangement.spacedBy(gridGap)) {
         GridButton(
             3,
             2,
-            maxWidth = bodyMaxWidth,
             content = {
                 ContentTextImage(
                     stringResource(R.string.drive_main),
@@ -134,11 +133,9 @@ fun Body(bodyMaxWidth: Dp, navigate: (String) -> Unit) {
             click = { navigate("drive") }
         )
 
-        val rowWidth = bodyMaxWidth - gridGap
         Row(horizontalArrangement = Arrangement.spacedBy(gridGap)) {
             GridButton(
-                3, 1,
-                maxWidth = rowWidth,
+                3, 2,
                 content = {
                     ContentTextImage(
                         stringResource(R.string.course_add_main),
@@ -150,23 +147,22 @@ fun Body(bodyMaxWidth: Dp, navigate: (String) -> Unit) {
                 click = {
                     navigate("courseAdd")
                 })
-            GridButton(
-                3, 1,
-                maxWidth = rowWidth,
-                content = {
-                    ContentTextImage(
-                        stringResource(R.string.bookmark_main),
-                        stringResource(R.string.bookmark_sub),
-                        75.dp,
-                        R.raw.lt_bike
-                    )
-                },
-                click = { navigate("bookmark") })
+            /*   GridButton(
+                   3, 1,
+                   maxWidth = rowWidth,
+                   content = {
+                       ContentTextImage(
+                           stringResource(R.string.bookmark_main),
+                           stringResource(R.string.bookmark_sub),
+                           75.dp,
+                           R.raw.lt_bike
+                       )
+                   },
+                   click = { navigate("bookmark") })*/
         }
 
         GridButton(
             2, 2,
-            maxWidth = bodyMaxWidth,
             content = {
                 ContentTextImage(
                     stringResource(R.string.visit_first_main),
@@ -178,7 +174,6 @@ fun Body(bodyMaxWidth: Dp, navigate: (String) -> Unit) {
             })
         GridButton(
             5, 2,
-            maxWidth = bodyMaxWidth,
             content = {
                 ContentBanner(
                     stringResource(R.string.banner_main),
@@ -193,14 +188,13 @@ fun Body(bodyMaxWidth: Dp, navigate: (String) -> Unit) {
 fun GridButton(
     row: Int,
     col: Int,
-    maxWidth: Dp,
     content: @Composable () -> Unit,
     click: () -> Unit
 ) {
-    val boxWidth = if (col == 1) maxWidth / 2 else maxWidth
+
     Surface(
         modifier = Modifier
-            .width(boxWidth)
+            .fillMaxWidth()
             .height(row * 40.dp)
             .clip(shape = RoundedCornerShape(10.dp))
             .clickable { click.invoke() },
@@ -275,10 +269,10 @@ fun ContentBanner(bannerMain: String, bannerSub: String) {
 }
 
 @Composable
-fun BottomBar(maxWidth: Dp) {
+fun BottomBar() {
     Column(
         modifier = Modifier
-            .width(maxWidth)
+            .fillMaxWidth()
             .padding(5.dp),
     ) {
         Text(
@@ -299,41 +293,51 @@ fun BottomBar(maxWidth: Dp) {
 @Preview(showBackground = true)
 @Composable
 fun BodyPreview() {
-    Body(400.dp) {}
+    Surface(modifier = Modifier.width(400.dp)) {
+        Body {}
+    }
 }
 
 @Preview
 @Composable
 fun GridButtonPreview() {
-    GridButton(
-        2,
-        2,
-        maxWidth = 400.dp,
-        { ContentTextImage("메인", "서브", 0.dp, R.raw.lt_togeter) },
-        click = {})
+    Surface(modifier = Modifier.width(400.dp)) {
+        GridButton(
+            2,
+            2,
+            { ContentTextImage("메인", "서브", 0.dp, R.raw.lt_togeter) },
+            click = {})
+    }
 }
 
 @Preview
 @Composable
 fun GrindBannerPreview() {
-    GridButton(4, 2, 400.dp, content = {
-        ContentBanner(
-            stringResource(R.string.banner_main),
-            stringResource(R.string.banner_sub)
-        )
-    }, click = {})
+    Surface(modifier = Modifier.width(400.dp)) {
+        GridButton(4, 2, content = {
+            ContentBanner(
+                stringResource(R.string.banner_main),
+                stringResource(R.string.banner_sub)
+            )
+        }, click = {})
+    }
 }
 
 
 @Preview(showBackground = true)
 @Composable
 fun TopBarPreview() {
-    TopBar(400.dp) {}
+    Surface(modifier = Modifier.width(400.dp)) {
+
+        TopBar {}
+    }
 }
 
 
 @Preview(showBackground = true)
 @Composable
 fun BottomBarPreview() {
-    BottomBar(400.dp)
+    Surface(modifier = Modifier.width(400.dp)) {
+        BottomBar()
+    }
 }

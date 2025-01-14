@@ -49,14 +49,13 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                 LoginScreen()
             }
 
-            BoxWithConstraints(
+            Box(
                 modifier = Modifier
                     .fillMaxHeight()
                     .background(White100)
             ) {
-                val displayMaxWidth = min(400.dp, maxWidth)
                 NavHost(navController = navController, startDestination = "home") {
-                    composable("home") { HomeScreen(displayMaxWidth, navController) }
+                    composable("home") { HomeScreen(navController) }
                     composable("drive",
                         enterTransition = { slideInHorizontally(initialOffsetX = { it }) },
                         exitTransition = { slideOutHorizontally(targetOffsetX = { it }) }
@@ -73,8 +72,6 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                     ) { SettingScreen(navController) }
                 }
             }
-
-
         }
     }
 }

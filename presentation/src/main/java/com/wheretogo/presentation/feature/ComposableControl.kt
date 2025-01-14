@@ -8,6 +8,9 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
@@ -37,3 +40,24 @@ fun ImeStickyBox(
         content(imeHeight)
     }
 }
+
+@Composable
+fun Modifier.consumptionEvent(): Modifier {
+    return this.pointerInput(Unit) {
+        awaitPointerEventScope {
+            while (true) {
+                awaitPointerEvent()
+            }
+        }
+    }
+}
+
+@Composable
+fun Modifier.topShadow(): Modifier {
+    return this.graphicsLayer {
+        shadowElevation = 8.dp.toPx()
+        shape = RectangleShape
+        clip = false
+    }
+}
+

@@ -31,7 +31,7 @@ import com.wheretogo.domain.usecase.user.RemoveHistoryUseCase
 import com.wheretogo.domain.usecase.user.UpdateHistoryUseCase
 import com.wheretogo.domain.usecaseimpl.community.ModifyLikeUseCaseImpl
 import com.wheretogo.presentation.CommentType
-import com.wheretogo.presentation.feature.map.distanceTo
+import com.wheretogo.presentation.feature.geo.distanceTo
 import com.wheretogo.presentation.feature.naver.getMapOverlay
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.model.MapOverlay

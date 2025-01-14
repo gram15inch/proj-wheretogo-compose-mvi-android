@@ -249,7 +249,7 @@ fun CirclePlateButton(
             ) {
                 SquareButton(
                     modifier = Modifier.size(squareSize),
-                    icon = R.drawable.ig_kakao,
+                    icon = R.drawable.lg_kakao,
                     caption = "카카오맵"
                 ) {
                     onKaKaoClick()
@@ -257,7 +257,7 @@ fun CirclePlateButton(
 
                 SquareButton(
                     modifier = Modifier.size(squareSize),
-                    icon = R.drawable.ig_naver,
+                    icon = R.drawable.lg_naver,
                     caption = "네이버맵"
                 ) {
                     onNaverClick()
@@ -265,7 +265,7 @@ fun CirclePlateButton(
 
                 SquareButton(
                     modifier = Modifier.size(squareSize),
-                    icon = R.drawable.ig_tmap,
+                    icon = R.drawable.lg_tmap,
                     caption = "티맵"
                 ) {
                     onTClick()

@@ -1,4 +1,4 @@
-package com.wheretogo.presentation.feature.map
+package com.wheretogo.presentation.feature.geo
 
 import android.location.Location
 import com.wheretogo.domain.model.map.LatLng

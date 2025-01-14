@@ -30,7 +30,7 @@ import com.wheretogo.domain.OverlayType
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.Viewport
 import com.wheretogo.presentation.CameraStatus
-import com.wheretogo.presentation.feature.map.distanceTo
+import com.wheretogo.presentation.feature.geo.distanceTo
 import com.wheretogo.presentation.model.ContentPadding
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.state.CameraState

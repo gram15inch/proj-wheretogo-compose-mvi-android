@@ -64,23 +64,3 @@ suspend fun detectDrag(
 }
 
 
-@Composable
-fun Modifier.consumptionEvent(): Modifier {
-    return this.pointerInput(Unit) {
-        awaitPointerEventScope {
-            while (true) {
-                awaitPointerEvent()
-            }
-        }
-    }
-}
-
-@Composable
-fun Modifier.topShadow(): Modifier {
-    return this.graphicsLayer {
-        shadowElevation = 8.dp.toPx()
-        shape = RectangleShape
-        clip = false
-    }
-}
-
