@@ -10,7 +10,7 @@ interface CommentRemoteDatasource {
 
     suspend fun setCommentGroupInCheckPoint(wrapper: RemoteCommentGroupWrapper): Boolean
 
-    suspend fun setCommentInCheckPoint(comment: RemoteComment): Boolean
+    suspend fun setCommentInCheckPoint(comment: RemoteComment, isInit: Boolean): Boolean
 
     suspend fun removeCommentInCheckPoint(comment: RemoteComment): Boolean
 }

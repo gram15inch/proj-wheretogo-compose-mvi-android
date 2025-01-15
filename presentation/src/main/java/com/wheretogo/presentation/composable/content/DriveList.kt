@@ -79,6 +79,7 @@ fun DriveList(
         items(listItemGroup) { item ->
             DriveListItem(
                 modifier = Modifier
+                    .clip(RoundedCornerShape(16.dp))
                     .clickable {
                         onItemClick(item)
                     },
@@ -109,7 +110,6 @@ fun DriveListItem(
                     shape = RoundedCornerShape(16.dp),
                     clip = false
                 )
-                .clip(RoundedCornerShape(16.dp))
                 .background(White100)
                 .padding(8.dp)
         ) {

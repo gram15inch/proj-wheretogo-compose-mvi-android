@@ -60,7 +60,7 @@ data class DriveScreenState(
                 val commentId: String = "",
                 val groupId: String = "",
                 val largeEmoji: String = "",
-                val emogiGroup: List<String> = getEmogiDummy(), //todo 복원하기 emptyList(),
+                val emogiGroup: List<String> = emptyList(),
                 val oneLineReview: String = "",
                 val detailReview: String = "",
                 val oneLinePreview: String = "",

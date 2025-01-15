@@ -35,7 +35,7 @@ class CommentTest {
             commentGroupId = "cp10",
             oneLineReview = "hi"
         )
-        datasource.setCommentInCheckPoint(comment)
+        datasource.setCommentInCheckPoint(comment, true)
     }
 
     @Test

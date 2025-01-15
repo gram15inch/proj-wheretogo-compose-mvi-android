@@ -119,7 +119,7 @@ fun NaverMap(
     }
     mapView.getMapAsync { naverMap ->
         coroutineScope.launch {
-            var isRendered = false
+            var isRendered = overlayMap.isEmpty()
             contentPadding.apply {
                 with(density) {
                     naverMap.setContentPadding(

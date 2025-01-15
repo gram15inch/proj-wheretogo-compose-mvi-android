@@ -3,7 +3,6 @@ package com.wheretogo.data.datasourceimpl
 
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.SetOptions
 import com.wheretogo.data.FireStoreCollections
 import com.wheretogo.data.datasource.CommentRemoteDatasource
 import com.wheretogo.data.model.comment.RemoteComment
@@ -44,18 +43,24 @@ class CommentRemoteDatasourceImpl @Inject constructor(
         }
     }
 
-    override suspend fun setCommentInCheckPoint(comment: RemoteComment): Boolean {
+    override suspend fun setCommentInCheckPoint(comment: RemoteComment, isInit: Boolean): Boolean {
         return suspendCancellableCoroutine { continuation ->
-            firestore.collection(commentTable).document(comment.commentGroupId)
-                .set(
-                    comment,
-                    SetOptions.merge()
-                )
-                .addOnSuccessListener {
+            firestore.collection(commentTable).document(comment.commentGroupId).run {
+                if (isInit) {
+                    set(RemoteCommentGroupWrapper(comment.commentGroupId, listOf(comment)))
+                }
+                else {
+                    update(
+                        RemoteCommentGroupWrapper::remoteCommentGroup.name,
+                        FieldValue.arrayUnion(comment)
+                    )
+                }.addOnSuccessListener {
                     continuation.resume(true)
                 }.addOnFailureListener {
                     continuation.resumeWithException(it)
                 }
+            }
+
         }
     }
 

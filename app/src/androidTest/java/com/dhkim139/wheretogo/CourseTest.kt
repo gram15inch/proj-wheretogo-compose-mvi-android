@@ -44,7 +44,8 @@ class CourseTest {
     fun courseInit(): Unit = runBlocking {
         val firestore = FirebaseModule.provideFirestore()
         val datasource = CourseRemoteDatasourceImpl(firestore)
-        getCourseDummy().forEach { course ->
+        val courseGroup = getCourseDummy()
+        courseGroup.forEach { course ->
             val r = datasource.setCourse(
                 course.toRemoteCourse().copy(
                     dataMetaCheckPoint = DataMetaCheckPoint(
@@ -55,6 +56,8 @@ class CourseTest {
             )
             assertEquals(true, r)
         }
+        val cs1 =courseGroup.first()
+        assertEquals(cs1.courseId, datasource.getCourse(cs1.courseId)!!.courseId)
     }
 
     @Test

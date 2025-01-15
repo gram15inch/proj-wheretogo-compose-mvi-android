@@ -38,10 +38,7 @@ class CourseRepositoryImpl @Inject constructor(
         return if (courseLocalDatasource.isExistMetaGeoHash(geoHash)) { // geohash로 구역 호출 여부 확인
             courseLocalDatasource.getCourseGroupByGeoHash(geoHash)
         } else {
-            courseRemoteDatasource.getCourseGroupByGeoHash(
-                geoHash,
-                "$geoHash\uf8ff"
-            ) // 구역에 해당하는 코스들 가져오기
+            courseRemoteDatasource.getCourseGroupByGeoHash(geoHash, "$geoHash\uf8ff") // 구역에 해당하는 코스들 가져오기
                 .run {
                     courseLocalDatasource.setMetaGeoHash(
                         LocalMetaGeoHash(geoHash = geoHash, timestamp = System.currentTimeMillis())

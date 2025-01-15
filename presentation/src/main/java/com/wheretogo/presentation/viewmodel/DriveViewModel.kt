@@ -138,43 +138,6 @@ class DriveViewModel @Inject constructor(
         }
     }
 
-    private suspend fun checkpointSubmitClick() {
-        _driveScreenState.value.apply {
-            val courseId = listState.clickItem.course.courseId
-            val oldCheckpointIdGroup = listState.clickItem.course.checkpointIdGroup
-            val newCheckpointAddRequest = CheckPointAddRequest(
-                courseId = courseId,
-                checkpointIdGroup = oldCheckpointIdGroup,
-                latLng = bottomSheetState.addMarker.markerGroup.first().position.toDomainLatLng(),
-                imageUri = bottomSheetState.imgUri,
-                imageName = bottomSheetState.imgInfo?.fileName ?: "",
-                description = bottomSheetState.description
-            )
-
-            when (addCheckpointToCourseUseCase(newCheckpointAddRequest).status) {
-                UseCaseResponse.Status.Success -> {
-                    bottomSheetClose()
-                    val course = listState.clickItem.course
-                    val checkPointGroup = getCheckPointForMarkerUseCase(courseId)
-                    _driveScreenState.value = _driveScreenState.value.run {
-                        val newMapOverlayGroup =
-                            mapState.mapOverlayGroup + getOverlayGroup(
-                                course.courseId,
-                                checkPointGroup,
-                                true
-                            )
-                        copy(
-                            mapState = mapState.copy(mapOverlayGroup = newMapOverlayGroup)
-                        )
-                    }
-
-                }
-
-                else -> {}
-            }
-        }
-    }
-
     init {
         viewModelScope.launch(exceptionHandler) {
             combine(_driveScreenState, getHistoryStreamUseCase()) { state, history ->
@@ -212,9 +175,46 @@ class DriveViewModel @Inject constructor(
 
     }
 
+    private suspend fun checkpointSubmitClick() {
+        _driveScreenState.value.apply {
+            val courseId = listState.clickItem.course.courseId
+            val oldCheckpointIdGroup = listState.clickItem.course.checkpointIdGroup
+            val newCheckpointAddRequest = CheckPointAddRequest(
+                courseId = courseId,
+                checkpointIdGroup = oldCheckpointIdGroup,
+                latLng = bottomSheetState.addMarker.markerGroup.first().position.toDomainLatLng(),
+                imageUri = bottomSheetState.imgUri,
+                imageName = bottomSheetState.imgInfo?.fileName ?: "",
+                description = bottomSheetState.description
+            )
+
+            when (addCheckpointToCourseUseCase(newCheckpointAddRequest).status) {
+                UseCaseResponse.Status.Success -> {
+                    bottomSheetClose()
+                    val course = listState.clickItem.course
+                    val checkPointGroup = getCheckPointForMarkerUseCase(courseId)
+                    _driveScreenState.value = _driveScreenState.value.run {
+                        val newMapOverlayGroup =
+                            mapState.mapOverlayGroup + getOverlayGroup(
+                                course.courseId,
+                                checkPointGroup,
+                                true
+                            )
+                        copy(
+                            mapState = mapState.copy(mapOverlayGroup = newMapOverlayGroup)
+                        )
+                    }
+
+                }
+
+                else -> {}
+            }
+        }
+    }
+
     private fun bottomSheetClose() {
         _driveScreenState.value = _driveScreenState.value.run {
-            bottomSheetState.addMarker.markerGroup.first().map = null
+            bottomSheetState.addMarker.markerGroup.firstOrNull()?.apply {  map = null }
             val newMapOverlayGroup =
                 mapState.mapOverlayGroup.filter { it.overlayId != "new" }.toSet()
             val newFloatingButtonState = floatingButtonState.copy(
@@ -481,7 +481,10 @@ class DriveViewModel @Inject constructor(
                     this.copy(
                         popUpState = popUpState.copy(
                             commentState = popUpState.commentState.copy(
-                                commentAddState = comment.toCommentAddState(),
+                                commentAddState = CommentAddState(
+                                    groupId = comment.groupId,
+                                    emogiGroup = getEmogiDummy()
+                                ),
                                 commentItemGroup = getCommentForCheckPointUseCase(checkPointId = comment.groupId).map {
                                     CommentItemState(
                                         data = it,
@@ -498,11 +501,11 @@ class DriveViewModel @Inject constructor(
             else -> {
                 when (response.failType) {
                     UseCaseFailType.INVALID_USER -> {
-                        Log.d("tst8", "msg: ${response.msg}")
+                        Log.e("tst8", "msg: ${response.msg}")
                     }
 
                     else -> {
-                        Log.d("tst8", "msg: ${response.msg}")
+                        Log.e("tst8", "msg: ${response.msg}")
                         bottomSheetClose()
                     }
                 }
