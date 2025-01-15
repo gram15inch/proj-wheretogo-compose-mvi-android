@@ -15,7 +15,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
@@ -38,8 +38,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePublic
-import com.wheretogo.presentation.InfoType
 import com.wheretogo.presentation.R
+import com.wheretogo.presentation.SettingInfoType
 import com.wheretogo.presentation.feature.openWeb
 import com.wheretogo.presentation.intent.SettingIntent
 import com.wheretogo.presentation.parseLogoImgRes
@@ -51,14 +51,22 @@ import com.wheretogo.presentation.viewmodel.SettingViewModel
 @Composable
 fun SettingScreen(navController: NavController, viewModel: SettingViewModel = hiltViewModel()) {
     val state by viewModel.settingScreenState.collectAsState()
-    SettingContent(
-        navController = navController,
-        settingState = state,
-        onUserNameChangeButtonClick = { viewModel.handleIntent(SettingIntent.UsernameChangeClick) },
-        onUserDeleteButtonClick = { viewModel.handleIntent(SettingIntent.UserDeleteClick) },
-        onWebInfoButtonClick = { viewModel.handleIntent(SettingIntent.InfoClick(it)) },
-        onLogoutButtonClick = { viewModel.handleIntent(SettingIntent.LogoutClick) }
-    )
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+            .systemBarsPadding()
+            .navigationBarsPadding()
+    ) {
+        SettingContent(
+            navController = navController,
+            settingState = state,
+            onUserNameChangeButtonClick = { viewModel.handleIntent(SettingIntent.UsernameChangeClick) },
+            onUserDeleteButtonClick = { viewModel.handleIntent(SettingIntent.UserDeleteClick) },
+            onWebInfoButtonClick = { viewModel.handleIntent(SettingIntent.InfoClick(it)) },
+            onLogoutButtonClick = { viewModel.handleIntent(SettingIntent.LogoutClick) }
+        )
+    }
 }
 
 
@@ -88,15 +96,12 @@ fun SettingContent(
     settingState: SettingScreenState = SettingScreenState(),
     onUserNameChangeButtonClick: () -> Unit = {},
     onLogoutButtonClick: () -> Unit = {},
-    onWebInfoButtonClick: (InfoType) -> Unit = {},
+    onWebInfoButtonClick: (SettingInfoType) -> Unit = {},
     onUserDeleteButtonClick: () -> Unit = {},
 ) {
     Column(
         modifier = Modifier
-            .navigationBarsPadding()
-            .statusBarsPadding()
             .fillMaxSize()
-            .background(Color.White)
     ) {
         Box(
             modifier = Modifier
@@ -105,12 +110,13 @@ fun SettingContent(
                 .height(40.dp),
             contentAlignment = Alignment.CenterStart
         ) {
-            Box(modifier = Modifier
-                .size(30.dp)
-                .clip(CircleShape)
-                .clickable {
-                    navController?.navigateUp()
-                }, contentAlignment = Alignment.CenterStart
+            Box(
+                modifier = Modifier
+                    .size(30.dp)
+                    .clip(CircleShape)
+                    .clickable {
+                        navController?.navigateUp()
+                    }, contentAlignment = Alignment.CenterStart
             ) {
                 Image(
                     modifier = Modifier.size(32.dp),
@@ -185,19 +191,19 @@ fun SettingContent(
                 InfoButton(
                     R.string.terms,
                     R.drawable.ic_terms,
-                    InfoType.TERMS,
+                    SettingInfoType.TERMS,
                     onWebInfoButtonClick
                 )
                 InfoButton(
                     R.string.privacy,
                     R.drawable.ic_privacy,
-                    InfoType.PRIVACY,
+                    SettingInfoType.PRIVACY,
                     onWebInfoButtonClick
                 )
                 InfoButton(
                     R.string.open_licence,
                     R.drawable.ic_licence,
-                    InfoType.LICENCE,
+                    SettingInfoType.LICENCE,
                     onWebInfoButtonClick
                 )
             }
@@ -293,7 +299,12 @@ fun ProfileSection(
 }
 
 @Composable
-fun InfoButton(text: Int, icon: Int, type: InfoType, onInfoButtonClick: (InfoType) -> Unit) {
+fun InfoButton(
+    text: Int,
+    icon: Int,
+    type: SettingInfoType,
+    onInfoButtonClick: (SettingInfoType) -> Unit
+) {
     val context = LocalContext.current
     Box(
         modifier = Modifier

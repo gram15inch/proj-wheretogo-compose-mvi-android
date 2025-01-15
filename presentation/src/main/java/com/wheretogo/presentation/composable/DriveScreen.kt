@@ -40,7 +40,9 @@ import androidx.navigation.NavController
 import com.naver.maps.map.overlay.Marker
 import com.wheretogo.domain.parseMarkerTag
 import com.wheretogo.presentation.R
-import com.wheretogo.presentation.composable.content.CheckpointAddBottomSheet
+import com.wheretogo.presentation.composable.content.CheckPointAddContent
+import com.wheretogo.presentation.composable.content.InfoContent
+import com.wheretogo.presentation.composable.content.DriveBottomSheet
 import com.wheretogo.presentation.composable.content.DelayLottieAnimation
 import com.wheretogo.presentation.composable.content.DescriptionTextField
 import com.wheretogo.presentation.composable.content.DriveList
@@ -194,22 +196,37 @@ fun DriveScreen(
                 )
             }
 
-            CheckpointAddBottomSheet(
+            DriveBottomSheet(
                 modifier = Modifier.align(Alignment.BottomCenter),
-                state = state.bottomSheetState,
-                onSubmitClick = {
-                    viewModel.handleIntent(DriveScreenIntent.CheckpointSubmitClick)
-                },
+                isVisible = state.bottomSheetState.isVisible,
                 onBottomSheetClose = {
                     viewModel.handleIntent(DriveScreenIntent.BottomSheetClose)
-                },
-                onSliderChange = {
-                    viewModel.handleIntent(DriveScreenIntent.CheckpointLocationSliderChange(it))
-                },
-                onImageChange = {
-                    viewModel.handleIntent(DriveScreenIntent.CheckpointImageChange(it))
                 }
-            )
+            ){
+                if(state.bottomSheetState.isCheckPointAdd)
+                    CheckPointAddContent(
+                        state = state.bottomSheetState.checkPointAddState,
+                        onSubmitClick = {
+                            viewModel.handleIntent(DriveScreenIntent.CheckpointSubmitClick)
+                        },
+                        onSliderChange = {
+                            viewModel.handleIntent(DriveScreenIntent.CheckpointLocationSliderChange(it))
+                        },
+                        onImageChange = {
+                            viewModel.handleIntent(DriveScreenIntent.CheckpointImageChange(it))
+                        }
+                    )
+                else
+                    InfoContent(
+                        state = state.bottomSheetState.infoState,
+                        onRemoveClick = {
+                            viewModel.handleIntent(DriveScreenIntent.InfoRemoveClick(it))
+                        },
+                        onReportClick = {
+                            viewModel.handleIntent(DriveScreenIntent.InfoReportClick(it))
+                        }
+                    )
+            }
 
             val isNotComment = !state.popUpState.commentState.isCommentVisible
             FloatingButtons(
@@ -217,6 +234,7 @@ fun DriveScreen(
                 course = state.listState.clickItem.course,
                 isCommentVisible = state.floatingButtonState.isCommentVisible && isNotComment,
                 isCheckpointAddVisible = state.floatingButtonState.isCheckpointAddVisible && isNotComment,
+                isInfoVisible = state.floatingButtonState.isInfoVisible && isNotComment,
                 isExportVisible = state.floatingButtonState.isExportVisible && isNotComment,
                 isExportBackPlate = state.floatingButtonState.isBackPlateVisible,
                 isFoldVisible = state.floatingButtonState.isFoldVisible && isNotComment,
@@ -225,6 +243,9 @@ fun DriveScreen(
                 },
                 onCheckpointAddClick = {
                     viewModel.handleIntent(DriveScreenIntent.CheckpointAddFloatingButtonClick)
+                },
+                onInfoClick = {
+                    viewModel.handleIntent(DriveScreenIntent.InfoFloatingButtonClick)
                 },
                 onExportMapClick = {
                     viewModel.handleIntent(DriveScreenIntent.ExportMapFloatingButtonClick)
@@ -238,8 +259,8 @@ fun DriveScreen(
                 DescriptionTextField(
                     modifier = Modifier.heightIn(min = 60.dp),
                     isVisible = state.bottomSheetState.isVisible && it > 30.dp,
-                    focusRequester = state.bottomSheetState.focusRequester,
-                    text = state.bottomSheetState.description,
+                    focusRequester = state.bottomSheetState.checkPointAddState.focusRequester,
+                    text = state.bottomSheetState.checkPointAddState.description,
                     onTextChange = {
                         viewModel.handleIntent(DriveScreenIntent.CheckpointDescriptionChange(it))
                     },

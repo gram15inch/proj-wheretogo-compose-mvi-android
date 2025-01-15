@@ -1,11 +1,7 @@
 package com.wheretogo.presentation.state
 
 import android.net.Uri
-import androidx.compose.ui.text.input.TextFieldValue
-import com.wheretogo.domain.model.dummy.getEmogiDummy
-import com.wheretogo.domain.model.map.Comment
 import com.wheretogo.domain.model.map.Course
-import com.wheretogo.presentation.CommentType
 import com.wheretogo.presentation.model.MapOverlay
 
 
@@ -41,40 +37,19 @@ data class DriveScreenState(
         val checkPointId: String = "",
         val imageUri: Uri? = null,
         val commentState: CommentState = CommentState()
-    ) {
-        data class CommentState(
-            val isCommentVisible: Boolean = false,
-            val isCommentSettingVisible: Boolean = false,
-            val selectedCommentSettingItem: CommentItemState = CommentItemState(),
-            val commentItemGroup: List<CommentItemState> = emptyList(),
-            val commentAddState: CommentAddState = CommentAddState()
-        ) {
-            data class CommentItemState(
-                val data: Comment = Comment(),
-                val isLike: Boolean = false,
-                val isFold: Boolean = true,
-                val isUserCreated: Boolean = false
-            )
+    )
 
-            data class CommentAddState(
-                val commentId: String = "",
-                val groupId: String = "",
-                val largeEmoji: String = "",
-                val emogiGroup: List<String> = emptyList(),
-                val oneLineReview: String = "",
-                val detailReview: String = "",
-                val oneLinePreview: String = "",
-                val isLargeEmogi: Boolean = true,
-                val isEmogiGroup: Boolean = true,
-                val commentType: CommentType = CommentType.ONE,
-                val editText: TextFieldValue = TextFieldValue()
-            )
-        }
-    }
+    data class BottomSheetState(
+        val isVisible: Boolean = false,
+        val isCheckPointAdd: Boolean = true,
+        val checkPointAddState: CheckPointAddState = CheckPointAddState(),
+        val infoState: InfoState = InfoState()
+    )
 
     data class FloatingButtonState(
         val isCommentVisible: Boolean = false,
         val isCheckpointAddVisible: Boolean = false,
+        val isInfoVisible: Boolean = false,
         val isExportVisible: Boolean = false,
         val isBackPlateVisible: Boolean = false,
         val isFoldVisible: Boolean = false

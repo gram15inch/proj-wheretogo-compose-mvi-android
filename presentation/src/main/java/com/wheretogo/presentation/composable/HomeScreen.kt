@@ -42,8 +42,8 @@ import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
-import com.wheretogo.presentation.InfoType
 import com.wheretogo.presentation.R
+import com.wheretogo.presentation.SettingInfoType
 import com.wheretogo.presentation.feature.openWeb
 import com.wheretogo.presentation.theme.Black100
 import com.wheretogo.presentation.theme.Blue200
@@ -170,7 +170,7 @@ fun Body(navigate: (String) -> Unit) {
                 )
             },
             click = {
-                openWeb(context, InfoType.GUIDE.url)
+                openWeb(context, SettingInfoType.GUIDE.url)
             })
         GridButton(
             5, 2,

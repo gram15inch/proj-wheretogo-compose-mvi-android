@@ -8,8 +8,8 @@ import com.wheretogo.domain.RouteDetailType
 import com.wheretogo.domain.model.map.Comment
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.RouteWaypointItem
+import com.wheretogo.presentation.state.CommentState.CommentAddState
 import com.wheretogo.presentation.state.CourseAddScreenState.RouteWaypointItemState
-import com.wheretogo.presentation.state.DriveScreenState.PopUpState.CommentState.CommentAddState
 import com.kakao.vectormap.LatLng as KakaoLatLng
 import com.naver.maps.geometry.LatLng as NaverLatLng
 

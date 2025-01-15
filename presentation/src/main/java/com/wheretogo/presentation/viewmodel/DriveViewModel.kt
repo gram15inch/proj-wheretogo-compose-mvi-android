@@ -36,11 +36,11 @@ import com.wheretogo.presentation.feature.naver.getMapOverlay
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.state.CameraState
+import com.wheretogo.presentation.state.CommentState.CommentAddState
+import com.wheretogo.presentation.state.CommentState.CommentItemState
 import com.wheretogo.presentation.state.DriveScreenState
-import com.wheretogo.presentation.state.DriveScreenState.PopUpState.CommentState.CommentAddState
-import com.wheretogo.presentation.state.DriveScreenState.PopUpState.CommentState.CommentItemState
+import com.wheretogo.presentation.state.InfoState
 import com.wheretogo.presentation.toComment
-import com.wheretogo.presentation.toCommentAddState
 import com.wheretogo.presentation.toDomainLatLng
 import com.wheretogo.presentation.toNaver
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -114,27 +114,55 @@ class DriveViewModel @Inject constructor(
                 is DriveScreenIntent.CommentEditValueChange -> commentEditValueChange(intent.textFiled)
                 is DriveScreenIntent.CommentEmogiPress -> commentEmogiPress(intent.emogi)
                 is DriveScreenIntent.CommentTypePress -> commentTypePress(intent.type)
-                is DriveScreenIntent.CommentFloatingButtonClick -> commentFloatingButtonClick()
 
                 //플로팅
+                is DriveScreenIntent.CommentFloatingButtonClick -> commentFloatingButtonClick()
                 is DriveScreenIntent.CheckpointAddFloatingButtonClick -> checkpointAddFloatingButtonClick()
+                is DriveScreenIntent.InfoFloatingButtonClick -> infoFloatingButtonClick()
                 is DriveScreenIntent.ExportMapFloatingButtonClick -> exportMapFloatingButtonClick()
                 is DriveScreenIntent.FoldFloatingButtonClick -> foldFloatingButtonClick()
 
                 //바텀시트
                 is DriveScreenIntent.BottomSheetClose -> bottomSheetClose()
-                is DriveScreenIntent.CheckpointLocationSliderChange -> checkpointLocationSliderChange(
-                    intent.percent
-                )
-
-                is DriveScreenIntent.CheckpointDescriptionChange -> checkpointDescriptionChange(
-                    intent.text
-                )
-
+                is DriveScreenIntent.CheckpointLocationSliderChange -> checkpointLocationSliderChange(intent.percent)
+                is DriveScreenIntent.CheckpointDescriptionChange -> checkpointDescriptionChange(intent.text)
                 is DriveScreenIntent.CheckpointDescriptionEnterClick -> checkpointDescriptionEnterClick()
                 is DriveScreenIntent.CheckpointImageChange -> checkpointImageChange(intent.imgUri)
                 is DriveScreenIntent.CheckpointSubmitClick -> checkpointSubmitClick()
+                is DriveScreenIntent.InfoReportClick -> courseReportClick(intent.infoState)
+                is DriveScreenIntent.InfoRemoveClick -> courseRemoveClick(intent.infoState)
             }
+        }
+    }
+
+    private fun courseRemoveClick(infoState: InfoState) {
+        Log.d("tst8", "remove: ${infoState.isCourseInfo} / ${infoState.course.courseId} / ${infoState.checkPoint.checkPointId}")
+    }
+
+    private fun courseReportClick(infoState: InfoState) {
+        Log.d("tst8", "report: ${infoState.isCourseInfo} / ${infoState.course.courseId} / ${infoState.checkPoint.checkPointId}")
+    }
+
+    private fun infoFloatingButtonClick() {
+        _driveScreenState.value = _driveScreenState.value.run {
+            val newFloatingButtonState = floatingButtonState.copy(
+                isCommentVisible = false,
+                isCheckpointAddVisible = false,
+                isInfoVisible = false,
+                isExportVisible = false,
+                isBackPlateVisible = false,
+                isFoldVisible = false,
+            )
+            copy(
+                bottomSheetState = bottomSheetState.copy(
+                    isVisible = !bottomSheetState.isVisible,
+                    isCheckPointAdd = false,
+                    infoState = bottomSheetState.infoState.copy(
+                        course = listState.clickItem.course
+                    )
+                ),
+                floatingButtonState = newFloatingButtonState
+            )
         }
     }
 
@@ -182,10 +210,10 @@ class DriveViewModel @Inject constructor(
             val newCheckpointAddRequest = CheckPointAddRequest(
                 courseId = courseId,
                 checkpointIdGroup = oldCheckpointIdGroup,
-                latLng = bottomSheetState.addMarker.markerGroup.first().position.toDomainLatLng(),
-                imageUri = bottomSheetState.imgUri,
-                imageName = bottomSheetState.imgInfo?.fileName ?: "",
-                description = bottomSheetState.description
+                latLng = bottomSheetState.checkPointAddState.addMarker.markerGroup.first().position.toDomainLatLng(),
+                imageUri = bottomSheetState.checkPointAddState.imgUri,
+                imageName = bottomSheetState.checkPointAddState.imgInfo?.fileName ?: "",
+                description = bottomSheetState.checkPointAddState.description
             )
 
             when (addCheckpointToCourseUseCase(newCheckpointAddRequest).status) {
@@ -214,17 +242,21 @@ class DriveViewModel @Inject constructor(
 
     private fun bottomSheetClose() {
         _driveScreenState.value = _driveScreenState.value.run {
-            bottomSheetState.addMarker.markerGroup.firstOrNull()?.apply {  map = null }
+            bottomSheetState.checkPointAddState.addMarker.markerGroup.firstOrNull()
+                ?.apply { map = null }
             val newMapOverlayGroup =
                 mapState.mapOverlayGroup.filter { it.overlayId != "new" }.toSet()
             val newFloatingButtonState = floatingButtonState.copy(
                 isCheckpointAddVisible = true,
+                isInfoVisible = true,
                 isExportVisible = true,
                 isFoldVisible = true,
             )
             this.copy(
                 mapState = mapState.copy(mapOverlayGroup = newMapOverlayGroup),
-                bottomSheetState = bottomSheetState.copy(isVisible = false),
+                bottomSheetState = bottomSheetState.copy(
+                    isVisible = false
+                ),
                 floatingButtonState = newFloatingButtonState
             )
         }
@@ -336,17 +368,24 @@ class DriveViewModel @Inject constructor(
     }
 
     private fun dismissPopup() {
-        _driveScreenState.value = _driveScreenState.value.copy(
-            popUpState = _driveScreenState.value.popUpState.copy(
-                isVisible = false,
-                commentState = _driveScreenState.value.popUpState.commentState.copy(
+        _driveScreenState.value = _driveScreenState.value.run {
+            copy(
+                popUpState = _driveScreenState.value.popUpState.copy(
+                    isVisible = false,
+                    commentState = _driveScreenState.value.popUpState.commentState.copy(
+                        isCommentVisible = false
+                    )
+                ),
+                floatingButtonState = _driveScreenState.value.floatingButtonState.copy(
                     isCommentVisible = false
+                ),
+                bottomSheetState = bottomSheetState.copy(
+                    infoState = bottomSheetState.infoState.copy(
+                        isCourseInfo = true
+                    )
                 )
-            ),
-            floatingButtonState = _driveScreenState.value.floatingButtonState.copy(
-                isCommentVisible = false
-            ),
-        )
+            )
+        }
     }
 
     private fun overlayRenderComplete(isRendered: Boolean) {
@@ -371,6 +410,13 @@ class DriveViewModel @Inject constructor(
                     isVisible = true,
                     checkPointId = checkpoint.checkPointId,
                     imageUri = image,
+                ),
+                bottomSheetState = bottomSheetState.copy(
+                    isVisible = false,
+                    infoState = bottomSheetState.infoState.copy(
+                        isCourseInfo = false,
+                        checkPoint = checkpoint
+                    )
                 ),
                 floatingButtonState = floatingButtonState.copy(
                     isFoldVisible = true,
@@ -401,8 +447,15 @@ class DriveViewModel @Inject constructor(
                 ),
                 floatingButtonState = floatingButtonState.copy(
                     isCheckpointAddVisible = true,
+                    isInfoVisible = true,
                     isExportVisible = true,
                     isFoldVisible = true,
+                ),
+                bottomSheetState = bottomSheetState.copy(
+                    infoState = bottomSheetState.infoState.copy(
+                        isCourseInfo = true,
+                        course = course
+                    )
                 )
             )
         }
@@ -578,6 +631,7 @@ class DriveViewModel @Inject constructor(
                     floatingButtonState = floatingButtonState.copy(
                         isCommentVisible = false,
                         isCheckpointAddVisible = false,
+                        isInfoVisible = false,
                         isExportVisible = false,
                         isBackPlateVisible = false,
                         isFoldVisible = false
@@ -612,7 +666,7 @@ class DriveViewModel @Inject constructor(
 
     private fun checkpointAddFloatingButtonClick() {
         _driveScreenState.value = _driveScreenState.value.run {
-            val newBottomSheetState = bottomSheetState.run {
+            val newCheckPointAddState = bottomSheetState.checkPointAddState.run {
                 val course = listState.clickItem.course
 
                 val newMarker = listOf(Marker().apply {
@@ -627,16 +681,16 @@ class DriveViewModel @Inject constructor(
                     markerGroup = newMarker
                 )
                 copy(
-                    isVisible = true,
                     sliderPercent = 0.0f,
                     addMarker = newMapOverlay,
                 )
             }
             val newMapState =
-                mapState.copy(mapOverlayGroup = mapState.mapOverlayGroup + newBottomSheetState.addMarker)
+                mapState.copy(mapOverlayGroup = mapState.mapOverlayGroup + newCheckPointAddState.addMarker)
             val newFloatingButtonState = floatingButtonState.copy(
                 isCommentVisible = false,
                 isCheckpointAddVisible = false,
+                isInfoVisible = false,
                 isExportVisible = false,
                 isBackPlateVisible = false,
                 isFoldVisible = false,
@@ -644,7 +698,11 @@ class DriveViewModel @Inject constructor(
             val newPopupState = popUpState.copy(isVisible = false)
             copy(
                 mapState = newMapState,
-                bottomSheetState = newBottomSheetState,
+                bottomSheetState = bottomSheetState.copy(
+                    isVisible = !bottomSheetState.isVisible,
+                    isCheckPointAdd = true,
+                    checkPointAddState = newCheckPointAddState
+                ),
                 floatingButtonState = newFloatingButtonState,
                 popUpState = newPopupState
             )
@@ -669,7 +727,7 @@ class DriveViewModel @Inject constructor(
 
     private fun checkpointLocationSliderChange(percent: Float) {
         _driveScreenState.value = _driveScreenState.value.run {
-            val newBottomSheetState = bottomSheetState.run {
+            val newCheckPointAddState = bottomSheetState.checkPointAddState.run {
                 val points = listState.clickItem.course.points
                 val newMarker = addMarker.markerGroup.first().apply {
                     val newLatlng = points[round(points.size * percent).toInt()]
@@ -685,31 +743,31 @@ class DriveViewModel @Inject constructor(
                     addMarker = newMapOverlay
                 )
             }
-            copy(bottomSheetState = newBottomSheetState)
+            copy(bottomSheetState = bottomSheetState.copy(checkPointAddState = newCheckPointAddState))
         }
     }
 
     private fun checkpointDescriptionChange(text: String) {
         _driveScreenState.value = _driveScreenState.value.run {
-            val newBottomSheetState = bottomSheetState.run {
+            val newCheckPointAddState = bottomSheetState.checkPointAddState.run {
                 copy(
                     description = text
                 )
             }
-            copy(bottomSheetState = newBottomSheetState)
+            copy(bottomSheetState = bottomSheetState.copy(checkPointAddState = newCheckPointAddState))
         }
     }
 
     private suspend fun checkpointImageChange(imgUri: Uri?) {
         imgUri?.let {
             _driveScreenState.value = _driveScreenState.value.run {
-                val newBottomSheetState = bottomSheetState.run {
+                val newCheckPointAddState = bottomSheetState.checkPointAddState.run {
                     copy(
                         imgUri = imgUri,
                         imgInfo = getImageInfoUseCase(imgUri)
                     )
                 }
-                copy(bottomSheetState = newBottomSheetState)
+                copy(bottomSheetState = bottomSheetState.copy(checkPointAddState = newCheckPointAddState))
             }
         }
     }

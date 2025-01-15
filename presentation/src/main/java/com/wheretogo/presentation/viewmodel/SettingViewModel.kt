@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.wheretogo.domain.usecase.user.DeleteUserUseCase
 import com.wheretogo.domain.usecase.user.GetUserProfileUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
-import com.wheretogo.presentation.InfoType
+import com.wheretogo.presentation.SettingInfoType
 import com.wheretogo.presentation.intent.SettingIntent
 import com.wheretogo.presentation.state.SettingScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,8 +28,8 @@ class SettingViewModel @Inject constructor(
             when (intent) {
                 is SettingIntent.UserDeleteClick -> userDeleteClick()
                 is SettingIntent.LogoutClick -> logoutClick()
-                is SettingIntent.InfoClick -> infoClick(intent.infoType)
-                is SettingIntent.UsernameChangeClick -> userDeleteClick()
+                is SettingIntent.InfoClick -> infoClick(intent.settingInfoType)
+                is SettingIntent.UsernameChangeClick -> usernameChangeClick()
             }
         }
     }
@@ -55,13 +55,11 @@ class SettingViewModel @Inject constructor(
         signOutUseCase()
     }
 
-    private suspend fun infoClick(type: InfoType) {
+    private suspend fun infoClick(type: SettingInfoType) {
 
     }
 
-    private suspend fun userNameChangeClick() {
+    private suspend fun usernameChangeClick() {
 
     }
-
-
 }

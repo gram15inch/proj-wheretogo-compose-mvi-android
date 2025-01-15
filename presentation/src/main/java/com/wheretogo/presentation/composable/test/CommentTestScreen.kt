@@ -15,7 +15,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.wheretogo.domain.model.dummy.getCommentDummy
 import com.wheretogo.presentation.composable.content.MapPopup
 import com.wheretogo.presentation.intent.DriveScreenIntent
-import com.wheretogo.presentation.state.DriveScreenState.PopUpState.CommentState.CommentItemState
+import com.wheretogo.presentation.state.CommentState.CommentItemState
 import com.wheretogo.presentation.viewmodel.DriveViewModel
 
 

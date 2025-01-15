@@ -5,8 +5,7 @@ import androidx.compose.ui.focus.FocusRequester
 import com.wheretogo.domain.model.community.ImageInfo
 import com.wheretogo.presentation.model.MapOverlay
 
-data class BottomSheetState(
-    val isVisible: Boolean = false,
+data class CheckPointAddState(
     val addMarker: MapOverlay = MapOverlay(),
     val sliderPercent: Float = 0.0f,
     val imgUri: Uri? = null,

@@ -5,9 +5,10 @@ import androidx.compose.ui.text.input.TextFieldValue
 import com.wheretogo.domain.model.map.OverlayTag
 import com.wheretogo.presentation.CommentType
 import com.wheretogo.presentation.state.CameraState
+import com.wheretogo.presentation.state.CommentState.CommentAddState
+import com.wheretogo.presentation.state.CommentState.CommentItemState
 import com.wheretogo.presentation.state.DriveScreenState.ListState.ListItemState
-import com.wheretogo.presentation.state.DriveScreenState.PopUpState.CommentState.CommentAddState
-import com.wheretogo.presentation.state.DriveScreenState.PopUpState.CommentState.CommentItemState
+import com.wheretogo.presentation.state.InfoState
 
 sealed class DriveScreenIntent {
 
@@ -38,6 +39,7 @@ sealed class DriveScreenIntent {
     // 플로팅 버튼
     data object CommentFloatingButtonClick : DriveScreenIntent()
     data object CheckpointAddFloatingButtonClick : DriveScreenIntent()
+    data object InfoFloatingButtonClick : DriveScreenIntent()
     data object ExportMapFloatingButtonClick : DriveScreenIntent()
     data object FoldFloatingButtonClick : DriveScreenIntent()
 
@@ -49,5 +51,7 @@ sealed class DriveScreenIntent {
     data object CheckpointDescriptionEnterClick : DriveScreenIntent()
     data class CheckpointImageChange(val imgUri: Uri?) : DriveScreenIntent()
     data object CheckpointSubmitClick : DriveScreenIntent()
+    data class InfoReportClick(val infoState: InfoState) : DriveScreenIntent()
+    data class InfoRemoveClick(val infoState: InfoState) : DriveScreenIntent()
 
 }

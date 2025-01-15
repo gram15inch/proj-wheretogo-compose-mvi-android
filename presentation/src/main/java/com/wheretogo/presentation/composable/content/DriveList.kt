@@ -123,21 +123,22 @@ fun DriveListItem(
                         fontFamily = hancomSansFontFamily,
                         fontSize = 16.5.sp
                     )
-                    Box(
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .clickable {
-                                onBookmarkClick(listItem)
-                            }
-                    ) {
-                        Image(
+                    if(false) // todo 복귀
+                        Box(
                             modifier = Modifier
-                                .size(26.dp)
-                                .padding(5.dp),
-                            painter = painterResource(if (listItem.isBookmark) R.drawable.ic_bookmark else R.drawable.ic_bookmark),
-                            contentDescription = "",
-                        )
-                    }
+                                .clip(CircleShape)
+                                .clickable {
+                                    onBookmarkClick(listItem)
+                                }
+                        ) {
+                            Image(
+                                modifier = Modifier
+                                    .size(26.dp)
+                                    .padding(5.dp),
+                                painter = painterResource(if (listItem.isBookmark) R.drawable.ic_bookmark else R.drawable.ic_bookmark),
+                                contentDescription = "",
+                            )
+                        }
 
                 }
                 Row(

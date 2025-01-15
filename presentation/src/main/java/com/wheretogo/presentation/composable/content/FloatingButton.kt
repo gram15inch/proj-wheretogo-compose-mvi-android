@@ -54,8 +54,8 @@ fun FloatingButtonPreview() {
     FloatingButtons(modifier = Modifier
         .width(300.dp)
         .background(colorResource(R.color.gray_C7C7C7_80)),
-        Course(), true, true, true, true, true,
-        {}, {}, {}, {})
+        Course(), true, true, true, true, true, true,
+        {}, {}, {}, {}, {})
 }
 
 
@@ -67,9 +67,11 @@ fun FloatingButtons(
     isCheckpointAddVisible: Boolean,
     isExportVisible: Boolean,
     isFoldVisible: Boolean,
+    isInfoVisible: Boolean,
     isExportBackPlate: Boolean,
     onCommentClick: () -> Unit,
     onCheckpointAddClick: () -> Unit,
+    onInfoClick: () -> Unit,
     onExportMapClick: () -> Unit,
     onFoldClick: () -> Unit
 ) {
@@ -112,6 +114,24 @@ fun FloatingButtons(
                 ) {
                     CircleButton(icon = R.drawable.ic_location) {
                         onCheckpointAddClick()
+                    }
+                }
+
+            }
+
+            SlideAnimation(
+                modifier = Modifier,
+                visible = isInfoVisible,
+                direction = AnimationDirection.RightCenter
+            ) {
+                Box(
+                    modifier = Modifier.padding(
+                        top = if (isExportBackPlate) 10.dp else 0.dp,
+                        end = buttonEndPadding
+                    )
+                ) {
+                    CircleButton(icon = R.drawable.ic_info) {
+                        onInfoClick()
                     }
                 }
 

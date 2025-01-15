@@ -69,9 +69,9 @@ import com.wheretogo.presentation.feature.BlurEffect
 import com.wheretogo.presentation.feature.ImeStickyBox
 import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.feature.topShadow
-import com.wheretogo.presentation.state.DriveScreenState.PopUpState.CommentState
-import com.wheretogo.presentation.state.DriveScreenState.PopUpState.CommentState.CommentAddState
-import com.wheretogo.presentation.state.DriveScreenState.PopUpState.CommentState.CommentItemState
+import com.wheretogo.presentation.state.CommentState
+import com.wheretogo.presentation.state.CommentState.CommentItemState
+import com.wheretogo.presentation.state.CommentState.CommentAddState
 import com.wheretogo.presentation.theme.hancomMalangFontFamily
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 
