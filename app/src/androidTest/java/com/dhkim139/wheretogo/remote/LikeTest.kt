@@ -1,4 +1,4 @@
-package com.dhkim139.wheretogo
+package com.dhkim139.wheretogo.remote
 
 import androidx.test.platform.app.InstrumentationRegistry
 import com.dhkim139.wheretogo.di.FirebaseModule
@@ -26,7 +26,7 @@ class LikeTest {
     }
 
     @Test
-    fun likeTest(): Unit = runBlocking {
+    fun getAndSetAndRemovelikeTest(): Unit = runBlocking {
         val firestore = FirebaseModule.provideFirestore()
         val datasource = LikeRemoteDatasourceImpl(firestore)
         val cs1 = RemoteCourse(

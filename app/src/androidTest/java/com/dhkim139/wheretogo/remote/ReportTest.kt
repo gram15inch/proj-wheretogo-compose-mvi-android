@@ -1,4 +1,4 @@
-package com.dhkim139.wheretogo
+package com.dhkim139.wheretogo.remote
 
 import androidx.test.platform.app.InstrumentationRegistry
 import com.dhkim139.wheretogo.di.FirebaseModule
@@ -26,7 +26,7 @@ class ReportTest {
     }
 
     @Test
-    fun addReportTest(): Unit = runBlocking {
+    fun getAndAddReportTest(): Unit = runBlocking {
         val firestore = FirebaseModule.provideFirestore()
         val datasource = ReportRemoteDatasourceImpl(firestore)
         val rp = RemoteReport(

@@ -24,15 +24,13 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        testInstrumentationRunnerArguments += mapOf()
         applicationId = "com.dhkim139.wheretogo"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        testInstrumentationRunnerArguments["runnerBuilder"] = "de.mannodermaus.junit5.AndroidJUnit5Builder"
+        testInstrumentationRunner = "com.dhkim139.wheretogo.TestRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -91,6 +89,7 @@ dependencies {
 
     implementation(platform(Kotlin.KOTLIN_BOM))
     implementation(platform(AndroidX.COMPOSE_BOM))
+    androidTestImplementation(AndroidX.TEST_RUNNER)
     androidTestImplementation(platform(AndroidX.COMPOSE_BOM))
 
     //compose
@@ -111,29 +110,27 @@ dependencies {
 
 
     //hilt
+
+
     implementation(Dagger.HILT_ANDROID)
     implementation(AndroidX.HILT_COMMON)
     implementation(AndroidX.HILT_WORK)
     implementation(AndroidX.HILT_NAVIGATION_COMPOSE)
-    testImplementation(Dagger.HILT_ANDROID_TESTING)
     testImplementation(Libraries.MOCKK)
-
-    androidTestImplementation(Dagger.HILT_ANDROID_TESTING)
 
     ksp(AndroidX.HILT_COMPILER)
     ksp(Dagger.HILT_COMPILER)
-    ksp(Dagger.HILT_ANDROID_COMPILER)
+
+    testImplementation(Dagger.HILT_ANDROID_TESTING)
+    kspTest(Dagger.HILT_ANDROID_COMPILER)
+    androidTestImplementation(Dagger.HILT_ANDROID_TESTING)
+    kspAndroidTest(Dagger.HILT_ANDROID_COMPILER)
 
     // test
-
-    testImplementation(UnitTest.JUNIT_JUPITER_API)
-    testRuntimeOnly(UnitTest.JUNIT_JUPITER_ENGINE)
-    testImplementation(UnitTest.JUNIT_JUPITER_PARAMS)
-    testImplementation(UnitTest.JUNIT)
-    testImplementation(UnitTest.JUNIT_VINTAGE_ENGINE)
-
     androidTestImplementation(UnitTest.JUNIT_JUPITER_API)
-    androidTestImplementation(Libraries.MOCKITO_JUNIT_JUPITER)
+    androidTestImplementation(UnitTest.JUNIT_JUPITER_PARAMS)
+    androidTestImplementation(UnitTest.JUNIT_JUPITER_ENGINE)
+    androidTestImplementation(UnitTest.JUNIT_VINTAGE_ENGINE)
 
     // firebase
     implementation(platform(Firebase.FIREBASE_BOM))

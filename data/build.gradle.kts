@@ -57,13 +57,13 @@ dependencies {
 
     implementation(AndroidX.CORE_KTX)
     api(AndroidX.ROOM_KTX)
+    implementation("androidx.exifinterface:exifinterface:1.3.7")
 
     //bom
     implementation(platform(Kotlin.KOTLIN_BOM))
 
     //hilt
     implementation(Dagger.HILT_ANDROID)
-
     ksp(Dagger.HILT_COMPILER)
 
     //retrofit
@@ -74,7 +74,6 @@ dependencies {
 
     //Room
     api(AndroidX.ROOM_RUNTIME)
-    annotationProcessor(AndroidX.ROOM_COMPILER)
     ksp(AndroidX.ROOM_COMPILER)
 
     implementation(platform(Firebase.FIREBASE_BOM))

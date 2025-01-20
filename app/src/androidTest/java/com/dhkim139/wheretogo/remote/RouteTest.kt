@@ -1,6 +1,5 @@
-package com.dhkim139.wheretogo
+package com.dhkim139.wheretogo.remote
 
-import android.os.StrictMode
 import androidx.test.platform.app.InstrumentationRegistry
 import com.dhkim139.wheretogo.di.FirebaseModule
 import com.google.firebase.FirebaseApp
@@ -25,12 +24,6 @@ class RouteTest {
             if (FirebaseApp.getApps(appContext).isEmpty()) {
                 FirebaseApp.initializeApp(appContext)
             }
-            assertEquals("com.dhkim139.wheretogo", appContext.packageName)
-            StrictMode.setThreadPolicy(
-                StrictMode.ThreadPolicy.Builder()
-                    .permitAll()
-                    .build()
-            )
         }
     }
 
@@ -62,7 +55,7 @@ class RouteTest {
     }
 
     @Test
-    fun routeTest(): Unit = runBlocking {
+    fun getAndSetRouteTest(): Unit = runBlocking {
         val firestore = FirebaseModule.provideFirestore()
         val naverApi = ApiServiceModule.provideNaverMapApiService(RetrofitClientModule.run {
             provideRetrofit(provideMoshi(), provideClient())
@@ -84,7 +77,7 @@ class RouteTest {
 
 
     @Test
-    fun reverseGeocodingTest(): Unit = runBlocking {
+    fun getAddressWithLatLngTest(): Unit = runBlocking {
         val firestore = FirebaseModule.provideFirestore()
         val naverApi = ApiServiceModule.provideNaverMapApiService(RetrofitClientModule.run {
             provideRetrofit(provideMoshi(), provideClient())
@@ -93,7 +86,5 @@ class RouteTest {
         val datasource = RouteRemoteDatasourceImpl(firestore, naverApi)
         val r = datasource.getAddress(LatLng(37.56661, 126.978388))
         assertEquals(true, r.isNotEmpty())
-
-
     }
 }

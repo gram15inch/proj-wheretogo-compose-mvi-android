@@ -3,8 +3,8 @@ package com.wheretogo.data.datasourceimpl
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.media.ExifInterface
 import android.net.Uri
+import androidx.exifinterface.media.ExifInterface
 import com.wheretogo.data.datasource.ImageLocalDatasource
 import com.wheretogo.domain.ImageSize
 import com.wheretogo.domain.feature.fit

@@ -1,4 +1,4 @@
-package com.dhkim139.wheretogo
+package com.dhkim139.wheretogo.remote
 
 import androidx.test.platform.app.InstrumentationRegistry
 import com.dhkim139.wheretogo.di.FirebaseModule
@@ -71,10 +71,10 @@ class UserTest {
         remoteDatasource.addHistory(
             uid = uid,
             historyId = hid,
-            type = HistoryType.REPORT_COMMENT
+            type = HistoryType.REPORT
         )
 
-        val hid2 = remoteDatasource.getHistoryGroup(uid, HistoryType.REPORT_COMMENT)
+        val hid2 = remoteDatasource.getHistoryGroup(uid, HistoryType.REPORT)
 
         assertEquals(true, hid2.isNotEmpty())
         assertEquals(hid, hid2.first())

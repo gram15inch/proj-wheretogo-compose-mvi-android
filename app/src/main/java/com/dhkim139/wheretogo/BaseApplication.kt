@@ -1,7 +1,6 @@
 package com.dhkim139.wheretogo
 
 import android.app.Application
-import android.util.Log
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 
@@ -29,7 +28,7 @@ class BaseApplication:Application(), Configuration.Provider {
         FirebaseApp.initializeApp(this)
         FirebaseCrashlytics.getInstance().isCrashlyticsCollectionEnabled = !BuildConfig.DEBUG
 
-        setWorkManager()
+        //setWorkManager()
     }
 
 

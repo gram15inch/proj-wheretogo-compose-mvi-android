@@ -53,6 +53,7 @@ dependencies {
     implementation(project(mapOf("path" to ":domain")))
 
     implementation(AndroidX.CORE_KTX)
+    implementation("androidx.exifinterface:exifinterface:1.3.7")
 
     //BOM
     implementation(platform(Kotlin.KOTLIN_BOM))

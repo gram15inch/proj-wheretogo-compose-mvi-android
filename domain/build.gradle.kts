@@ -39,6 +39,7 @@ android {
 dependencies {
     implementation(AndroidX.CORE_KTX)
     implementation(platform(Kotlin.KOTLIN_BOM))
+    implementation("androidx.exifinterface:exifinterface:1.3.7")
 
     //hilt
     implementation(Dagger.HILT_ANDROID)

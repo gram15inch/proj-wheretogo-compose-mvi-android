@@ -1,46 +1,36 @@
 package com.dhkim139.wheretogo
 
-import androidx.test.platform.app.InstrumentationRegistry
-import com.dhkim139.wheretogo.di.FirebaseModule
-import com.wheretogo.data.datasourceimpl.CourseLocalDatasourceImpl
-import com.wheretogo.data.datasourceimpl.CourseRemoteDatasourceImpl
-import com.wheretogo.data.datasourceimpl.LikeRemoteDatasourceImpl
-import com.wheretogo.data.datasourceimpl.RouteRemoteDatasourceImpl
-import com.wheretogo.data.di.ApiServiceModule
-import com.wheretogo.data.di.DaoDatabaseModule
-import com.wheretogo.data.di.RetrofitClientModule
-import com.wheretogo.data.repositoryimpl.CourseRepositoryImpl
 import com.wheretogo.domain.model.map.LatLng
-import com.wheretogo.domain.usecaseimpl.map.GetNearByCourseUseCaseImpl
+import com.wheretogo.domain.usecase.map.GetNearByCourseUseCase
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import jakarta.inject.Inject
+import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
 
 // usecaseImpl은 git에 업로드 되지 않음
+@HiltAndroidTest
 class UseCaseTest {
+
+    @get:Rule
+    var hiltRule = HiltAndroidRule(this)
+
+    @Inject
+    lateinit var getNearByCourseUseCase: GetNearByCourseUseCase
+
+    @Before
+    fun init() {
+        hiltRule.inject()
+    }
 
     @Test
     fun getNearByJourneyUseCaseTest(): Unit = runBlocking {
-        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        val firestore = FirebaseModule.provideFirestore()
-        val naverApi = ApiServiceModule.provideNaverMapApiService(RetrofitClientModule.run {
-            provideRetrofit(provideMoshi(), provideClient())
-        })
-        val courseDao =
-            DaoDatabaseModule.run { provideCourseDao(provideCourseDatabase(appContext)) }
-
-        val courseRepository = CourseRepositoryImpl(
-            courseRemoteDatasource = CourseRemoteDatasourceImpl(firestore),
-            courseLocalDatasource = CourseLocalDatasourceImpl(courseDao),
-            routeRemoteDatasource = RouteRemoteDatasourceImpl(firestore, naverApi)
-        )
-
         val location = LatLng(37.2755481129516, 127.11608496870285)
-
-        val list = GetNearByCourseUseCaseImpl(courseRepository)(location)
+        val list = getNearByCourseUseCase(location)
         assertEquals(true, list.isNotEmpty())
         assertEquals("[cs2, cs3, cs4, cs5, cs6, cs7]", list.map { it.courseId }.sorted().toString())
     }
-
-
 }

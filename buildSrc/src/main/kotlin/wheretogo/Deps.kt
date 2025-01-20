@@ -59,10 +59,10 @@ object AndroidX {
     const val COMPOSE_MATERIAL3        = "androidx.compose.material3:material3"
     const val NAVIGATION_COMPOSE        = "androidx.navigation:navigation-compose:${Versions.NAVIGATION}"
 
-    const val HILT_NAVIGATION_COMPOSE = "androidx.hilt:hilt-navigation-compose:1.2.0"
-    const val HILT_COMPILER = "androidx.hilt:hilt-compiler:1.2.0"
-    const val HILT_COMMON = "androidx.hilt:hilt-common:1.2.0"
-    const val HILT_WORK = "androidx.hilt:hilt-work:1.2.0"
+    const val HILT_NAVIGATION_COMPOSE   = "androidx.hilt:hilt-navigation-compose:1.2.0"
+    const val HILT_COMPILER             = "androidx.hilt:hilt-compiler:1.2.0"
+    const val HILT_COMMON               = "androidx.hilt:hilt-common:1.2.0"
+    const val HILT_WORK                 = "androidx.hilt:hilt-work:1.2.0"
 
     const val ROOM_RUNTIME      ="androidx.room:room-runtime:${Versions.ROOM}"
     const val ROOM_KTX          ="androidx.room:room-ktx:${Versions.ROOM}"
@@ -73,15 +73,15 @@ object AndroidX {
     const val WORK_RUNTIME_KTX      ="androidx.work:work-runtime-ktx:${Versions.WORK}"
 
 
-    const val TEST_RUNNER       ="androidx.test:runner:${Versions.TEST}"
-    const val TEST_CORE_KTX       ="androidx.test:core-ktx:${Versions.TEST}"
+    const val TEST_RUNNER       = "androidx.test:runner:${Versions.TEST}"
+    const val TEST_CORE_KTX     = "androidx.test:core-ktx:${Versions.TEST}"
 }
 
 object Dagger {
     const val HILT_ANDROID          = "com.google.dagger:hilt-android:${Versions.HILT}"
     const val HILT_COMPILER         = "com.google.dagger:hilt-compiler:${Versions.HILT}"
     const val HILT_ANDROID_COMPILER = "com.google.dagger:hilt-android-compiler:${Versions.HILT}"
-    const val HILT_ANDROID_TESTING  = "com.google.dagger:hilt-android-testing:2.52"
+    const val HILT_ANDROID_TESTING  = "com.google.dagger:hilt-android-testing:${Versions.HILT}"
 
 }
 
