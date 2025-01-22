@@ -30,11 +30,12 @@ class UserLocalDatasourceImpl @Inject constructor(
     private val accountCreationDate = longPreferencesKey("accountCreationDate_profile")
     private val isAdRemove = booleanPreferencesKey("isAdRemove_profile")
 
-    private val bookmark = stringSetPreferencesKey("bookmark_profile2") // 2 유지
+    private val bookmark = stringSetPreferencesKey("bookmark_profile")
     private val like = stringSetPreferencesKey("like_profile")
     private val comment = stringSetPreferencesKey("comment_profile")
-    private val reportComment = stringSetPreferencesKey("report_comment_profile")
-
+    private val course = stringSetPreferencesKey("course_profile")
+    private val checkpoint = stringSetPreferencesKey("checkpoint_profile")
+    private val report = stringSetPreferencesKey("report_profile")
 
     override fun isRequestLoginFlow(): Flow<Boolean> {
         return userDataStore.data.map { preferences ->
@@ -70,7 +71,9 @@ class UserLocalDatasourceImpl @Inject constructor(
             HistoryType.LIKE -> like
             HistoryType.BOOKMARK -> bookmark
             HistoryType.COMMENT -> comment
-            HistoryType.REPORT_COMMENT -> reportComment
+            HistoryType.COURSE -> course
+            HistoryType.CHECKPOINT -> checkpoint
+            HistoryType.REPORT -> report
         }
     }
 
@@ -98,6 +101,8 @@ class UserLocalDatasourceImpl @Inject constructor(
             preferences[bookmark] = history.bookmarkGroup
             preferences[like] = history.likeGroup
             preferences[comment] = history.commentGroup
+            preferences[checkpoint] = history.commentGroup
+            preferences[course] = history.commentGroup
         }
     }
 

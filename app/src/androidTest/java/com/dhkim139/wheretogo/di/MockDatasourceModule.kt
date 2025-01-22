@@ -1,5 +1,12 @@
-package com.wheretogo.data.di
+package com.dhkim139.wheretogo.di
 
+import com.dhkim139.wheretogo.mock.MockAuthRemoteDatasourceImpl
+import com.dhkim139.wheretogo.mock.MockCheckPointRemoteDatasourceImpl
+import com.dhkim139.wheretogo.mock.MockCourseRemoteDatasourceImpl
+import com.dhkim139.wheretogo.mock.MockImageRemoteDatasourceImpl
+import com.dhkim139.wheretogo.mock.MockReportRemoteDatasourceImpl
+import com.dhkim139.wheretogo.mock.MockRouteRemoteDatasourceImpl
+import com.dhkim139.wheretogo.mock.MockUserRemoteDatasourceImpl
 import com.wheretogo.data.datasource.AuthRemoteDatasource
 import com.wheretogo.data.datasource.CheckPointLocalDatasource
 import com.wheretogo.data.datasource.CheckPointRemoteDatasource
@@ -13,28 +20,25 @@ import com.wheretogo.data.datasource.ReportRemoteDatasource
 import com.wheretogo.data.datasource.RouteRemoteDatasource
 import com.wheretogo.data.datasource.UserLocalDatasource
 import com.wheretogo.data.datasource.UserRemoteDatasource
-import com.wheretogo.data.datasourceimpl.AuthRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.CheckPointLocalDatasourceImpl
-import com.wheretogo.data.datasourceimpl.CheckPointRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.CommentRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.CourseLocalDatasourceImpl
-import com.wheretogo.data.datasourceimpl.CourseRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.ImageLocalDatasourceImpl
-import com.wheretogo.data.datasourceimpl.ImageRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.LikeRemoteDatasourceImpl
-import com.wheretogo.data.datasourceimpl.ReportRemoteDatasourceImpl
-import com.wheretogo.data.datasourceimpl.RouteRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.UserLocalDatasourceImpl
-import com.wheretogo.data.datasourceimpl.UserRemoteDatasourceImpl
+import com.wheretogo.data.di.DatasourceModule
 import dagger.Binds
 import dagger.Module
-import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dagger.hilt.testing.TestInstallIn
 
 
 @Module
-@InstallIn(SingletonComponent::class)
-abstract class DatasourceModule {
+@TestInstallIn(
+    components = [SingletonComponent::class],
+    replaces = [DatasourceModule::class]
+)
+abstract class MockDatasourceModule {
 
     //local
     @Binds
@@ -52,22 +56,22 @@ abstract class DatasourceModule {
 
     //remote
     @Binds
-    abstract fun bindImageRemoteDatasource(datasource: ImageRemoteDatasourceImpl): ImageRemoteDatasource
+    abstract fun bindImageRemoteDatasource(datasource: MockImageRemoteDatasourceImpl): ImageRemoteDatasource
 
     @Binds
-    abstract fun bindRouteRemoteDatasource(datasource: RouteRemoteDatasourceImpl): RouteRemoteDatasource
+    abstract fun bindRouteRemoteDatasource(datasource: MockRouteRemoteDatasourceImpl): RouteRemoteDatasource
 
     @Binds
-    abstract fun bindAuthRemoteDatasource(datasource: AuthRemoteDatasourceImpl): AuthRemoteDatasource
+    abstract fun bindAuthRemoteDatasource(datasource: MockAuthRemoteDatasourceImpl): AuthRemoteDatasource
 
     @Binds
-    abstract fun bindUserRemoteDatasource(datasource: UserRemoteDatasourceImpl): UserRemoteDatasource
+    abstract fun bindUserRemoteDatasource(datasource: MockUserRemoteDatasourceImpl): UserRemoteDatasource
 
     @Binds
-    abstract fun bindCourseRemoteDatasource(datasource: CourseRemoteDatasourceImpl): CourseRemoteDatasource
+    abstract fun bindCourseRemoteDatasource(datasource: MockCourseRemoteDatasourceImpl): CourseRemoteDatasource
 
     @Binds
-    abstract fun bindCheckPointRemoteDatasource(datasource: CheckPointRemoteDatasourceImpl): CheckPointRemoteDatasource
+    abstract fun bindCheckPointRemoteDatasource(datasource: MockCheckPointRemoteDatasourceImpl): CheckPointRemoteDatasource
 
     @Binds
     abstract fun bindLikeRemoteDatasource(datasource: LikeRemoteDatasourceImpl): LikeRemoteDatasource
@@ -76,6 +80,6 @@ abstract class DatasourceModule {
     abstract fun bindCommentRemoteDatasource(datasource: CommentRemoteDatasourceImpl): CommentRemoteDatasource
 
     @Binds
-    abstract fun bindReportRemoteDatasource(datasource: ReportRemoteDatasourceImpl): ReportRemoteDatasource
+    abstract fun bindReportRemoteDatasource(datasource: MockReportRemoteDatasourceImpl): ReportRemoteDatasource
 
 }

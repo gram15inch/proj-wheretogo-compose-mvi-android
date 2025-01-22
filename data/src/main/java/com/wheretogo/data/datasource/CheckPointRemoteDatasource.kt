@@ -10,4 +10,6 @@ interface CheckPointRemoteDatasource {
 
     suspend fun setCheckPoint(checkPoint: RemoteCheckPoint): Boolean
 
+    suspend fun removeCheckPoint(checkPointId: String): Boolean
+
 }

@@ -1,12 +1,10 @@
 package com.wheretogo.data.datasourceimpl.database
 
-import android.content.Context
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
@@ -28,17 +26,6 @@ import java.lang.reflect.Type
 )
 abstract class CourseDatabase : RoomDatabase() {
     abstract fun courseDao(): CourseDao
-
-    companion object {
-        fun getInstance(context: Context): CourseDatabase {
-            return Room.databaseBuilder(
-                context,
-                CourseDatabase::class.java,
-                "course_db"
-            ).fallbackToDestructiveMigration()
-                .build()
-        }
-    }
 }
 
 @Dao

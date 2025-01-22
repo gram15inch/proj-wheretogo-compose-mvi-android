@@ -19,11 +19,11 @@ enum class OverlayType {
 }
 
 enum class HistoryType {
-    COMMENT, LIKE, BOOKMARK, REPORT_COMMENT
+    COMMENT, COURSE, CHECKPOINT, LIKE, BOOKMARK, REPORT
 }
 
 enum class ReportType {
-    USER, COURSE, COMMENT
+    USER, COURSE, COMMENT, CHECKPOINT
 }
 
 enum class RouteDetailType(val code: Int) {

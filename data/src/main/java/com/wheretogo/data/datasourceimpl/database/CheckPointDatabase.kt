@@ -1,12 +1,10 @@
 package com.wheretogo.data.datasourceimpl.database
 
-import android.content.Context
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
@@ -23,17 +21,6 @@ import com.wheretogo.domain.model.map.LatLng
 )
 abstract class CheckPointDatabase : RoomDatabase() {
     abstract fun checkPointDao(): CheckPointDao
-
-    companion object {
-        fun getInstance(context: Context): CheckPointDatabase {
-            return Room.databaseBuilder(
-                context,
-                CheckPointDatabase::class.java,
-                "checkpoint_db"
-            ).fallbackToDestructiveMigration()
-                .build()
-        }
-    }
 }
 
 @Dao

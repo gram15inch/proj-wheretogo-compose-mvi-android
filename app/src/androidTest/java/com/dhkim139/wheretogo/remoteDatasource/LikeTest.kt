@@ -1,4 +1,4 @@
-package com.dhkim139.wheretogo.remote
+package com.dhkim139.wheretogo.remoteDatasource
 
 import androidx.test.platform.app.InstrumentationRegistry
 import com.dhkim139.wheretogo.di.FirebaseModule

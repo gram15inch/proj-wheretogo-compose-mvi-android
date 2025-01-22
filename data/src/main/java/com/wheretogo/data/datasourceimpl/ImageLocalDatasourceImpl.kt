@@ -20,10 +20,11 @@ import java.io.FileOutputStream
 import javax.inject.Inject
 
 class ImageLocalDatasourceImpl @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val imagePath: File
 ) : ImageLocalDatasource {
     override suspend fun getImage(fileName: String, size: ImageSize): File {
-        val localFile = File(context.cacheDir, "image/${size.pathName}_${fileName}").apply {
+        val localFile = File(imagePath.parentFile, "image/${size.pathName}_${fileName}").apply {
             if (!parentFile.exists())
                 parentFile.mkdirs()
         }
@@ -34,7 +35,7 @@ class ImageLocalDatasourceImpl @Inject constructor(
         saveResizedImagesToCache(context, uri, fileName, ImageSize.entries)
     }
 
-    suspend fun saveResizedImagesToCache(
+    private suspend fun saveResizedImagesToCache(
         context: Context,
         sourceUri: Uri,
         fileName: String,

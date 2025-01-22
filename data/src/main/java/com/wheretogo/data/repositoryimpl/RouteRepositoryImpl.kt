@@ -24,14 +24,6 @@ class RouteRepositoryImpl @Inject constructor(
         return remoteDatasource.removeRouteInCourse(courseId)
     }
 
-    override fun getRouteId(courseId: String): String {
-        return remoteDatasource.getRouteId(courseId)
-    }
-
-    override suspend fun createPoints(waypoints: List<LatLng>): List<LatLng> {
-        return remoteDatasource.getPoints(waypoints)
-    }
-
     override suspend fun createRoute(waypoints: List<LatLng>): Route {
         return remoteDatasource.getRouteByNaver(waypoints).toRoute()
     }

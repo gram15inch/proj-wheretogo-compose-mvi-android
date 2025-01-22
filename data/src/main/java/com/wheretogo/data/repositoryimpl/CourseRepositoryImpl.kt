@@ -73,6 +73,11 @@ class CourseRepositoryImpl @Inject constructor(
         courseLocalDatasource.setCourse(course.toLocalCourse())
     }
 
+    override suspend fun removeCourse(courseId: String) {
+        courseRemoteDatasource.removeCourse(courseId)
+        courseLocalDatasource.removeCourse(courseId)
+    }
+
     override suspend fun updateMetaCheckpoint(
         courseId: String,
         metaCheckPoint: MetaCheckPoint

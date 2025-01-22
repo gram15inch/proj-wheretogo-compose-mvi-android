@@ -49,4 +49,16 @@ class CheckPointRemoteDatasourceImpl @Inject constructor(
                 }
         }
     }
+
+    override suspend fun removeCheckPoint(checkPointId: String): Boolean {
+        return suspendCancellableCoroutine<Boolean> { continuation ->
+            firestore.collection(checkPointTable).document(checkPointId)
+                .delete()
+                .addOnSuccessListener {
+                    continuation.resume(true)
+                }.addOnFailureListener {
+                    continuation.resume(false)
+                }
+        }
+    }
 }

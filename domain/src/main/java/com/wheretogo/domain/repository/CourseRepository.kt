@@ -14,6 +14,8 @@ interface CourseRepository {
         checkPoints: List<CheckPoint> = emptyList()
     )
 
+    suspend fun removeCourse(courseId: String)
+
     suspend fun updateMetaCheckpoint(
         courseId: String,
         metaCheckPoint: MetaCheckPoint

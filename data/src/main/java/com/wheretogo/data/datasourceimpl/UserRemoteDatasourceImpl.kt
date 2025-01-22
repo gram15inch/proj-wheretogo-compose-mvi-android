@@ -1,6 +1,5 @@
 package com.wheretogo.data.datasourceimpl
 
-import android.util.Log
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
@@ -27,6 +26,8 @@ class UserRemoteDatasourceImpl @Inject constructor(
     private val likeTypeTable = FireStoreCollections.LIKE.name()
     private val bookMarkTypeTable = FireStoreCollections.BOOKMARK.name()
     private val commentTypeTable = FireStoreCollections.COMMENT.name()
+    private val courseTypeTable = FireStoreCollections.COURSE.name()
+    private val checkpointTypeTable = FireStoreCollections.CHECKPOINT.name()
     private val reportTable = FireStoreCollections.REPORT.name()
     private val public = FireStoreCollections.PUBLIC.name()
     private val private = FireStoreCollections.PRIVATE.name()
@@ -108,6 +109,8 @@ class UserRemoteDatasourceImpl @Inject constructor(
             root.collection(historyTable).document(bookMarkTypeTable).delete()
             root.collection(historyTable).document(likeTypeTable).delete()
             root.collection(historyTable).document(commentTypeTable).delete()
+            root.collection(historyTable).document(courseTypeTable).delete()
+            root.collection(historyTable).document(checkpointTypeTable).delete()
             root.collection(private).document(uid).delete()
             root.collection(public).document(uid).delete()
             root.delete()
@@ -121,12 +124,13 @@ class UserRemoteDatasourceImpl @Inject constructor(
 
 
     override suspend fun setHistoryGroup(uid: String, wrapper: RemoteHistoryGroupWrapper): Boolean {
-        Log.d("tst8", "uid: ${uid}")
         val typeTable = when (wrapper.type) {
             HistoryType.LIKE -> likeTypeTable
             HistoryType.BOOKMARK -> bookMarkTypeTable
             HistoryType.COMMENT -> commentTypeTable
-            HistoryType.REPORT_COMMENT -> reportTable
+            HistoryType.COURSE -> courseTypeTable
+            HistoryType.CHECKPOINT -> checkpointTypeTable
+            HistoryType.REPORT -> reportTable
         }
         return suspendCancellableCoroutine { continuation ->
             firestore.collection(userTable).document(uid).collection(historyTable)
@@ -146,7 +150,9 @@ class UserRemoteDatasourceImpl @Inject constructor(
             HistoryType.LIKE -> likeTypeTable
             HistoryType.BOOKMARK -> bookMarkTypeTable
             HistoryType.COMMENT -> commentTypeTable
-            HistoryType.REPORT_COMMENT -> reportTable
+            HistoryType.COURSE -> courseTypeTable
+            HistoryType.CHECKPOINT -> checkpointTypeTable
+            HistoryType.REPORT -> reportTable
         }
 
         return suspendCancellableCoroutine { continuation ->
@@ -175,7 +181,9 @@ class UserRemoteDatasourceImpl @Inject constructor(
             HistoryType.LIKE -> likeTypeTable
             HistoryType.BOOKMARK -> bookMarkTypeTable
             HistoryType.COMMENT -> commentTypeTable
-            HistoryType.REPORT_COMMENT -> reportTable
+            HistoryType.COURSE -> courseTypeTable
+            HistoryType.CHECKPOINT -> checkpointTypeTable
+            HistoryType.REPORT -> reportTable
         }
         return suspendCancellableCoroutine { continuation ->
             firestore.collection(userTable).document(uid).collection(historyTable)

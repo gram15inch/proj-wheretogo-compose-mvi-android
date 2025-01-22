@@ -65,30 +65,8 @@ class RouteRemoteDatasourceImpl @Inject constructor(
         }
     }
 
-    override fun getRouteId(courseId: String): String {
+    private fun getRouteId(courseId: String): String {
         return "${courseId}_route"
-    }
-
-    override suspend fun getPoints(waypoints: List<LatLng>): List<LatLng> {
-        return if (waypoints.size >= 2) {
-            val msg = naverApiService.getRouteWayPoint(
-                BuildConfig.NAVER_CLIENT_ID_KEY,
-                BuildConfig.NAVER_CLIENT_SECRET_KEY,
-                start = convertLatLng(waypoints.first()),
-                goal = convertLatLng(waypoints.last()),
-                waypoints = convertWaypoints(waypoints.drop(1).dropLast(1))
-            )
-
-            if (msg.body()?.currentDateTime != null) {
-                val r = msg.body()!!.route.traoptimal.map { it.path }.first()
-                    .map { LatLng(it[1], it[0]) }
-                return r
-            } else {
-                return emptyList()
-            }
-        } else
-            emptyList()
-
     }
 
     private fun convertLatLng(latlng: LatLng): String = "${latlng.longitude}, ${latlng.latitude}"

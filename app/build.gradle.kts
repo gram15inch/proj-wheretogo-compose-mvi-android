@@ -89,6 +89,7 @@ dependencies {
 
     implementation(platform(Kotlin.KOTLIN_BOM))
     implementation(platform(AndroidX.COMPOSE_BOM))
+    implementation("androidx.datastore:datastore-preferences-core-jvm:1.1.2")
     androidTestImplementation(AndroidX.TEST_RUNNER)
     androidTestImplementation(platform(AndroidX.COMPOSE_BOM))
 
@@ -110,8 +111,6 @@ dependencies {
 
 
     //hilt
-
-
     implementation(Dagger.HILT_ANDROID)
     implementation(AndroidX.HILT_COMMON)
     implementation(AndroidX.HILT_WORK)

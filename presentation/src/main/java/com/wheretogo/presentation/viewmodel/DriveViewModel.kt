@@ -21,8 +21,12 @@ import com.wheretogo.domain.usecase.community.AddCommentToCheckPointUseCase
 import com.wheretogo.domain.usecase.community.GetCommentForCheckPointUseCase
 import com.wheretogo.domain.usecase.community.GetImageInfoUseCase
 import com.wheretogo.domain.usecase.community.ModifyLikeUseCase
+import com.wheretogo.domain.usecase.community.RemoveCheckPointUseCase
 import com.wheretogo.domain.usecase.community.RemoveCommentToCheckPointUseCase
+import com.wheretogo.domain.usecase.community.RemoveCourseUseCase
+import com.wheretogo.domain.usecase.community.ReportCheckPointUseCase
 import com.wheretogo.domain.usecase.community.ReportCommentUseCase
+import com.wheretogo.domain.usecase.community.ReportCourseUseCase
 import com.wheretogo.domain.usecase.map.AddCheckpointToCourseUseCase
 import com.wheretogo.domain.usecase.map.GetCheckpointForMarkerUseCase
 import com.wheretogo.domain.usecase.map.GetImageForPopupUseCase
@@ -64,7 +68,11 @@ class DriveViewModel @Inject constructor(
     private val getCommentForCheckPointUseCase: GetCommentForCheckPointUseCase,
     private val addCommentToCheckPointUseCase: AddCommentToCheckPointUseCase,
     private val removeCommentToCheckPointUseCase: RemoveCommentToCheckPointUseCase,
+    private val removeCheckPointUseCase: RemoveCheckPointUseCase,
+    private val removeCourseUseCase: RemoveCourseUseCase,
     private val reportCommentUseCase: ReportCommentUseCase,
+    private val reportCourseUseCase: ReportCourseUseCase,
+    private val reportCheckPointUseCase: ReportCheckPointUseCase,
     private val getImageForPopupUseCase: GetImageForPopupUseCase,
     private val updateHistoryUseCase: UpdateHistoryUseCase,
     private val removeHistoryUseCase: RemoveHistoryUseCase,
@@ -124,8 +132,14 @@ class DriveViewModel @Inject constructor(
 
                 //바텀시트
                 is DriveScreenIntent.BottomSheetClose -> bottomSheetClose()
-                is DriveScreenIntent.CheckpointLocationSliderChange -> checkpointLocationSliderChange(intent.percent)
-                is DriveScreenIntent.CheckpointDescriptionChange -> checkpointDescriptionChange(intent.text)
+                is DriveScreenIntent.CheckpointLocationSliderChange -> checkpointLocationSliderChange(
+                    intent.percent
+                )
+
+                is DriveScreenIntent.CheckpointDescriptionChange -> checkpointDescriptionChange(
+                    intent.text
+                )
+
                 is DriveScreenIntent.CheckpointDescriptionEnterClick -> checkpointDescriptionEnterClick()
                 is DriveScreenIntent.CheckpointImageChange -> checkpointImageChange(intent.imgUri)
                 is DriveScreenIntent.CheckpointSubmitClick -> checkpointSubmitClick()
@@ -136,11 +150,17 @@ class DriveViewModel @Inject constructor(
     }
 
     private fun courseRemoveClick(infoState: InfoState) {
-        Log.d("tst8", "remove: ${infoState.isCourseInfo} / ${infoState.course.courseId} / ${infoState.checkPoint.checkPointId}")
+        Log.d(
+            "tst8",
+            "remove: ${infoState.isCourseInfo} / ${infoState.course.courseId} / ${infoState.checkPoint.checkPointId}"
+        )
     }
 
     private fun courseReportClick(infoState: InfoState) {
-        Log.d("tst8", "report: ${infoState.isCourseInfo} / ${infoState.course.courseId} / ${infoState.checkPoint.checkPointId}")
+        Log.d(
+            "tst8",
+            "report: ${infoState.isCourseInfo} / ${infoState.course.courseId} / ${infoState.checkPoint.checkPointId}"
+        )
     }
 
     private fun infoFloatingButtonClick() {

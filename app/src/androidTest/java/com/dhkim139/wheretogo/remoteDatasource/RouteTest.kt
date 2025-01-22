@@ -1,4 +1,4 @@
-package com.dhkim139.wheretogo.remote
+package com.dhkim139.wheretogo.remoteDatasource
 
 import androidx.test.platform.app.InstrumentationRegistry
 import com.dhkim139.wheretogo.di.FirebaseModule
@@ -40,7 +40,7 @@ class RouteTest {
         val rtGroup = listOf(getCourseDummy()).first().map {
             RemoteRoute(
                 courseId = it.courseId,
-                points = datasource.getPoints(it.waypoints)
+                points = datasource.getRouteByNaver(it.waypoints).points
             )
         }
 

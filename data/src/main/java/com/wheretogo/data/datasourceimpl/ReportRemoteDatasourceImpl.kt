@@ -25,9 +25,9 @@ class ReportRemoteDatasourceImpl @Inject constructor(
         }
     }
 
-    override suspend fun getReport(reportID: String): RemoteReport? {
+    override suspend fun getReport(reportId: String): RemoteReport? {
         return suspendCancellableCoroutine { continuation ->
-            firestore.collection(reportTable).document(reportID).get()
+            firestore.collection(reportTable).document(reportId).get()
                 .addOnSuccessListener {
                     continuation.resume(it.toObject(RemoteReport::class.java))
                 }.addOnFailureListener {

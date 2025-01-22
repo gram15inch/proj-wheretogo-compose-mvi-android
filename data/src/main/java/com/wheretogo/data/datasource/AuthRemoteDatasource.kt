@@ -1,9 +1,12 @@
-package com.wheretogo.domain.repository
+package com.wheretogo.data.datasource
 
 import com.wheretogo.domain.model.user.AuthResponse
 
-interface AuthRepository {
+interface AuthRemoteDatasource {
+
     suspend fun authWithGoogle(idToken: String): AuthResponse
-    suspend fun signOut()
+
+    suspend fun signOutOnFirebase()
+
     suspend fun deleteUser(): Boolean
 }
