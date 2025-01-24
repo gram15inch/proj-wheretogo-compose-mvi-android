@@ -26,8 +26,8 @@ class ImageRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun setImage(imgUri: Uri, fileName: String) {
-        coroutineScope {
+    override suspend fun setImage(imgUri: Uri, fileName: String): Boolean {
+        return coroutineScope {
             imageLocalDatasource.setImage(imgUri, fileName)
             ImageSize.entries.map { size ->
                 async {
@@ -36,7 +36,19 @@ class ImageRepositoryImpl @Inject constructor(
                         localFile.toUri(), fileName, size
                     )
                 }
-            }.awaitAll()
+            }.awaitAll().all { it }
+        }
+    }
+
+    override suspend fun removeImage(fileName: String): Boolean {
+        return coroutineScope {
+            ImageSize.entries.map { size ->
+                async {
+                    imageRemoteDatasource.removeImage(fileName, size).apply {
+                        imageLocalDatasource.removeImage(fileName, size)
+                    }
+                }
+            }.awaitAll().all { it }
         }
     }
 }

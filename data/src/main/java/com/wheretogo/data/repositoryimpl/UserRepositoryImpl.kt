@@ -38,13 +38,11 @@ class UserRepositoryImpl @Inject constructor(
         userId.isEmpty().let { if (it) throw UserNotExistException("inValid userId: $userId") }
         require(historyId.isNotEmpty()) { "inValid historyId: $historyId" }
         userLocalDatasource.addHistory(historyId, type)
-
         userRemoteDatasource.addHistory(
             uid = userId,
             historyId = historyId,
             type = type
         )
-
     }
 
     override suspend fun setHistoryGroup(

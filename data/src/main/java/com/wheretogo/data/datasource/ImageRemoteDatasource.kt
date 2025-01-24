@@ -11,4 +11,5 @@ interface ImageRemoteDatasource {
 
     suspend fun getImage(localFile: File, filename: String, size: ImageSize): File?
 
+    suspend fun removeImage(filename: String, size: ImageSize): Boolean
 }

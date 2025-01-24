@@ -6,5 +6,6 @@ import java.io.File
 
 interface ImageRepository {
     suspend fun getImage(fileName: String, size: ImageSize): File?
-    suspend fun setImage(imgUri: Uri, fileName: String)
+    suspend fun setImage(imgUri: Uri, fileName: String): Boolean
+    suspend fun removeImage(fileName: String): Boolean
 }

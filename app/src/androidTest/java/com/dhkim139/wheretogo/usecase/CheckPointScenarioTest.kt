@@ -1,13 +1,13 @@
 package com.dhkim139.wheretogo.usecase
 
-import android.content.Context
-import android.net.Uri
 import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import com.dhkim139.wheretogo.di.MockModelModule
 import com.wheretogo.data.toCourse
 import com.wheretogo.domain.ReportType
 import com.wheretogo.domain.model.UseCaseResponse
+import com.wheretogo.domain.model.community.Report
+import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.CheckPointAddRequest
 import com.wheretogo.domain.model.user.SignInRequest
 import com.wheretogo.domain.usecase.community.GetReportUseCase
@@ -18,6 +18,7 @@ import com.wheretogo.domain.usecase.map.AddCourseUseCase
 import com.wheretogo.domain.usecase.map.GetCheckpointForMarkerUseCase
 import com.wheretogo.domain.usecase.user.UserSignInUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
+import com.wheretogo.presentation.feature.getAssetFileUri
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import jakarta.inject.Inject
@@ -66,24 +67,16 @@ class CheckPointScenarioTest {
             imageUri = uri,
             description = "description1"
         )
-        signInUseCase(SignInRequest(user.token))
+        signInUseCase(SignInRequest(user.token)).success()
         addCourseUseCase(addCourse).success()
-
-        getCheckpointForMarkerUseCase(addCourse.courseId).apply {
-            Log.d(tag, "cp: ${this.firstOrNull()}")
-            assertEquals(null, this.firstOrNull())
-        }
+        getCheckpointForMarkerUseCase(addCourse.courseId).empty()
 
         addCheckpointToCourseUseCase(addCheckPoint).success()
-        getCheckpointForMarkerUseCase(addCourse.courseId).apply {
-            this.firstOrNull().let {
-                Log.d(tag, "cp: ${it}")
-                assertNotEquals(null, it)
-                if (it != null) {
-                    assertEquals(true, File(it.imageLocalPath).exists())
-                }
-            }
-        }
+        val cp = getCheckpointForMarkerUseCase(addCourse.courseId).first()
+        getCheckpointForMarkerUseCase(addCourse.courseId).exist()
+
+        removeCheckPointUseCase(addCourse.courseId, cp.checkPointId).success()
+        getCheckpointForMarkerUseCase(addCourse.courseId).empty()
     }
 
     @Test // 인증된 사용자가 체크포인트를 신고하기
@@ -103,16 +96,14 @@ class CheckPointScenarioTest {
             description = "description1"
         )
 
-        signInUseCase(SignInRequest(user.token))
+        signInUseCase(SignInRequest(user.token)).success()
         addCourseUseCase(addCourse).success()
         addCheckpointToCourseUseCase(reportCheckPoint).success()
+        getCheckpointForMarkerUseCase(reportCheckPoint.courseId).exist()
 
         val cp = getCheckpointForMarkerUseCase(reportCheckPoint.courseId).first()
         reportCheckPointUseCase(cp, "test").success()
-        getReportUseCase(ReportType.CHECKPOINT).apply {
-            Log.d(tag, "rp: ${this.firstOrNull { it.contentId == cp.checkPointId }}")
-            assertNotEquals(null, this.firstOrNull { it.contentId == cp.checkPointId })
-        }
+        getReportUseCase(ReportType.CHECKPOINT).contain(cp.checkPointId)
     }
 
 
@@ -130,21 +121,34 @@ class CheckPointScenarioTest {
         }
     }
 
-    private fun getAssetFileUri(context: Context, assetFileName: String): Uri? {
-        val assetManager = context.assets
-        val file = File.createTempFile("test_image", ".jpg_pb")
-
-        try {
-            assetManager.open(assetFileName).use { inputStream ->
-                file.outputStream().use { outputStream ->
-                    inputStream.copyTo(outputStream)
-                }
+    @JvmName("co1")
+    private fun List<CheckPoint>.exist() {
+        this.firstOrNull().let {
+            Log.d(tag, "exist: ${it}")
+            assertNotEquals(null, it)
+            if (it != null) {
+                assertEquals(true, File(it.imageLocalPath).exists())
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return null
         }
-
-        return Uri.fromFile(file)
     }
+
+    @JvmName("no1")
+    private fun List<CheckPoint>.empty() {
+        Log.d(tag, "empty: ${this.firstOrNull()}")
+        assertEquals(null, this.firstOrNull())
+    }
+
+    @JvmName("co2")
+    private fun List<Report>.contain(checkPointId: String) {
+        Log.d(tag, "contain: ${this.firstOrNull { it.contentId == checkPointId }} / ${this}")
+        assertNotEquals(null, this.firstOrNull { it.contentId == checkPointId })
+    }
+
+    @JvmName("no2")
+    private fun List<Report>.empty(checkPointId: String) {
+        Log.d(tag, "empty: ${this.firstOrNull { it.contentId == checkPointId }} / ${this}")
+        assertEquals(null, this.firstOrNull { it.contentId == checkPointId })
+    }
+
+
 }

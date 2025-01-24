@@ -7,6 +7,7 @@ data class RemoteCourse(
     val courseId: String = DATA_NULL,
     val courseName: String = "",
     val userId: String = "",
+    val userName: String = "",
     val latitude: Double = 0.0,
     val longitude: Double = 0.0,
     val geoHash: String = "",

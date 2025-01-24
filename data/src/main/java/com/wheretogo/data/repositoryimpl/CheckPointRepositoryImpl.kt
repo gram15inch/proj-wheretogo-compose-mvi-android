@@ -58,4 +58,10 @@ class CheckPointRepositoryImpl @Inject constructor(
                 }
             }
     }
+
+    override suspend fun removeCheckPoint(checkPointId: String): Boolean {
+        return checkPointRemoteDatasource.removeCheckPoint(checkPointId).apply {
+            checkPointLocalDatasource.removeCheckPoint(checkPointId)
+        }
+    }
 }

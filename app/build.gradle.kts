@@ -130,6 +130,10 @@ dependencies {
     androidTestImplementation(UnitTest.JUNIT_JUPITER_PARAMS)
     androidTestImplementation(UnitTest.JUNIT_JUPITER_ENGINE)
     androidTestImplementation(UnitTest.JUNIT_VINTAGE_ENGINE)
+    testImplementation(UnitTest.JUNIT_JUPITER_API)
+    testImplementation(UnitTest.JUNIT_JUPITER_PARAMS)
+    testImplementation(UnitTest.JUNIT_JUPITER_ENGINE)
+    testImplementation(UnitTest.JUNIT_VINTAGE_ENGINE)
 
     // firebase
     implementation(platform(Firebase.FIREBASE_BOM))

@@ -26,14 +26,14 @@ abstract class CheckPointDatabase : RoomDatabase() {
 @Dao
 interface CheckPointDao {
 
-    @Query("SELECT * FROM LocalCheckPoint WHERE checkPointId = :courseId")
-    suspend fun select(courseId: String): LocalCheckPoint?
+    @Query("SELECT * FROM LocalCheckPoint WHERE checkPointId = :checkPointId")
+    suspend fun select(checkPointId: String): LocalCheckPoint?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(entity: LocalCheckPoint)
 
-    @Query("DELETE FROM LocalCheckPoint WHERE checkPointId = :courseId")
-    suspend fun delete(courseId: String)
+    @Query("DELETE FROM LocalCheckPoint WHERE checkPointId = :checkPointId")
+    suspend fun delete(checkPointId: String)
 
 }
 

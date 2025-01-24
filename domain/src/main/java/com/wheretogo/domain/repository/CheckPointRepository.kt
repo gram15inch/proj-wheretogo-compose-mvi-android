@@ -12,4 +12,6 @@ interface CheckPointRepository {
         checkpointIdGroup: List<String>
     ): List<CheckPoint>
 
+    suspend fun removeCheckPoint(checkPointId: String): Boolean
+
 }

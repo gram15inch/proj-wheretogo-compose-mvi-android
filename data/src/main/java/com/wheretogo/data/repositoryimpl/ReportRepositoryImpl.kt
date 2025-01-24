@@ -1,6 +1,5 @@
 package com.wheretogo.data.repositoryimpl
 
-import android.util.Log
 import com.wheretogo.data.datasource.ReportRemoteDatasource
 import com.wheretogo.data.toRemoteReport
 import com.wheretogo.data.toReport
@@ -14,12 +13,10 @@ class ReportRepositoryImpl @Inject constructor(
     private val reportRemoteDatasource: ReportRemoteDatasource
 ) : ReportRepository {
     override suspend fun addReport(report: Report) {
-        Log.d("tst8", "$report")
         reportRemoteDatasource.addReport(report.toRemoteReport())
     }
 
     override suspend fun getReport(reportId: String): Report? {
-        Log.d("tst8", "$reportId")
         return reportRemoteDatasource.getReport(reportId)?.toReport()
     }
 

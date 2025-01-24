@@ -2,7 +2,6 @@ package com.wheretogo.data.datasourceimpl
 
 
 import android.net.Uri
-import android.util.Log
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.wheretogo.data.datasource.ImageRemoteDatasource
@@ -14,9 +13,8 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 class ImageRemoteDatasourceImpl @Inject constructor(
-    private val firebaseStorage: FirebaseStorage,
-
-    ) : ImageRemoteDatasource {
+    private val firebaseStorage: FirebaseStorage
+) : ImageRemoteDatasource {
 
     override suspend fun setImage(uri: Uri, filename: String, size: ImageSize): Boolean {
         val storageRef: StorageReference =
@@ -42,6 +40,20 @@ class ImageRemoteDatasourceImpl @Inject constructor(
             }.addOnFailureListener {
                 it.printStackTrace()
                 con.resume(null)
+            }
+        }
+    }
+
+    override suspend fun removeImage(filename: String, size: ImageSize): Boolean {
+        val storageRef: StorageReference =
+            firebaseStorage.reference.child("image/${size.pathName}/$filename")
+
+        return suspendCancellableCoroutine { con ->
+            storageRef.delete().addOnSuccessListener { _ ->
+                con.resume(true)
+            }.addOnFailureListener {
+                it.printStackTrace()
+                con.resume(false)
             }
         }
     }

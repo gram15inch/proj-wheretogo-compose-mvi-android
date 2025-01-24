@@ -11,4 +11,6 @@ interface ImageLocalDatasource {
 
     suspend fun setImage(uri: Uri, fileName: String)
 
+    suspend fun removeImage(fileName: String, size: ImageSize)
+
 }

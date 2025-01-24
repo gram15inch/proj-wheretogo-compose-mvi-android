@@ -5,6 +5,9 @@ import com.dhkim139.wheretogo.di.MockModelModule
 import com.wheretogo.data.toCourse
 import com.wheretogo.domain.ReportType
 import com.wheretogo.domain.model.UseCaseResponse
+import com.wheretogo.domain.model.community.Report
+import com.wheretogo.domain.model.map.Course
+import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.user.SignInRequest
 import com.wheretogo.domain.usecase.community.GetReportUseCase
 import com.wheretogo.domain.usecase.community.RemoveCourseUseCase
@@ -55,29 +58,18 @@ class CourseScenarioTest {
         }
         val removeCourse = MockModelModule().provideRemoteCourseGroup().first()
         val user = MockModelModule().provideRemoteUser()
-        signInUseCase(SignInRequest(user.token)).success()
 
-        getNearByCourseUseCase(removeCourse.cameraLatLng).apply {
-            assertEquals(null, this.firstOrNull { it.courseId == addCourse.courseId })
-            Log.d(tag, "${this.firstOrNull { it.courseId == addCourse.courseId }}")
-        }
+        signInUseCase(SignInRequest(user.token)).success()
+        getNearByCourseUseCase(removeCourse.cameraLatLng).empty(addCourse.courseId)
 
         addCourseUseCase(addCourse).success()
-
-        getNearByCourseUseCase(removeCourse.cameraLatLng).apply {
-            Log.d(tag, "${this.firstOrNull { it.courseId == addCourse.courseId }}")
-            assertNotEquals(null, this.firstOrNull { it.courseId == addCourse.courseId })
-        }
+        getNearByCourseUseCase(removeCourse.cameraLatLng).contain(addCourse.courseId)
 
         removeCourseUseCase(removeCourse.courseId).success()
-
-        getNearByCourseUseCase(removeCourse.cameraLatLng).apply {
-            Log.d(tag, "${this.firstOrNull { it.courseId == removeCourse.courseId }}")
-            assertEquals(null, this.firstOrNull { it.courseId == removeCourse.courseId })
-        }
+        getNearByCourseUseCase(removeCourse.cameraLatLng).empty(removeCourse.courseId)
 
         signOutUseCase().success()
-
+        addCourseUseCase(addCourse).fail()
         removeCourseUseCase(removeCourse.courseId).fail()
 
     }
@@ -86,32 +78,52 @@ class CourseScenarioTest {
     fun scenario3(): Unit = runBlocking {
         val reportCourse = MockModelModule().provideRemoteCourseGroup().first()
         val user = MockModelModule().provideRemoteUser()
-        signInUseCase(SignInRequest(user.token)).success()
 
-        getReportUseCase(ReportType.COURSE).apply {
-            assertEquals(null, this.firstOrNull { it.contentId == reportCourse.courseId })
-            Log.d(tag, "${this.firstOrNull { it.contentId == reportCourse.courseId }}")
-        }
+        signInUseCase(SignInRequest(user.token)).success()
+        getReportUseCase(ReportType.COURSE).empty(reportCourse.courseId)
 
         reportCourseUseCase(reportCourse.toCourse(), "test").success()
+        getReportUseCase(ReportType.COURSE).contain(reportCourse.courseId)
+        getNearByCourseUseCase(LatLng()).empty(reportCourse.courseId)
 
-        getReportUseCase(ReportType.COURSE).apply {
-            Log.d(tag, "${this.firstOrNull { it.contentId == reportCourse.courseId }}")
-            assertNotEquals(null, this.firstOrNull { it.contentId == reportCourse.courseId })
-        }
     }
 
     private fun UseCaseResponse.success() {
         this.apply {
-            Log.d(tag, "${this}")
+            Log.d(tag, "${this::class.simpleName}: ${this}")
             assertEquals(UseCaseResponse.Status.Success, this.status)
         }
     }
 
     private fun UseCaseResponse.fail() {
         this.apply {
-            Log.d(tag, "${this}")
+            Log.d(tag, "${this::class.simpleName}: ${this}")
             assertEquals(UseCaseResponse.Status.Fail, this.status)
         }
     }
+
+    @JvmName("co1")
+    private fun List<Course>.contain(courseId: String) {
+        Log.d(tag, "contain: ${this.firstOrNull { it.courseId == courseId }} / ${this}")
+        assertNotEquals(null, this.firstOrNull { it.courseId == courseId })
+    }
+
+    @JvmName("no1")
+    private fun List<Course>.empty(courseId: String) {
+        Log.d(tag, "empty: ${this.firstOrNull { it.courseId == courseId }} / ${this}")
+        assertEquals(null, this.firstOrNull { it.courseId == courseId })
+    }
+
+    @JvmName("co2")
+    private fun List<Report>.contain(courseId: String) {
+        Log.d(tag, "contain: ${this.firstOrNull { it.contentId == courseId }} / ${this}")
+        assertNotEquals(null, this.firstOrNull { it.contentId == courseId })
+    }
+
+    @JvmName("no2")
+    private fun List<Report>.empty(courseId: String) {
+        Log.d(tag, "empty: ${this.firstOrNull { it.contentId == courseId }} / ${this}")
+        assertEquals(null, this.firstOrNull { it.contentId == courseId })
+    }
+
 }

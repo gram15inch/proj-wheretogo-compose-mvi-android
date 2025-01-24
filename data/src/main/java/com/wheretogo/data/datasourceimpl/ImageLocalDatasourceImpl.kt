@@ -25,8 +25,8 @@ class ImageLocalDatasourceImpl @Inject constructor(
 ) : ImageLocalDatasource {
     override suspend fun getImage(fileName: String, size: ImageSize): File {
         val localFile = File(imagePath.parentFile, "image/${size.pathName}_${fileName}").apply {
-            if (!parentFile.exists())
-                parentFile.mkdirs()
+            if (!parentFile!!.exists())
+                parentFile?.mkdirs()
         }
         return localFile
     }
@@ -79,4 +79,9 @@ class ImageLocalDatasourceImpl @Inject constructor(
         }.awaitAll()
     }
 
+    override suspend fun removeImage(fileName: String, size: ImageSize) {
+        val localFile = File(imagePath.parentFile, "image/${size.pathName}_${fileName}")
+        if (localFile.exists())
+            localFile.delete()
+    }
 }

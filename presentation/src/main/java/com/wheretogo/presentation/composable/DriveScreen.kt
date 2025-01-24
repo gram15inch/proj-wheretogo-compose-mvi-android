@@ -38,22 +38,23 @@ import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.naver.maps.map.overlay.Marker
-import com.wheretogo.domain.parseMarkerTag
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.content.CheckPointAddContent
-import com.wheretogo.presentation.composable.content.InfoContent
-import com.wheretogo.presentation.composable.content.DriveBottomSheet
 import com.wheretogo.presentation.composable.content.DelayLottieAnimation
 import com.wheretogo.presentation.composable.content.DescriptionTextField
+import com.wheretogo.presentation.composable.content.DriveBottomSheet
 import com.wheretogo.presentation.composable.content.DriveList
 import com.wheretogo.presentation.composable.content.FadeAnimation
 import com.wheretogo.presentation.composable.content.FloatingButtons
+import com.wheretogo.presentation.composable.content.InfoContent
 import com.wheretogo.presentation.composable.content.MapPopup
 import com.wheretogo.presentation.composable.content.NaverMap
 import com.wheretogo.presentation.feature.ImeStickyBox
 import com.wheretogo.presentation.feature.naver.setCurrentLocation
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.model.ContentPadding
+import com.wheretogo.presentation.model.OverlayTag
+import com.wheretogo.presentation.parse
 import com.wheretogo.presentation.viewmodel.DriveViewModel
 import kotlinx.coroutines.launch
 
@@ -106,11 +107,11 @@ fun DriveScreen(
         },
         onCourseMarkerClick = { overlay ->
             val marker = overlay as Marker
-            viewModel.handleIntent(DriveScreenIntent.CourseMarkerClick(parseMarkerTag(marker.tag as String)))
+            viewModel.handleIntent(DriveScreenIntent.CourseMarkerClick(OverlayTag.parse(marker.tag as String)))
         },
         onCheckPointMarkerClick = { overlay ->
             val marker = overlay as Marker
-            viewModel.handleIntent(DriveScreenIntent.CheckPointMarkerClick(parseMarkerTag(marker.tag as String)))
+            viewModel.handleIntent(DriveScreenIntent.CheckPointMarkerClick(OverlayTag.parse(marker.tag as String)))
         },
         onOverlayRenderComplete = { isRendered ->
             viewModel.handleIntent(DriveScreenIntent.OverlayRenderComplete(isRendered))
@@ -202,15 +203,19 @@ fun DriveScreen(
                 onBottomSheetClose = {
                     viewModel.handleIntent(DriveScreenIntent.BottomSheetClose)
                 }
-            ){
-                if(state.bottomSheetState.isCheckPointAdd)
+            ) {
+                if (state.bottomSheetState.isCheckPointAdd)
                     CheckPointAddContent(
                         state = state.bottomSheetState.checkPointAddState,
                         onSubmitClick = {
                             viewModel.handleIntent(DriveScreenIntent.CheckpointSubmitClick)
                         },
                         onSliderChange = {
-                            viewModel.handleIntent(DriveScreenIntent.CheckpointLocationSliderChange(it))
+                            viewModel.handleIntent(
+                                DriveScreenIntent.CheckpointLocationSliderChange(
+                                    it
+                                )
+                            )
                         },
                         onImageChange = {
                             viewModel.handleIntent(DriveScreenIntent.CheckpointImageChange(it))

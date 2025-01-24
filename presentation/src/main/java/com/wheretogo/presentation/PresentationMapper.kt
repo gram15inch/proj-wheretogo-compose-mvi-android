@@ -3,11 +3,13 @@ package com.wheretogo.presentation
 
 import com.wheretogo.domain.AuthCompany
 import com.wheretogo.domain.CourseDetail
+import com.wheretogo.domain.OverlayType
 
 import com.wheretogo.domain.RouteDetailType
 import com.wheretogo.domain.model.map.Comment
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.RouteWaypointItem
+import com.wheretogo.presentation.model.OverlayTag
 import com.wheretogo.presentation.state.CommentState.CommentAddState
 import com.wheretogo.presentation.state.CourseAddScreenState.RouteWaypointItemState
 import com.kakao.vectormap.LatLng as KakaoLatLng
@@ -119,5 +121,20 @@ fun parseLogoImgRes(company: String): Int {
         AuthCompany.GOOGLE -> {
             R.drawable.ic_heart
         }
+    }
+}
+
+fun OverlayTag.toStringTag() = "${this.overlayId}/${this.parentId}/${this.type}"
+
+fun OverlayTag.Companion.parse(stringTag: String): OverlayTag? {
+    return try {
+        val list = stringTag.split("/")
+        OverlayTag(
+            list[0],
+            list[1],
+            OverlayType.valueOf(list[2])
+        )
+    } catch (e: Exception) {
+        null
     }
 }

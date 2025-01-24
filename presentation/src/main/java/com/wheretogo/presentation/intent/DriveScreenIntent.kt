@@ -2,8 +2,8 @@ package com.wheretogo.presentation.intent
 
 import android.net.Uri
 import androidx.compose.ui.text.input.TextFieldValue
-import com.wheretogo.domain.model.map.OverlayTag
 import com.wheretogo.presentation.CommentType
+import com.wheretogo.presentation.model.OverlayTag
 import com.wheretogo.presentation.state.CameraState
 import com.wheretogo.presentation.state.CommentState.CommentAddState
 import com.wheretogo.presentation.state.CommentState.CommentItemState
@@ -16,8 +16,8 @@ sealed class DriveScreenIntent {
     data object MapIsReady : DriveScreenIntent()
     data class UpdateCamera(val cameraState: CameraState) : DriveScreenIntent()
     data class OverlayRenderComplete(val isRendered: Boolean) : DriveScreenIntent()
-    data class CourseMarkerClick(val tag: OverlayTag) : DriveScreenIntent()
-    data class CheckPointMarkerClick(val tag: OverlayTag) : DriveScreenIntent()
+    data class CourseMarkerClick(val tag: OverlayTag?) : DriveScreenIntent()
+    data class CheckPointMarkerClick(val tag: OverlayTag?) : DriveScreenIntent()
 
     //목록
     data class DriveListItemClick(val itemState: ListItemState) : DriveScreenIntent()

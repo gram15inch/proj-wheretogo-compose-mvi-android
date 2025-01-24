@@ -259,6 +259,7 @@ fun RemoteCourse.toCourse(
         courseId = courseId,
         courseName = courseName,
         userId = userId,
+        userName = userName,
         waypoints = waypoints,
         checkpointIdGroup = dataMetaCheckPoint.checkPointIdGroup,
         points = route,

@@ -15,10 +15,10 @@ import com.naver.maps.map.overlay.PathOverlay
 import com.wheretogo.domain.OverlayType
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.Course
-import com.wheretogo.domain.model.map.OverlayTag
-import com.wheretogo.domain.toStringTag
 import com.wheretogo.presentation.model.MapOverlay
+import com.wheretogo.presentation.model.OverlayTag
 import com.wheretogo.presentation.toNaver
+import com.wheretogo.presentation.toStringTag
 
 
 fun getMapOverlay(item: Course): MapOverlay {
