@@ -198,7 +198,7 @@ fun DriveScreen(
             }
 
             DriveBottomSheet(
-                modifier = Modifier.align(Alignment.BottomCenter),
+                modifier = Modifier.align(Alignment.BottomCenter).zIndex(997f),
                 isVisible = state.bottomSheetState.isVisible,
                 onBottomSheetClose = {
                     viewModel.handleIntent(DriveScreenIntent.BottomSheetClose)
@@ -260,7 +260,7 @@ fun DriveScreen(
                 }
             )
 
-            ImeStickyBox(modifier = Modifier.align(alignment = Alignment.BottomCenter)) {
+            ImeStickyBox(modifier = Modifier.align(alignment = Alignment.BottomCenter).zIndex(999f)) {
                 DescriptionTextField(
                     modifier = Modifier.heightIn(min = 60.dp),
                     isVisible = state.bottomSheetState.isVisible && it > 30.dp,
