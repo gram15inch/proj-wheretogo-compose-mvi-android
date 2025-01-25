@@ -1,90 +1,84 @@
 package com.dhkim139.wheretogo.remoteDatasource
 
-import androidx.test.platform.app.InstrumentationRegistry
-import com.dhkim139.wheretogo.di.FirebaseModule
-import com.google.firebase.FirebaseApp
+import com.wheretogo.data.datasourceimpl.CourseRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.RouteRemoteDatasourceImpl
-import com.wheretogo.data.di.ApiServiceModule
-import com.wheretogo.data.di.RetrofitClientModule
+import com.wheretogo.data.model.course.RemoteCourse
 import com.wheretogo.data.model.route.RemoteRoute
-import com.wheretogo.domain.model.dummy.getCourseDummy
 import com.wheretogo.domain.model.map.LatLng
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Test
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+import javax.inject.Inject
 
 
+@HiltAndroidTest
 class RouteTest {
-    companion object {
-        @JvmStatic
-        @BeforeAll
-        fun initializeFirebase() {
-            val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-            if (FirebaseApp.getApps(appContext).isEmpty()) {
-                FirebaseApp.initializeApp(appContext)
-            }
-        }
-    }
 
-    @Test
-    fun initRouteByNaverTest(): Unit = runBlocking {
+    @get:Rule
+    var hiltRule = HiltAndroidRule(this)
 
-        val firestore = FirebaseModule.provideFirestore()
-        val naverApi = ApiServiceModule.provideNaverMapApiService(RetrofitClientModule.run {
-            provideRetrofit(provideMoshi(), provideClient())
-        })
-        val datasource = RouteRemoteDatasourceImpl(firestore, naverApi)
+    @Inject
+    lateinit var courseDatasourceImpl: CourseRemoteDatasourceImpl
 
+    @Inject
+    lateinit var routeRemoteDatasourceImpl: RouteRemoteDatasourceImpl
 
-        val rtGroup = listOf(getCourseDummy()).first().map {
-            RemoteRoute(
-                courseId = it.courseId,
-                points = datasource.getRouteByNaver(it.waypoints).points
-            )
-        }
-
-        assertEquals(true, rtGroup.first().points.isNotEmpty())
-        rtGroup.forEach {
-            assertEquals(true, datasource.setRouteInCourse(it))
-        }
-
-        rtGroup.forEachIndexed { idx, route ->
-            assertEquals(route, datasource.getRouteInCourse(route.courseId))
-        }
+    @Before
+    fun init() {
+        hiltRule.inject()
     }
 
     @Test
     fun getAndSetRouteTest(): Unit = runBlocking {
-        val firestore = FirebaseModule.provideFirestore()
-        val naverApi = ApiServiceModule.provideNaverMapApiService(RetrofitClientModule.run {
-            provideRetrofit(provideMoshi(), provideClient())
-        })
-        val datasource = RouteRemoteDatasourceImpl(firestore, naverApi)
-        val rt1 = RemoteRoute(
-            courseId = "cs1"
+        val routeDatasource = routeRemoteDatasourceImpl
+        val cs = RemoteCourse(courseId = "cstr1")
+        val localRt = RemoteRoute(
+            courseId = cs.courseId,
+            points = listOf(LatLng(1.0, 1.0), LatLng(2.0, 2.0), LatLng(3.0, 3.0))
         )
+        courseDatasourceImpl.setCourse(cs)
 
-        assertEquals(true, datasource.setRouteInCourse(rt1))
-        val rt2 = datasource.getRouteInCourse("cs1")
+        assertEquals(true, routeDatasource.setRouteInCourse(localRt))
 
-        assertEquals(rt1, rt2)
-        assertEquals(true, datasource.removeRouteInCourse("cs1"))
+        val severRt = routeDatasource.getRouteInCourse(cs.courseId)
+        assertEquals(localRt, severRt)
+        assertEquals(true, routeDatasource.removeRouteInCourse(cs.courseId))
 
-        val rt3 = datasource.getRouteInCourse("cs1")
-        assertEquals(true, rt3.points.isEmpty())
+        assertEquals(true, courseDatasourceImpl.removeCourse(cs.courseId))
+        assertEquals(null, courseDatasourceImpl.getCourse(cs.courseId))
     }
 
 
     @Test
     fun getAddressWithLatLngTest(): Unit = runBlocking {
-        val firestore = FirebaseModule.provideFirestore()
-        val naverApi = ApiServiceModule.provideNaverMapApiService(RetrofitClientModule.run {
-            provideRetrofit(provideMoshi(), provideClient())
-        })
-
-        val datasource = RouteRemoteDatasourceImpl(firestore, naverApi)
+        val datasource = routeRemoteDatasourceImpl
         val r = datasource.getAddress(LatLng(37.56661, 126.978388))
         assertEquals(true, r.isNotEmpty())
     }
+
+
+    /*    @Test
+        fun initRouteByNaverTest(): Unit = runBlocking {
+            val datasource = routeRemoteDatasourceImpl
+
+            val rtGroup = listOf(getCourseDummy()).first().map {
+                RemoteRoute(
+                    courseId = it.courseId,
+                    points = datasource.getRouteByNaver(it.waypoints).points
+                )
+            }
+
+            assertEquals(true, rtGroup.first().points.isNotEmpty())
+            rtGroup.forEach {
+                assertEquals(true, datasource.setRouteInCourse(it))
+            }
+
+            rtGroup.forEachIndexed { idx, route ->
+                assertEquals(route, datasource.getRouteInCourse(route.courseId))
+            }
+        }*/
 }

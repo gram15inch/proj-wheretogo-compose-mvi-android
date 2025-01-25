@@ -1,34 +1,34 @@
 package com.dhkim139.wheretogo.remoteDatasource
 
-import androidx.test.platform.app.InstrumentationRegistry
-import com.dhkim139.wheretogo.di.FirebaseModule
-import com.google.firebase.FirebaseApp
 import com.wheretogo.data.datasourceimpl.ReportRemoteDatasourceImpl
 import com.wheretogo.data.model.report.RemoteReport
 import com.wheretogo.domain.ReportType
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.runBlocking
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Test
+import javax.inject.Inject
 
+@HiltAndroidTest
 class ReportTest {
 
-    companion object {
-        @JvmStatic
-        @BeforeAll
-        fun initializeFirebase() {
-            val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-            if (FirebaseApp.getApps(appContext).isEmpty()) {
-                FirebaseApp.initializeApp(appContext)
-            }
-            assertEquals("com.dhkim139.wheretogo", appContext.packageName)
-        }
+    @get:Rule
+    var hiltRule = HiltAndroidRule(this)
+
+    @Inject
+    lateinit var reportRemoteDatasourceImpl: ReportRemoteDatasourceImpl
+
+    @Before
+    fun init() {
+        hiltRule.inject()
     }
 
     @Test
     fun getAndAddReportTest(): Unit = runBlocking {
-        val firestore = FirebaseModule.provideFirestore()
-        val datasource = ReportRemoteDatasourceImpl(firestore)
+        val datasource = reportRemoteDatasourceImpl
         val rp = RemoteReport(
             reportId = "rp1",
             type = ReportType.COMMENT.name,
@@ -42,8 +42,7 @@ class ReportTest {
 
     @Test
     fun removeReportTest(): Unit = runBlocking {
-        val firestore = FirebaseModule.provideFirestore()
-        val datasource = ReportRemoteDatasourceImpl(firestore)
+        val datasource = reportRemoteDatasourceImpl
         val rp = RemoteReport(
             reportId = "rp1",
             type = ReportType.COMMENT.name,

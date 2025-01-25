@@ -1,34 +1,35 @@
 package com.dhkim139.wheretogo.remoteDatasource
 
-import androidx.test.platform.app.InstrumentationRegistry
-import com.dhkim139.wheretogo.di.FirebaseModule
-import com.google.firebase.FirebaseApp
 import com.wheretogo.data.LikeObject
 import com.wheretogo.data.datasourceimpl.LikeRemoteDatasourceImpl
 import com.wheretogo.data.model.course.RemoteCourse
 import com.wheretogo.data.model.course.RemoteLike
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.runBlocking
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Test
+import javax.inject.Inject
 
+@HiltAndroidTest
 class LikeTest {
-    companion object {
-        @JvmStatic
-        @BeforeAll
-        fun initializeFirebase() {
-            val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-            if (FirebaseApp.getApps(appContext).isEmpty()) {
-                FirebaseApp.initializeApp(appContext)
-            }
-            assertEquals("com.dhkim139.wheretogo", appContext.packageName)
-        }
+
+    @get:Rule
+    var hiltRule = HiltAndroidRule(this)
+
+    @Inject
+    lateinit var likeRemoteDatasourceImpl: LikeRemoteDatasourceImpl
+
+    @Before
+    fun init() {
+        hiltRule.inject()
     }
 
     @Test
-    fun getAndSetAndRemovelikeTest(): Unit = runBlocking {
-        val firestore = FirebaseModule.provideFirestore()
-        val datasource = LikeRemoteDatasourceImpl(firestore)
+    fun getAndSetAndRemoveLikeTest(): Unit = runBlocking {
+        val datasource = likeRemoteDatasourceImpl
         val cs1 = RemoteCourse(
             courseId = "cs1",
         )

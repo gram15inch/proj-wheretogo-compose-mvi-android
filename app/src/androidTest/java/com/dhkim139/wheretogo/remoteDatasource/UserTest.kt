@@ -1,29 +1,33 @@
 package com.dhkim139.wheretogo.remoteDatasource
 
 import androidx.test.platform.app.InstrumentationRegistry
-import com.dhkim139.wheretogo.di.FirebaseModule
-import com.google.firebase.FirebaseApp
 import com.wheretogo.data.datasourceimpl.UserRemoteDatasourceImpl
 import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePrivate
 import com.wheretogo.domain.model.user.ProfilePublic
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Test
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+import javax.inject.Inject
 
+
+@HiltAndroidTest
 class UserTest {
 
-    companion object {
-        @JvmStatic
-        @BeforeAll
-        fun initializeFirebase() {
-            val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-            if (FirebaseApp.getApps(appContext).isEmpty()) {
-                FirebaseApp.initializeApp(appContext)
-            }
-        }
+    @get:Rule
+    var hiltRule = HiltAndroidRule(this)
+
+    @Inject
+    lateinit var userRemoteDatasourceImpl: UserRemoteDatasourceImpl
+
+    @Before
+    fun init() {
+        hiltRule.inject()
     }
 
     @Test
@@ -34,8 +38,7 @@ class UserTest {
 
     @Test
     fun getAndSetProfileTest(): Unit = runBlocking {
-        val firestore = FirebaseModule.provideFirestore()
-        val remoteDatasource = UserRemoteDatasourceImpl(firestore)
+        val remoteDatasource = userRemoteDatasourceImpl
 
         val p1 = Profile(
             uid = "uid1",
@@ -64,8 +67,7 @@ class UserTest {
 
     @Test
     fun setHistoryTest(): Unit = runBlocking {
-        val firestore = FirebaseModule.provideFirestore()
-        val remoteDatasource = UserRemoteDatasourceImpl(firestore)
+        val remoteDatasource = userRemoteDatasourceImpl
         val uid = "xXGqqUYVViM42AoWPPDoYc0gAG12"
         val hid = "rp_comment1"
         remoteDatasource.addHistory(
