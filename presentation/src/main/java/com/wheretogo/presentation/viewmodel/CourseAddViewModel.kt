@@ -69,7 +69,7 @@ class CourseAddViewModel @Inject constructor(
         if (text.length <= 17) {
             _courseAddScreenState.value = _courseAddScreenState.value.run {
                 val isWaypointDone =
-                    text.isNotEmpty() && waypoints.size >= 2 && points.isNotEmpty() && mapOverlay.path != null
+                    text.isNotEmpty() &&  waypoints.size >= 2 && routeState.points.isNotEmpty() && mapOverlay.path != null
                 copy(
                     courseName = text,
                     isWaypointDone = isWaypointDone,
@@ -176,9 +176,11 @@ class CourseAddViewModel @Inject constructor(
 
             copy(
                 waypoints = newWaypoints,
-                waypointItemStateGroup = emptyList(),
+                routeState = routeState.copy(
+                    duration = 0,
+                    waypointItemStateGroup = emptyList()
+                ),
                 mapOverlay = newMapOverlay,
-                duration = 0,
                 isFloatMarker = false,
                 isFloatingButton = false,
                 isWaypointDone = false,
@@ -220,9 +222,11 @@ class CourseAddViewModel @Inject constructor(
                     markerGroup = newMarkerGroup
                 )
                 copy(
-                    waypointItemStateGroup = emptyList(),
+                    routeState = routeState.copy(
+                        duration = 0,
+                        waypointItemStateGroup = emptyList()
+                    ),
                     mapOverlay = newMapOverlay,
-                    duration = 0,
                     isFloatingButton = !isFloatMarker,
                     isFloatMarker = !isFloatMarker,
                     isWaypointDone = false,
@@ -259,9 +263,11 @@ class CourseAddViewModel @Inject constructor(
 
             copy(
                 mapOverlay = newMapOverlay,
-                points = newRoute.points,
-                duration = newRoute.duration,
-                waypointItemStateGroup = newWaypointItemState,
+                routeState = routeState.copy(
+                    points = newRoute.points,
+                    duration = newRoute.duration,
+                    waypointItemStateGroup = newWaypointItemState
+                ),
                 isWaypointDone = isWaypointDone,
                 isCommendActive = isWaypointDone
             )
@@ -274,8 +280,8 @@ class CourseAddViewModel @Inject constructor(
                 val newCourse = Course(
                     courseName = courseName,
                     waypoints = waypoints,
-                    points = points,
-                    duration = (duration / 60000).toString(),
+                    points = routeState.points,
+                    duration = (routeState.duration / 60000).toString(),
                     tag = detailItemStateGroup.filter { it.data.type == RouteDetailType.TAG }
                         .firstOrNull() { it.isClick }?.data!!.code,
                     level = detailItemStateGroup.filter { it.data.type == RouteDetailType.LEVEL }
@@ -288,10 +294,16 @@ class CourseAddViewModel @Inject constructor(
 
                 when (addCourseUseCase(newCourse).status) {
                     UseCaseResponse.Status.Success -> {
-                        copy(isCourseAddDone = true)
+                        copy(
+                            isCourseAddDone = true,
+                            toastMsg = "코스 등록 완료"
+                        )
                     }
 
-                    else -> copy(error = "코스 등록 오류")
+                    else -> copy(
+                        isCourseAddDone = true,
+                        error = "코스 등록 오류",
+                        toastMsg = "코스 등록 오류")
                 }
             } else {
                 copy(

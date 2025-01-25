@@ -11,11 +11,13 @@ import com.wheretogo.presentation.model.dummy.getRouteDetailItemGroup
 
 data class CourseAddScreenState(
     val courseName: String = "",
-    val duration: Int = 0,
-    val mapOverlay: MapOverlay = MapOverlay(),
     val waypoints: List<LatLng> = emptyList(),
-    val points: List<LatLng> = emptyList(),
-    val padding: ContentPadding = ContentPadding(bottom = 350.dp),
+    val mapOverlay: MapOverlay = MapOverlay(),
+    val selectedMarkerItem: Marker? = null,
+    val detailItemStateGroup: List<RouteDetailItemState> = getRouteDetailItemGroup()
+        .map { RouteDetailItemState(data = it) },
+    val routeState: RouteState = RouteState(),
+    val cameraState: CameraState = CameraState(),
     val isFloatMarker: Boolean = false,
     val isFloatingButton: Boolean = false,
     val isDetailContent: Boolean = false,
@@ -24,14 +26,17 @@ data class CourseAddScreenState(
     val isDetailDone: Boolean = false,
     val isCourseAddDone: Boolean = false,
     val isBottomSheetDown: Boolean = false,
+    val padding: ContentPadding = ContentPadding(bottom = 350.dp),
     val toastMsg: String = "",
-    val cameraState: CameraState = CameraState(),
-    val detailItemStateGroup: List<RouteDetailItemState> = getRouteDetailItemGroup()
-        .map { RouteDetailItemState(data = it) },
-    val waypointItemStateGroup: List<RouteWaypointItemState> = emptyList(),
-    val selectedMarkerItem: Marker? = null,
     val error: String = ""
 ) {
+
+    data class RouteState(
+        val duration: Int = 0,
+        val distance: Int = 0,
+        val points: List<LatLng> = emptyList(),
+        val waypointItemStateGroup: List<RouteWaypointItemState> = emptyList(),
+    )
 
     data class RouteDetailItemState(
         val data: RouteDetailItem = RouteDetailItem(),

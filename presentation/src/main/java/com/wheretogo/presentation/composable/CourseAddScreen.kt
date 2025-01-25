@@ -1,6 +1,7 @@
 package com.wheretogo.presentation.composable
 
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -96,6 +97,8 @@ fun CourseAddScreen(
     if (state.isCourseAddDone) {
         if (isNotMove) {
             navController.navigate("home")
+            Toast.makeText(context.applicationContext, "${state.toastMsg}", Toast.LENGTH_LONG)
+                .show()
             isNotMove = false
         }
     }
@@ -274,8 +277,8 @@ fun CourseAddBottomSheet(
                             .padding(top = 15.dp, start = 15.dp, end = 15.dp, bottom = 5.dp)
                             .fillMaxWidth(),
                         routeName = state.courseName,
-                        duration = state.duration,
-                        waypointItemStateGroup = state.waypointItemStateGroup,
+                        duration = state.routeState.duration,
+                        waypointItemStateGroup = state.routeState.waypointItemStateGroup,
                         onRouteCreateClick = onRouteCreateClick,
                         onNameEditValueChange = onNameEditValueChange,
                     )
