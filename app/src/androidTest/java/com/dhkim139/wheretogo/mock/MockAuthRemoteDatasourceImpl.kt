@@ -9,7 +9,7 @@ class MockAuthRemoteDatasourceImpl @Inject constructor(
     private val mockRemoteUser: MockRemoteUser
 ) : AuthRemoteDatasource {
     override suspend fun authOnDevice(): AuthResponse {
-        if (mockRemoteUser.token.isNotBlank()) {
+        return if (mockRemoteUser.token.isNotBlank()) {
             AuthResponse(
                 isSuccess = true,
                 data = AuthResponse.AuthData(
@@ -24,7 +24,6 @@ class MockAuthRemoteDatasourceImpl @Inject constructor(
                 data = null
             )
         }
-        return AuthResponse(true)
     }
 
     override suspend fun signOutOnFirebase() {

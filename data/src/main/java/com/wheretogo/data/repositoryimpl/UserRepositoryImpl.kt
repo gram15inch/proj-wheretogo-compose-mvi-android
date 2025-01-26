@@ -1,16 +1,19 @@
 package com.wheretogo.data.repositoryimpl
 
+import android.util.Log
 import com.wheretogo.data.datasource.UserLocalDatasource
 import com.wheretogo.data.datasource.UserRemoteDatasource
 import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
 import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.UserNotExistException
+import com.wheretogo.domain.model.map.History
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePrivate
 import com.wheretogo.domain.model.user.ProfilePublic
 import com.wheretogo.domain.model.user.SignResponse
 import com.wheretogo.domain.repository.UserRepository
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -108,6 +111,31 @@ class UserRepositoryImpl @Inject constructor(
         return false
     }
 
+    private suspend fun getRemoteHistory(userId: String): History {
+        var history = History()
+        coroutineScope {
+            HistoryType.entries.map {
+                async {
+                    userRemoteDatasource.getHistoryGroup(userId, it)
+                }
+            }.awaitAll()
+        }.forEach {
+            history = when (it.first) {
+                HistoryType.COURSE -> {  history.copy(courseGroup = it.second) }
+                HistoryType.CHECKPOINT -> {  history.copy(checkpointGroup = it.second) }
+                HistoryType.COMMENT -> {  history.copy(commentGroup = it.second) }
+                HistoryType.REPORT -> {  history.copy(reportGroup = it.second) }
+                HistoryType.LIKE -> {  history.copy(likeGroup = it.second) }
+                HistoryType.BOOKMARK -> {  history.copy(bookmarkGroup = it.second) }
+            }
+        }
+        return history
+    }
+
+    private suspend fun setLocalHistory(history: History) {
+        userLocalDatasource.setHistory(history)
+    }
+
     override suspend fun signUp(profile: Profile): SignResponse {
         return if (setProfile(profile)) {
             SignResponse(SignResponse.Status.Success, profile)
@@ -120,26 +148,27 @@ class UserRepositoryImpl @Inject constructor(
         return coroutineScope {
             val public = async { userRemoteDatasource.getProfilePublic(uid) }
             val private = async { userRemoteDatasource.getProfilePrivate(uid) }
-            Profile(
-                uid,
-                public = public.await() ?: return@coroutineScope null,
-                private = private.await() ?: return@coroutineScope null
+            val history = async { getRemoteHistory(uid) }
+            val newProfile = Profile(
+                uid = uid,
+                public = public.await() ?: return@coroutineScope SignResponse(
+                    status = SignResponse.Status.Fail,
+                    msg = "프로필 로드 에러 [public]"
+                ),
+                private = private.await() ?: return@coroutineScope SignResponse(
+                    status = SignResponse.Status.Fail,
+                    msg = "프로필 로드 에러 [private]"
+                )
             )
-        }.run {
-            if (this != null) {
-                setProfile(this)
-                SignResponse(SignResponse.Status.Success, this)
-            } else {
-                SignResponse(SignResponse.Status.Fail)
-            }
+            setProfile(newProfile)
+            setLocalHistory(history.await())
+            SignResponse(SignResponse.Status.Success, newProfile)
         }
     }
 
 
     override suspend fun signOut(): SignResponse {
         userLocalDatasource.clearUser()
-        userLocalDatasource.clearHistory()
-
         return SignResponse(SignResponse.Status.Success)
     }
 

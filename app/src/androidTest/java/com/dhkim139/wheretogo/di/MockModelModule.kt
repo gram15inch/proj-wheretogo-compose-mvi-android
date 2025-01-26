@@ -37,12 +37,12 @@ class MockModelModule {
                 )
             ),
             history = mapOf(
-                HistoryType.COMMENT to listOf(""),
-                HistoryType.COURSE to courseGroup.map { it.courseId },
-                HistoryType.CHECKPOINT to courseGroup.flatMap { it.checkpointIdGroup },
-                HistoryType.LIKE to listOf(""),
-                HistoryType.BOOKMARK to listOf(""),
-                HistoryType.REPORT to listOf(""),
+                HistoryType.COMMENT to hashSetOf(),
+                HistoryType.COURSE to courseGroup.map { it.courseId }.toHashSet(),
+                HistoryType.CHECKPOINT to courseGroup.flatMap { it.checkpointIdGroup }.toHashSet(),
+                HistoryType.LIKE to hashSetOf(),
+                HistoryType.BOOKMARK to hashSetOf(),
+                HistoryType.REPORT to hashSetOf(),
             )
         )
     }

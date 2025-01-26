@@ -101,8 +101,9 @@ class UserLocalDatasourceImpl @Inject constructor(
             preferences[bookmark] = history.bookmarkGroup
             preferences[like] = history.likeGroup
             preferences[comment] = history.commentGroup
-            preferences[checkpoint] = history.commentGroup
-            preferences[course] = history.commentGroup
+            preferences[checkpoint] = history.checkpointGroup
+            preferences[course] = history.courseGroup
+            preferences[report] = history.reportGroup
         }
     }
 
@@ -113,7 +114,10 @@ class UserLocalDatasourceImpl @Inject constructor(
 
     override fun getProfileFlow(): Flow<Profile> {
         return userDataStore.data.map { preferences ->
-            check(preferences[uid]!=null)
+            preferences[uid].let { uid ->
+                check(uid != null) { "user not exist: $uid" }
+                check(uid.isNotBlank()) { "user not exist: $uid" }
+            }
             Profile(
                 uid = (preferences[uid] ?: ""),
                 public = ProfilePublic(
@@ -127,16 +131,6 @@ class UserLocalDatasourceImpl @Inject constructor(
                     isAdRemove = preferences[isAdRemove] ?: false
                 ),
             )
-        }
-    }
-
-    override suspend fun clearHistory() {
-        val likeKey = getHistoryKey(HistoryType.LIKE)
-        val bookmarkKey = getHistoryKey(HistoryType.BOOKMARK)
-
-        userDataStore.edit { preferences ->
-            preferences[likeKey] = emptySet()
-            preferences[bookmarkKey] = emptySet()
         }
     }
 }

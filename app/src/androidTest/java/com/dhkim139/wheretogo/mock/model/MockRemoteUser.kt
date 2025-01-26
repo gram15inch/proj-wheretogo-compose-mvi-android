@@ -6,5 +6,5 @@ import com.wheretogo.domain.model.user.Profile
 data class MockRemoteUser(
     val token: String = "",
     val profile: Profile = Profile(),
-    val history: Map<HistoryType, List<String>> = emptyMap()
+    val history: Map<HistoryType, HashSet<String>> = emptyMap()
 )

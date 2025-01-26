@@ -3,7 +3,7 @@ package com.wheretogo.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wheretogo.domain.usecase.user.DeleteUserUseCase
-import com.wheretogo.domain.usecase.user.GetUserProfileUseCase
+import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
 import com.wheretogo.presentation.SettingInfoType
 import com.wheretogo.presentation.intent.SettingIntent
@@ -17,7 +17,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingViewModel @Inject constructor(
     private val signOutUseCase: UserSignOutUseCase,
-    private val getUserProfileUseCase: GetUserProfileUseCase,
+    private val getUserProfileStreamUseCase: GetUserProfileStreamUseCase,
     private val deleteUserUseCase: DeleteUserUseCase
 ) : ViewModel() {
     private val _settingScreenState = MutableStateFlow(SettingScreenState())
@@ -36,7 +36,7 @@ class SettingViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            getUserProfileUseCase().collect {
+            getUserProfileStreamUseCase().collect {
                 _settingScreenState.value = _settingScreenState.value.run {
                     copy(
                         profile = it,

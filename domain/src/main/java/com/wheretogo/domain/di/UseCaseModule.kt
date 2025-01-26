@@ -20,7 +20,7 @@ import com.wheretogo.domain.usecase.map.GetImageForPopupUseCase
 import com.wheretogo.domain.usecase.map.GetNearByCourseUseCase
 import com.wheretogo.domain.usecase.user.DeleteUserUseCase
 import com.wheretogo.domain.usecase.user.GetHistoryStreamUseCase
-import com.wheretogo.domain.usecase.user.GetUserProfileUseCase
+import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
 import com.wheretogo.domain.usecase.user.RemoveHistoryUseCase
 import com.wheretogo.domain.usecase.user.UpdateHistoryUseCase
 import com.wheretogo.domain.usecase.user.UserProfileUpdateUseCase
@@ -48,7 +48,7 @@ import com.wheretogo.domain.usecaseimpl.map.GetImageForPopupUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.map.GetNearByCourseUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.DeleteUserUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.GetHistoryStreamUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.user.GetUserProfileUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.user.GetUserProfileStreamUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.RemoveHistoryUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.UpdateHistoryUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.UserProfileUpdateUseCaseImpl
@@ -140,7 +140,7 @@ abstract class UseCaseModule {
     abstract fun bindGetImageInfoUseCase(useCaseImpl: GetImageInfoUseCaseImpl): GetImageInfoUseCase
 
     @Binds
-    abstract fun bindGetUserProfileUseCase(useCaseImpl: GetUserProfileUseCaseImpl): GetUserProfileUseCase
+    abstract fun bindGetUserProfileUseCase(useCaseImpl: GetUserProfileStreamUseCaseImpl): GetUserProfileStreamUseCase
 
     @Binds
     abstract fun bindDeleteUserUseCase(useCaseImpl: DeleteUserUseCaseImpl): DeleteUserUseCase

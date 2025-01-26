@@ -176,7 +176,7 @@ class UserRemoteDatasourceImpl @Inject constructor(
         }
     }
 
-    override suspend fun getHistoryGroup(uid: String, type: HistoryType): HashSet<String> {
+    override suspend fun getHistoryGroup(uid: String, type: HistoryType): Pair<HistoryType, HashSet<String>> {
         val typeTable = when (type) {
             HistoryType.LIKE -> likeTypeTable
             HistoryType.BOOKMARK -> bookMarkTypeTable
@@ -191,7 +191,13 @@ class UserRemoteDatasourceImpl @Inject constructor(
                 .get()
                 .addOnSuccessListener { result ->
                     val data = result.toObject(RemoteHistoryGroupWrapper::class.java)
-                    continuation.resume(data?.historyIdGroup?.toHashSet() ?: hashSetOf())
+                    if(data!=null){
+                        val pair = type to data.historyIdGroup.toHashSet()
+                        continuation.resume(pair)
+                    }else{
+                        continuation.resume(type to hashSetOf())
+                    }
+
                 }.addOnFailureListener { e ->
                     continuation.resumeWithException(Exception(e))
                 }

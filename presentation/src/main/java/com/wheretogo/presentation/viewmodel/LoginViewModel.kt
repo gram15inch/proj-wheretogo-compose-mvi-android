@@ -3,7 +3,7 @@ package com.wheretogo.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wheretogo.domain.model.UseCaseResponse
-import com.wheretogo.domain.usecase.user.GetUserProfileUseCase
+import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
 import com.wheretogo.domain.usecase.user.UserSignUpAndSignInUseCase
 import com.wheretogo.presentation.state.LoginScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,7 +19,7 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val userSignUpAndSignInUseCase: UserSignUpAndSignInUseCase,
-    private val userProfileUseCase: GetUserProfileUseCase
+    private val userProfileUseCase: GetUserProfileStreamUseCase
 ) :
     ViewModel() {
     private val _loginScreenState = MutableStateFlow(LoginScreenState())

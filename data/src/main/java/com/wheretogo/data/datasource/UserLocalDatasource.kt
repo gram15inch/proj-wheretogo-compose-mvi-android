@@ -22,7 +22,5 @@ interface UserLocalDatasource {
 
     suspend fun clearUser()
 
-    suspend fun clearHistory()
-
     fun getProfileFlow(): Flow<Profile>
 }

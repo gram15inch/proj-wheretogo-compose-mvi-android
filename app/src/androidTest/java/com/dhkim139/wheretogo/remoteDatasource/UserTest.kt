@@ -78,8 +78,8 @@ class UserTest {
 
         val hid2 = remoteDatasource.getHistoryGroup(uid, HistoryType.REPORT)
 
-        assertEquals(true, hid2.isNotEmpty())
-        assertEquals(hid, hid2.first())
+        assertEquals(true, hid2.second.isNotEmpty())
+        assertEquals(hid, hid2.second.first())
     }
 
 }

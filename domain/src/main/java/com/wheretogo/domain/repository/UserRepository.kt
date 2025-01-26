@@ -42,7 +42,7 @@ interface UserRepository {
 
     suspend fun signUp(profile: Profile): SignResponse
 
-    suspend fun signIn(uid: String): SignResponse
+    suspend fun  signIn(uid: String): SignResponse
 
     suspend fun signOut(): SignResponse
 

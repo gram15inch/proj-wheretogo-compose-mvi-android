@@ -42,18 +42,18 @@ class MockUserRemoteDatasourceImpl @Inject constructor(
             val newHistoryGroup = get(type)!!.toMutableList().apply {
                 add(historyId)
             }
-            put(type, newHistoryGroup)
+            put(type, newHistoryGroup.toHashSet())
         })
         return true
     }
 
-    override suspend fun getHistoryGroup(uid: String, type: HistoryType): HashSet<String> {
-        return newRemoteUser.history.get(type)!!.toHashSet()
+    override suspend fun getHistoryGroup(uid: String, type: HistoryType): Pair<HistoryType, HashSet<String>> {
+        return type to newRemoteUser.history.get(type)!!.toHashSet()
     }
 
     override suspend fun setHistoryGroup(uid: String, wrapper: RemoteHistoryGroupWrapper): Boolean {
         newRemoteUser.copy(history = newRemoteUser.history.toMutableMap().apply {
-            put(wrapper.type, wrapper.historyIdGroup)
+            put(wrapper.type, wrapper.historyIdGroup.toHashSet())
         })
         return true
     }
