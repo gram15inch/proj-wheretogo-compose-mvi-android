@@ -9,7 +9,6 @@ import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.community.Report
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.CheckPointAddRequest
-import com.wheretogo.domain.model.user.SignInRequest
 import com.wheretogo.domain.usecase.community.GetReportUseCase
 import com.wheretogo.domain.usecase.community.RemoveCheckPointUseCase
 import com.wheretogo.domain.usecase.community.ReportCheckPointUseCase
@@ -67,7 +66,7 @@ class CheckPointScenarioTest {
             imageUri = uri,
             description = "description1"
         )
-        signInUseCase(SignInRequest(user.token)).success()
+        signInUseCase().success()
         addCourseUseCase(addCourse).success()
         getCheckpointForMarkerUseCase(addCourse.courseId).empty()
 
@@ -96,7 +95,7 @@ class CheckPointScenarioTest {
             description = "description1"
         )
 
-        signInUseCase(SignInRequest(user.token)).success()
+        signInUseCase().success()
         addCourseUseCase(addCourse).success()
         addCheckpointToCourseUseCase(reportCheckPoint).success()
         getCheckpointForMarkerUseCase(reportCheckPoint.courseId).exist()

@@ -7,6 +7,10 @@ import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.CheckPointAddRequest
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.MetaCheckPoint
+import com.wheretogo.domain.model.user.AuthResponse
+import com.wheretogo.domain.model.user.Profile
+import com.wheretogo.domain.model.user.ProfilePrivate
+import com.wheretogo.domain.model.user.ProfilePublic
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -52,5 +56,19 @@ fun CheckPointAddRequest.toCheckpoint(
         latLng = latLng,
         imageName = imageName,
         description = description
+    )
+}
+
+fun AuthResponse.AuthData.toProfile(): Profile {
+    return Profile(
+        uid = uid,
+        public = ProfilePublic(
+            name = userName
+        ),
+        private = ProfilePrivate(
+            mail = email,
+            accountCreation = System.currentTimeMillis()
+        )
+
     )
 }

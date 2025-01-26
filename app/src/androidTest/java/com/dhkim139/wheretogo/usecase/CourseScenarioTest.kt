@@ -8,7 +8,6 @@ import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.community.Report
 import com.wheretogo.domain.model.map.Course
 import com.wheretogo.domain.model.map.LatLng
-import com.wheretogo.domain.model.user.SignInRequest
 import com.wheretogo.domain.usecase.community.GetReportUseCase
 import com.wheretogo.domain.usecase.community.RemoveCourseUseCase
 import com.wheretogo.domain.usecase.community.ReportCourseUseCase
@@ -59,7 +58,7 @@ class CourseScenarioTest {
         val removeCourse = MockModelModule().provideRemoteCourseGroup().first()
         val user = MockModelModule().provideRemoteUser()
 
-        signInUseCase(SignInRequest(user.token)).success()
+        signInUseCase().success()
         getNearByCourseUseCase(removeCourse.cameraLatLng).empty(addCourse.courseId)
 
         addCourseUseCase(addCourse).success()
@@ -79,7 +78,7 @@ class CourseScenarioTest {
         val reportCourse = MockModelModule().provideRemoteCourseGroup().first()
         val user = MockModelModule().provideRemoteUser()
 
-        signInUseCase(SignInRequest(user.token)).success()
+        signInUseCase().success()
         getReportUseCase(ReportType.COURSE).empty(reportCourse.courseId)
 
         reportCourseUseCase(reportCourse.toCourse(), "test").success()

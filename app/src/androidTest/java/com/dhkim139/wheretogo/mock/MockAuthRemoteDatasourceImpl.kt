@@ -8,13 +8,14 @@ import javax.inject.Inject
 class MockAuthRemoteDatasourceImpl @Inject constructor(
     private val mockRemoteUser: MockRemoteUser
 ) : AuthRemoteDatasource {
-    override suspend fun authWithGoogle(idToken: String): AuthResponse {
-        return if (idToken == mockRemoteUser.token) {
+    override suspend fun authOnDevice(): AuthResponse {
+        if (mockRemoteUser.token.isNotBlank()) {
             AuthResponse(
                 isSuccess = true,
                 data = AuthResponse.AuthData(
                     uid = mockRemoteUser.profile.uid,
-                    id = mockRemoteUser.profile.private.mail
+                    email = mockRemoteUser.profile.private.mail,
+                    userName = mockRemoteUser.profile.public.name
                 )
             )
         } else {
@@ -23,6 +24,7 @@ class MockAuthRemoteDatasourceImpl @Inject constructor(
                 data = null
             )
         }
+        return AuthResponse(true)
     }
 
     override suspend fun signOutOnFirebase() {

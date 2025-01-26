@@ -82,7 +82,7 @@ dependencies {
     implementation(Firebase.FIREBASE_STORAGE_KTX)
 
     implementation("com.google.firebase:firebase-auth-ktx:23.1.0")
-
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
     implementation("androidx.datastore:datastore-preferences:1.1.1")
 }
 
