@@ -49,12 +49,13 @@ import com.wheretogo.presentation.viewmodel.LoginViewModel
 @Composable
 fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
     val state by viewModel.loginScreenState.collectAsState()
+    val isToast by viewModel.toastShare.collectAsState(false)
     val context = LocalContext.current
     BackHandler {} // 로그인창 뒤로가기 막기
 
-    LaunchedEffect(state.isToast) {
-        if (state.isToast) {
-            Toast.makeText(context.applicationContext, "${state.toastMsg}", Toast.LENGTH_LONG)
+    LaunchedEffect(isToast) {
+        if (isToast) {
+            Toast.makeText(context.applicationContext, "${state.toastMsg}", Toast.LENGTH_SHORT)
                 .show()
         }
     }

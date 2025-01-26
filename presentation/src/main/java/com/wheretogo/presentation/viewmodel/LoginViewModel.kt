@@ -8,7 +8,9 @@ import com.wheretogo.domain.usecase.user.UserSignUpAndSignInUseCase
 import com.wheretogo.presentation.state.LoginScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -22,6 +24,8 @@ class LoginViewModel @Inject constructor(
     ViewModel() {
     private val _loginScreenState = MutableStateFlow(LoginScreenState())
     val loginScreenState: StateFlow<LoginScreenState> = _loginScreenState
+    private val _toastShare = MutableSharedFlow<Boolean>()
+    val toastShare : SharedFlow<Boolean> = _toastShare
 
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
         when (exception) {
@@ -44,26 +48,25 @@ class LoginViewModel @Inject constructor(
                     _loginScreenState.value = _loginScreenState.value.run {
                         copy(
                             isExit = true,
-                            isToast = true,
                             isLoading = false,
                             toastMsg = "반갑습니다 ${profile.public.name}님."
                         )
                     }
+                    _toastShare.emit(true)
                 }
 
                 UseCaseResponse.Status.Fail -> {
                     _loginScreenState.value = _loginScreenState.value.run {
                         copy(
                             isExit = false,
-                            isToast = true,
                             isLoading = false,
                             toastMsg = "로그인 실패"
                         )
                     }
+                    _toastShare.emit(true)
                 }
             }
         }
-        _loginScreenState.value = _loginScreenState.value.copy(isToast = false)
     }
 
     fun signInPass() {

@@ -113,6 +113,7 @@ class UserLocalDatasourceImpl @Inject constructor(
 
     override fun getProfileFlow(): Flow<Profile> {
         return userDataStore.data.map { preferences ->
+            check(preferences[uid]!=null)
             Profile(
                 uid = (preferences[uid] ?: ""),
                 public = ProfilePublic(
