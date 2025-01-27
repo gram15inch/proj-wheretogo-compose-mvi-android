@@ -4,5 +4,5 @@ import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.map.Comment
 
 interface RemoveCommentToCheckPointUseCase {
-    suspend operator fun invoke(comment: Comment): UseCaseResponse
+    suspend operator fun invoke(comment: Comment): UseCaseResponse<String>
 }

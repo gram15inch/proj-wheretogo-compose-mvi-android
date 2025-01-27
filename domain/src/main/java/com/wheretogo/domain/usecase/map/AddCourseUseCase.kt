@@ -4,5 +4,5 @@ import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.map.Course
 
 interface AddCourseUseCase {
-    suspend operator fun invoke(course: Course): UseCaseResponse
+    suspend operator fun invoke(course: Course): UseCaseResponse<String>
 }

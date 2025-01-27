@@ -2,6 +2,8 @@ package com.wheretogo.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.wheretogo.domain.model.UseCaseResponse
+import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.usecase.user.DeleteUserUseCase
 import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
@@ -37,11 +39,21 @@ class SettingViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             getUserProfileStreamUseCase().collect {
-                _settingScreenState.value = _settingScreenState.value.run {
-                    copy(
-                        profile = it,
-                        isProfile = it.uid.isNotEmpty()
-                    )
+                when (it.status) {
+                    UseCaseResponse.Status.Success -> {
+                        _settingScreenState.value = _settingScreenState.value.run {
+                            copy(
+                                profile = it.data!!,
+                                isProfile = true
+                            )
+                        }
+                    }
+
+                    else -> {
+                        _settingScreenState.value = _settingScreenState.value.run {
+                            copy(profile = Profile(), isProfile = false)
+                        }
+                    }
                 }
             }
         }
@@ -54,6 +66,7 @@ class SettingViewModel @Inject constructor(
     private suspend fun logoutClick() {
         signOutUseCase()
     }
+
 
     private suspend fun infoClick(type: SettingInfoType) {
 

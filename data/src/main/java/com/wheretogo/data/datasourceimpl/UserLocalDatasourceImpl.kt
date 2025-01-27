@@ -114,10 +114,6 @@ class UserLocalDatasourceImpl @Inject constructor(
 
     override fun getProfileFlow(): Flow<Profile> {
         return userDataStore.data.map { preferences ->
-            preferences[uid].let { uid ->
-                check(uid != null) { "user not exist: $uid" }
-                check(uid.isNotBlank()) { "user not exist: $uid" }
-            }
             Profile(
                 uid = (preferences[uid] ?: ""),
                 public = ProfilePublic(
