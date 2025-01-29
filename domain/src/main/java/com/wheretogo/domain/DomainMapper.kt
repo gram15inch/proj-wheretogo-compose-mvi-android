@@ -5,9 +5,10 @@ import com.firebase.geofire.GeoFireUtils
 import com.firebase.geofire.GeoLocation
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.CheckPointAddRequest
+import com.wheretogo.domain.model.map.History
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.MetaCheckPoint
-import com.wheretogo.domain.model.user.AuthResponse
+import com.wheretogo.domain.model.user.AuthData
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePrivate
 import com.wheretogo.domain.model.user.ProfilePublic
@@ -15,6 +16,36 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
+
+fun List<Pair<HistoryType, HashSet<String>>>.toHistory(): History {
+    var history = History()
+    this.forEach {
+        history = history.map(it.first, it.second)
+    }
+    return history
+}
+
+fun History.map(type: HistoryType, data:HashSet<String>) : History{
+   return when (type) {
+        HistoryType.COURSE -> {  copy(courseGroup = data) }
+        HistoryType.CHECKPOINT -> {  copy(checkpointGroup = data) }
+        HistoryType.COMMENT -> {  copy(commentGroup = data) }
+        HistoryType.REPORT_CONTENT -> {  copy(reportGroup = data) }
+        HistoryType.LIKE -> {  copy(likeGroup = data) }
+        HistoryType.BOOKMARK -> {  copy(bookmarkGroup = data) }
+    }
+}
+
+fun History.get(type:HistoryType):HashSet<String>{
+    return when (type) {
+        HistoryType.COURSE -> {  courseGroup }
+        HistoryType.CHECKPOINT -> { checkpointGroup }
+        HistoryType.COMMENT -> {  commentGroup }
+        HistoryType.REPORT_CONTENT -> {  reportGroup }
+        HistoryType.LIKE -> {  likeGroup }
+        HistoryType.BOOKMARK -> {  bookmarkGroup }
+    }
+}
 
 fun LatLng.toGeoHash(length: Int): String {
     return GeoFireUtils.getGeoHashForLocation(GeoLocation(latitude, longitude), length)
@@ -59,7 +90,7 @@ fun CheckPointAddRequest.toCheckpoint(
     )
 }
 
-fun AuthResponse.AuthData.toProfile(): Profile {
+fun AuthData.toProfile(): Profile {
     return Profile(
         uid = uid,
         public = ProfilePublic(

@@ -35,7 +35,7 @@ class UserLocalDatasourceImpl @Inject constructor(
     private val comment = stringSetPreferencesKey("comment_profile")
     private val course = stringSetPreferencesKey("course_profile")
     private val checkpoint = stringSetPreferencesKey("checkpoint_profile")
-    private val report = stringSetPreferencesKey("report_profile")
+    private val reportContent = stringSetPreferencesKey("report_content_profile")
 
     override fun isRequestLoginFlow(): Flow<Boolean> {
         return userDataStore.data.map { preferences ->
@@ -73,7 +73,7 @@ class UserLocalDatasourceImpl @Inject constructor(
             HistoryType.COMMENT -> comment
             HistoryType.COURSE -> course
             HistoryType.CHECKPOINT -> checkpoint
-            HistoryType.REPORT -> report
+            HistoryType.REPORT_CONTENT -> reportContent
         }
     }
 
@@ -103,7 +103,7 @@ class UserLocalDatasourceImpl @Inject constructor(
             preferences[comment] = history.commentGroup
             preferences[checkpoint] = history.checkpointGroup
             preferences[course] = history.courseGroup
-            preferences[report] = history.reportGroup
+            preferences[reportContent] = history.reportGroup
         }
     }
 

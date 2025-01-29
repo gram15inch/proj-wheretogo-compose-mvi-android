@@ -1,6 +1,5 @@
 package com.wheretogo.data.repositoryimpl
 
-import android.util.Log
 import com.wheretogo.data.datasource.UserLocalDatasource
 import com.wheretogo.data.datasource.UserRemoteDatasource
 import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
@@ -12,6 +11,7 @@ import com.wheretogo.domain.model.user.ProfilePrivate
 import com.wheretogo.domain.model.user.ProfilePublic
 import com.wheretogo.domain.model.user.SignResponse
 import com.wheretogo.domain.repository.UserRepository
+import com.wheretogo.domain.toHistory
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -112,24 +112,13 @@ class UserRepositoryImpl @Inject constructor(
     }
 
     private suspend fun getRemoteHistory(userId: String): History {
-        var history = History()
-        coroutineScope {
+        return coroutineScope {
             HistoryType.entries.map {
                 async {
                     userRemoteDatasource.getHistoryGroup(userId, it)
                 }
             }.awaitAll()
-        }.forEach {
-            history = when (it.first) {
-                HistoryType.COURSE -> {  history.copy(courseGroup = it.second) }
-                HistoryType.CHECKPOINT -> {  history.copy(checkpointGroup = it.second) }
-                HistoryType.COMMENT -> {  history.copy(commentGroup = it.second) }
-                HistoryType.REPORT -> {  history.copy(reportGroup = it.second) }
-                HistoryType.LIKE -> {  history.copy(likeGroup = it.second) }
-                HistoryType.BOOKMARK -> {  history.copy(bookmarkGroup = it.second) }
-            }
-        }
-        return history
+        }.toHistory()
     }
 
     private suspend fun setLocalHistory(history: History) {
@@ -148,7 +137,6 @@ class UserRepositoryImpl @Inject constructor(
         return coroutineScope {
             val public = async { userRemoteDatasource.getProfilePublic(uid) }
             val private = async { userRemoteDatasource.getProfilePrivate(uid) }
-            val history = async { getRemoteHistory(uid) }
             val newProfile = Profile(
                 uid = uid,
                 public = public.await() ?: return@coroutineScope SignResponse(
@@ -160,6 +148,7 @@ class UserRepositoryImpl @Inject constructor(
                     msg = "프로필 로드 에러 [private]"
                 )
             )
+            val history = async { getRemoteHistory(uid) }
             setProfile(newProfile)
             setLocalHistory(history.await())
             SignResponse(SignResponse.Status.Success, newProfile)

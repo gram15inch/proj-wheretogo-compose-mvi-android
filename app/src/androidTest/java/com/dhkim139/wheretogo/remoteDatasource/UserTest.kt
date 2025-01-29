@@ -73,10 +73,10 @@ class UserTest {
         remoteDatasource.addHistory(
             uid = uid,
             historyId = hid,
-            type = HistoryType.REPORT
+            type = HistoryType.REPORT_CONTENT
         )
 
-        val hid2 = remoteDatasource.getHistoryGroup(uid, HistoryType.REPORT)
+        val hid2 = remoteDatasource.getHistoryGroup(uid, HistoryType.REPORT_CONTENT)
 
         assertEquals(true, hid2.second.isNotEmpty())
         assertEquals(hid, hid2.second.first())

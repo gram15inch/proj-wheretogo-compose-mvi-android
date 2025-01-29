@@ -3,13 +3,13 @@ package com.dhkim139.wheretogo.usecase
 import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import com.dhkim139.wheretogo.di.MockModelModule
+import com.dhkim139.wheretogo.mock.model.MockRemoteUser
 import com.wheretogo.data.toCourse
-import com.wheretogo.domain.ReportType
 import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.community.Report
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.CheckPointAddRequest
-import com.wheretogo.domain.usecase.community.GetReportUseCase
+import com.wheretogo.domain.usecase.community.GetMyReportUseCase
 import com.wheretogo.domain.usecase.community.RemoveCheckPointUseCase
 import com.wheretogo.domain.usecase.community.ReportCheckPointUseCase
 import com.wheretogo.domain.usecase.map.AddCheckpointToCourseUseCase
@@ -22,11 +22,14 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import jakarta.inject.Inject
 import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertFalse
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import java.io.File
 
 @HiltAndroidTest
@@ -41,6 +44,7 @@ class CheckPointScenarioTest {
         hiltRule.inject()
     }
 
+    @Inject lateinit var user: MockRemoteUser
     @Inject lateinit var signInUseCase: UserSignInUseCase
     @Inject lateinit var signOutUseCase: UserSignOutUseCase
     @Inject lateinit var addCourseUseCase: AddCourseUseCase
@@ -48,13 +52,13 @@ class CheckPointScenarioTest {
     @Inject lateinit var removeCheckPointUseCase: RemoveCheckPointUseCase
     @Inject lateinit var reportCheckPointUseCase: ReportCheckPointUseCase
     @Inject lateinit var getCheckpointForMarkerUseCase: GetCheckpointForMarkerUseCase
-    @Inject lateinit var getReportUseCase: GetReportUseCase
+   // @Inject lateinit var getHistoryStreamUseCase: GetHistoryStreamUseCase
+    @Inject lateinit var getMyReportUseCase: GetMyReportUseCase
 
     @Test // 인증된 사용자가 체크포인트를 추가하거나 삭제하기
     fun scenario1(): Unit = runBlocking {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val user = MockModelModule().provideRemoteUser()
-        val addCourse = MockModelModule().provideRemoteCourseGroup()
+       val addCourse = MockModelModule().provideRemoteCourseGroup()
             .first { it.courseId == "cs3" }
             .run { this.copy("cs999").toCourse(route = waypoints) }
         val uri = getAssetFileUri(context, "photo_opt.jpg")
@@ -81,7 +85,6 @@ class CheckPointScenarioTest {
     @Test // 인증된 사용자가 체크포인트를 신고하기
     fun scenario2(): Unit = runBlocking {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val user = MockModelModule().provideRemoteUser()
         val addCourse = MockModelModule().provideRemoteCourseGroup()
             .first { it.courseId == "cs3" }
             .run { this.copy("cs999").toCourse(route = waypoints) }
@@ -102,18 +105,18 @@ class CheckPointScenarioTest {
 
         val cp = getCheckpointForMarkerUseCase(reportCheckPoint.courseId).first()
         reportCheckPointUseCase(cp, "test").success()
-        getReportUseCase(ReportType.CHECKPOINT).contain(cp.checkPointId)
+        getMyReportUseCase().data!!.empty(cp.checkPointId)
     }
 
 
-    private fun UseCaseResponse.success() {
+    private fun UseCaseResponse<String>.success() {
         this.apply {
             Log.d(tag, "${this}")
             assertEquals(UseCaseResponse.Status.Success, this.status)
         }
     }
 
-    private fun UseCaseResponse.fail() {
+    private fun UseCaseResponse<String>.fail() {
         this.apply {
             Log.d(tag, "${this}")
             assertEquals(UseCaseResponse.Status.Fail, this.status)
@@ -149,5 +152,14 @@ class CheckPointScenarioTest {
         assertEquals(null, this.firstOrNull { it.contentId == checkPointId })
     }
 
+    private fun HashSet<String>.contain(id:String){
+        Log.d(tag, "contain: ${id in this} / ${this}")
+        assertTrue(id in this)
+    }
+
+    private fun HashSet<String>.empty(id:String){
+        Log.d(tag, "empty: ${id !in this} / ${this}")
+        assertFalse(id in this)
+    }
 
 }

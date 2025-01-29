@@ -2,9 +2,11 @@ package com.dhkim139.wheretogo.usecase
 
 import android.util.Log
 import com.dhkim139.wheretogo.mock.model.MockRemoteUser
-import com.wheretogo.domain.HistoryType
+import com.wheretogo.domain.UseCaseFailType
 import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.map.History
+import com.wheretogo.domain.model.user.AuthData
+import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.usecase.user.GetHistoryStreamUseCase
 import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
 import com.wheretogo.domain.usecase.user.UserSignInUseCase
@@ -14,10 +16,8 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import jakarta.inject.Inject
 import junit.framework.TestCase.assertEquals
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -52,52 +52,75 @@ class UserScenarioTest {
     @Inject
     lateinit var user: MockRemoteUser
 
-    @Test // 유저 로그인, 로그아웃
+    @Test // 기존 사용자 로그인 - 로그아웃
     fun scenario1(): Unit = runBlocking {
-        getUserProfileStreamUseCase().assertEmpty()
+        val user1 = user
+        getUserProfileStreamUseCase().first().assertEmpty()
 
         signInUseCase().success()
         val profile = getUserProfileStreamUseCase().first()
-        assertEquals(user.profile.uid, profile.uid)
-        getHistoryStreamUseCase().first().assertEquals(user.history)
+        assertEquals(user1.profile.uid, profile.data!!.uid)
+        getHistoryStreamUseCase().first().assertEquals(user1.history)
         signOutUseCase().success()
 
-        getUserProfileStreamUseCase().assertEmpty()
+        getUserProfileStreamUseCase().first().assertEmpty()
         getHistoryStreamUseCase().first().assertEmpty()
     }
 
+    @Test// 새로운 사용자 회원가입 - 로그인 후 알수없는 사용자 로그인 실패
+    fun scenario2():Unit = runBlocking {
+        val resistUser = AuthData(
+            uid ="uid1",
+            email = "email1",
+            userName = "userName1"
+        )
+        val unknownUser = AuthData(
+            uid ="uid2",
+            email = "email2",
+            userName = "userName2"
+        )
+        getUserProfileStreamUseCase().first().assertEmpty()
 
-    private fun UseCaseResponse.success() {
+        signUpAndSignInUseCase(resistUser).success()
+        getUserProfileStreamUseCase().first().data!!.assertEquals(resistUser)
+
+        signOutUseCase().success()
+        getUserProfileStreamUseCase().first().assertEmpty()
+        getHistoryStreamUseCase().first().assertEmpty()
+
+        signInUseCase(unknownUser).fail()
+        signInUseCase(resistUser).success()
+        getUserProfileStreamUseCase().first().data!!.assertEquals(resistUser)
+        signOutUseCase().success()
+    }
+
+    private fun UseCaseResponse<String>.success() {
+
         this.apply {
-            Log.d(tag, "${this}")
+            Log.d(tag, this.toString())
             assertEquals(UseCaseResponse.Status.Success, this.status)
         }
     }
 
-    private fun UseCaseResponse.fail() {
+    private fun UseCaseResponse<String>.fail() {
         this.apply {
-            Log.d(tag, "${this}")
+            Log.d(tag, this.toString())
             assertEquals(UseCaseResponse.Status.Fail, this.status)
+            assertEquals(UseCaseFailType.INVALID_USER, failType)
         }
     }
 
-    private fun Flow<Any>.assertEmpty() {
-        assertThrows(IllegalStateException::class.java) {
-            runBlocking {
-                this@assertEmpty.first().apply {
-                    Log.d(tag,this.toString())
-                }
-            }
+    private fun UseCaseResponse<Profile>.assertEmpty() {
+        this@assertEmpty.apply {
+            Log.d(tag, this.toString())
+            assertEquals(UseCaseResponse.Status.Fail, status)
+            assertEquals(UseCaseFailType.INVALID_USER, failType)
         }
     }
 
-    private fun History.assertEquals(history: Map<HistoryType, HashSet<String>>) {
-        assertEquals(commentGroup, history.get(HistoryType.COMMENT))
-        assertEquals(courseGroup, history.get(HistoryType.COURSE))
-        assertEquals(likeGroup, history.get(HistoryType.LIKE))
-        assertEquals(bookmarkGroup, history.get(HistoryType.BOOKMARK))
-        assertEquals(checkpointGroup, history.get(HistoryType.CHECKPOINT))
-        assertEquals(reportGroup, history.get(HistoryType.REPORT))
+    private fun History.assertEquals(history: History) {
+        Log.d(tag, "${history}")
+        assertEquals(this, history)
     }
 
     private fun History.assertEmpty() {
@@ -107,5 +130,11 @@ class UserScenarioTest {
         assertEquals(bookmarkGroup, hashSetOf<String>())
         assertEquals(checkpointGroup, hashSetOf<String>())
         assertEquals(reportGroup, hashSetOf<String>())
+    }
+
+    private fun Profile.assertEquals(authData: AuthData){
+        assertEquals(authData.uid, uid)
+        assertEquals(authData.email, private.mail)
+        assertEquals(authData.userName, public.name)
     }
 }

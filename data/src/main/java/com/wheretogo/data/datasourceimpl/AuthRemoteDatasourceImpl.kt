@@ -11,6 +11,7 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.wheretogo.data.datasource.AuthRemoteDatasource
+import com.wheretogo.domain.model.user.AuthData
 import com.wheretogo.domain.model.user.AuthResponse
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -85,7 +86,7 @@ class AuthRemoteDatasourceImpl @Inject constructor(
                             continuation.resume(
                                 AuthResponse(
                                     isSuccess = true,
-                                    data = AuthResponse.AuthData(
+                                    data = AuthData(
                                         uid = it.uid,
                                         email = it.email ?: "",
                                         userName = it.displayName ?: ""

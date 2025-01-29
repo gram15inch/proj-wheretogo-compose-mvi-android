@@ -33,10 +33,10 @@ class UserRemoteDatasourceImpl @Inject constructor(
     private val private = FireStoreCollections.PRIVATE.name()
 
 
-    override suspend fun setProfilePublic(uid: String, profile: ProfilePublic): Boolean {
+    override suspend fun setProfilePublic(uid: String, publicPorfile: ProfilePublic): Boolean {
         return suspendCancellableCoroutine { continuation ->
             firestore.collection(userTable).document(uid).collection(public).document(uid)
-                .set(profile)
+                .set(publicPorfile)
                 .addOnSuccessListener { result ->
                     continuation.resume(true)
                 }.addOnFailureListener { e ->
@@ -45,10 +45,10 @@ class UserRemoteDatasourceImpl @Inject constructor(
         }
     }
 
-    override suspend fun setProfilePrivate(uid: String, profile: ProfilePrivate): Boolean {
+    override suspend fun setProfilePrivate(uid: String, privateProfile: ProfilePrivate): Boolean {
         return suspendCancellableCoroutine { continuation ->
             firestore.collection(userTable).document(uid).collection(private).document(uid)
-                .set(profile)
+                .set(privateProfile)
                 .addOnSuccessListener { result ->
                     continuation.resume(true)
                 }.addOnFailureListener { e ->
@@ -130,7 +130,7 @@ class UserRemoteDatasourceImpl @Inject constructor(
             HistoryType.COMMENT -> commentTypeTable
             HistoryType.COURSE -> courseTypeTable
             HistoryType.CHECKPOINT -> checkpointTypeTable
-            HistoryType.REPORT -> reportTable
+            HistoryType.REPORT_CONTENT -> reportTable
         }
         return suspendCancellableCoroutine { continuation ->
             firestore.collection(userTable).document(uid).collection(historyTable)
@@ -152,7 +152,7 @@ class UserRemoteDatasourceImpl @Inject constructor(
             HistoryType.COMMENT -> commentTypeTable
             HistoryType.COURSE -> courseTypeTable
             HistoryType.CHECKPOINT -> checkpointTypeTable
-            HistoryType.REPORT -> reportTable
+            HistoryType.REPORT_CONTENT -> reportTable
         }
 
         return suspendCancellableCoroutine { continuation ->
@@ -183,7 +183,7 @@ class UserRemoteDatasourceImpl @Inject constructor(
             HistoryType.COMMENT -> commentTypeTable
             HistoryType.COURSE -> courseTypeTable
             HistoryType.CHECKPOINT -> checkpointTypeTable
-            HistoryType.REPORT -> reportTable
+            HistoryType.REPORT_CONTENT -> reportTable
         }
         return suspendCancellableCoroutine { continuation ->
             firestore.collection(userTable).document(uid).collection(historyTable)

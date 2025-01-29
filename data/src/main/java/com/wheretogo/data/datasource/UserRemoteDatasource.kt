@@ -6,8 +6,8 @@ import com.wheretogo.domain.model.user.ProfilePrivate
 import com.wheretogo.domain.model.user.ProfilePublic
 
 interface UserRemoteDatasource {
-    suspend fun setProfilePublic(uid: String, profile: ProfilePublic): Boolean
-    suspend fun setProfilePrivate(uid: String, profile: ProfilePrivate): Boolean
+    suspend fun setProfilePublic(uid: String, publicPorfile: ProfilePublic): Boolean
+    suspend fun setProfilePrivate(uid: String, privateProfile: ProfilePrivate): Boolean
     suspend fun getProfilePublic(uid: String): ProfilePublic?
     suspend fun getProfilePrivate(uid: String): ProfilePrivate?
     suspend fun deleteProfile(uid: String): Boolean

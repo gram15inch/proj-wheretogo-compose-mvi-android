@@ -5,8 +5,8 @@ import com.wheretogo.data.model.course.DataMetaCheckPoint
 import com.wheretogo.data.model.course.RemoteCourse
 import com.wheretogo.data.toRemoteCourse
 import com.wheretogo.domain.AuthCompany
-import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.model.dummy.getCourseDummy
+import com.wheretogo.domain.model.map.History
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePrivate
 import com.wheretogo.domain.model.user.ProfilePublic
@@ -27,22 +27,22 @@ class MockModelModule {
         return MockRemoteUser(
             token = "token1",
             profile = Profile(
-                uid = "uid1",
+                uid = "mockUid1",
                 public = ProfilePublic(
-                    name = "user1"
+                    name = "mockUser1"
                 ),
                 private = ProfilePrivate(
                     mail = "user1@gmail.com",
                     authCompany = AuthCompany.GOOGLE.name
                 )
             ),
-            history = mapOf(
-                HistoryType.COMMENT to hashSetOf(),
-                HistoryType.COURSE to courseGroup.map { it.courseId }.toHashSet(),
-                HistoryType.CHECKPOINT to courseGroup.flatMap { it.checkpointIdGroup }.toHashSet(),
-                HistoryType.LIKE to hashSetOf(),
-                HistoryType.BOOKMARK to hashSetOf(),
-                HistoryType.REPORT to hashSetOf(),
+            history = History(
+                commentGroup = hashSetOf(),
+                courseGroup = courseGroup.map { it.courseId }.toHashSet(),
+                checkpointGroup = courseGroup.flatMap { it.checkpointIdGroup }.toHashSet(),
+                likeGroup = hashSetOf(),
+                bookmarkGroup = hashSetOf(),
+                reportGroup = hashSetOf(),
             )
         )
     }
