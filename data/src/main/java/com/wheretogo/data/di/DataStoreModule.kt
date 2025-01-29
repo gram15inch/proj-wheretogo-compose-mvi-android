@@ -12,6 +12,7 @@ import dagger.hilt.components.SingletonComponent
 import java.io.File
 import javax.inject.Singleton
 
+/// 수정시 테스트를 위해 MockDataStoreModule 과 맞춤
 @Module
 @InstallIn(SingletonComponent::class)
 object DataStoreModule {

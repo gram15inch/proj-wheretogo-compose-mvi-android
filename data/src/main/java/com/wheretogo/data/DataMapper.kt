@@ -7,6 +7,7 @@ import com.wheretogo.data.model.course.DataMetaCheckPoint
 import com.wheretogo.data.model.course.LocalCourse
 import com.wheretogo.data.model.course.RemoteCourse
 import com.wheretogo.data.model.map.DataLatLng
+import com.wheretogo.data.model.report.LocalReport
 import com.wheretogo.data.model.report.RemoteReport
 import com.wheretogo.data.model.route.RemoteRoute
 import com.wheretogo.domain.ReportStatus
@@ -20,6 +21,33 @@ import com.wheretogo.domain.model.map.MetaCheckPoint
 import com.wheretogo.domain.model.map.Route
 import com.wheretogo.domain.toGeoHash
 
+fun Report.toLocalReport():LocalReport{
+    return LocalReport(
+        reportId= reportId,
+        type = type.name,
+        userId = userId,
+        contentId=contentId,
+        targetUserId= targetUserId,
+        targetUserName = targetUserName,
+        reason = reason,
+        status = status.name,
+        timestamp = timestamp
+    )
+}
+
+fun LocalReport.toReport():Report{
+    return Report(
+        reportId= reportId,
+        type = ReportType.valueOf(type),
+        userId = userId,
+        contentId=contentId,
+        targetUserId= targetUserId,
+        targetUserName = targetUserName,
+        reason = reason,
+        status = ReportStatus.valueOf(status),
+        timestamp = timestamp
+    )
+}
 
 fun Route.toRoute(): RemoteRoute {
     return RemoteRoute(

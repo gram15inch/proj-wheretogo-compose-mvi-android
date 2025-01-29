@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.wheretogo.data.datasourceimpl.database.CheckPointDatabase
 import com.wheretogo.data.datasourceimpl.database.CourseDatabase
+import com.wheretogo.data.datasourceimpl.database.ReportDatabase
 import com.wheretogo.data.di.DaoDatabaseModule
 import dagger.Module
 import dagger.Provides
@@ -39,5 +40,17 @@ class MockDaoDatabaseModule {
 
     @Provides
     fun provideCheckPointDao(database: CheckPointDatabase) = database.checkPointDao()
+
+
+    @Provides
+    @Singleton
+    fun provideReportDatabase(@ApplicationContext context: Context): ReportDatabase {
+        return Room.inMemoryDatabaseBuilder(context, ReportDatabase::class.java)
+            .allowMainThreadQueries()
+            .build()
+    }
+
+    @Provides
+    fun provideReportDao(database: ReportDatabase) = database.reportDao()
 
 }

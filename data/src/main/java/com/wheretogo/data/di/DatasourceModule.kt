@@ -9,6 +9,7 @@ import com.wheretogo.data.datasource.CourseRemoteDatasource
 import com.wheretogo.data.datasource.ImageLocalDatasource
 import com.wheretogo.data.datasource.ImageRemoteDatasource
 import com.wheretogo.data.datasource.LikeRemoteDatasource
+import com.wheretogo.data.datasource.ReportLocalDatasource
 import com.wheretogo.data.datasource.ReportRemoteDatasource
 import com.wheretogo.data.datasource.RouteRemoteDatasource
 import com.wheretogo.data.datasource.UserLocalDatasource
@@ -22,6 +23,7 @@ import com.wheretogo.data.datasourceimpl.CourseRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.ImageLocalDatasourceImpl
 import com.wheretogo.data.datasourceimpl.ImageRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.LikeRemoteDatasourceImpl
+import com.wheretogo.data.datasourceimpl.ReportLocalDatasourceImpl
 import com.wheretogo.data.datasourceimpl.ReportRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.RouteRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.UserLocalDatasourceImpl
@@ -32,6 +34,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 
 
+// 수정시 테스트를 위해 MockDatasourceModule 과 맞춤
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class DatasourceModule {
@@ -49,6 +52,8 @@ abstract class DatasourceModule {
     @Binds
     abstract fun bindImageLocalDatasource(datasource: ImageLocalDatasourceImpl): ImageLocalDatasource
 
+    @Binds
+    abstract fun bindReportLocalDatasource(datasource: ReportLocalDatasourceImpl): ReportLocalDatasource
 
     //remote
     @Binds
@@ -77,5 +82,4 @@ abstract class DatasourceModule {
 
     @Binds
     abstract fun bindReportRemoteDatasource(datasource: ReportRemoteDatasourceImpl): ReportRemoteDatasource
-
 }
