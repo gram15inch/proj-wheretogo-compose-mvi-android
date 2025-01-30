@@ -5,11 +5,12 @@ import com.dhkim139.wheretogo.di.MockModelModule
 import com.wheretogo.data.toCourse
 import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.community.Report
+import com.wheretogo.domain.model.dummy.getCourseDummy
 import com.wheretogo.domain.model.map.Course
-import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.user.AuthData
 import com.wheretogo.domain.usecase.community.GetMyReportUseCase
 import com.wheretogo.domain.usecase.community.RemoveCourseUseCase
+import com.wheretogo.domain.usecase.community.ReportCancelUseCase
 import com.wheretogo.domain.usecase.community.ReportCourseUseCase
 import com.wheretogo.domain.usecase.map.AddCourseUseCase
 import com.wheretogo.domain.usecase.map.GetNearByCourseUseCase
@@ -42,8 +43,8 @@ class CourseScenarioTest {
     @Inject lateinit var addCourseUseCase: AddCourseUseCase
     @Inject lateinit var removeCourseUseCase: RemoveCourseUseCase
     @Inject lateinit var reportCourseUseCase: ReportCourseUseCase
-    //@Inject lateinit var reportCancelUseCase: ReportCancelUseCase
-    //@Inject lateinit var getHistoryStreamUseCase: GetHistoryStreamUseCase
+    @Inject lateinit var reportCancelUseCase: ReportCancelUseCase
+    @Inject lateinit var getHistoryStreamUseCase: GetHistoryStreamUseCase
     @Inject lateinit var getMyReportUseCase: GetMyReportUseCase
 
 
@@ -68,10 +69,11 @@ class CourseScenarioTest {
 
         addCourseUseCase(addCourse).success()
         getNearByCourseUseCase(addCourse.cameraLatLng).contain(addCourse.courseId)
-        //getHistoryStreamUseCase().first().courseGroup.contain(addCourse.courseId)
+        getHistoryStreamUseCase().first().courseGroup.contain(addCourse.courseId)
 
         removeCourseUseCase(removeCourse.courseId).success()
         getNearByCourseUseCase(removeCourse.cameraLatLng).empty(removeCourse.courseId)
+        getHistoryStreamUseCase().first().courseGroup.empty(removeCourse.courseId)
 
         signOutUseCase().success()
         addCourseUseCase(addCourse).fail()
@@ -81,30 +83,41 @@ class CourseScenarioTest {
 
     @Test // 인증된 사용자가 코스를 신고하기
     fun scenario3(): Unit = runBlocking {
-        val reportCourse = MockModelModule().provideRemoteCourseGroup().first()
-        val reportUser = AuthData(
-            uid = "report1",
-            email = "report1@email.com",
-            userName = "report1"
-        )
-        val unknownUser = AuthData(
-            uid = "unkonwn1",
-            email = "unkonwn1@email.com",
-            userName = "unkonwn1"
-        )
-        signUpAndSignInUseCase(reportUser).success()
+        val baseCourse = getCourseDummy().first().run { copy(points = waypoints) }
+        val reportUser = AuthData(uid = "report1", email = "report1@email.com", userName = "report1")
+        val unknownUser = AuthData(uid = "unkonwn1", email = "unkonwn1@email.com", userName = "unkonwn1")
+        val reportCourse = baseCourse.copy(courseId = "reportCourse1", userId = reportUser.uid, checkpointIdGroup = emptyList())
+        val normalCourse = baseCourse.copy(courseId = "normalCourse1", userId = unknownUser.uid, checkpointIdGroup = emptyList())
+
+        signUpAndSignInUseCase(reportUser).success("[로그인] ")
+        addCourseUseCase(reportCourse).success()
+        addCourseUseCase(normalCourse).success()
         getMyReportUseCase().data!!.empty(reportCourse.courseId)
 
-        reportCourseUseCase(reportCourse.toCourse(), "test").success()
+        val reportId = reportCourseUseCase(reportCourse, "test").success("[신고] ")
         getMyReportUseCase().data!!.contain(reportCourse.courseId)
-        getNearByCourseUseCase(LatLng()).empty(reportCourse.courseId)
+        getMyReportUseCase().data!!.empty(normalCourse.courseId)
+        getHistoryStreamUseCase().first().reportGroup.contain(reportCourse.courseId)
+        getNearByCourseUseCase(baseCourse.cameraLatLng).empty(reportCourse.courseId)
 
+        reportCancelUseCase(reportId, "test").success("[신고 취소] ")
+        getMyReportUseCase().data!!.empty(reportCourse.courseId)
+        getHistoryStreamUseCase().first().reportGroup.empty(reportCourse.courseId)
+        getNearByCourseUseCase(baseCourse.cameraLatLng).contain(reportCourse.courseId)
+
+        signOutUseCase().success("[로그아웃] ")
+        getNearByCourseUseCase(baseCourse.cameraLatLng).contain(reportCourse.courseId)
+
+        signUpAndSignInUseCase(unknownUser).success("[로그인] ")
+        getMyReportUseCase().data!!.empty(reportCourse.courseId)
+        getNearByCourseUseCase(baseCourse.cameraLatLng).contain(reportCourse.courseId)
     }
 
-    private fun UseCaseResponse<String>.success() {
-        this.apply {
-            Log.d(tag, "${this::class.simpleName}: ${this.data}")
+    private fun UseCaseResponse<String>.success(msg:String=""):String {
+       return this.run {
+            Log.d(tag, "$msg${this}")
             assertEquals(UseCaseResponse.Status.Success, this.status)
+            this.data?:""
         }
     }
 
@@ -117,36 +130,36 @@ class CourseScenarioTest {
 
     @JvmName("co1")
     private fun List<Course>.contain(courseId: String) {
-        Log.d(tag, "contain: ${courseId in this.map { it.courseId }} / ${this.map { it.courseId }}")
+        Log.d(tag, "contain($courseId): ${courseId in this.map { it.courseId }} / ${this.map { it.courseId }}")
         assertTrue(courseId in this.map { it.courseId })
     }
 
     @JvmName("no1")
     private fun List<Course>.empty(courseId: String) {
-        Log.d(tag, "empty: ${courseId !in this.map { it.courseId }} / ${this.map { it.courseId }}")
+        Log.d(tag, "empty($courseId): ${courseId !in this.map { it.courseId }} / ${this.map { it.courseId }}")
         assertTrue(courseId !in this.map { it.courseId })
     }
 
     @JvmName("co2")
     private fun List<Report>.contain(courseId: String) {
-        Log.d(tag, "contain: ${courseId in this.map { it.contentId }} / ${this.map { it.contentId }}")
+        Log.d(tag, "contain($courseId): ${courseId in this.map { it.contentId }} / ${this.map { it.contentId }}")
         assertTrue(courseId in this.map { it.contentId })
     }
 
     @JvmName("no2")
     private fun List<Report>.empty(courseId: String) {
-        Log.d(tag, "empty: ${courseId !in this.map { it.contentId }} / ${this.map { it.contentId }}")
+        Log.d(tag, "empty($courseId): ${courseId !in this.map { it.contentId }} / ${this.map { it.contentId }}")
         assertTrue(courseId !in this.map { it.contentId })
     }
 
-    private fun HashSet<String>.contain(id:String){
-        Log.d(tag, "contain: ${id in this} / ${this.map { it }}")
-        assertTrue(id in this)
+    private fun HashSet<String>.contain(contentId:String){
+        Log.d(tag, "contain($contentId): ${contentId in this} / ${this.map { it }}")
+        assertTrue(contentId in this)
     }
 
-    private fun HashSet<String>.empty(id:String){
-        Log.d(tag, "empty: ${id !in this} / ${this.map { it }}")
-        assertTrue(id !in this)
+    private fun HashSet<String>.empty(contentId:String){
+        Log.d(tag, "empty($contentId): ${contentId !in this} / ${this.map { it }}")
+        assertTrue(contentId !in this)
     }
 
 }

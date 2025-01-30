@@ -7,16 +7,21 @@ import com.dhkim139.wheretogo.mock.model.MockRemoteUser
 import com.wheretogo.data.toCourse
 import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.community.Report
+import com.wheretogo.domain.model.dummy.getCourseDummy
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.CheckPointAddRequest
+import com.wheretogo.domain.model.map.LatLng
+import com.wheretogo.domain.model.user.AuthData
 import com.wheretogo.domain.usecase.community.GetMyReportUseCase
 import com.wheretogo.domain.usecase.community.RemoveCheckPointUseCase
 import com.wheretogo.domain.usecase.community.ReportCheckPointUseCase
 import com.wheretogo.domain.usecase.map.AddCheckpointToCourseUseCase
 import com.wheretogo.domain.usecase.map.AddCourseUseCase
 import com.wheretogo.domain.usecase.map.GetCheckpointForMarkerUseCase
+import com.wheretogo.domain.usecase.user.GetHistoryStreamUseCase
 import com.wheretogo.domain.usecase.user.UserSignInUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
+import com.wheretogo.domain.usecase.user.UserSignUpAndSignInUseCase
 import com.wheretogo.presentation.feature.getAssetFileUri
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -30,7 +35,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertTrue
-import java.io.File
 
 @HiltAndroidTest
 class CheckPointScenarioTest {
@@ -46,13 +50,14 @@ class CheckPointScenarioTest {
 
     @Inject lateinit var user: MockRemoteUser
     @Inject lateinit var signInUseCase: UserSignInUseCase
+    @Inject lateinit var signUpAndSignInUseCase: UserSignUpAndSignInUseCase
     @Inject lateinit var signOutUseCase: UserSignOutUseCase
     @Inject lateinit var addCourseUseCase: AddCourseUseCase
     @Inject lateinit var addCheckpointToCourseUseCase: AddCheckpointToCourseUseCase
     @Inject lateinit var removeCheckPointUseCase: RemoveCheckPointUseCase
     @Inject lateinit var reportCheckPointUseCase: ReportCheckPointUseCase
     @Inject lateinit var getCheckpointForMarkerUseCase: GetCheckpointForMarkerUseCase
-   // @Inject lateinit var getHistoryStreamUseCase: GetHistoryStreamUseCase
+    @Inject lateinit var getHistoryStreamUseCase: GetHistoryStreamUseCase
     @Inject lateinit var getMyReportUseCase: GetMyReportUseCase
 
     @Test // 인증된 사용자가 체크포인트를 추가하거나 삭제하기
@@ -64,7 +69,6 @@ class CheckPointScenarioTest {
         val uri = getAssetFileUri(context, "photo_opt.jpg")
         val addCheckPoint = CheckPointAddRequest(
             courseId = addCourse.courseId,
-            checkpointIdGroup = addCourse.checkpointIdGroup,
             latLng = addCourse.waypoints.first(),
             imageName = "imgName1",
             imageUri = uri,
@@ -72,47 +76,58 @@ class CheckPointScenarioTest {
         )
         signInUseCase().success()
         addCourseUseCase(addCourse).success()
-        getCheckpointForMarkerUseCase(addCourse.courseId).empty()
 
-        addCheckpointToCourseUseCase(addCheckPoint).success()
-        val cp = getCheckpointForMarkerUseCase(addCourse.courseId).first()
-        getCheckpointForMarkerUseCase(addCourse.courseId).exist()
+        val cp1 = addCheckpointToCourseUseCase(addCheckPoint).success()
+        getCheckpointForMarkerUseCase(addCourse.courseId).contain(cp1)
+        getHistoryStreamUseCase().first().checkpointGroup.contain(cp1)
 
-        removeCheckPointUseCase(addCourse.courseId, cp.checkPointId).success()
-        getCheckpointForMarkerUseCase(addCourse.courseId).empty()
+        removeCheckPointUseCase(addCourse.courseId, cp1).success()
+        getHistoryStreamUseCase().first().checkpointGroup.empty(cp1)
+        getCheckpointForMarkerUseCase(addCourse.courseId).empty(cp1)
     }
 
     @Test // 인증된 사용자가 체크포인트를 신고하기
     fun scenario2(): Unit = runBlocking {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val addCourse = MockModelModule().provideRemoteCourseGroup()
-            .first { it.courseId == "cs3" }
-            .run { this.copy("cs999").toCourse(route = waypoints) }
         val uri = getAssetFileUri(context, "photo_opt.jpg")
-        val reportCheckPoint = CheckPointAddRequest(
-            courseId = addCourse.courseId,
-            checkpointIdGroup = addCourse.checkpointIdGroup,
-            latLng = addCourse.waypoints.first(),
+        val reportUser = AuthData(uid = "report1", email = "report1@email.com", userName = "report1")
+        val baseCourse = getCourseDummy().first().run { copy(courseId="cs_cp1", userId= reportUser.uid, points = waypoints) }
+        val reportCheckPointAdd = CheckPointAddRequest(
+            courseId = baseCourse.courseId,
+            latLng = LatLng(1.0,1.0),
             imageName = "imgName1",
             imageUri = uri,
             description = "description1"
         )
+        val normalCheckPointAdd = CheckPointAddRequest(
+            courseId = baseCourse.courseId,
+            latLng = LatLng(1.1,1.1),
+            imageName = "imgName2",
+            imageUri = uri,
+            description = "description2"
+        )
 
-        signInUseCase().success()
-        addCourseUseCase(addCourse).success()
-        addCheckpointToCourseUseCase(reportCheckPoint).success()
-        getCheckpointForMarkerUseCase(reportCheckPoint.courseId).exist()
+        signUpAndSignInUseCase(reportUser).success()
+        addCourseUseCase(baseCourse).success()
+        val reportCpId = addCheckpointToCourseUseCase(reportCheckPointAdd).success()
+        val normalCpId = addCheckpointToCourseUseCase(normalCheckPointAdd).success()
 
-        val cp = getCheckpointForMarkerUseCase(reportCheckPoint.courseId).first()
-        reportCheckPointUseCase(cp, "test").success()
-        getMyReportUseCase().data!!.empty(cp.checkPointId)
+        reportCheckPointUseCase(reportCpId, "test")
+        getMyReportUseCase().data!!.contain(reportCpId)
+        getMyReportUseCase().data!!.empty(normalCpId)
+        getCheckpointForMarkerUseCase(baseCourse.courseId).empty(reportCpId)
+        getCheckpointForMarkerUseCase(baseCourse.courseId).contain(normalCpId)
+
+        signOutUseCase()
+        getCheckpointForMarkerUseCase(baseCourse.courseId).contain(reportCpId)
     }
 
 
-    private fun UseCaseResponse<String>.success() {
-        this.apply {
+    private fun UseCaseResponse<String>.success():String {
+        return this.run {
             Log.d(tag, "${this}")
             assertEquals(UseCaseResponse.Status.Success, this.status)
+            this.data?:""
         }
     }
 
@@ -124,21 +139,17 @@ class CheckPointScenarioTest {
     }
 
     @JvmName("co1")
-    private fun List<CheckPoint>.exist() {
-        this.firstOrNull().let {
-            Log.d(tag, "exist: ${it}")
-            assertNotEquals(null, it)
-            if (it != null) {
-                assertEquals(true, File(it.imageLocalPath).exists())
-            }
-        }
+    private fun List<CheckPoint>.contain(checkpointId: String) {
+        Log.d(tag, "contain($checkpointId): ${checkpointId in this.map { it.checkPointId }} / ${this.map { it.checkPointId }}")
+        assertTrue(checkpointId in this.map { it.checkPointId })
     }
 
     @JvmName("no1")
-    private fun List<CheckPoint>.empty() {
-        Log.d(tag, "empty: ${this.firstOrNull()}")
-        assertEquals(null, this.firstOrNull())
+    private fun List<CheckPoint>.empty(checkpointId: String) {
+        Log.d(tag, "empty($checkpointId): ${checkpointId !in this.map { it.checkPointId }} / ${this.map { it.checkPointId }}")
+        assertTrue(checkpointId !in this.map { it.checkPointId })
     }
+
 
     @JvmName("co2")
     private fun List<Report>.contain(checkPointId: String) {

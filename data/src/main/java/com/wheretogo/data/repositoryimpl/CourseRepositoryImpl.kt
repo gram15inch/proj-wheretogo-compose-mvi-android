@@ -1,5 +1,6 @@
 package com.wheretogo.data.repositoryimpl
 
+import android.util.Log
 import com.wheretogo.data.datasource.CourseLocalDatasource
 import com.wheretogo.data.datasource.CourseRemoteDatasource
 import com.wheretogo.data.datasource.RouteRemoteDatasource

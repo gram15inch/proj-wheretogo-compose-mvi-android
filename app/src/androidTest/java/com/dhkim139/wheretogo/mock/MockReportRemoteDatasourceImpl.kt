@@ -15,11 +15,19 @@ class MockReportRemoteDatasourceImpl @Inject constructor() : ReportRemoteDatasou
         return newReportGroup.firstOrNull { it.reportId == reportId }
     }
 
+    override suspend fun removeReport(reportId: String): Boolean {
+        return newReportGroup.removeIf { it.reportId == reportId }
+    }
+
     override suspend fun getReportByType(reportType: String): List<RemoteReport> {
         return newReportGroup.filter { it.type == reportType }
     }
 
     override suspend fun getReportByStatus(reportStatus: String): List<RemoteReport> {
         return newReportGroup.filter { it.status == reportStatus }
+    }
+
+    override suspend fun getReportByUid(userId: String): List<RemoteReport> {
+        return newReportGroup.filter { it.userId == userId }
     }
 }

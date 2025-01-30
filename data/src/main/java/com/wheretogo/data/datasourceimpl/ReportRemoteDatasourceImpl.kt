@@ -36,6 +36,17 @@ class ReportRemoteDatasourceImpl @Inject constructor(
         }
     }
 
+    override suspend fun removeReport(reportId: String): Boolean {
+        return suspendCancellableCoroutine { continuation ->
+            firestore.collection(reportTable).document(reportId).delete()
+                .addOnSuccessListener {
+                    continuation.resume(true)
+                }.addOnFailureListener {
+                    continuation.resumeWithException(it)
+                }
+        }
+    }
+
     override suspend fun getReportByType(reportType: String): List<RemoteReport> {
         return suspendCancellableCoroutine { continuation ->
             firestore.collection(reportTable).whereEqualTo(RemoteReport::type.name, reportType)
@@ -51,6 +62,18 @@ class ReportRemoteDatasourceImpl @Inject constructor(
     override suspend fun getReportByStatus(reportStatus: String): List<RemoteReport> {
         return suspendCancellableCoroutine { continuation ->
             firestore.collection(reportTable).whereEqualTo(RemoteReport::status.name, reportStatus)
+                .limit(10).get()
+                .addOnSuccessListener {
+                    continuation.resume(it.map { it.toObject(RemoteReport::class.java) })
+                }.addOnFailureListener {
+                    continuation.resumeWithException(it)
+                }
+        }
+    }
+
+    override suspend fun getReportByUid(userId: String): List<RemoteReport> {
+        return suspendCancellableCoroutine { continuation ->
+            firestore.collection(reportTable).whereEqualTo(RemoteReport::userId.name, userId)
                 .limit(10).get()
                 .addOnSuccessListener {
                     continuation.resume(it.map { it.toObject(RemoteReport::class.java) })

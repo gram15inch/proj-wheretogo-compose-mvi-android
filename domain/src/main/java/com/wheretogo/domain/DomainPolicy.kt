@@ -19,7 +19,7 @@ enum class OverlayType {
 }
 
 enum class HistoryType {
-    COMMENT, COURSE, CHECKPOINT, LIKE, BOOKMARK, REPORT
+    COMMENT, COURSE, CHECKPOINT, LIKE, BOOKMARK, REPORT_CONTENT
 }
 
 enum class ReportType {
