@@ -37,12 +37,11 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -62,7 +61,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.naver.maps.map.overlay.Marker
 import com.wheretogo.presentation.R
+import com.wheretogo.presentation.ViewModelEvent
 import com.wheretogo.presentation.composable.content.AnimationDirection
+import com.wheretogo.presentation.composable.content.DelayLottieAnimation
 import com.wheretogo.presentation.composable.content.DragHandle
 import com.wheretogo.presentation.composable.content.FadeAnimation
 import com.wheretogo.presentation.composable.content.NaverMap
@@ -87,19 +88,24 @@ fun CourseAddScreen(
 ) {
     val state by viewModel.courseAddScreenState.collectAsState()
     val context = LocalContext.current
-    var isNotMove by remember { mutableStateOf(true) }
     val coroutineScope = rememberCoroutineScope()
     val bottomSheetHeight by animateDpAsState(
         targetValue = if (state.isBottomSheetDown) 60.dp else 400.dp,
         animationSpec = tween(durationMillis = 350)
     )
 
-    if (state.isCourseAddDone) {
-        if (isNotMove) {
-            navController.navigate("home")
-            Toast.makeText(context.applicationContext, "${state.toastMsg}", Toast.LENGTH_LONG)
-                .show()
-            isNotMove = false
+    LaunchedEffect(Unit) {
+        viewModel.eventFlow.collect {
+            val string = context.resources.getString(it.second)
+            when (it.first) {
+                ViewModelEvent.TOAST -> {
+                    Toast.makeText(context.applicationContext, string, Toast.LENGTH_SHORT).show()
+                }
+
+                ViewModelEvent.NAVIGATION -> {
+                    navController.navigate(string)
+                }
+            }
         }
     }
 
@@ -302,6 +308,7 @@ fun CourseAddBottomSheet(
                 modifier = Modifier.height(60.dp),
                 isDetailContent = state.isDetailContent,
                 isDone = state.isCommendActive,
+                isLoading = state.isBottomSheetDown,
                 onCommendClick = onCommendClick
             )
         }
@@ -312,6 +319,7 @@ fun CourseAddBottomSheet(
 @Composable
 fun CommendButton(
     modifier: Modifier,
+    isLoading : Boolean,
     isDone: Boolean,
     isDetailContent: Boolean,
     onCommendClick: () -> Unit
@@ -322,22 +330,36 @@ fun CommendButton(
     ) {
         val text = if (isDetailContent) R.string.done else R.string.next_step
         val textColor = if (isDone) R.color.white else R.color.black
-        val backColor = if (isDone) R.color.blue else R.color.gray_C7C7C7_80
+        val backColor = if (isDone) R.color.blue else R.color.white
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .clip(RoundedCornerShape(16.dp))
+                .border(
+                    color = colorResource(R.color.gray_C7C7C7_80),
+                    shape = RoundedCornerShape(16.dp),
+                    width = 1.dp
+                )
                 .background(colorResource(backColor))
                 .clickable {
                     onCommendClick()
                 },
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = stringResource(text),
-                color = colorResource(textColor),
-                fontFamily = interBoldFontFamily
-            )
+            if(isLoading)
+                DelayLottieAnimation(
+                    modifier = Modifier
+                        .size(50.dp),
+                    ltRes = R.raw.lt_loading,
+                    isVisible = true,
+                    delay = 0
+                )
+            else
+                Text(
+                    text = stringResource(text),
+                    color = colorResource(textColor),
+                    fontFamily = interBoldFontFamily
+                )
         }
     }
 }
@@ -428,6 +450,7 @@ fun RouteWaypointContent(
                 )
                 Box(
                     modifier = Modifier
+                        .clip(RoundedCornerShape(16.dp))
                         .border(
                             width = 1.dp,
                             shape = RoundedCornerShape(16.dp),

@@ -11,6 +11,8 @@ data class CheckPointAddState(
     val imgUri: Uri? = null,
     val imgInfo: ImageInfo? = null,
     val description: String = "",
+    val isLoading : Boolean = false,
+    val isSubmitActive : Boolean = false,
     val focusRequester: FocusRequester = FocusRequester(),
     val error: String = ""
 )

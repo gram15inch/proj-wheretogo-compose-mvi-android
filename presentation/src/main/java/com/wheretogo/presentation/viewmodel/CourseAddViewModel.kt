@@ -12,6 +12,8 @@ import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.usecase.map.AddCourseUseCase
 import com.wheretogo.domain.usecase.map.CreateRouteUseCase
 import com.wheretogo.presentation.CameraStatus
+import com.wheretogo.presentation.R
+import com.wheretogo.presentation.ViewModelEvent
 import com.wheretogo.presentation.intent.CourseAddIntent
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.state.CameraState
@@ -21,7 +23,9 @@ import com.wheretogo.presentation.toNaver
 import com.wheretogo.presentation.toRouteWaypointItemState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -34,7 +38,8 @@ class CourseAddViewModel @Inject constructor(
 ) : ViewModel() {
     private val _courseAddScreenState = MutableStateFlow(CourseAddScreenState())
     val courseAddScreenState: StateFlow<CourseAddScreenState> = _courseAddScreenState
-
+    private val _eventFlow = MutableSharedFlow<Pair<ViewModelEvent, Int>>()
+    val eventFlow: SharedFlow<Pair<ViewModelEvent, Int>> = _eventFlow
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
         when (exception) {
             else -> {
@@ -69,7 +74,7 @@ class CourseAddViewModel @Inject constructor(
         if (text.length <= 17) {
             _courseAddScreenState.value = _courseAddScreenState.value.run {
                 val isWaypointDone =
-                    text.isNotEmpty() &&  waypoints.size >= 2 && routeState.points.isNotEmpty() && mapOverlay.path != null
+                    text.isNotEmpty() && waypoints.size >= 2 && routeState.points.isNotEmpty() && mapOverlay.path != null
                 copy(
                     courseName = text,
                     isWaypointDone = isWaypointDone,
@@ -241,75 +246,85 @@ class CourseAddViewModel @Inject constructor(
 
     private suspend fun routeCreateClick() {
         _courseAddScreenState.value = _courseAddScreenState.value.run {
-            val newRoute = createRouteUseCase(waypoints) ?: return
-            val naverPoints = newRoute.points.toNaver()
-            val newWaypointItemState = newRoute.waypointItems.map { it.toRouteWaypointItemState() }
-            val newPath = if (mapOverlay.markerGroup.size < 2) {
-                mapOverlay.path?.map = null
-                null
+            val isWaypoint = waypoints.size >= 2
+            if (!isWaypoint) {
+                _eventFlow.emit(ViewModelEvent.TOAST to R.string.add_marker_by_click_map)
+                return
             } else {
-                if (newRoute.points.size >= 2)
-                    mapOverlay.path?.apply { coords = naverPoints }
-                        ?: PathOverlay().apply { coords = naverPoints }
-                else
+                val newRoute = createRouteUseCase(waypoints) ?: return
+                val naverPoints = newRoute.points.toNaver()
+                val newWaypointItemState =
+                    newRoute.waypointItems.map { it.toRouteWaypointItemState() }
+                val newPath = if (mapOverlay.markerGroup.size < 2) {
+                    mapOverlay.path?.map = null
                     null
+                } else {
+                    if (newRoute.points.size >= 2)
+                        mapOverlay.path?.apply { coords = naverPoints }
+                            ?: PathOverlay().apply { coords = naverPoints }
+                    else
+                        null
+                }
+                val isWaypointDone =
+                    courseName.isNotEmpty() && isWaypoint && naverPoints.isNotEmpty() && newPath != null
+
+                val newMapOverlay = mapOverlay.copy(
+                    path = newPath
+                )
+                copy(
+                    mapOverlay = newMapOverlay,
+                    routeState = routeState.copy(
+                        points = newRoute.points,
+                        duration = newRoute.duration,
+                        waypointItemStateGroup = newWaypointItemState
+                    ),
+                    isWaypointDone = isWaypointDone,
+                    isCommendActive = isWaypointDone,
+                )
             }
-            val isWaypointDone =
-                courseName.isNotEmpty() && waypoints.size >= 2 && naverPoints.isNotEmpty() && newPath != null
 
-            val newMapOverlay = mapOverlay.copy(
-                path = newPath
-            )
-
-            copy(
-                mapOverlay = newMapOverlay,
-                routeState = routeState.copy(
-                    points = newRoute.points,
-                    duration = newRoute.duration,
-                    waypointItemStateGroup = newWaypointItemState
-                ),
-                isWaypointDone = isWaypointDone,
-                isCommendActive = isWaypointDone
-            )
         }
     }
 
     private suspend fun commendClick() {
-        _courseAddScreenState.value = _courseAddScreenState.value.run {
-            if (isDetailContent && isWaypointDone && isDetailDone) {
-                val newCourse = Course(
-                    courseName = courseName,
-                    waypoints = waypoints,
-                    points = routeState.points,
-                    duration = (routeState.duration / 60000).toString(),
-                    tag = detailItemStateGroup.filter { it.data.type == RouteDetailType.TAG }
-                        .firstOrNull() { it.isClick }?.data!!.code,
-                    level = detailItemStateGroup.filter { it.data.type == RouteDetailType.LEVEL }
-                        .firstOrNull() { it.isClick }?.data!!.code,
-                    relation = detailItemStateGroup.filter { it.data.type == RouteDetailType.RECOMMEND }
-                        .firstOrNull() { it.isClick }?.data!!.code,
-                    cameraLatLng = waypoints.first(),
-                    zoom = ""
-                )
+        _courseAddScreenState.value.apply {
+            _courseAddScreenState.value = run {
+                if (isDetailContent && isWaypointDone && isDetailDone) {
+                    val newCourse = Course(
+                        courseName = courseName,
+                        waypoints = waypoints,
+                        points = routeState.points,
+                        duration = (routeState.duration / 60000).toString(),
+                        tag = detailItemStateGroup.filter { it.data.type == RouteDetailType.TAG }
+                            .firstOrNull() { it.isClick }?.data!!.code,
+                        level = detailItemStateGroup.filter { it.data.type == RouteDetailType.LEVEL }
+                            .firstOrNull() { it.isClick }?.data!!.code,
+                        relation = detailItemStateGroup.filter { it.data.type == RouteDetailType.RECOMMEND }
+                            .firstOrNull() { it.isClick }?.data!!.code,
+                        cameraLatLng = waypoints.first(),
+                        zoom = ""
+                    )
 
-                when (addCourseUseCase(newCourse).status) {
-                    UseCaseResponse.Status.Success -> {
-                        copy(
-                            isCourseAddDone = true,
-                            toastMsg = "코스 등록 완료"
-                        )
+                    when (addCourseUseCase(newCourse).status) {
+                        UseCaseResponse.Status.Success -> {
+                            _eventFlow.emit(ViewModelEvent.TOAST to R.string.course_add_done)
+                            _eventFlow.emit(ViewModelEvent.NAVIGATION to R.string.navi_home)
+                            copy()
+                        }
+
+                        else -> {
+                            _eventFlow.emit(ViewModelEvent.TOAST to R.string.course_add_error)
+                            copy(
+                                error = "코스 등록 오류"
+                            )
+                        }
                     }
-
-                    else -> copy(
-                        isCourseAddDone = true,
-                        error = "코스 등록 오류",
-                        toastMsg = "코스 등록 오류")
+                } else {
+                    copy(
+                        isDetailContent = isWaypointDone,
+                        isCommendActive = isDetailDone
+                    )
                 }
-            } else {
-                copy(
-                    isDetailContent = isWaypointDone,
-                    isCommendActive = isDetailDone
-                )
             }
         }
     }

@@ -24,10 +24,9 @@ data class CourseAddScreenState(
     val isCommendActive: Boolean = false,
     val isWaypointDone: Boolean = false,
     val isDetailDone: Boolean = false,
-    val isCourseAddDone: Boolean = false,
     val isBottomSheetDown: Boolean = false,
+    val isLoading: Boolean = false,
     val padding: ContentPadding = ContentPadding(bottom = 350.dp),
-    val toastMsg: String = "",
     val error: String = ""
 ) {
 

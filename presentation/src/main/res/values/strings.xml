@@ -1,4 +1,6 @@
 <resources>
+    <string name="navi_home">home</string>
+
     <string name="app_name">Wheretogo</string>
     <string name="where_to_go">어디갈까</string>
     <string name="drive_main">드라이브</string>
@@ -50,11 +52,15 @@
     <string name="done">완료</string>
     <string name="next_step">다음단계</string>
 
+    <string name="course_add_done">코스 등록 완료</string>
+    <string name="course_add_error">"코스 등록 오류"</string>
+
 
     <string name="checkpoint">체크포인트</string>
     <string name="photo">사진</string>
     <string name="description">설명</string>
     <string name="submit">등록</string>
+    <string name="add_marker_by_click_map">지도를 클릭해 마커를 추가해주세요.</string>
 
 
     <string name="contact_banner">비즈니스 / 광고문의</string>

@@ -34,6 +34,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.wheretogo.domain.model.community.ImageInfo
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.feature.formatFileSizeToMB
@@ -41,6 +42,7 @@ import com.wheretogo.presentation.state.CheckPointAddState
 import com.wheretogo.presentation.state.DriveScreenState
 import com.wheretogo.presentation.state.InfoState
 import com.wheretogo.presentation.theme.interBoldFontFamily
+import com.wheretogo.presentation.theme.interFontFamily
 
 @Composable
 fun DriveBottomSheet(
@@ -81,15 +83,17 @@ fun CheckPointAddContent(
     val keyboardController = LocalSoftwareKeyboardController.current
     Column(
         modifier = Modifier
-            .padding(start = 10.dp, end = 10.dp)
+            .padding(start = 12.dp, end = 12.dp)
             .fillMaxWidth()
     ) {
         Text(
+            modifier = Modifier.padding(top = 5.dp),
             text = stringResource(R.string.checkpoint),
             fontSize = 16.sp,
             fontFamily = interBoldFontFamily
         )
         LocationSlider(
+            modifier = Modifier.padding(8.dp),
             percentage = state.sliderPercent,
             onSliderChange = onSliderChange
         )
@@ -100,6 +104,7 @@ fun CheckPointAddContent(
         }
 
         Text(
+            modifier = Modifier.padding(top = 5.dp),
             text = stringResource(R.string.photo),
             fontSize = 16.sp,
             fontFamily = interBoldFontFamily
@@ -107,7 +112,8 @@ fun CheckPointAddContent(
 
         Box(
             modifier = Modifier
-                .clip(RoundedCornerShape(16.dp))
+                .padding(horizontal = 10.dp, vertical = 5.dp)
+                .clip(RoundedCornerShape(14.dp))
                 .fillMaxWidth()
                 .height(40.dp)
                 .background(colorResource(R.color.gray_C7C7C7_80))
@@ -120,16 +126,22 @@ fun CheckPointAddContent(
             val text =
                 state.imgInfo?.let { "${it.fileName}  ${formatFileSizeToMB(it.byte)}" }
                     ?: ""
-            Text(modifier = Modifier.padding(start = 10.dp), text = text)
+            Text(
+                modifier = Modifier.padding(start = 12.dp),
+                text = text,
+                fontFamily = interFontFamily
+            )
         }
 
         Text(
+            modifier = Modifier.padding(top = 5.dp),
             text = stringResource(R.string.description),
             fontSize = 16.sp,
             fontFamily = interBoldFontFamily
         )
         Box(
             modifier = Modifier
+                .padding(horizontal = 10.dp, vertical = 5.dp)
                 .clip(RoundedCornerShape(16.dp))
                 .fillMaxWidth()
                 .height(100.dp)
@@ -139,26 +151,49 @@ fun CheckPointAddContent(
             Text(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(10.dp)
+                    .padding(12.dp)
                     .clickable {
                         state.focusRequester.requestFocus()
                         keyboardController?.show()
                     },
-                text = state.description
+                text = state.description,
+                fontFamily = interFontFamily
             )
         }
     }
+
+    val textColor = if (state.isSubmitActive) R.color.white else R.color.gray_848484
+    val backColor = if (state.isSubmitActive) R.color.blue else R.color.white
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(10.dp)
             .clip(RoundedCornerShape(16.dp))
+            .border(
+                color = colorResource(R.color.gray_C7C7C7_80),
+                shape = RoundedCornerShape(16.dp),
+                width = 1.dp
+            )
             .height(60.dp)
-            .background(colorResource(R.color.blue))
+            .background(colorResource(backColor))
             .clickable { onSubmitClick() },
         contentAlignment = Alignment.Center
     ) {
-        Text(stringResource(R.string.submit))
+        if (state.isLoading)
+            DelayLottieAnimation(
+                modifier = Modifier
+                    .size(50.dp),
+                ltRes = R.raw.lt_loading,
+                isVisible = true,
+                delay = 0
+            )
+        else
+            Text(
+                text = stringResource(R.string.submit),
+                color = colorResource(textColor),
+                fontFamily = interBoldFontFamily
+            )
     }
 
 }
@@ -183,13 +218,14 @@ fun InfoContent(
             Row(
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                if (state.isRemove)
+                if (state.isRemoveButton)
                     CircleButton(R.drawable.ic_delete, onClick = {
                         onRemoveClick(state)
                     })
-                CircleButton(R.drawable.ic_block, onClick = {
-                    onReportClick(state)
-                })
+                if (state.isReportButton)
+                    CircleButton(R.drawable.ic_block, onClick = {
+                        onReportClick(state)
+                    })
             }
         }
     }
@@ -211,11 +247,14 @@ private fun CircleButton(icon: Int, onClick: () -> Unit) {
 
 @Composable
 fun LocationSlider(
+    modifier: Modifier,
     percentage: Float,
     onSliderChange: (Float) -> Unit
 ) {
     Slider(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .height(30.dp),
         value = percentage,
         onValueChange = { onSliderChange(it) },
         valueRange = 0f..1f,
@@ -226,8 +265,12 @@ fun LocationSlider(
 @Composable
 fun CheckpointAddBottomSheetPreview() {
     val state = DriveScreenState.BottomSheetState(
-        isVisible = false,
-        infoState = InfoState(isRemove = true)
+        isVisible = true,
+        infoState = InfoState(isRemoveButton = true),
+        checkPointAddState = CheckPointAddState(
+            isLoading = false, description = "안녕하세요",
+            imgInfo = ImageInfo(Uri.parse("")!!, "새로운 사진.jpg", 30L)
+        )
     )
     Box(modifier = Modifier.width(400.dp)) {
         DriveBottomSheet(

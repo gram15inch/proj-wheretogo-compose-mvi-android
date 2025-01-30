@@ -7,5 +7,6 @@ data class ProfilePrivate(
     val authCompany: String = DOMAIN_EMPTY,
     val lastVisited: Long = 0L,
     val accountCreation: Long = 0L,
-    val isAdRemove: Boolean = false
+    val isAdRemove: Boolean = false,
+    val isAdmin: Boolean = false
 )

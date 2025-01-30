@@ -16,3 +16,11 @@ enum class SettingInfoType(val url: String) {
     TERMS("https://accurate-flight-2c4.notion.site/179cb3833d768036836dcfc55d8d38aa?pvs=4"),
     GUIDE("https://accurate-flight-2c4.notion.site/17acb3833d7680278027d26f36ce97c6?pvs=4"),
 }
+
+enum class CheckPointAddError{
+    EMPTY_IMG, EMPTY_DESCRIPTION
+}
+
+enum class ViewModelEvent{
+    NAVIGATION, TOAST
+}
