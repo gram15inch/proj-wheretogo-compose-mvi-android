@@ -5,10 +5,8 @@ import com.wheretogo.data.model.course.DataMetaCheckPoint
 import com.wheretogo.data.model.course.RemoteCourse
 import javax.inject.Inject
 
-class MockCourseRemoteDatasourceImpl @Inject constructor(
-    val courseGroup: List<RemoteCourse>
-) : CourseRemoteDatasource {
-    private var newCourseGroup = mutableListOf<RemoteCourse>().apply { addAll(courseGroup) }
+class MockCourseRemoteDatasourceImpl @Inject constructor() : CourseRemoteDatasource {
+    private var newCourseGroup = mutableListOf<RemoteCourse>()
     override suspend fun getCourse(courseId: String): RemoteCourse? {
         return newCourseGroup.firstOrNull { it.courseId == courseId }
     }

@@ -27,7 +27,7 @@ fun FireStoreCollections.name(): String {
     return if (BuildConfig.DEBUG)
         "TEST_" + this.name
     else
-        this.name
+        "RELEASE_"+ this.name
 }
 
 enum class LikeObject {

@@ -15,6 +15,7 @@ import com.wheretogo.domain.usecase.community.ReportCourseUseCase
 import com.wheretogo.domain.usecase.map.AddCourseUseCase
 import com.wheretogo.domain.usecase.map.GetNearByCourseUseCase
 import com.wheretogo.domain.usecase.user.GetHistoryStreamUseCase
+import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
 import com.wheretogo.domain.usecase.user.UserSignInUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
 import com.wheretogo.domain.usecase.user.UserSignUpAndSignInUseCase
@@ -22,6 +23,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import jakarta.inject.Inject
 import junit.framework.TestCase.assertEquals
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
@@ -50,29 +52,42 @@ class CourseScenarioTest {
 
     @Test // 누구나 위치기반 코스 불러오기
     fun scenario1(): Unit = runBlocking {
+        val course = MockModelModule().provideRemoteCourseGroup().first().run {
+            this.toCourse(route = waypoints)
+        }
 
-        val course = MockModelModule().provideRemoteCourseGroup().first()
-        val list = getNearByCourseUseCase(course.cameraLatLng)
-        assertEquals(true, list.isNotEmpty())
+        getNearByCourseUseCase(course.cameraLatLng).empty(course.courseId)
+
+        signInUseCase().success()
+        addCourseUseCase(course).success()
+
+        signOutUseCase().success()
+        getNearByCourseUseCase(course.cameraLatLng).contain(course.courseId)
 
     }
 
     @Test // 인증된 사용자가 코스를 추가하거나 삭제하기
     fun scenario2(): Unit = runBlocking {
-        val addCourse = MockModelModule().provideRemoteCourseGroup().first().run {
-            this.copy("cs999").toCourse(route = waypoints)
+        val baseCourse = MockModelModule().provideRemoteCourseGroup().first().run {
+            this.toCourse(route = waypoints)
         }
-        val removeCourse = MockModelModule().provideRemoteCourseGroup().first()
+        val addCourse = baseCourse.copy("add1")
+        val removeCourse = baseCourse.copy("remove1")
 
         signInUseCase().success()
         getNearByCourseUseCase(removeCourse.cameraLatLng).empty(addCourse.courseId)
 
         addCourseUseCase(addCourse).success()
+        addCourseUseCase(removeCourse).success()
         getNearByCourseUseCase(addCourse.cameraLatLng).contain(addCourse.courseId)
+        getNearByCourseUseCase(addCourse.cameraLatLng).contain(removeCourse.courseId)
         getHistoryStreamUseCase().first().courseGroup.contain(addCourse.courseId)
+        getHistoryStreamUseCase().first().courseGroup.contain(removeCourse.courseId)
 
         removeCourseUseCase(removeCourse.courseId).success()
+        getNearByCourseUseCase(removeCourse.cameraLatLng).contain(addCourse.courseId)
         getNearByCourseUseCase(removeCourse.cameraLatLng).empty(removeCourse.courseId)
+        getHistoryStreamUseCase().first().courseGroup.contain(addCourse.courseId)
         getHistoryStreamUseCase().first().courseGroup.empty(removeCourse.courseId)
 
         signOutUseCase().success()

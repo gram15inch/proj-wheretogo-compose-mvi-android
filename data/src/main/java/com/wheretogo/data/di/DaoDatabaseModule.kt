@@ -28,6 +28,7 @@ object DaoDatabaseModule {
             .build()
     }
 
+    @Singleton
     @Provides
     fun provideCourseDao(database: CourseDatabase) = database.courseDao()
 
@@ -42,6 +43,7 @@ object DaoDatabaseModule {
             .build()
     }
 
+    @Singleton
     @Provides
     fun provideCheckPointDao(database: CheckPointDatabase) = database.checkPointDao()
 
@@ -56,6 +58,7 @@ object DaoDatabaseModule {
             .build()
     }
 
+    @Singleton
     @Provides
     fun provideReportDao(database: ReportDatabase) = database.reportDao()
 
