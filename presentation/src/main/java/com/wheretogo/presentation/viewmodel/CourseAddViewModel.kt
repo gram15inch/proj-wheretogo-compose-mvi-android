@@ -3,6 +3,7 @@ package com.wheretogo.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.naver.maps.map.overlay.Marker
+import com.naver.maps.map.overlay.Overlay
 import com.naver.maps.map.overlay.PathOverlay
 import com.wheretogo.domain.OverlayType
 import com.wheretogo.domain.RouteDetailType
@@ -19,6 +20,7 @@ import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.state.CameraState
 import com.wheretogo.presentation.state.CourseAddScreenState
 import com.wheretogo.presentation.toDomainLatLng
+import com.wheretogo.presentation.toMarker
 import com.wheretogo.presentation.toNaver
 import com.wheretogo.presentation.toRouteWaypointItemState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -54,14 +56,18 @@ class CourseAddViewModel @Inject constructor(
     fun handleIntent(intent: CourseAddIntent) {
         viewModelScope.launch(exceptionHandler) {
             when (intent) {
+                //지도
                 is CourseAddIntent.UpdatedCamera -> updatedCamara(intent.cameraState)
-                is CourseAddIntent.NameEditValueChange -> nameEditValueChange(intent.text)
-
                 is CourseAddIntent.MapClick -> mapClick(intent.latLng)
                 is CourseAddIntent.CourseMarkerClick -> courseAddMarkerClick(intent.marker)
+
+                //플로팅
                 is CourseAddIntent.MarkerRemoveFloatingClick -> markerRemoveFloatingClick()
                 is CourseAddIntent.MarkerMoveFloatingClick -> markerMoveFloatingClick()
+
+                //바텀시트
                 is CourseAddIntent.RouteCreateClick -> routeCreateClick()
+                is CourseAddIntent.NameEditValueChange -> nameEditValueChange(intent.text)
                 is CourseAddIntent.RouteDetailItemClick -> routeDetailItemClick(intent.item)
                 is CourseAddIntent.CommendClick -> commendClick()
                 is CourseAddIntent.DetailBackClick -> detailBackClick()
@@ -70,77 +76,44 @@ class CourseAddViewModel @Inject constructor(
         }
     }
 
-    private fun nameEditValueChange(text: String) {
-        if (text.length <= 17) {
-            _courseAddScreenState.value = _courseAddScreenState.value.run {
-                val isWaypointDone =
-                    text.isNotEmpty() && waypoints.size >= 2 && routeState.points.isNotEmpty() && mapOverlay.path != null
-                copy(
-                    courseName = text,
-                    isWaypointDone = isWaypointDone,
-                    isCommendActive = isWaypointDone
-                )
-            }
-        }
-    }
-
+    //지도
     private fun updatedCamara(cameraState: CameraState) {
         _courseAddScreenState.value = _courseAddScreenState.value.run {
             copy(cameraState = cameraState.copy(status = CameraStatus.NONE))
         }
     }
 
-    private fun routeDetailItemClick(item: CourseAddScreenState.RouteDetailItemState) {
-        _courseAddScreenState.value = _courseAddScreenState.value.run {
-            val newDetailItemGroup = detailItemStateGroup.map {
-                if (it.data.type == item.data.type) {
-                    if (it.data.code == item.data.code) {
-                        it.copy(isClick = true)
-                    } else
-                        it.copy(isClick = false)
-                } else {
-                    it
-                }
-            }
-
-            val isDetailDone = newDetailItemGroup.filter { it.isClick }.map { it.data.type }.run {
-                this.contains(RouteDetailType.TAG) &&
-                        this.contains(RouteDetailType.LEVEL) &&
-                        this.contains(RouteDetailType.RECOMMEND)
-            }
-            copy(
-                detailItemStateGroup = newDetailItemGroup,
-                isDetailDone = isDetailDone,
-                isCommendActive = isDetailDone
-            )
-        }
-    }
-
     private fun mapClick(latlng: LatLng) {
         _courseAddScreenState.value = _courseAddScreenState.value.run {
-            if (mapOverlay.markerGroup.size < 5) {
-                val newMarkerGroup = mapOverlay.markerGroup + Marker().apply {
-                    tag = "${latlng.latitude}${latlng.longitude}"
-                    position = latlng.toNaver()
-                }
-
-                val newPath = if (newMarkerGroup.size < 2) {
-                    null
-                } else {
-                    mapOverlay.path?.apply { coords = newMarkerGroup.map { it.position } }
-                        ?: PathOverlay().apply { coords = newMarkerGroup.map { it.position } }
-                }
-                val newMapOverlay = MapOverlay(
-                    overlayId = "",
-                    type = OverlayType.COURSE,
-                    path = newPath,
-                    markerGroup = newMarkerGroup
-                )
+            if (this.isFloatingButton) {
                 copy(
-                    waypoints = waypoints + latlng,
-                    mapOverlay = newMapOverlay
+                    isFloatingButton = false,
+                    isFloatMarker = false,
+                    selectedMarkerItem = null,
                 )
-            } else this
+            } else {
+                if (mapOverlay.markerGroup.size < 5) {
+                    val newWaypoint = waypoints + latlng
+                    val newMarkerGroup = mapOverlay.markerGroup + latlng.toMarker()
+                    val newPath = if (newMarkerGroup.size < 2) {
+                        null
+                    } else {
+                        PathOverlay().apply { coords = newMarkerGroup.map { it.position } }
+                    }
+                    val newMapOverlay = MapOverlay(
+                        overlayId = "",
+                        type = OverlayType.COURSE,
+                        path = newPath,
+                        markerGroup = newMarkerGroup
+                    )
+                    listOf(this.mapOverlay.path).removeOverlay()
+                    copy(
+                        waypoints = newWaypoint,
+                        mapOverlay = newMapOverlay
+                    )
+                } else this
+            }
+
         }
     }
 
@@ -154,21 +127,17 @@ class CourseAddViewModel @Inject constructor(
         }
     }
 
+
+    //플로팅
     private fun markerRemoveFloatingClick() {
         _courseAddScreenState.value = _courseAddScreenState.value.run {
-            val newMarkerGroup =
-                mapOverlay.markerGroup.filter {
-                    it.tag != selectedMarkerItem?.apply {
-                        map = null
-                    }?.tag
+            val newMarkerGroup = mapOverlay.markerGroup.filter { it.tag != selectedMarkerItem?.tag }
+            val newPath =
+                if (newMarkerGroup.size < 2) {
+                    null
+                } else {
+                    PathOverlay().apply { coords = newMarkerGroup.map { it.position } }
                 }
-            val newPath = if (newMarkerGroup.size < 2) {
-                mapOverlay.path?.map = null
-                null
-            } else {
-                mapOverlay.path?.apply { coords = newMarkerGroup.map { it.position } }
-                    ?: PathOverlay().apply { coords = newMarkerGroup.map { it.position } }
-            }
             val newWaypoints =
                 if (selectedMarkerItem != null) waypoints - selectedMarkerItem.position.toDomainLatLng() else waypoints
 
@@ -178,21 +147,25 @@ class CourseAddViewModel @Inject constructor(
                 path = newPath,
                 markerGroup = newMarkerGroup
             )
-
+            listOf(selectedMarkerItem, this.mapOverlay.path).removeOverlay()
             copy(
                 waypoints = newWaypoints,
+                mapOverlay = newMapOverlay,
+                selectedMarkerItem = null,
                 routeState = routeState.copy(
                     duration = 0,
                     waypointItemStateGroup = emptyList()
                 ),
-                mapOverlay = newMapOverlay,
                 isFloatMarker = false,
                 isFloatingButton = false,
                 isWaypointDone = false,
-                isCommendActive = false,
-                selectedMarkerItem = null
+                isCommendActive = false
             )
         }
+    }
+
+    private fun List<Overlay?>.removeOverlay() {
+        forEach { it?.map = null }
     }
 
     private fun markerMoveFloatingClick() {
@@ -244,6 +217,8 @@ class CourseAddViewModel @Inject constructor(
             }
     }
 
+
+    //바텀시트
     private suspend fun routeCreateClick() {
         _courseAddScreenState.value = _courseAddScreenState.value.run {
             val isWaypoint = waypoints.size >= 2
@@ -283,6 +258,46 @@ class CourseAddViewModel @Inject constructor(
                 )
             }
 
+        }
+    }
+
+    private fun nameEditValueChange(text: String) {
+        if (text.length <= 17) {
+            _courseAddScreenState.value = _courseAddScreenState.value.run {
+                val isWaypointDone =
+                    text.isNotEmpty() && waypoints.size >= 2 && routeState.points.isNotEmpty() && mapOverlay.path != null
+                copy(
+                    courseName = text,
+                    isWaypointDone = isWaypointDone,
+                    isCommendActive = isWaypointDone
+                )
+            }
+        }
+    }
+
+    private fun routeDetailItemClick(item: CourseAddScreenState.RouteDetailItemState) {
+        _courseAddScreenState.value = _courseAddScreenState.value.run {
+            val newDetailItemGroup = detailItemStateGroup.map {
+                if (it.data.type == item.data.type) {
+                    if (it.data.code == item.data.code) {
+                        it.copy(isClick = true)
+                    } else
+                        it.copy(isClick = false)
+                } else {
+                    it
+                }
+            }
+
+            val isDetailDone = newDetailItemGroup.filter { it.isClick }.map { it.data.type }.run {
+                this.contains(RouteDetailType.TAG) &&
+                        this.contains(RouteDetailType.LEVEL) &&
+                        this.contains(RouteDetailType.RECOMMEND)
+            }
+            copy(
+                detailItemStateGroup = newDetailItemGroup,
+                isDetailDone = isDetailDone,
+                isCommendActive = isDetailDone
+            )
         }
     }
 
