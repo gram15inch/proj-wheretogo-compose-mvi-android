@@ -43,6 +43,7 @@ import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.content.DelayLottieAnimation
 import com.wheretogo.presentation.feature.googleAuthOnDevice
 import com.wheretogo.presentation.feature.consumptionEvent
+import com.wheretogo.presentation.model.ToastMsg
 import com.wheretogo.presentation.state.LoginScreenState
 import com.wheretogo.presentation.theme.interFontFamily
 import com.wheretogo.presentation.viewmodel.LoginViewModel
@@ -52,15 +53,22 @@ import kotlinx.coroutines.launch
 @Composable
 fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
     val state by viewModel.loginScreenState.collectAsState()
-    val toastStream by viewModel.toastShare.collectAsState(false to "")
+    val toastStream by viewModel.toastShare.collectAsState(false to ToastMsg(-1))
     val context = LocalContext.current
     val coroutine  = rememberCoroutineScope()
     BackHandler {} // 로그인창 뒤로가기 막기
 
     LaunchedEffect(toastStream) {
         if (toastStream.first) {
-            Toast.makeText(context.applicationContext, toastStream.second, Toast.LENGTH_SHORT)
-                .show()
+            toastStream.second.let{
+                val msg = if(it.arg!=null){
+                    context.getString(it.strRes, it.arg)
+                } else {
+                    context.getString(it.strRes)
+                }
+                Toast.makeText(context.applicationContext, msg, Toast.LENGTH_SHORT)
+                    .show()
+            }
         }
     }
 

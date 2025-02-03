@@ -1,5 +1,8 @@
 <resources>
     <string name="navi_home">home</string>
+    <string name="navi_drive">drive</string>
+    <string name="navi_courseAdd">courseAdd</string>
+    <string name="navi_setting">setting</string>
 
     <string name="app_name">Wheretogo</string>
     <string name="where_to_go">어디갈까</string>
@@ -45,6 +48,7 @@
     <string name="friend">친구</string>
     <string name="family">가족</string>
     <string name="couple">연인</string>
+    <string name="unknown_driver">익명의 드라이버</string>
 
     <string name="minute">~%d분</string>
     <string name="hour">%d시간+</string>
@@ -69,8 +73,11 @@
 
 
     <string name="login">로그인</string>
+    <string name="login_cancel">로그인 취소</string>
+    <string name="login_fail">로그인 실패</string>
     <string name="logout"> 로그아웃 </string>
     <string name="explore_without_login">로그인 없이 앱 둘러보기</string>
+    <string name="welcome_user">반갑습니다 %1$s님!</string>
 
     <string name="privacy"> 개인정보처리방침 </string>
     <string name="open_licence"> 오픈 라이선스 </string>

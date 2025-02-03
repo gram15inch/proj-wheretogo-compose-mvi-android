@@ -1,6 +1,7 @@
 package com.wheretogo.presentation
 
 
+import com.naver.maps.map.overlay.Marker
 import com.wheretogo.domain.AuthCompany
 import com.wheretogo.domain.CourseDetail
 import com.wheretogo.domain.OverlayType
@@ -15,6 +16,12 @@ import com.wheretogo.presentation.state.CourseAddScreenState.RouteWaypointItemSt
 import com.kakao.vectormap.LatLng as KakaoLatLng
 import com.naver.maps.geometry.LatLng as NaverLatLng
 
+fun LatLng.toMarker():Marker{
+    return Marker().apply {
+        tag = "${latitude}${longitude}"
+        position = toNaver()
+    }
+}
 
 fun List<LatLng>.toNaver(): List<NaverLatLng> {
     return this.map { NaverLatLng(it.latitude, it.longitude) }

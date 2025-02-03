@@ -14,11 +14,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.content.AnimationDirection
 import com.wheretogo.presentation.composable.content.SlideAnimation
 import com.wheretogo.presentation.theme.WhereTogoTheme
@@ -50,18 +52,22 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                     .fillMaxHeight()
                     .background(White100)
             ) {
-                NavHost(navController = navController, startDestination = "home") {
-                    composable("home") { HomeScreen(navController) }
-                    composable("drive",
+                val home = stringResource(R.string.navi_home)
+                val drive = stringResource(R.string.navi_drive)
+                val courseAdd = stringResource(R.string.navi_courseAdd)
+                val setting = stringResource(R.string.navi_setting)
+
+                NavHost(navController = navController, startDestination = home) {
+                    composable(home) { HomeScreen(navController) }
+                    composable(drive,
                         enterTransition = { slideInHorizontally(initialOffsetX = { it }) },
                         exitTransition = { slideOutHorizontally(targetOffsetX = { it }) }
                     ) { DriveScreen(navController) }
-                    composable("bookmark") { BookmarkScreen(navController) }
-                    composable("courseAdd",
+                     composable(courseAdd,
                         enterTransition = { slideInVertically(initialOffsetY = { it }) },
                         exitTransition = { slideOutVertically(targetOffsetY = { it }) }
                     ) { CourseAddScreen(navController) }
-                    composable("setting",
+                    composable(setting,
                         enterTransition = { slideInHorizontally(initialOffsetX = { it }) },
                         exitTransition = { slideOutHorizontally(targetOffsetX = { it }) }
                     ) { SettingScreen(navController) }
