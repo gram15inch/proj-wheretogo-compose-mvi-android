@@ -25,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,22 +41,25 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.content.DelayLottieAnimation
+import com.wheretogo.presentation.feature.googleAuthOnDevice
 import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.state.LoginScreenState
 import com.wheretogo.presentation.theme.interFontFamily
 import com.wheretogo.presentation.viewmodel.LoginViewModel
+import kotlinx.coroutines.launch
 
 
 @Composable
 fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
     val state by viewModel.loginScreenState.collectAsState()
-    val isToast by viewModel.toastShare.collectAsState(false)
+    val toastStream by viewModel.toastShare.collectAsState(false to "")
     val context = LocalContext.current
+    val coroutine  = rememberCoroutineScope()
     BackHandler {} // 로그인창 뒤로가기 막기
 
-    LaunchedEffect(isToast) {
-        if (isToast) {
-            Toast.makeText(context.applicationContext, "${state.toastMsg}", Toast.LENGTH_SHORT)
+    LaunchedEffect(toastStream) {
+        if (toastStream.first) {
+            Toast.makeText(context.applicationContext, toastStream.second, Toast.LENGTH_SHORT)
                 .show()
         }
     }
@@ -63,7 +67,9 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
     LoginContent(
         state,
         onGoogleLoginClick = {
-            viewModel.signUpAndSignIn()
+            coroutine.launch {
+                viewModel.signUpAndSignIn(googleAuthOnDevice(viewModel.getGoogleIdOption, context))
+            }
         },
         onLoginPassClick = {
             viewModel.signInPass()

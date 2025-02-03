@@ -10,6 +10,7 @@ import com.wheretogo.data.model.map.DataLatLng
 import com.wheretogo.data.model.report.LocalReport
 import com.wheretogo.data.model.report.RemoteReport
 import com.wheretogo.data.model.route.RemoteRoute
+import com.wheretogo.data.model.user.ProfilePublic
 import com.wheretogo.domain.ReportStatus
 import com.wheretogo.domain.ReportType
 import com.wheretogo.domain.model.community.Report
@@ -19,7 +20,26 @@ import com.wheretogo.domain.model.map.Course
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.MetaCheckPoint
 import com.wheretogo.domain.model.map.Route
+import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.toGeoHash
+
+
+
+fun Profile.toProfilePublic():ProfilePublic{
+    return ProfilePublic(
+        uid = uid,
+        name = name,
+        hashMail = hashMail,
+    )
+}
+
+fun ProfilePublic.toProfile():Profile{
+    return Profile(
+        uid = uid,
+        name = name,
+        hashMail = hashMail
+    )
+}
 
 fun Report.toLocalReport():LocalReport{
     return LocalReport(

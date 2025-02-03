@@ -5,13 +5,15 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.dhkim139.wheretogo.di.MockModelModule
 import com.dhkim139.wheretogo.mock.model.MockRemoteUser
 import com.wheretogo.data.toCourse
+import com.wheretogo.domain.AuthType
 import com.wheretogo.domain.model.UseCaseResponse
+import com.wheretogo.domain.model.auth.AuthRequest
 import com.wheretogo.domain.model.community.Report
 import com.wheretogo.domain.model.dummy.getCourseDummy
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.CheckPointAddRequest
 import com.wheretogo.domain.model.map.LatLng
-import com.wheretogo.domain.model.user.AuthData
+import com.wheretogo.domain.model.user.AuthProfile
 import com.wheretogo.domain.usecase.community.GetMyReportUseCase
 import com.wheretogo.domain.usecase.community.RemoveCheckPointUseCase
 import com.wheretogo.domain.usecase.community.ReportCheckPointUseCase
@@ -63,7 +65,9 @@ class CheckPointScenarioTest {
     @Test // 인증된 사용자가 체크포인트를 추가하거나 삭제하기
     fun scenario1(): Unit = runBlocking {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-       val addCourse = MockModelModule().provideRemoteCourseGroup()
+        val addUser = AuthProfile(uid = "addUser1", email = "addUser1@email.com", userName = "add1")
+        val authRequest = AuthRequest(authType = AuthType.PROFILE, authProfile = addUser)
+        val addCourse = MockModelModule().provideRemoteCourseGroup()
             .first { it.courseId == "cs3" }
             .run { this.copy("cs999").toCourse(route = waypoints) }
         val uri = getAssetFileUri(context, "photo_opt.jpg")
@@ -74,7 +78,7 @@ class CheckPointScenarioTest {
             imageUri = uri,
             description = "description1"
         )
-        signInUseCase().success()
+        signUpAndSignInUseCase(authRequest).success()
         addCourseUseCase(addCourse).success()
 
         val cp1 = addCheckpointToCourseUseCase(addCheckPoint).success()
@@ -90,7 +94,8 @@ class CheckPointScenarioTest {
     fun scenario2(): Unit = runBlocking {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val uri = getAssetFileUri(context, "photo_opt.jpg")
-        val reportUser = AuthData(uid = "report1", email = "report1@email.com", userName = "report1")
+        val reportUser = AuthProfile(uid = "report1", email = "report1@email.com", userName = "report1")
+        val authRequest = AuthRequest(authType = AuthType.PROFILE, authProfile = reportUser)
         val baseCourse = getCourseDummy().first().run { copy(courseId="cs_cp1", userId= reportUser.uid, points = waypoints) }
         val reportCheckPointAdd = CheckPointAddRequest(
             courseId = baseCourse.courseId,
@@ -107,7 +112,7 @@ class CheckPointScenarioTest {
             description = "description2"
         )
 
-        signUpAndSignInUseCase(reportUser).success()
+        signUpAndSignInUseCase(authRequest).success()
         addCourseUseCase(baseCourse).success()
         val reportCpId = addCheckpointToCourseUseCase(reportCheckPointAdd).success()
         val normalCpId = addCheckpointToCourseUseCase(normalCheckPointAdd).success()
@@ -118,7 +123,7 @@ class CheckPointScenarioTest {
         getCheckpointForMarkerUseCase(baseCourse.courseId).empty(reportCpId)
         getCheckpointForMarkerUseCase(baseCourse.courseId).contain(normalCpId)
 
-        signOutUseCase()
+        signOutUseCase().success()
         getCheckpointForMarkerUseCase(baseCourse.courseId).contain(reportCpId)
     }
 

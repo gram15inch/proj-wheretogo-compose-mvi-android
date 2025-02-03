@@ -3,8 +3,7 @@ package com.wheretogo.domain.repository
 import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePrivate
-import com.wheretogo.domain.model.user.ProfilePublic
-import com.wheretogo.domain.model.user.SignResponse
+import com.wheretogo.domain.model.user.UserResponse
 import kotlinx.coroutines.flow.Flow
 
 interface UserRepository {
@@ -34,17 +33,19 @@ interface UserRepository {
 
     suspend fun getProfileStream(): Flow<Profile>
 
-    suspend fun getPublicProfile(userId: String): ProfilePublic?
+    suspend fun getProfile(userId: String): Profile?
 
     suspend fun getProfilePrivate(userId: String): ProfilePrivate?
 
     suspend fun setProfile(profile: Profile): Boolean
 
-    suspend fun signUp(profile: Profile): SignResponse
+    suspend fun createUser(profile: Profile): UserResponse
 
-    suspend fun  signIn(uid: String): SignResponse
+    suspend fun syncUser(uid: String): UserResponse
 
-    suspend fun signOut(): SignResponse
+    suspend fun clearUser(): UserResponse
 
     suspend fun deleteUser(userId: String): Boolean
+
+    suspend fun checkUser(mail:String): UserResponse
 }

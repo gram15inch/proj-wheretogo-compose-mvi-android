@@ -3,15 +3,15 @@ package com.wheretogo.domain
 
 import com.firebase.geofire.GeoFireUtils
 import com.firebase.geofire.GeoLocation
+import com.wheretogo.domain.feature.hashSha256
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.CheckPointAddRequest
 import com.wheretogo.domain.model.map.History
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.MetaCheckPoint
-import com.wheretogo.domain.model.user.AuthData
+import com.wheretogo.domain.model.user.AuthProfile
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePrivate
-import com.wheretogo.domain.model.user.ProfilePublic
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -90,16 +90,15 @@ fun CheckPointAddRequest.toCheckpoint(
     )
 }
 
-fun AuthData.toProfile(): Profile {
+fun AuthProfile.toProfile(): Profile {
     return Profile(
         uid = uid,
-        public = ProfilePublic(
-            name = userName
-        ),
+        name = userName,
+        hashMail = hashSha256(email),
         private = ProfilePrivate(
             mail = email,
+            authCompany = authCompany.name,
             accountCreation = System.currentTimeMillis()
         )
-
     )
 }

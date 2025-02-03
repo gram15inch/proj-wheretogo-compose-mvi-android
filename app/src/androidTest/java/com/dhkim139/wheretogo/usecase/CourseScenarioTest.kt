@@ -3,11 +3,13 @@ package com.dhkim139.wheretogo.usecase
 import android.util.Log
 import com.dhkim139.wheretogo.di.MockModelModule
 import com.wheretogo.data.toCourse
+import com.wheretogo.domain.AuthType
 import com.wheretogo.domain.model.UseCaseResponse
+import com.wheretogo.domain.model.auth.AuthRequest
 import com.wheretogo.domain.model.community.Report
 import com.wheretogo.domain.model.dummy.getCourseDummy
 import com.wheretogo.domain.model.map.Course
-import com.wheretogo.domain.model.user.AuthData
+import com.wheretogo.domain.model.user.AuthProfile
 import com.wheretogo.domain.usecase.community.GetMyReportUseCase
 import com.wheretogo.domain.usecase.community.RemoveCourseUseCase
 import com.wheretogo.domain.usecase.community.ReportCancelUseCase
@@ -15,7 +17,6 @@ import com.wheretogo.domain.usecase.community.ReportCourseUseCase
 import com.wheretogo.domain.usecase.map.AddCourseUseCase
 import com.wheretogo.domain.usecase.map.GetNearByCourseUseCase
 import com.wheretogo.domain.usecase.user.GetHistoryStreamUseCase
-import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
 import com.wheretogo.domain.usecase.user.UserSignInUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
 import com.wheretogo.domain.usecase.user.UserSignUpAndSignInUseCase
@@ -23,7 +24,6 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import jakarta.inject.Inject
 import junit.framework.TestCase.assertEquals
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
@@ -52,13 +52,15 @@ class CourseScenarioTest {
 
     @Test // 누구나 위치기반 코스 불러오기
     fun scenario1(): Unit = runBlocking {
+        val addUser = AuthProfile(uid = "addUser1", email = "addUser1@email.com", userName = "add1")
+        val authRequest = AuthRequest(authType = AuthType.PROFILE, authProfile = addUser)
         val course = MockModelModule().provideRemoteCourseGroup().first().run {
             this.toCourse(route = waypoints)
         }
 
         getNearByCourseUseCase(course.cameraLatLng).empty(course.courseId)
 
-        signInUseCase().success()
+        signUpAndSignInUseCase(authRequest).success()
         addCourseUseCase(course).success()
 
         signOutUseCase().success()
@@ -68,13 +70,15 @@ class CourseScenarioTest {
 
     @Test // 인증된 사용자가 코스를 추가하거나 삭제하기
     fun scenario2(): Unit = runBlocking {
+        val addUser = AuthProfile(uid = "addUser1", email = "addUser1@email.com", userName = "add1")
+        val authRequest = AuthRequest(authType = AuthType.PROFILE, authProfile = addUser)
         val baseCourse = MockModelModule().provideRemoteCourseGroup().first().run {
             this.toCourse(route = waypoints)
         }
         val addCourse = baseCourse.copy("add1")
         val removeCourse = baseCourse.copy("remove1")
 
-        signInUseCase().success()
+        signUpAndSignInUseCase(authRequest).success()
         getNearByCourseUseCase(removeCourse.cameraLatLng).empty(addCourse.courseId)
 
         addCourseUseCase(addCourse).success()
@@ -99,12 +103,14 @@ class CourseScenarioTest {
     @Test // 인증된 사용자가 코스를 신고하기
     fun scenario3(): Unit = runBlocking {
         val baseCourse = getCourseDummy().first().run { copy(points = waypoints) }
-        val reportUser = AuthData(uid = "report1", email = "report1@email.com", userName = "report1")
-        val unknownUser = AuthData(uid = "unkonwn1", email = "unkonwn1@email.com", userName = "unkonwn1")
+        val reportUser = AuthProfile(uid = "report1", email = "report1@email.com", userName = "report1")
+        val unknownUser = AuthProfile(uid = "unkonwn1", email = "unkonwn1@email.com", userName = "unkonwn1")
+        val reportAuthRequest = AuthRequest(authType = AuthType.PROFILE, authProfile = reportUser)
+        val unknownAuthRequest = AuthRequest(authType = AuthType.PROFILE, authProfile = unknownUser)
         val reportCourse = baseCourse.copy(courseId = "reportCourse1", userId = reportUser.uid, checkpointIdGroup = emptyList())
         val normalCourse = baseCourse.copy(courseId = "normalCourse1", userId = unknownUser.uid, checkpointIdGroup = emptyList())
 
-        signUpAndSignInUseCase(reportUser).success("[로그인] ")
+        signUpAndSignInUseCase(reportAuthRequest).success("[로그인] ")
         addCourseUseCase(reportCourse).success()
         addCourseUseCase(normalCourse).success()
         getMyReportUseCase().data!!.empty(reportCourse.courseId)
@@ -123,7 +129,7 @@ class CourseScenarioTest {
         signOutUseCase().success("[로그아웃] ")
         getNearByCourseUseCase(baseCourse.cameraLatLng).contain(reportCourse.courseId)
 
-        signUpAndSignInUseCase(unknownUser).success("[로그인] ")
+        signUpAndSignInUseCase(unknownAuthRequest).success("[로그인] ")
         getMyReportUseCase().data!!.empty(reportCourse.courseId)
         getNearByCourseUseCase(baseCourse.cameraLatLng).contain(reportCourse.courseId)
     }

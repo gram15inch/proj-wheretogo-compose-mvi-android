@@ -343,6 +343,33 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="1111798319">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Tests" value="360" />
+                  <entry key="samsung SM-S926N" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="1287145726">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Tests" value="360" />
+                  <entry key="samsung SM-G970N" value="120" />
+                  <entry key="samsung SM-S926N" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="1348657844">
           <value>
             <AndroidTestResultsTableState>
@@ -461,6 +488,20 @@
           </value>
         </entry>
         <entry key="1923891447">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Tests" value="360" />
+                  <entry key="samsung SM-G970N" value="120" />
+                  <entry key="samsung SM-S926N" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="1926898103">
           <value>
             <AndroidTestResultsTableState>
               <option name="preferredColumnWidths">

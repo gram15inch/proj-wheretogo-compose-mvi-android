@@ -37,7 +37,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.wheretogo.domain.model.user.Profile
-import com.wheretogo.domain.model.user.ProfilePublic
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.SettingInfoType
 import com.wheretogo.presentation.feature.openWeb
@@ -82,9 +81,7 @@ fun SettingContentPreview() {
             navController = null,
             settingState = SettingScreenState().copy(
                 isProfile = true,
-                profile = Profile(
-                    public = ProfilePublic(name = "닉네임")
-                )
+                profile = Profile()
             )
         )
     }
@@ -135,7 +132,7 @@ fun SettingContent(
             val profile = settingState.profile
             if (settingState.isProfile)
                 ProfileSection(
-                    name = profile.public.name,
+                    name = profile.name,
                     authCompany = profile.private.authCompany,
                     onUserNameChangeButtonClick = onUserNameChangeButtonClick,
                     onLogoutButtonClick = onLogoutButtonClick

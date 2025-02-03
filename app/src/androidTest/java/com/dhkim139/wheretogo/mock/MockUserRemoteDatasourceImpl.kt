@@ -3,12 +3,13 @@ package com.dhkim139.wheretogo.mock
 import com.dhkim139.wheretogo.mock.model.MockRemoteUser
 import com.wheretogo.data.datasource.UserRemoteDatasource
 import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
+import com.wheretogo.data.model.user.ProfilePublic
+import com.wheretogo.data.toProfile
+import com.wheretogo.data.toProfilePublic
 import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.get
 import com.wheretogo.domain.map
-import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePrivate
-import com.wheretogo.domain.model.user.ProfilePublic
 import javax.inject.Inject
 
 class MockUserRemoteDatasourceImpl @Inject constructor(
@@ -17,14 +18,15 @@ class MockUserRemoteDatasourceImpl @Inject constructor(
     private var userRemoteGroup =
         mutableMapOf<String, MockRemoteUser>(mockRemoteUser.profile.uid to mockRemoteUser) // userId
 
-    override suspend fun setProfilePublic(uid: String, publicPorfile: ProfilePublic): Boolean {
+    override suspend fun setProfilePublic(public: ProfilePublic): Boolean {
+        val uid = public.uid
         val newUser = userRemoteGroup.getOrPut(uid) {
             MockRemoteUser(
                 uid,
-                Profile(uid, public = publicPorfile)
+                profile = public.toProfile()
             )
         }.run {
-            copy(profile = profile.copy(public = publicPorfile))
+            copy(profile = profile)
         }
         userRemoteGroup.put(uid, newUser)
         return true
@@ -34,7 +36,7 @@ class MockUserRemoteDatasourceImpl @Inject constructor(
         val newUser = userRemoteGroup.getOrPut(uid) {
             MockRemoteUser(
                 uid,
-                Profile(uid, private = privateProfile)
+                getProfilePublic(uid)?.toProfile()?.copy(uid=uid,private = privateProfile)?:return false
             )
         }.run {
             copy(profile = profile.copy(private = privateProfile))
@@ -44,7 +46,7 @@ class MockUserRemoteDatasourceImpl @Inject constructor(
     }
 
     override suspend fun getProfilePublic(uid: String): ProfilePublic? {
-        return userRemoteGroup.get(uid)?.profile?.public
+        return userRemoteGroup.get(uid)?.profile?.toProfilePublic()
     }
 
     override suspend fun getProfilePrivate(uid: String): ProfilePrivate? {
@@ -90,5 +92,9 @@ class MockUserRemoteDatasourceImpl @Inject constructor(
         } else {
             false
         }
+    }
+
+    override suspend fun getProfilePublicWithMail(hashMail: String): ProfilePublic? {
+        return userRemoteGroup.toList().firstOrNull{it.second.profile.hashMail == hashMail}?.second?.profile?.toProfilePublic()
     }
 }

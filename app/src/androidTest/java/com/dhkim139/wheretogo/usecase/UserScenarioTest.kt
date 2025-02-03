@@ -2,10 +2,12 @@ package com.dhkim139.wheretogo.usecase
 
 import android.util.Log
 import com.dhkim139.wheretogo.mock.model.MockRemoteUser
+import com.wheretogo.domain.AuthType
 import com.wheretogo.domain.UseCaseFailType
 import com.wheretogo.domain.model.UseCaseResponse
+import com.wheretogo.domain.model.auth.AuthRequest
 import com.wheretogo.domain.model.map.History
-import com.wheretogo.domain.model.user.AuthData
+import com.wheretogo.domain.model.user.AuthProfile
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.usecase.user.GetHistoryStreamUseCase
 import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
@@ -52,36 +54,22 @@ class UserScenarioTest {
     @Inject
     lateinit var user: MockRemoteUser
 
-    @Test // 기존 사용자 로그인 - 로그아웃
-    fun scenario1(): Unit = runBlocking {
-        val user1 = user
-        getUserProfileStreamUseCase().first().assertEmpty()
-
-        signInUseCase().success()
-        val profile = getUserProfileStreamUseCase().first()
-        assertEquals(user1.profile.uid, profile.data!!.uid)
-        getHistoryStreamUseCase().first().assertEquals(user1.history)
-        signOutUseCase().success()
-
-        getUserProfileStreamUseCase().first().assertEmpty()
-        getHistoryStreamUseCase().first().assertEmpty()
-    }
-
     @Test// 새로운 사용자 회원가입 - 로그인 후 알수없는 사용자 로그인 실패
-    fun scenario2():Unit = runBlocking {
-        val resistUser = AuthData(
-            uid ="uid1",
+    fun scenario1(): Unit = runBlocking {
+        val resistUser = AuthProfile(
+            uid = "uid1",
             email = "email1",
             userName = "userName1"
         )
-        val unknownUser = AuthData(
-            uid ="uid2",
+        val unknownUser = AuthProfile(
+            uid = "uid2",
             email = "email2",
             userName = "userName2"
         )
+        val authRequest = AuthRequest(authType = AuthType.PROFILE, authProfile = resistUser)
         getUserProfileStreamUseCase().first().assertEmpty()
 
-        signUpAndSignInUseCase(resistUser).success()
+        signUpAndSignInUseCase(authRequest).success()
         getUserProfileStreamUseCase().first().data!!.assertEquals(resistUser)
 
         signOutUseCase().success()
@@ -95,7 +83,6 @@ class UserScenarioTest {
     }
 
     private fun UseCaseResponse<String>.success() {
-
         this.apply {
             Log.d(tag, this.toString())
             assertEquals(UseCaseResponse.Status.Success, this.status)
@@ -132,9 +119,9 @@ class UserScenarioTest {
         assertEquals(reportGroup, hashSetOf<String>())
     }
 
-    private fun Profile.assertEquals(authData: AuthData){
-        assertEquals(authData.uid, uid)
-        assertEquals(authData.email, private.mail)
-        assertEquals(authData.userName, public.name)
+    private fun Profile.assertEquals(authProfile: AuthProfile) {
+        assertEquals(authProfile.uid, uid)
+        assertEquals(authProfile.email, private.mail)
+        assertEquals(authProfile.userName, name)
     }
 }

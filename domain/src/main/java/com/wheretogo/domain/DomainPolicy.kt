@@ -12,7 +12,7 @@ const val USER_DATE_FORMAT = "yyyy-MM-dd"
 const val DOMAIN_EMPTY = ""
 
 
-enum class AuthCompany { GOOGLE }
+enum class AuthCompany { GOOGLE, PROFILE }
 
 enum class OverlayType {
     NONE, COURSE, CHECKPOINT, PATH
@@ -65,7 +65,11 @@ enum class ImageSize(val pathName: String, val width: Int, val height: Int) {
 }
 
 enum class UseCaseFailType {
-    INVALID_USER, INVALID_DATA
+    INVALID_USER, INVALID_DATA,
+}
+
+enum class AuthType{
+    TOKEN, PROFILE
 }
 
 

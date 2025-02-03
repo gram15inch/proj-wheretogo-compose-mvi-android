@@ -6,10 +6,10 @@ import com.google.firebase.firestore.FirebaseFirestoreException
 import com.wheretogo.data.FireStoreCollections
 import com.wheretogo.data.datasource.UserRemoteDatasource
 import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
+import com.wheretogo.data.model.user.ProfilePublic
 import com.wheretogo.data.name
 import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.model.user.ProfilePrivate
-import com.wheretogo.domain.model.user.ProfilePublic
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -33,10 +33,10 @@ class UserRemoteDatasourceImpl @Inject constructor(
     private val private = FireStoreCollections.PRIVATE.name()
 
 
-    override suspend fun setProfilePublic(uid: String, publicPorfile: ProfilePublic): Boolean {
+    override suspend fun setProfilePublic(public: ProfilePublic): Boolean {
         return suspendCancellableCoroutine { continuation ->
-            firestore.collection(userTable).document(uid).collection(public).document(uid)
-                .set(publicPorfile)
+            firestore.collection(userTable).document(public.uid)
+                .set(public)
                 .addOnSuccessListener { result ->
                     continuation.resume(true)
                 }.addOnFailureListener { e ->
@@ -47,7 +47,7 @@ class UserRemoteDatasourceImpl @Inject constructor(
 
     override suspend fun setProfilePrivate(uid: String, privateProfile: ProfilePrivate): Boolean {
         return suspendCancellableCoroutine { continuation ->
-            firestore.collection(userTable).document(uid).collection(private).document(uid)
+            firestore.collection(userTable).document(uid).collection(private).document(private)
                 .set(privateProfile)
                 .addOnSuccessListener { result ->
                     continuation.resume(true)
@@ -61,7 +61,7 @@ class UserRemoteDatasourceImpl @Inject constructor(
 
         return suspendCancellableCoroutine { continuation ->
 
-            firestore.collection(userTable).document(uid).collection(public).document(uid)
+            firestore.collection(userTable).document(uid)
                 .get()
                 .addOnSuccessListener { result ->
                     if (result != null && result.exists()) {
@@ -80,11 +80,35 @@ class UserRemoteDatasourceImpl @Inject constructor(
         }
     }
 
-    override suspend fun getProfilePrivate(uid: String): ProfilePrivate? {
+    override suspend fun getProfilePublicWithMail(hashMail: String): ProfilePublic? {
 
         return suspendCancellableCoroutine { continuation ->
 
-            firestore.collection(userTable).document(uid).collection(private).document(uid)
+            firestore.collection(userTable).whereEqualTo(ProfilePublic::hashMail.name, hashMail)
+                .limit(1)
+                .get()
+                .addOnSuccessListener { result ->
+                    if (!result.isEmpty) {
+                        val profile = result.first().toObject(ProfilePublic::class.java)
+                        if (profile != null) {
+                            continuation.resume(profile)
+                        } else {
+                            continuation.resumeWithException(Exception("User parse error uid:$hashMail"))
+                        }
+                    } else {
+                        continuation.resume(null)
+                    }
+                }.addOnFailureListener { e ->
+                    continuation.resumeWithException(Exception(e))
+                }
+        }
+    }
+
+    override suspend fun getProfilePrivate(userId: String): ProfilePrivate? {
+
+        return suspendCancellableCoroutine { continuation ->
+
+            firestore.collection(userTable).document(userId).collection(private).document(private)
                 .get()
                 .addOnSuccessListener { result ->
                     if (result != null && result.exists()) {
@@ -92,7 +116,7 @@ class UserRemoteDatasourceImpl @Inject constructor(
                         if (profile != null) {
                             continuation.resume(profile)
                         } else {
-                            continuation.resumeWithException(Exception("User parse error uid:$uid"))
+                            continuation.resumeWithException(Exception("User parse error uid:$userId"))
                         }
                     } else {
                         continuation.resume(null)

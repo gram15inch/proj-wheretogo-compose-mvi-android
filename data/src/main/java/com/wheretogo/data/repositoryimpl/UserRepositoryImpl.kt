@@ -3,13 +3,15 @@ package com.wheretogo.data.repositoryimpl
 import com.wheretogo.data.datasource.UserLocalDatasource
 import com.wheretogo.data.datasource.UserRemoteDatasource
 import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
+import com.wheretogo.data.toProfile
+import com.wheretogo.data.toProfilePublic
 import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.UserNotExistException
+import com.wheretogo.domain.feature.hashSha256
 import com.wheretogo.domain.model.map.History
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePrivate
-import com.wheretogo.domain.model.user.ProfilePublic
-import com.wheretogo.domain.model.user.SignResponse
+import com.wheretogo.domain.model.user.UserResponse
 import com.wheretogo.domain.repository.UserRepository
 import com.wheretogo.domain.toHistory
 import kotlinx.coroutines.async
@@ -17,6 +19,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class UserRepositoryImpl @Inject constructor(
@@ -90,9 +93,13 @@ class UserRepositoryImpl @Inject constructor(
         return userLocalDatasource.getProfileFlow()
     }
 
-    override suspend fun getPublicProfile(userId: String): ProfilePublic? {
+    override suspend fun getProfile(userId: String): Profile? {
         userId.isEmpty().let { if (it) throw UserNotExistException("inValid userId: $userId") }
-        return userRemoteDatasource.getProfilePublic(userId)
+        return coroutineScope {
+            val public = async { userRemoteDatasource.getProfilePublic(userId) }
+            val private = async { userRemoteDatasource.getProfilePrivate(userId) ?: ProfilePrivate() }
+            public.await()?.toProfile()?.copy(private = private.await())
+        }
     }
 
     override suspend fun getProfilePrivate(userId: String): ProfilePrivate? {
@@ -102,8 +109,8 @@ class UserRepositoryImpl @Inject constructor(
     override suspend fun setProfile(profile: Profile): Boolean {
         val userId = profile.uid
         userId.isEmpty().let { if (it) throw UserNotExistException("inValid userId: $userId") }
-        if (userRemoteDatasource.setProfilePrivate(profile.uid, profile.private)
-            && userRemoteDatasource.setProfilePublic(profile.uid, profile.public)
+        if (userRemoteDatasource.setProfilePublic(profile.toProfilePublic())
+            && userRemoteDatasource.setProfilePrivate(profile.uid, profile.private)
         ) {
             userLocalDatasource.setProfile(profile)
             return true
@@ -125,47 +132,52 @@ class UserRepositoryImpl @Inject constructor(
         userLocalDatasource.setHistory(history)
     }
 
-    override suspend fun signUp(profile: Profile): SignResponse {
+    override suspend fun createUser(profile: Profile): UserResponse {
         return if (setProfile(profile)) {
-            SignResponse(SignResponse.Status.Success, profile)
+            UserResponse(UserResponse.Status.Success, profile)
         } else {
-            SignResponse(SignResponse.Status.Fail)
+            UserResponse(UserResponse.Status.Fail)
         }
     }
 
-    override suspend fun signIn(uid: String): SignResponse {
+    override suspend fun syncUser(uid: String): UserResponse {
         return coroutineScope {
-            val public = async { userRemoteDatasource.getProfilePublic(uid) }
-            val private = async { userRemoteDatasource.getProfilePrivate(uid) }
-            val newProfile = Profile(
-                uid = uid,
-                public = public.await() ?: return@coroutineScope SignResponse(
-                    status = SignResponse.Status.Fail,
-                    msg = "프로필 로드 에러 [public]"
-                ),
-                private = private.await() ?: return@coroutineScope SignResponse(
-                    status = SignResponse.Status.Fail,
-                    msg = "프로필 로드 에러 [private]"
-                )
-            )
+            val profile = getProfile(uid)
+                ?: return@coroutineScope UserResponse(
+                     status = UserResponse.Status.Fail,
+                     msg = "프로필 로드 에러"
+                 )
+            val newPrivate = profile.private.copy(lastVisited = System.currentTimeMillis()).apply {
+                launch { userRemoteDatasource.setProfilePrivate(uid,this@apply) }
+            }
+            val newProfile = profile.copy(private = newPrivate)
             val history = async { getRemoteHistory(uid) }
-            setProfile(newProfile)
+            userLocalDatasource.setProfile(newProfile)
             setLocalHistory(history.await())
-            SignResponse(SignResponse.Status.Success, newProfile)
+            UserResponse(UserResponse.Status.Success, profile)
         }
     }
 
 
-    override suspend fun signOut(): SignResponse {
+    override suspend fun clearUser(): UserResponse {
         userLocalDatasource.clearUser()
-        return SignResponse(SignResponse.Status.Success)
+        return UserResponse(UserResponse.Status.Success)
     }
 
     override suspend fun deleteUser(userId: String): Boolean {
         return if (userRemoteDatasource.deleteProfile(userId)) {
-            signOut()
+            clearUser()
             true
         } else
             false
+    }
+
+    override suspend fun checkUser(mail: String): UserResponse {
+        val hashMail = hashSha256(mail)
+        val public = userRemoteDatasource.getProfilePublicWithMail(hashMail)
+        return if(public!=null)
+                UserResponse(UserResponse.Status.Success, public.toProfile())
+            else
+                UserResponse(UserResponse.Status.Fail, msg = "프로필 없음")
     }
 }

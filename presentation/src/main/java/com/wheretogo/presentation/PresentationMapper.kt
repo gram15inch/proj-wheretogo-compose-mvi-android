@@ -121,6 +121,9 @@ fun parseLogoImgRes(company: String): Int {
         AuthCompany.GOOGLE -> {
             R.drawable.ic_heart
         }
+        else->{
+            R.drawable.lg_app
+        }
     }
 }
 

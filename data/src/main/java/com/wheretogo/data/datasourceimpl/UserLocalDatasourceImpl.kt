@@ -12,7 +12,6 @@ import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.model.map.History
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePrivate
-import com.wheretogo.domain.model.user.ProfilePublic
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -24,6 +23,7 @@ class UserLocalDatasourceImpl @Inject constructor(
 
     private val uid = stringPreferencesKey("uid_profile")
     private val mail = stringPreferencesKey("mail_profile")
+    private val hashMail = stringPreferencesKey("hashmail_profile")
     private val name = stringPreferencesKey("name_profile")
     private val authCompany = stringPreferencesKey("authCompany_profile")
     private val lastVisitedDate = longPreferencesKey("lastVisitedDate_profile")
@@ -87,7 +87,8 @@ class UserLocalDatasourceImpl @Inject constructor(
     override suspend fun setProfile(profile: Profile) {
         userDataStore.edit { preferences ->
             preferences[uid] = profile.uid
-            preferences[name] = profile.public.name
+            preferences[name] = profile.name
+            preferences[hashMail] = profile.hashMail
             preferences[mail] = profile.private.mail
             preferences[authCompany] = profile.private.authCompany
             preferences[lastVisitedDate] = profile.private.lastVisited
@@ -116,16 +117,15 @@ class UserLocalDatasourceImpl @Inject constructor(
         return userDataStore.data.map { preferences ->
             Profile(
                 uid = (preferences[uid] ?: ""),
-                public = ProfilePublic(
-                    name = preferences[name] ?: ""
-                ),
+                name = (preferences[name] ?: ""),
+                hashMail = (preferences[hashMail] ?: ""),
                 private = ProfilePrivate(
                     mail = (preferences[mail] ?: ""),
                     authCompany = preferences[authCompany] ?: "",
                     lastVisited = preferences[lastVisitedDate] ?: 0L,
                     accountCreation = preferences[accountCreationDate] ?: 0L,
                     isAdRemove = preferences[isAdRemove] ?: false
-                ),
+                )
             )
         }
     }

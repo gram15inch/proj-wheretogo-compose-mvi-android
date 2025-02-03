@@ -5,11 +5,11 @@ import com.wheretogo.data.model.course.DataMetaCheckPoint
 import com.wheretogo.data.model.course.RemoteCourse
 import com.wheretogo.data.toRemoteCourse
 import com.wheretogo.domain.AuthCompany
+import com.wheretogo.domain.feature.hashSha256
 import com.wheretogo.domain.model.dummy.getCourseDummy
 import com.wheretogo.domain.model.map.History
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePrivate
-import com.wheretogo.domain.model.user.ProfilePublic
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,9 +28,8 @@ class MockModelModule {
             token = "token1",
             profile = Profile(
                 uid = "mockUid1",
-                public = ProfilePublic(
-                    name = "mockUser1"
-                ),
+                name = "mockUser1",
+                hashMail = hashSha256("user1@gmail.com"),
                 private = ProfilePrivate(
                     mail = "user1@gmail.com",
                     authCompany = AuthCompany.GOOGLE.name

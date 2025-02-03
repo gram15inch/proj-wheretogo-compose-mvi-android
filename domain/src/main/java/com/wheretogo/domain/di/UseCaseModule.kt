@@ -28,7 +28,6 @@ import com.wheretogo.domain.usecase.user.UserProfileUpdateUseCase
 import com.wheretogo.domain.usecase.user.UserSignInUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
 import com.wheretogo.domain.usecase.user.UserSignUpAndSignInUseCase
-import com.wheretogo.domain.usecase.user.UserSignUpUseCase
 import com.wheretogo.domain.usecaseimpl.FetchJourneyWithoutPointsUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.community.AddCommentToCheckPointUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.community.GetCommentForCheckPointUseCaseImpl
@@ -57,7 +56,6 @@ import com.wheretogo.domain.usecaseimpl.user.UserProfileUpdateUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.UserSignInUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.UserSignOutUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.UserSignUpAndSignInUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.user.UserSignUpUseCaseImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -76,9 +74,6 @@ abstract class UseCaseModule {
 
     @Binds
     abstract fun bindUserSignInUseCase(useCaseImpl: UserSignInUseCaseImpl): UserSignInUseCase
-
-    @Binds
-    abstract fun bindUserSignUpUseCase(useCaseImpl: UserSignUpUseCaseImpl): UserSignUpUseCase
 
     @Binds
     abstract fun bindUserSignOutUseCase(useCaseImpl: UserSignOutUseCaseImpl): UserSignOutUseCase
