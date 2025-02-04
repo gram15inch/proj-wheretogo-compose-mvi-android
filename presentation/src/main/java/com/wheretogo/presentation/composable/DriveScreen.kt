@@ -38,12 +38,13 @@ import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.naver.maps.map.overlay.Marker
+import com.wheretogo.presentation.BuildConfig
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.content.CheckPointAddContent
 import com.wheretogo.presentation.composable.content.DelayLottieAnimation
 import com.wheretogo.presentation.composable.content.DescriptionTextField
 import com.wheretogo.presentation.composable.content.DriveBottomSheet
-import com.wheretogo.presentation.composable.content.DriveList
+import com.wheretogo.presentation.composable.content.DriveListContent
 import com.wheretogo.presentation.composable.content.FadeAnimation
 import com.wheretogo.presentation.composable.content.FloatingButtons
 import com.wheretogo.presentation.composable.content.InfoContent
@@ -64,8 +65,8 @@ fun DriveScreen(
     viewModel: DriveViewModel = hiltViewModel()
 ) {
     val state by viewModel.driveScreenState.collectAsState()
-    val isWideSize = screenSize(true) > 650.dp
     val context = LocalContext.current
+    val isWideSize = screenSize(true) > 650.dp
     val coroutineScope = rememberCoroutineScope()
     BackHandler {
         navController.navigateUp()
@@ -76,11 +77,12 @@ fun DriveScreen(
             .fillMaxWidth()
             .zIndex(1f)
     ) {
-        Text(
-            modifier = Modifier.align(alignment = Alignment.TopStart),
-            text = "${state.mapState.mapOverlayGroup.size}",
-            fontSize = 50.sp
-        )
+        if(BuildConfig.DEBUG)
+            Text(
+                modifier = Modifier.align(alignment = Alignment.TopStart),
+                text = "${state.mapState.mapOverlayGroup.size}",
+                fontSize = 50.sp
+            )
         DelayLottieAnimation(
             modifier = Modifier
                 .size(50.dp)
@@ -89,7 +91,6 @@ fun DriveScreen(
             isVisible = state.isLoading,
             delay = 300
         )
-
     }
 
     NaverMap(
@@ -116,9 +117,7 @@ fun DriveScreen(
         onOverlayRenderComplete = { isRendered ->
             viewModel.handleIntent(DriveScreenIntent.OverlayRenderComplete(isRendered))
         },
-        contentPadding = ContentPadding(
-            bottom = 100.dp
-        )
+        contentPadding = ContentPadding()
     )
 
     FadeAnimation(visible = state.popUpState.isVisible) {
@@ -140,7 +139,7 @@ fun DriveScreen(
                     .align(alignment = Alignment.BottomEnd),
                 visible = state.listState.isVisible
             ) {
-                DriveList(
+                DriveListContent(
                     modifier = Modifier
                         .align(alignment = Alignment.BottomCenter)
                         .padding(horizontal = 12.dp),
@@ -150,6 +149,9 @@ fun DriveScreen(
                     },
                     onBookmarkClick = {
                         viewModel.handleIntent(DriveScreenIntent.DriveListItemBookmarkClick(it))
+                    },
+                    onHeightPxChange = {
+
                     }
                 )
             }

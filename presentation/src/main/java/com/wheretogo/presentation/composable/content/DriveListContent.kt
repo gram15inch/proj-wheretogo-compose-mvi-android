@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -51,7 +52,7 @@ import com.wheretogo.presentation.toStrRes
 @Preview
 @Composable
 fun DriveListPreview() {
-    DriveList(
+    DriveListContent(
         modifier = Modifier,
         listOf(ListItemState(
             course = Course(
@@ -59,35 +60,41 @@ fun DriveListPreview() {
             )
         )),
         onItemClick = {},
-        onBookmarkClick = {}
+        onBookmarkClick = {},
+        onHeightPxChange = {}
     )
 }
 
 @Composable
-fun DriveList(
+fun DriveListContent(
     modifier: Modifier,
     listItemGroup: List<ListItemState>,
     onItemClick: (ListItemState) -> Unit,
     onBookmarkClick: (ListItemState) -> Unit,
+    onHeightPxChange: (Int) -> Unit
 ) {
     val listState = rememberLazyListState()
-    LazyColumn(
-        modifier = modifier.heightIn(max = 280.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
-        state = listState
-    ) {
-        items(listItemGroup) { item ->
-            DriveListItem(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(16.dp))
-                    .clickable {
-                        onItemClick(item)
-                    },
-                listItem = item,
-                onBookmarkClick = onBookmarkClick
-            )
+    Box(modifier.onSizeChanged { size ->
+        onHeightPxChange(size.height)
+    }){
+        LazyColumn(
+            modifier = modifier.heightIn(max = 280.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+            state = listState
+        ) {
+            items(listItemGroup) { item ->
+                DriveListItem(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable {
+                            onItemClick(item)
+                        },
+                    listItem = item,
+                    onBookmarkClick = onBookmarkClick
+                )
+            }
+            item { Spacer(modifier = Modifier.height(1.dp)) }
         }
-        item { Spacer(modifier = Modifier.height(1.dp)) }
     }
 }
 
@@ -98,6 +105,11 @@ fun DriveListItem(
     onBookmarkClick: (ListItemState) -> Unit
 ) {
     AnimatedVisibility(
+        modifier = Modifier.shadow(
+            elevation = 1.dp,
+            shape = RoundedCornerShape(16.dp),
+            clip = false
+        ),
         visible = true,
         enter = slideInHorizontally(initialOffsetX = { fullWidth -> fullWidth }) + fadeIn(),
         exit = fadeOut() + shrinkHorizontally()
@@ -105,11 +117,6 @@ fun DriveListItem(
         Box(
             modifier = modifier
                 .fillMaxWidth()
-                .shadow(
-                    elevation = 2.dp,
-                    shape = RoundedCornerShape(16.dp),
-                    clip = false
-                )
                 .background(White100)
                 .padding(8.dp)
         ) {

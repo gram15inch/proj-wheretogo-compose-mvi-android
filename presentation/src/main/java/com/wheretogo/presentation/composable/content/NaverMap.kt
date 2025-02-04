@@ -69,6 +69,8 @@ fun NaverMap(
                         isLocationButtonEnabled = true
                         isZoomControlEnabled = false
                         naverMap.minZoom = 8.0
+                        logoGravity = 2
+                        setLogoMargin(20,100,0,0)
                     }
 
                     addOnLocationChangeListener { location ->

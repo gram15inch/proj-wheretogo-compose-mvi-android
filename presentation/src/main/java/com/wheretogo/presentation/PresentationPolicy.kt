@@ -24,3 +24,7 @@ enum class CheckPointAddError{
 enum class ViewModelEvent{
     NAVIGATION, TOAST
 }
+
+enum class ExportMap{
+    NAVER, KAKAO, SKT
+}

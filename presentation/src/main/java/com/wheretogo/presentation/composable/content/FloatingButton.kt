@@ -41,11 +41,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.skt.Tmap.TMapTapi
 import com.wheretogo.domain.model.map.Course
+import com.wheretogo.presentation.ExportMap
 import com.wheretogo.presentation.R
-import com.wheretogo.presentation.feature.CallTMap
-import com.wheretogo.presentation.feature.callNaverMap
+import com.wheretogo.presentation.feature.callMap
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 
 @Preview
@@ -149,15 +148,15 @@ fun FloatingButtons(
                         isBackPlate = isExportBackPlate && isExportVisible,
                         buttonEndPadding = buttonEndPadding,
                         onNaverClick = {
-                            context.callNaverMap(course)
+                            context.callMap(ExportMap.NAVER, course)
                             onExportMapClick()
                         },
                         onKaKaoClick = {
-                            //todo 구현
+                            context.callMap(ExportMap.KAKAO, course)
                             onExportMapClick()
                         },
                         onTClick = {
-                            TMapTapi(context).CallTMap(course)
+                            context.callMap(ExportMap.SKT, course)
                             onExportMapClick()
                         },
                     ) {
