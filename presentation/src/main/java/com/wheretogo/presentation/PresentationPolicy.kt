@@ -1,6 +1,8 @@
 package com.wheretogo.presentation
 
+import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import com.wheretogo.domain.CourseDetail
 
 enum class CommentType(@StringRes val typeRes: Int) {
     ONE(R.string.oneline_review), DETAIL(R.string.detail_review)
@@ -27,4 +29,25 @@ enum class ViewModelEvent{
 
 enum class ExportMap{
     NAVER, KAKAO, SKT
+}
+
+enum class MarkerIconType(@DrawableRes val res: Int) {
+    DEFAULT(R.drawable.ic_mk_df),
+    CAR(R.drawable.ic_mk_cr),
+    RACING(R.drawable.ic_mk_sp),
+    TRAINING(R.drawable.ic_mk_bg),
+    PHOTO(R.drawable.ic_mk_cm)
+}
+
+fun getCourseIconType(courseType:String):MarkerIconType{
+    return  try {
+        when(CourseDetail.fromCode(courseType)){
+            CourseDetail.DRIVE->{ MarkerIconType.CAR }
+            CourseDetail.SPORT->{  MarkerIconType.RACING  }
+            CourseDetail.TRAINING->{ MarkerIconType.TRAINING}
+            else->{  MarkerIconType.DEFAULT }
+        }
+    }catch (e:Exception){
+        MarkerIconType.DEFAULT
+    }
 }

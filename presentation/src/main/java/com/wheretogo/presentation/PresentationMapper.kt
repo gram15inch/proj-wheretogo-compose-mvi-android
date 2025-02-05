@@ -73,7 +73,7 @@ fun RouteWaypointItemState.toRouteWaypointItem(): RouteWaypointItem {
 
 fun RouteDetailType.toStrRes(): Int {
     return when (this) {
-        RouteDetailType.TAG -> R.string.category
+        RouteDetailType.TYPE -> R.string.category
         RouteDetailType.LEVEL -> R.string.level
         RouteDetailType.RECOMMEND -> R.string.recommend
         else -> R.string.unknown
@@ -82,7 +82,7 @@ fun RouteDetailType.toStrRes(): Int {
 
 fun CourseDetail.toStrRes(): Int {
     return when (this.type) {
-        RouteDetailType.TAG -> {
+        RouteDetailType.TYPE -> {
             when (this) {
                 CourseDetail.DRIVE -> R.string.drive
                 CourseDetail.SPORT -> R.string.sports

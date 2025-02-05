@@ -25,11 +25,13 @@ import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapView
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.overlay.Overlay
+import com.naver.maps.map.overlay.OverlayImage
 import com.naver.maps.map.util.FusedLocationSource
 import com.wheretogo.domain.OverlayType
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.Viewport
 import com.wheretogo.presentation.CameraStatus
+import com.wheretogo.presentation.MarkerIconType
 import com.wheretogo.presentation.feature.geo.distanceTo
 import com.wheretogo.presentation.model.ContentPadding
 import com.wheretogo.presentation.model.MapOverlay
@@ -48,7 +50,7 @@ fun NaverMap(
     cameraState: CameraState = CameraState(),
     onMapAsync: (NaverMap) -> Unit = {},
     onLocationMove: (LatLng) -> Unit = {},
-    onCameraMove: (CameraState) -> Unit = { a -> },
+    onCameraMove: (CameraState) -> Unit = {},
     onMapClickListener: (LatLng) -> Unit = {},
     onCourseMarkerClick: (Overlay) -> Unit = {},
     onCheckPointMarkerClick: (Overlay) -> Unit = {},
@@ -139,23 +141,30 @@ fun NaverMap(
                             if (it.position.latitude.toString() != "NaN") {
                                 isRendered = true
                                 it.map = naverMap
-                                it.setOnClickListener { marker ->
-                                    when (overlay.type) {
-                                        OverlayType.CHECKPOINT -> {
-                                            onCheckPointMarkerClick(marker)
+                                when (overlay.overlayType) {
+                                    OverlayType.CHECKPOINT -> {
+                                        if(overlay.iconType!= MarkerIconType.DEFAULT)
+                                            it.icon =  OverlayImage.fromResource(overlay.iconType.res)
+                                        it.setOnClickListener {
+                                            onCheckPointMarkerClick(it)
+                                            true
                                         }
-
-                                        OverlayType.COURSE -> {
-                                            onCourseMarkerClick(marker)
-                                        }
-
-                                        else -> {}
                                     }
-                                    true
+
+                                    OverlayType.COURSE -> {
+                                        it.icon =  OverlayImage.fromResource(overlay.iconType.res)
+                                        it.setOnClickListener {
+                                            onCourseMarkerClick(it)
+                                            true
+                                        }
+
+                                    }
+                                    else->{}
                                 }
                             }
                         }
                     }
+
                     val path = async {
                         overlay.path?.apply {
                             if (coords.isNotEmpty()) {

@@ -11,7 +11,7 @@ data class Course(
     val checkpointIdGroup: List<String> = emptyList(), // 주입
     val points: List<LatLng> = emptyList(),
     val duration: String = "",
-    val tag: String = "",
+    val type: String = "",
     val level: String = "",
     val relation: String = "",
     val cameraLatLng: LatLng = LatLng(),

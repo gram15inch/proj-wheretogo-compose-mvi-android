@@ -4,6 +4,7 @@ import com.wheretogo.data.datasourceimpl.CourseRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.RouteRemoteDatasourceImpl
 import com.wheretogo.data.model.course.RemoteCourse
 import com.wheretogo.data.model.route.RemoteRoute
+import com.wheretogo.domain.model.dummy.getCourseDummy
 import com.wheretogo.domain.model.map.LatLng
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -61,24 +62,24 @@ class RouteTest {
     }
 
 
-    /*    @Test
-        fun initRouteByNaverTest(): Unit = runBlocking {
-            val datasource = routeRemoteDatasourceImpl
+    /*@Test
+    fun initRouteByNaverTest(): Unit = runBlocking {
+        val datasource = routeRemoteDatasourceImpl
 
-            val rtGroup = listOf(getCourseDummy()).first().map {
-                RemoteRoute(
-                    courseId = it.courseId,
-                    points = datasource.getRouteByNaver(it.waypoints).points
-                )
-            }
+        val rtGroup = getCourseDummy().map {
+            RemoteRoute(
+                courseId = it.courseId,
+                points = datasource.getRouteByNaver(it.waypoints).points
+            )
+        }
 
-            assertEquals(true, rtGroup.first().points.isNotEmpty())
-            rtGroup.forEach {
-                assertEquals(true, datasource.setRouteInCourse(it))
-            }
+        assertEquals(true, rtGroup.first().points.isNotEmpty())
+        rtGroup.forEach {
+            assertEquals(true, datasource.setRouteInCourse(it))
+        }
 
-            rtGroup.forEachIndexed { idx, route ->
-                assertEquals(route, datasource.getRouteInCourse(route.courseId))
-            }
-        }*/
+        rtGroup.forEachIndexed { idx, route ->
+            assertEquals(route, datasource.getRouteInCourse(route.courseId))
+        }
+    }*/
 }

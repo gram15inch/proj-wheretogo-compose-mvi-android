@@ -267,7 +267,7 @@ fun ProfileSection(
             Box(modifier = Modifier.padding(start = 3.dp, top = 6.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Image(
-                        modifier = Modifier.size(17.dp),
+                        modifier = Modifier.size(17.dp).clip(CircleShape),
                         painter = painterResource(parseLogoImgRes(authCompany)),
                         contentDescription = ""
                     )

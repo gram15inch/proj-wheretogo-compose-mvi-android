@@ -6,7 +6,7 @@ import com.wheretogo.domain.RouteDetailType
 
 data class RouteDetailItem(
     val code: String = CourseDetail.DRIVE.code,
-    val type: RouteDetailType = RouteDetailType.TAG,
+    val type: RouteDetailType = RouteDetailType.TYPE,
     val emogi: String = "",
     @StringRes
     val strRes: Int = 0,

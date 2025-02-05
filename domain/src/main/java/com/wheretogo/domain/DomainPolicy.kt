@@ -27,16 +27,15 @@ enum class ReportType {
 }
 
 enum class RouteDetailType(val code: Int) {
-    UNKNOWN(100), TAG(101), LEVEL(102), RECOMMEND(104)
+    UNKNOWN(100), TYPE(101), LEVEL(102), RECOMMEND(104)
 }
-
 
 enum class CourseDetail(val code: String, val type: RouteDetailType) {
     NONE("none", RouteDetailType.UNKNOWN),
 
-    DRIVE("${RouteDetailType.TAG}-0001", RouteDetailType.TAG),
-    SPORT("${RouteDetailType.TAG}-0002", RouteDetailType.TAG),
-    TRAINING("${RouteDetailType.TAG}-0003", RouteDetailType.TAG),
+    DRIVE("${RouteDetailType.TYPE}-0001", RouteDetailType.TYPE),
+    SPORT("${RouteDetailType.TYPE}-0002", RouteDetailType.TYPE),
+    TRAINING("${RouteDetailType.TYPE}-0003", RouteDetailType.TYPE),
 
     BEGINNER("${RouteDetailType.LEVEL}-0001", RouteDetailType.LEVEL),
     LOVER("${RouteDetailType.LEVEL}-0002", RouteDetailType.LEVEL),
@@ -73,5 +72,5 @@ enum class AuthType{
 }
 
 
-class UserNotExistException(message: String) : NoSuchElementException(message)
 
+class UserNotExistException(message: String) : NoSuchElementException(message)

@@ -154,7 +154,7 @@ fun DriveListItem(
                     driveItemAttribute(
                         modifier = Modifier.weight(1f),
                         content = stringResource(
-                            CourseDetail.fromCode(listItem.course.tag).toStrRes()
+                            CourseDetail.fromCode(listItem.course.type).toStrRes()
                         ),
                         type = "태그"
                     )

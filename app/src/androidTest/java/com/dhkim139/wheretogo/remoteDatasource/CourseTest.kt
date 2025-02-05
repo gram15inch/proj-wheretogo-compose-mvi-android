@@ -2,7 +2,10 @@ package com.dhkim139.wheretogo.remoteDatasource
 
 import android.util.Log
 import com.wheretogo.data.datasourceimpl.CourseRemoteDatasourceImpl
+import com.wheretogo.data.model.course.DataMetaCheckPoint
 import com.wheretogo.data.model.course.RemoteCourse
+import com.wheretogo.data.toRemoteCourse
+import com.wheretogo.domain.model.dummy.getCourseDummy
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.runBlocking
@@ -61,22 +64,21 @@ class CourseTest {
         assertEquals(null, datasource.getCourse(local.courseId))
     }
 
-    /*    @Test
-        fun courseInit(): Unit = runBlocking {
-            val courseGroup = getCourseDummy()
-            courseGroup.forEach { course ->
-                val r = datasource.setCourse(
-                    course.toRemoteCourse().copy(
-                        dataMetaCheckPoint = DataMetaCheckPoint(
-                            course.checkpointIdGroup,
-                            timeStamp = System.currentTimeMillis()
-                        )
+    /*@Test
+    fun courseInit(): Unit = runBlocking {
+        val courseGroup = getCourseDummy()
+        courseGroup.forEach { course ->
+            val r = datasource.setCourse(
+                course.toRemoteCourse().copy(
+                    dataMetaCheckPoint = DataMetaCheckPoint(
+                        course.checkpointIdGroup,
+                        timeStamp = System.currentTimeMillis()
                     )
                 )
-                assertEquals(true, r)
-            }
-            val cs1 = courseGroup.first()
-            assertEquals(cs1.courseId, datasource.getCourse(cs1.courseId)!!.courseId)
-        }*/
-
+            )
+            assertEquals(true, r)
+        }
+        val cs1 = courseGroup.first()
+        assertEquals(cs1.courseId, datasource.getCourse(cs1.courseId)!!.courseId)
+    }*/
 }

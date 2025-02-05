@@ -14,7 +14,7 @@ data class RemoteCourse(
     val waypoints: List<LatLng> = emptyList(),
     val dataMetaCheckPoint: DataMetaCheckPoint = DataMetaCheckPoint(),
     val duration: String = "",
-    val tag: String = "",
+    val type: String = "",
     val level: String = "",
     val relation: String = "",
     val cameraLatLng: LatLng = LatLng(),

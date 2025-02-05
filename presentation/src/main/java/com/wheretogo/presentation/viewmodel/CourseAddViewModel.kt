@@ -102,7 +102,7 @@ class CourseAddViewModel @Inject constructor(
                     }
                     val newMapOverlay = MapOverlay(
                         overlayId = "",
-                        type = OverlayType.COURSE,
+                        overlayType = OverlayType.COURSE,
                         path = newPath,
                         markerGroup = newMarkerGroup
                     )
@@ -143,7 +143,7 @@ class CourseAddViewModel @Inject constructor(
 
             val newMapOverlay = MapOverlay(
                 overlayId = "",
-                type = OverlayType.COURSE,
+                overlayType = OverlayType.COURSE,
                 path = newPath,
                 markerGroup = newMarkerGroup
             )
@@ -195,7 +195,7 @@ class CourseAddViewModel @Inject constructor(
                 }
                 val newMapOverlay = MapOverlay(
                     overlayId = "",
-                    type = OverlayType.COURSE,
+                    overlayType = OverlayType.COURSE,
                     path = newPath,
                     markerGroup = newMarkerGroup
                 )
@@ -289,7 +289,7 @@ class CourseAddViewModel @Inject constructor(
             }
 
             val isDetailDone = newDetailItemGroup.filter { it.isClick }.map { it.data.type }.run {
-                this.contains(RouteDetailType.TAG) &&
+                this.contains(RouteDetailType.TYPE) &&
                         this.contains(RouteDetailType.LEVEL) &&
                         this.contains(RouteDetailType.RECOMMEND)
             }
@@ -310,7 +310,7 @@ class CourseAddViewModel @Inject constructor(
                         waypoints = waypoints,
                         points = routeState.points,
                         duration = (routeState.duration / 60000).toString(),
-                        tag = detailItemStateGroup.filter { it.data.type == RouteDetailType.TAG }
+                        type = detailItemStateGroup.filter { it.data.type == RouteDetailType.TYPE }
                             .firstOrNull() { it.isClick }?.data!!.code,
                         level = detailItemStateGroup.filter { it.data.type == RouteDetailType.LEVEL }
                             .firstOrNull() { it.isClick }?.data!!.code,

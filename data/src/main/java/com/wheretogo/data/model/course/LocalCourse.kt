@@ -24,7 +24,7 @@ data class LocalCourse(
     val route: List<LatLng> = emptyList(),
     val localMetaCheckPoint: DataMetaCheckPoint = DataMetaCheckPoint(),
     val duration: String = "",
-    val tag: String = "",
+    val type: String = "",
     val level: String = "",
     val relation: String = "",
     val cameraLatLng: LatLng = LatLng(),

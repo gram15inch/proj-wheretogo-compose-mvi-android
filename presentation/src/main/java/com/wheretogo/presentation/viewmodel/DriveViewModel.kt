@@ -38,6 +38,7 @@ import com.wheretogo.domain.usecase.user.RemoveHistoryUseCase
 import com.wheretogo.domain.usecase.user.UpdateHistoryUseCase
 import com.wheretogo.presentation.CheckPointAddError
 import com.wheretogo.presentation.CommentType
+import com.wheretogo.presentation.MarkerIconType
 import com.wheretogo.presentation.feature.geo.distanceTo
 import com.wheretogo.presentation.feature.naver.getMapOverlay
 import com.wheretogo.presentation.intent.DriveScreenIntent
@@ -502,7 +503,8 @@ class DriveViewModel @Inject constructor(
                 })
                 val newMapOverlay = MapOverlay(
                     overlayId = "new",
-                    type = OverlayType.CHECKPOINT,
+                    overlayType = OverlayType.CHECKPOINT,
+                    iconType = MarkerIconType.PHOTO,
                     markerGroup = newMarker
                 )
                 copy(
@@ -596,7 +598,6 @@ class DriveViewModel @Inject constructor(
                     tag = "${newLatlng.latitude}${newLatlng.latitude}"
                 }
                 val newMapOverlay = addMarker.copy(
-                    type = OverlayType.COURSE,
                     markerGroup = listOf(newMarker)
                 )
                 copy(
@@ -972,7 +973,7 @@ class DriveViewModel @Inject constructor(
 
     private fun Set<MapOverlay>.hideCourseMapOverlayWithout(withoutOverlyId: String) {
         onEach {
-            if (OverlayType.COURSE == it.type)
+            if (OverlayType.COURSE == it.overlayType)
                 if (it.overlayId != withoutOverlyId) {
                     it.markerGroup.forEach { it.isVisible = false }
                     it.path?.isVisible = false

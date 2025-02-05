@@ -5,22 +5,22 @@ import com.wheretogo.domain.RouteDetailType
 import com.wheretogo.domain.model.map.RouteDetailItem
 import com.wheretogo.presentation.R
 
-private val routeTAGGroup = listOf(
+private val routeTypeGroup = listOf(
     RouteDetailItem(
         code = CourseDetail.DRIVE.code,
-        type = RouteDetailType.TAG,
+        type = RouteDetailType.TYPE,
         emogi = "\uD83D\uDCCD",
         strRes = R.string.drive
     ),
     RouteDetailItem(
         code = CourseDetail.SPORT.code,
-        type = RouteDetailType.TAG,
+        type = RouteDetailType.TYPE,
         emogi = "\uD83C\uDFCE\uFE0F",
         strRes = R.string.sports
     ),
     RouteDetailItem(
         code = CourseDetail.TRAINING.code,
-        type = RouteDetailType.TAG,
+        type = RouteDetailType.TYPE,
         emogi = "\uD83D\uDD30",
         strRes = R.string.training
     )
@@ -79,6 +79,6 @@ private val routeRecommendGroup = listOf(
 )
 
 fun getRouteDetailItemGroup() =
-    routeTAGGroup +
+    routeTypeGroup +
     routeLevelGroup +
     routeRecommendGroup

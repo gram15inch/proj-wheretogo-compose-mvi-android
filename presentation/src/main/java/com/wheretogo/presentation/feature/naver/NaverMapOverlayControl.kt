@@ -15,6 +15,8 @@ import com.naver.maps.map.overlay.PathOverlay
 import com.wheretogo.domain.OverlayType
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.Course
+import com.wheretogo.presentation.MarkerIconType
+import com.wheretogo.presentation.getCourseIconType
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.OverlayTag
 import com.wheretogo.presentation.toNaver
@@ -27,6 +29,7 @@ fun getMapOverlay(item: Course): MapOverlay {
     return MapOverlay(
         overlayTag.overlayId,
         overlayTag.type,
+        getCourseIconType(item.type),
         listOf(Marker().apply {
             this.captionText = item.courseName
             this.setCaptionAligns(Align.Top, Align.Right)
@@ -53,6 +56,7 @@ fun getMapOverlay(courseId: String, item: CheckPoint): MapOverlay {
     return MapOverlay(
         overlayTag.overlayId,
         overlayTag.type,
+        MarkerIconType.DEFAULT,
         listOf(Marker().apply {
             this.captionText = item.titleComment
             this.setCaptionAligns(Align.Top, Align.Right)
