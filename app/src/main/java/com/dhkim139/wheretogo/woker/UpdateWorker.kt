@@ -4,20 +4,16 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.wheretogo.domain.usecase.map.FetchJourneyWithoutPointsUseCase
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
 @HiltWorker
-class JourneyUpdateWorker @AssistedInject constructor(
+class UpdateWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
-    private val fetchJourneyWithoutPointsUseCase: FetchJourneyWithoutPointsUseCase
 ) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
         return try {
-            //todo 권한 확인 추가
-            fetchJourneyWithoutPointsUseCase()
             Result.success()
         } catch (e: Exception) {
             Result.failure()

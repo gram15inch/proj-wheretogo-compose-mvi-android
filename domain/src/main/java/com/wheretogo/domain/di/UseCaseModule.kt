@@ -15,7 +15,6 @@ import com.wheretogo.domain.usecase.community.ReportCourseUseCase
 import com.wheretogo.domain.usecase.map.AddCheckpointToCourseUseCase
 import com.wheretogo.domain.usecase.map.AddCourseUseCase
 import com.wheretogo.domain.usecase.map.CreateRouteUseCase
-import com.wheretogo.domain.usecase.map.FetchJourneyWithoutPointsUseCase
 import com.wheretogo.domain.usecase.map.GetCheckpointForMarkerUseCase
 import com.wheretogo.domain.usecase.map.GetImageForPopupUseCase
 import com.wheretogo.domain.usecase.map.GetNearByCourseUseCase
@@ -28,7 +27,6 @@ import com.wheretogo.domain.usecase.user.UserProfileUpdateUseCase
 import com.wheretogo.domain.usecase.user.UserSignInUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
 import com.wheretogo.domain.usecase.user.UserSignUpAndSignInUseCase
-import com.wheretogo.domain.usecaseimpl.FetchJourneyWithoutPointsUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.community.AddCommentToCheckPointUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.community.GetCommentForCheckPointUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.community.GetImageInfoUseCaseImpl
@@ -68,9 +66,6 @@ abstract class UseCaseModule {
 
     @Binds
     abstract fun bindGetNearByJourneyUseCase(useCaseImpl: GetNearByCourseUseCaseImpl): GetNearByCourseUseCase
-
-    @Binds
-    abstract fun bindFetchCourseUseCase(useCaseImpl: FetchJourneyWithoutPointsUseCaseImpl): FetchJourneyWithoutPointsUseCase
 
     @Binds
     abstract fun bindUserSignInUseCase(useCaseImpl: UserSignInUseCaseImpl): UserSignInUseCase
