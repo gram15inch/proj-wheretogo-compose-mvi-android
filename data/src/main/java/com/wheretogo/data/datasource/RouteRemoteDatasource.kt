@@ -12,6 +12,4 @@ interface RouteRemoteDatasource {
     suspend fun removeRouteInCourse(courseId: String): Boolean
 
     suspend fun getRouteByNaver(waypoints: List<LatLng>): RemoteRoute
-
-    suspend fun getAddress(latlng: LatLng): String
 }

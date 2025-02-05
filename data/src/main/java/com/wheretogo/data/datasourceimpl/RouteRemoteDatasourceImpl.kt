@@ -104,22 +104,4 @@ class RouteRemoteDatasourceImpl @Inject constructor(
         } else
             RemoteRoute()
     }
-
-    override suspend fun getAddress(latlng: LatLng): String {
-        val msg = naverApiService.getAddress(
-            clientId = BuildConfig.NAVER_CLIENT_ID_KEY,
-            clientSecret = BuildConfig.NAVER_CLIENT_SECRET_KEY,
-            coords = convertLatLng(latlng),
-            output = "json"
-        )
-
-        if (msg.code() == 200) {
-            val region = msg.body()?.results?.firstOrNull()?.region
-            val addr =
-                region?.run { "${area1.name} ${area2.name} ${area3.name} ${area4.name}" } ?: ""
-            return addr
-        } else {
-            return ""
-        }
-    }
 }
