@@ -1,5 +1,7 @@
 package com.wheretogo.data.datasourceimpl
 
+import android.os.Build
+import android.text.Html
 import android.util.Log
 import com.wheretogo.data.BuildConfig
 import com.wheretogo.data.datasource.AddressRemoteDatasource
@@ -18,8 +20,8 @@ class AddressRemoteDatasourceImpl @Inject constructor(
 
     override suspend fun getAddress(latlng: LatLng): String {
         val msg = naverApiService.getAddress(
-            clientId = BuildConfig.NAVER_CLIENT_ID_KEY,
-            clientSecret = BuildConfig.NAVER_CLIENT_SECRET_KEY,
+            clientId = BuildConfig.NAVER_APIGW_CLIENT_ID_KEY,
+            clientSecret = BuildConfig.NAVER_APIGW_CLIENT_SECRET_KEY,
             coords = convertLatLng(latlng),
             output = "json"
         )
@@ -34,4 +36,30 @@ class AddressRemoteDatasourceImpl @Inject constructor(
         }
     }
 
+    override suspend fun getAddress(query: String): List<Address> {
+        val response = naverFreeApiService.search(
+            clientId = BuildConfig.NAVER_CLIENT_ID_KEY,
+            clientSecret = BuildConfig.NAVER_CLIENT_SECRET_KEY,
+            query = query,
+            display = 10,
+            start = 1,
+            sort = "random"
+        )
+
+        return if (response.code() == 200) {
+            response.body()?.items?.map {
+                Address(removeHtmlTags(it.title), it.address)
+            } ?: emptyList()
+        } else {
+            emptyList()
+        }
+    }
+
+    private fun removeHtmlTags(htmlText: String): String {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            Html.fromHtml(htmlText, Html.FROM_HTML_MODE_LEGACY).toString()
+        } else {
+            Html.fromHtml(htmlText).toString()
+        }
+    }
 }

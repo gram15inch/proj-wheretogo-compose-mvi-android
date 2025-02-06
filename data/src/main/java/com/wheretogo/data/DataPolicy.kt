@@ -1,6 +1,8 @@
 package com.wheretogo.data
 
-const val NAVER_OPEN_API_URL = "https://naveropenapi.apigw.ntruss.com"
+const val NAVER_OPEN_API_APIGW_URL = "https://naveropenapi.apigw.ntruss.com"
+const val NAVER_OPEN_API_URL = "https://openapi.naver.com/"
+
 const val DATA_NULL = ""
 const val DAY = 86400000L
 const val CHECKPOINT_UPDATE_TIME = DAY
@@ -27,7 +29,7 @@ fun FireStoreCollections.name(): String {
     return if (BuildConfig.DEBUG)
         "TEST_" + this.name
     else
-        "RELEASE_"+ this.name
+        "RELEASE_" + this.name
 }
 
 enum class LikeObject {

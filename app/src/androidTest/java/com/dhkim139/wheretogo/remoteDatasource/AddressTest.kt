@@ -33,4 +33,10 @@ class AddressTest {
         assertEquals(true, r.isNotEmpty())
     }
 
+    @Test
+    fun getAddressWithQueryTest(): Unit = runBlocking {
+        val r = addressRemoteDatasourceImpl.getAddress("중미산")
+        assertEquals(true, r.isNotEmpty())
+        assertEquals("중미산", r.first().title)
+    }
 }
