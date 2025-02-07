@@ -67,6 +67,7 @@ import com.wheretogo.presentation.composable.content.DelayLottieAnimation
 import com.wheretogo.presentation.composable.content.DragHandle
 import com.wheretogo.presentation.composable.content.FadeAnimation
 import com.wheretogo.presentation.composable.content.NaverMap
+import com.wheretogo.presentation.composable.content.SearchBar
 import com.wheretogo.presentation.composable.content.SlideAnimation
 import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.feature.naver.setCurrentLocation
@@ -112,6 +113,7 @@ fun CourseAddScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .statusBarsPadding()
             .navigationBarsPadding()
     ) {
         if (state.isFloatMarker)
@@ -130,6 +132,17 @@ fun CourseAddScreen(
                     contentDescription = ""
                 )
             }
+
+        SearchBar(
+            modifier = Modifier.zIndex(1f)
+                .padding(top = 10.dp, end = 10.dp)
+                .align(alignment = Alignment.TopEnd),
+            isLoading = state.isLoading,
+            simpleAddressGroup = state.searchBarState.simpleAddressGroup,
+            onSubmitClick = { viewModel.handleIntent(CourseAddIntent.SubmitClick(it)) },
+            onSearchToggleClick = { viewModel.handleIntent(CourseAddIntent.SearchToggleClick(it)) },
+            onAddressItemClick = { viewModel.handleIntent(CourseAddIntent.AddressItemClick(it)) }
+        )
         NaverMap(
             modifier = Modifier
                 .zIndex(0f)

@@ -182,7 +182,6 @@ class DriveViewModel @Inject constructor(
                 when(latlngResponse.status){
                     UseCaseResponse.Status.Success->{
                         val newLatLng = latlngResponse.data!!
-                        Log.d("tst_","$newLatLng")
                         copy(
                             searchBarState = searchBarState.copy(isLoading = false),
                             mapState = mapState.copy(
