@@ -13,6 +13,7 @@ import com.wheretogo.domain.UseCaseFailType
 import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.dummy.getEmogiDummy
 import com.wheretogo.domain.model.map.Address
+import com.wheretogo.domain.model.map.SimpleAddress
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.CheckPointAddRequest
 import com.wheretogo.domain.model.map.Course
@@ -30,6 +31,7 @@ import com.wheretogo.domain.usecase.community.ReportCheckPointUseCase
 import com.wheretogo.domain.usecase.community.ReportCommentUseCase
 import com.wheretogo.domain.usecase.community.ReportCourseUseCase
 import com.wheretogo.domain.usecase.map.AddCheckpointToCourseUseCase
+//import com.wheretogo.domain.usecase.map.GetAddressBySearchUseCase
 import com.wheretogo.domain.usecase.map.GetCheckpointForMarkerUseCase
 import com.wheretogo.domain.usecase.map.GetImageForPopupUseCase
 import com.wheretogo.domain.usecase.map.GetNearByCourseUseCase
@@ -81,6 +83,7 @@ class DriveViewModel @Inject constructor(
     private val getUserProfileStreamUseCase: GetUserProfileStreamUseCase,
     private val getImageForPopupUseCase: GetImageForPopupUseCase,
     private val getImageInfoUseCase: GetImageInfoUseCase,
+    //private val getAddressBySearchUseCase: GetAddressBySearchUseCase,
     private val addCheckpointToCourseUseCase: AddCheckpointToCourseUseCase,
     private val addCommentToCheckPointUseCase: AddCommentToCheckPointUseCase,
     private val removeCommentToCheckPointUseCase: RemoveCommentToCheckPointUseCase,
@@ -115,7 +118,7 @@ class DriveViewModel @Inject constructor(
             when (intent) {
 
                 //서치바
-                is DriveScreenIntent.AddressItemClick -> addressItemClick(intent.address)
+                is DriveScreenIntent.AddressItemClick -> addressItemClick(intent.simpleAddress)
                 is DriveScreenIntent.SearchToggleClick -> searchToggleClick(intent.isBar)
                 is DriveScreenIntent.SubmitClick -> submitClick(intent.submit)
 
@@ -170,7 +173,7 @@ class DriveViewModel @Inject constructor(
 
 
     //서치바
-    private fun addressItemClick(address: Address){
+    private fun addressItemClick(simpleAddress: SimpleAddress){
         _driveScreenState.value.apply {
             _driveScreenState.value = run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
             _driveScreenState.value = run {
@@ -195,7 +198,7 @@ class DriveViewModel @Inject constructor(
                     copy(
                         searchBarState = searchBarState.copy(
                             isLoading = false,
-                            addressGroup = emptyList()
+                            simpleAddressGroup = emptyList()
                         )
                     )
                 }else{
@@ -205,18 +208,41 @@ class DriveViewModel @Inject constructor(
         }
     }
 
-    private fun submitClick(submit:String){
+    private suspend fun submitClick(submit:String){
         _driveScreenState.value.apply {
             _driveScreenState.value = run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
             _driveScreenState.value = run {
-                val newAddressGroup = listOf(Address(submit, "${submit}Address")) // todo 실제 데이터 연결
+                val newAddressGroup = listOf(SimpleAddress(submit, "${submit}Address")) // todo 실제 데이터 연결
                 copy(
                     searchBarState = searchBarState.copy(
                         isLoading = false,
-                        addressGroup = newAddressGroup
+                        simpleAddressGroup = newAddressGroup
                     )
                 )
             }
+
+
+         /*   _driveScreenState.value = run {
+                val addressResponse = getAddressBySearchUseCase(submit)
+                when(addressResponse.status){
+                    UseCaseResponse.Status.Success->{
+                        copy(
+                            searchBarState = searchBarState.copy(
+                                isLoading = false,
+                                simpleAddressGroup = addressResponse.data?: emptyList()
+                            )
+                        )
+                    }
+                    UseCaseResponse.Status.Fail->{
+                        copy(
+                            searchBarState = searchBarState.copy(
+                                isLoading = false
+                            )
+                        )
+                    }
+                }
+
+            }*/
         }
     }
 

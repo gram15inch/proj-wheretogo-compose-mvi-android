@@ -8,7 +8,7 @@ import retrofit2.http.Query
 
 interface NaverFreeApiService {
     @GET("v1/search/local.json")
-    suspend fun search(
+    suspend fun getAddressFromKeyword(
         @Header("X-Naver-Client-Id") clientId: String,
         @Header("X-Naver-Client-Secret") clientSecret: String,
         @Query("query") query: String,

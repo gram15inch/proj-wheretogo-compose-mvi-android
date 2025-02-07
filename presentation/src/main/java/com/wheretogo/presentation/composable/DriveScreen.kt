@@ -144,7 +144,7 @@ fun DriveScreen(
                 state.searchBarState.run {
                     SearchBar(
                         isLoading = isLoading,
-                        addressGroup = addressGroup,
+                        simpleAddressGroup = simpleAddressGroup,
                         onSubmitClick = { viewModel.handleIntent(DriveScreenIntent.SubmitClick(it)) },
                         onSearchToggleClick = { viewModel.handleIntent(DriveScreenIntent.SearchToggleClick(it)) },
                         onAddressItemClick = { viewModel.handleIntent(DriveScreenIntent.AddressItemClick(it)) }

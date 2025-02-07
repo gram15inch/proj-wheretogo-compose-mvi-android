@@ -44,7 +44,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wheretogo.domain.model.map.Address
+import com.wheretogo.domain.model.map.SimpleAddress
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 import kotlinx.coroutines.CoroutineScope
@@ -56,8 +56,8 @@ import kotlinx.coroutines.launch
 fun SearchBar(
     modifier: Modifier = Modifier,
     isLoading: Boolean = false,
-    addressGroup: List<Address> = emptyList(),
-    onAddressItemClick: (Address) -> Unit = {},
+    simpleAddressGroup: List<SimpleAddress> = emptyList(),
+    onAddressItemClick: (SimpleAddress) -> Unit = {},
     onSearchToggleClick: (Boolean) -> Unit = {},
     onSubmitClick: (String) -> Unit = {}
 ) {
@@ -155,17 +155,17 @@ fun SearchBar(
             horizontalAlignment = Alignment.End,
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            items(addressGroup, key = { Math.random() }) { item ->
+            items(simpleAddressGroup, key = { Math.random() }) { item ->
                 AddressItem(modifier = Modifier.clickable {
                     onAddressItemClick(item)
-                }, address = item)
+                }, simpleAddress = item)
             }
         }
     }
 }
 
 @Composable
-fun AddressItem(modifier: Modifier = Modifier, address: Address) {
+fun AddressItem(modifier: Modifier = Modifier, simpleAddress: SimpleAddress) {
     val textStyle = TextStyle(
         fontFamily = hancomSansFontFamily,
         color = colorResource(R.color.gray_474747)
@@ -181,7 +181,7 @@ fun AddressItem(modifier: Modifier = Modifier, address: Address) {
             .background(Color.White)
     ) {
         Text(
-            modifier = Modifier.padding(8.dp), text = address.title, style = textStyle
+            modifier = Modifier.padding(8.dp), text = simpleAddress.title, style = textStyle
         )
     }
 }
@@ -189,10 +189,10 @@ fun AddressItem(modifier: Modifier = Modifier, address: Address) {
 @Preview
 @Composable
 fun SearchBarPreview() {
-    var addressGroup by remember {
-        mutableStateOf<List<Address>>(
+    var simpleAddressGroups by remember {
+        mutableStateOf<List<SimpleAddress>>(
             listOf(
-                Address(
+                SimpleAddress(
                     "기흥역 ak플라자",
                     "경기도 용인시 기흥구 120"
                 )
@@ -209,21 +209,21 @@ fun SearchBarPreview() {
         SearchBar(
             modifier = Modifier.padding(top = 15.dp, bottom = 20.dp, end = 15.dp),
             isLoading = isLoading,
-            addressGroup = addressGroup,
+            simpleAddressGroup = simpleAddressGroups,
             onAddressItemClick = {
                 CoroutineScope(Dispatchers.Main).launch {
                     isLoading = true
                     delay(2000)
                     isLoading = false
-                    addressGroup = emptyList()
+                    simpleAddressGroups = emptyList()
                 }
             },
             onSearchToggleClick = {
                 if (!it)
-                    addressGroup = emptyList()
+                    simpleAddressGroups = emptyList()
             },
             onSubmitClick = {
-                addressGroup += Address(it, "경기도 용인시 기흥구 120")
+                simpleAddressGroups += SimpleAddress(it, "경기도 용인시 기흥구 120")
             }
         )
     }

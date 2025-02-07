@@ -9,6 +9,7 @@ import com.wheretogo.data.datasourceimpl.service.NaverFreeApiService
 import com.wheretogo.data.datasourceimpl.service.NaverMapApiService
 import com.wheretogo.domain.model.map.Address
 import com.wheretogo.domain.model.map.LatLng
+import com.wheretogo.domain.model.map.SimpleAddress
 import javax.inject.Inject
 
 class AddressRemoteDatasourceImpl @Inject constructor(
@@ -18,8 +19,32 @@ class AddressRemoteDatasourceImpl @Inject constructor(
 
     private fun convertLatLng(latlng: LatLng): String = "${latlng.longitude}, ${latlng.latitude}"
 
-    override suspend fun getAddress(latlng: LatLng): String {
-        val msg = naverApiService.getAddress(
+    override suspend fun geocode(address: String): List<Address> {
+        val msg = naverApiService.geocode(
+            clientId = BuildConfig.NAVER_APIGW_CLIENT_ID_KEY,
+            clientSecret = BuildConfig.NAVER_APIGW_CLIENT_SECRET_KEY,
+            accept = "application/json",
+            query = address,
+            count = "1"
+        )
+        if (msg.code() == 200) {
+            val addGroup = msg.body()?.addresses
+            return addGroup?.map {
+                Address(
+                    jibun = it.jibunAddress,
+                    road = it.roadAddress,
+                    eng = it.englishAddress,
+                    latLng = LatLng(it.x.toDouble(), it.y.toDouble())
+                )
+            } ?: emptyList()
+
+        } else {
+            return emptyList()
+        }
+    }
+
+    override suspend fun reverseGeocode(latlng: LatLng): String {
+        val msg = naverApiService.reverseGeocode(
             clientId = BuildConfig.NAVER_APIGW_CLIENT_ID_KEY,
             clientSecret = BuildConfig.NAVER_APIGW_CLIENT_SECRET_KEY,
             coords = convertLatLng(latlng),
@@ -36,11 +61,11 @@ class AddressRemoteDatasourceImpl @Inject constructor(
         }
     }
 
-    override suspend fun getAddress(query: String): List<Address> {
-        val response = naverFreeApiService.search(
+    override suspend fun getSimpleAddressFromKeyword(keyword: String): List<SimpleAddress> {
+        val response = naverFreeApiService.getAddressFromKeyword(
             clientId = BuildConfig.NAVER_CLIENT_ID_KEY,
             clientSecret = BuildConfig.NAVER_CLIENT_SECRET_KEY,
-            query = query,
+            query = keyword,
             display = 10,
             start = 1,
             sort = "random"
@@ -48,7 +73,7 @@ class AddressRemoteDatasourceImpl @Inject constructor(
 
         return if (response.code() == 200) {
             response.body()?.items?.map {
-                Address(removeHtmlTags(it.title), it.address)
+                SimpleAddress(removeHtmlTags(it.title), it.address)
             } ?: emptyList()
         } else {
             emptyList()

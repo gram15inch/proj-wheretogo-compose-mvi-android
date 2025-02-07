@@ -25,18 +25,30 @@ class AddressTest {
         hiltRule.inject()
     }
 
+    @Test
+    fun geocodeTest(): Unit = runBlocking {
+        val r = addressRemoteDatasourceImpl.geocode("경기도 성남시 분당구 불정로 6 NAVER그린팩토리")
+        assertEquals(true, r.isNotEmpty())
+        assertEquals("경기도 성남시 분당구 불정로 6 NAVER그린팩토리", r.first().road)
+        assertEquals("경기도 성남시 분당구 정자동 178-1 NAVER그린팩토리", r.first().jibun)
+        assertEquals(
+            "6, Buljeong-ro, Bundang-gu, Seongnam-si, Gyeonggi-do, Republic of Korea",
+            r.first().eng
+        )
+    }
 
     @Test
-    fun getAddressWithLatLngTest(): Unit = runBlocking {
+    fun reverseGeocodeTest(): Unit = runBlocking {
         val datasource = addressRemoteDatasourceImpl
-        val r = datasource.getAddress(LatLng(37.56661, 126.978388))
+        val r = datasource.reverseGeocode(LatLng(37.56661, 126.978388))
         assertEquals(true, r.isNotEmpty())
     }
 
     @Test
-    fun getAddressWithQueryTest(): Unit = runBlocking {
-        val r = addressRemoteDatasourceImpl.getAddress("중미산")
+    fun getSimppleAddressFromKeywordTest(): Unit = runBlocking {
+        val r = addressRemoteDatasourceImpl.getSimpleAddressFromKeyword("중미산")
         assertEquals(true, r.isNotEmpty())
         assertEquals("중미산", r.first().title)
     }
+
 }
