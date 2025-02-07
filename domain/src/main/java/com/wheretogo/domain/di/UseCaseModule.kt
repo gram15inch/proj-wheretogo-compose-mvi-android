@@ -15,8 +15,10 @@ import com.wheretogo.domain.usecase.community.ReportCourseUseCase
 import com.wheretogo.domain.usecase.map.AddCheckpointToCourseUseCase
 import com.wheretogo.domain.usecase.map.AddCourseUseCase
 import com.wheretogo.domain.usecase.map.CreateRouteUseCase
+import com.wheretogo.domain.usecase.map.SearchAddressUseCase
 import com.wheretogo.domain.usecase.map.GetCheckpointForMarkerUseCase
 import com.wheretogo.domain.usecase.map.GetImageForPopupUseCase
+import com.wheretogo.domain.usecase.map.GetLatLngFromAddressUseCase
 import com.wheretogo.domain.usecase.map.GetNearByCourseUseCase
 import com.wheretogo.domain.usecase.user.DeleteUserUseCase
 import com.wheretogo.domain.usecase.user.GetHistoryStreamUseCase
@@ -42,8 +44,10 @@ import com.wheretogo.domain.usecaseimpl.community.ReportCourseUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.map.AddCheckpointToCourseUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.map.AddCourseUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.map.CreateRouteUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.map.SearchAddressUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.map.GetCheckpointForMarkerUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.map.GetImageForPopupUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.map.GetLatLngFromAddressUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.map.GetNearByCourseUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.DeleteUserUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.GetHistoryStreamUseCaseImpl
@@ -78,7 +82,6 @@ abstract class UseCaseModule {
 
     @Binds
     abstract fun bindUserProfileUpdateUseCase(useCaseImpl: UserProfileUpdateUseCaseImpl): UserProfileUpdateUseCase
-
 
     @Binds
     abstract fun bindGetCheckPointForMarkerUseCase(useCaseImpl: GetCheckpointForMarkerUseCaseImpl): GetCheckpointForMarkerUseCase
@@ -145,5 +148,11 @@ abstract class UseCaseModule {
 
     @Binds
     abstract fun bindReportCancelUseCase(useCaseImpl: ReportCancelUseCaseImpl): ReportCancelUseCase
+
+    @Binds
+    abstract fun bindSearchAddressUseCase(useCaseImpl: SearchAddressUseCaseImpl): SearchAddressUseCase
+
+    @Binds
+    abstract fun bindGetLatLngFromAddressUseCase(useCaseImpl: GetLatLngFromAddressUseCaseImpl): GetLatLngFromAddressUseCase
 }
 

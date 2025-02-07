@@ -12,7 +12,6 @@ import com.wheretogo.domain.OverlayType
 import com.wheretogo.domain.UseCaseFailType
 import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.dummy.getEmogiDummy
-import com.wheretogo.domain.model.map.Address
 import com.wheretogo.domain.model.map.SimpleAddress
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.CheckPointAddRequest
@@ -31,9 +30,10 @@ import com.wheretogo.domain.usecase.community.ReportCheckPointUseCase
 import com.wheretogo.domain.usecase.community.ReportCommentUseCase
 import com.wheretogo.domain.usecase.community.ReportCourseUseCase
 import com.wheretogo.domain.usecase.map.AddCheckpointToCourseUseCase
-//import com.wheretogo.domain.usecase.map.GetAddressBySearchUseCase
+import com.wheretogo.domain.usecase.map.SearchAddressUseCase
 import com.wheretogo.domain.usecase.map.GetCheckpointForMarkerUseCase
 import com.wheretogo.domain.usecase.map.GetImageForPopupUseCase
+import com.wheretogo.domain.usecase.map.GetLatLngFromAddressUseCase
 import com.wheretogo.domain.usecase.map.GetNearByCourseUseCase
 import com.wheretogo.domain.usecase.user.GetHistoryStreamUseCase
 import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
@@ -83,7 +83,7 @@ class DriveViewModel @Inject constructor(
     private val getUserProfileStreamUseCase: GetUserProfileStreamUseCase,
     private val getImageForPopupUseCase: GetImageForPopupUseCase,
     private val getImageInfoUseCase: GetImageInfoUseCase,
-    //private val getAddressBySearchUseCase: GetAddressBySearchUseCase,
+    private val getLatLngFromAddressUseCase: GetLatLngFromAddressUseCase,
     private val addCheckpointToCourseUseCase: AddCheckpointToCourseUseCase,
     private val addCommentToCheckPointUseCase: AddCommentToCheckPointUseCase,
     private val removeCommentToCheckPointUseCase: RemoveCommentToCheckPointUseCase,
@@ -95,6 +95,7 @@ class DriveViewModel @Inject constructor(
     private val reportCommentUseCase: ReportCommentUseCase,
     private val reportCourseUseCase: ReportCourseUseCase,
     private val reportCheckPointUseCase: ReportCheckPointUseCase,
+    private val searchAddressUseCase: SearchAddressUseCase,
 ) : ViewModel() {
     private val _driveScreenState = MutableStateFlow(DriveScreenState())
     private val _cacheCourseMapOverlayGroup = mutableMapOf<String, MapOverlay>() // courseId
@@ -173,20 +174,32 @@ class DriveViewModel @Inject constructor(
 
 
     //서치바
-    private fun addressItemClick(simpleAddress: SimpleAddress){
+    private suspend fun addressItemClick(simpleAddress: SimpleAddress){
         _driveScreenState.value.apply {
             _driveScreenState.value = run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
             _driveScreenState.value = run {
-                val newLatLng = LatLng(latitude = 37.3595704, 127.105399) // todo 실제 데이터 연결
-                copy(
-                    searchBarState = searchBarState.copy(isLoading = false),
-                    mapState = mapState.copy(
-                        cameraState = mapState.cameraState.copy(
-                            latLng = newLatLng,
-                            status = CameraStatus.TRACK
+                val latlngResponse = getLatLngFromAddressUseCase(simpleAddress.address)
+                when(latlngResponse.status){
+                    UseCaseResponse.Status.Success->{
+                        val newLatLng = latlngResponse.data!!
+                        Log.d("tst_","$newLatLng")
+                        copy(
+                            searchBarState = searchBarState.copy(isLoading = false),
+                            mapState = mapState.copy(
+                                cameraState = mapState.cameraState.copy(
+                                    latLng = newLatLng,
+                                    status = CameraStatus.TRACK
+                                )
+                            )
                         )
-                    )
-                )
+                    }
+                    UseCaseResponse.Status.Fail->{
+                        copy(
+                            searchBarState = searchBarState.copy(isLoading = false)
+                        )
+                    }
+                }
+
             }
         }
     }
@@ -212,18 +225,7 @@ class DriveViewModel @Inject constructor(
         _driveScreenState.value.apply {
             _driveScreenState.value = run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
             _driveScreenState.value = run {
-                val newAddressGroup = listOf(SimpleAddress(submit, "${submit}Address")) // todo 실제 데이터 연결
-                copy(
-                    searchBarState = searchBarState.copy(
-                        isLoading = false,
-                        simpleAddressGroup = newAddressGroup
-                    )
-                )
-            }
-
-
-         /*   _driveScreenState.value = run {
-                val addressResponse = getAddressBySearchUseCase(submit)
+                val addressResponse = searchAddressUseCase(submit)
                 when(addressResponse.status){
                     UseCaseResponse.Status.Success->{
                         copy(
@@ -242,7 +244,7 @@ class DriveViewModel @Inject constructor(
                     }
                 }
 
-            }*/
+            }
         }
     }
 

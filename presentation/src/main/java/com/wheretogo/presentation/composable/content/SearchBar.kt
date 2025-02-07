@@ -96,7 +96,7 @@ fun SearchBar(
                 Box(
                     modifier = Modifier
                         .width(fieldWidth)
-                        .padding(start = 14.dp, end = 20.dp)
+                        .padding(start = 14.dp, end = 5.dp)
                 ) {
                     BasicTextField(
                         modifier = Modifier

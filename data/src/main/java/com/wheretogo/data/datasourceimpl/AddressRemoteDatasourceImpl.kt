@@ -34,7 +34,7 @@ class AddressRemoteDatasourceImpl @Inject constructor(
                     jibun = it.jibunAddress,
                     road = it.roadAddress,
                     eng = it.englishAddress,
-                    latLng = LatLng(it.x.toDouble(), it.y.toDouble())
+                    latLng = LatLng(it.y.toDouble(), it.x.toDouble())
                 )
             } ?: emptyList()
 
