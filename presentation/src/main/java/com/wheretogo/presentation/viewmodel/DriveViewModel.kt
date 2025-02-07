@@ -12,6 +12,7 @@ import com.wheretogo.domain.OverlayType
 import com.wheretogo.domain.UseCaseFailType
 import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.dummy.getEmogiDummy
+import com.wheretogo.domain.model.map.Address
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.CheckPointAddRequest
 import com.wheretogo.domain.model.map.Course
@@ -36,6 +37,7 @@ import com.wheretogo.domain.usecase.user.GetHistoryStreamUseCase
 import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
 import com.wheretogo.domain.usecase.user.RemoveHistoryUseCase
 import com.wheretogo.domain.usecase.user.UpdateHistoryUseCase
+import com.wheretogo.presentation.CameraStatus
 import com.wheretogo.presentation.CheckPointAddError
 import com.wheretogo.presentation.CommentType
 import com.wheretogo.presentation.MarkerIconType
@@ -73,23 +75,23 @@ import kotlin.math.round
 @HiltViewModel
 class DriveViewModel @Inject constructor(
     private val getNearByCourseUseCase: GetNearByCourseUseCase,
-    private val getCheckPointForMarkerUseCase: GetCheckpointForMarkerUseCase,
     private val getCommentForCheckPointUseCase: GetCommentForCheckPointUseCase,
+    private val getCheckPointForMarkerUseCase: GetCheckpointForMarkerUseCase,
+    private val getHistoryStreamUseCase: GetHistoryStreamUseCase,
+    private val getUserProfileStreamUseCase: GetUserProfileStreamUseCase,
+    private val getImageForPopupUseCase: GetImageForPopupUseCase,
+    private val getImageInfoUseCase: GetImageInfoUseCase,
+    private val addCheckpointToCourseUseCase: AddCheckpointToCourseUseCase,
     private val addCommentToCheckPointUseCase: AddCommentToCheckPointUseCase,
     private val removeCommentToCheckPointUseCase: RemoveCommentToCheckPointUseCase,
     private val removeCheckPointUseCase: RemoveCheckPointUseCase,
     private val removeCourseUseCase: RemoveCourseUseCase,
+    private val removeHistoryUseCase: RemoveHistoryUseCase,
+    private val updateHistoryUseCase: UpdateHistoryUseCase,
+    private val modifyLikeUseCase: ModifyLikeUseCase,
     private val reportCommentUseCase: ReportCommentUseCase,
     private val reportCourseUseCase: ReportCourseUseCase,
     private val reportCheckPointUseCase: ReportCheckPointUseCase,
-    private val getImageForPopupUseCase: GetImageForPopupUseCase,
-    private val updateHistoryUseCase: UpdateHistoryUseCase,
-    private val removeHistoryUseCase: RemoveHistoryUseCase,
-    private val modifyLikeUseCase: ModifyLikeUseCase,
-    private val getHistoryStreamUseCase: GetHistoryStreamUseCase,
-    private val getUserProfileStreamUseCase: GetUserProfileStreamUseCase,
-    private val addCheckpointToCourseUseCase: AddCheckpointToCourseUseCase,
-    private val getImageInfoUseCase: GetImageInfoUseCase
 ) : ViewModel() {
     private val _driveScreenState = MutableStateFlow(DriveScreenState())
     private val _cacheCourseMapOverlayGroup = mutableMapOf<String, MapOverlay>() // courseId
@@ -111,6 +113,12 @@ class DriveViewModel @Inject constructor(
     fun handleIntent(intent: DriveScreenIntent) {
         viewModelScope.launch(exceptionHandler) {
             when (intent) {
+
+                //서치바
+                is DriveScreenIntent.AddressItemClick -> addressItemClick(intent.address)
+                is DriveScreenIntent.SearchToggleClick -> searchToggleClick(intent.isBar)
+                is DriveScreenIntent.SubmitClick -> submitClick(intent.submit)
+
                 //지도
                 is DriveScreenIntent.MapIsReady -> mapIsReady()
                 is DriveScreenIntent.UpdateCamera -> updateCamara(intent.cameraState)
@@ -159,6 +167,59 @@ class DriveViewModel @Inject constructor(
             _driveScreenState.combine(getHistoryStreamUseCase(), getUserProfileStreamUseCase())
         }
     }
+
+
+    //서치바
+    private fun addressItemClick(address: Address){
+        _driveScreenState.value.apply {
+            _driveScreenState.value = run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
+            _driveScreenState.value = run {
+                val newLatLng = LatLng(latitude = 37.3595704, 127.105399) // todo 실제 데이터 연결
+                copy(
+                    searchBarState = searchBarState.copy(isLoading = false),
+                    mapState = mapState.copy(
+                        cameraState = mapState.cameraState.copy(
+                            latLng = newLatLng,
+                            status = CameraStatus.TRACK
+                        )
+                    )
+                )
+            }
+        }
+    }
+
+    private fun searchToggleClick(isBar:Boolean){
+        _driveScreenState.value.apply {
+            _driveScreenState.value = run {
+                if(!isBar){
+                    copy(
+                        searchBarState = searchBarState.copy(
+                            isLoading = false,
+                            addressGroup = emptyList()
+                        )
+                    )
+                }else{
+                    copy()
+                }
+            }
+        }
+    }
+
+    private fun submitClick(submit:String){
+        _driveScreenState.value.apply {
+            _driveScreenState.value = run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
+            _driveScreenState.value = run {
+                val newAddressGroup = listOf(Address(submit, "${submit}Address")) // todo 실제 데이터 연결
+                copy(
+                    searchBarState = searchBarState.copy(
+                        isLoading = false,
+                        addressGroup = newAddressGroup
+                    )
+                )
+            }
+        }
+    }
+
 
     //지도
     private fun mapIsReady() {
