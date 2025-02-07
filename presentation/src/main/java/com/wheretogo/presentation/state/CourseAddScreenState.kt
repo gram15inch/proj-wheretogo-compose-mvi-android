@@ -11,6 +11,7 @@ import com.wheretogo.presentation.model.dummy.getRouteDetailItemGroup
 
 data class CourseAddScreenState(
     val courseName: String = "",
+    val searchBarState: SearchBarState = SearchBarState(),
     val waypoints: List<LatLng> = emptyList(),
     val mapOverlay: MapOverlay = MapOverlay(),
     val selectedMarkerItem: Marker? = null,

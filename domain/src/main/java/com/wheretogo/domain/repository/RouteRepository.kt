@@ -14,5 +14,4 @@ interface RouteRepository {
 
     suspend fun createRoute(waypoints: List<LatLng>): Route
 
-    suspend fun getAddress(latlng: LatLng): String
 }

@@ -211,7 +211,7 @@ fun MapPopup(
                                 onCommentRemoveClick = onCommentRemoveClick,
                                 onCommentReportClick = onCommentReportClick,
                                 onBackgroundClick = {
-                                    onCommentListItemLongClick(commentState.selectedCommentSettingItem)//todo 실제값변경
+                                    onCommentListItemLongClick(commentState.selectedCommentSettingItem)
                                 })
                         }
                     }

@@ -1,5 +1,6 @@
 package com.wheretogo.data.di
 
+import com.wheretogo.data.datasource.AddressRemoteDatasource
 import com.wheretogo.data.datasource.AuthRemoteDatasource
 import com.wheretogo.data.datasource.CheckPointLocalDatasource
 import com.wheretogo.data.datasource.CheckPointRemoteDatasource
@@ -14,6 +15,7 @@ import com.wheretogo.data.datasource.ReportRemoteDatasource
 import com.wheretogo.data.datasource.RouteRemoteDatasource
 import com.wheretogo.data.datasource.UserLocalDatasource
 import com.wheretogo.data.datasource.UserRemoteDatasource
+import com.wheretogo.data.datasourceimpl.AddressRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.AuthRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.CheckPointLocalDatasourceImpl
 import com.wheretogo.data.datasourceimpl.CheckPointRemoteDatasourceImpl
@@ -61,6 +63,9 @@ abstract class DatasourceModule {
 
     @Binds
     abstract fun bindRouteRemoteDatasource(datasource: RouteRemoteDatasourceImpl): RouteRemoteDatasource
+
+    @Binds
+    abstract fun bindAddressRemoteDatasource(datasource: AddressRemoteDatasourceImpl): AddressRemoteDatasource
 
     @Binds
     abstract fun bindAuthRemoteDatasource(datasource: AuthRemoteDatasourceImpl): AuthRemoteDatasource

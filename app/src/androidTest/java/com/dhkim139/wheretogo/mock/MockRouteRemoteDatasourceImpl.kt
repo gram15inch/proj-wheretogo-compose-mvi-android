@@ -21,8 +21,4 @@ class MockRouteRemoteDatasourceImpl @Inject constructor() : RouteRemoteDatasourc
     override suspend fun getRouteByNaver(waypoints: List<LatLng>): RemoteRoute {
         return RemoteRoute()
     }
-
-    override suspend fun getAddress(latlng: LatLng): String {
-        return ""
-    }
 }

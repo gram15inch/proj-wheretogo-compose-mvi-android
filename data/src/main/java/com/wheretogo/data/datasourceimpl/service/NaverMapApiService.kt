@@ -1,5 +1,6 @@
 package com.wheretogo.data.datasourceimpl.service
 
+import com.wheretogo.data.model.naver.NaverGeocodeResponse
 import com.wheretogo.data.model.naver.NaverReverseGeocodeResponse
 import com.wheretogo.data.model.naver.NaverRouteResponse
 import com.wheretogo.data.model.naver.NaverRouteWaypointResponse
@@ -26,12 +27,21 @@ interface NaverMapApiService {
         @Query("waypoints") waypoints: String,
     ): Response<NaverRouteWaypointResponse>
 
+    @GET("map-geocode/v2/geocode")
+    suspend fun geocode(
+        @Header("X-NCP-APIGW-API-KEY-ID") clientId: String,
+        @Header("X-NCP-APIGW-API-KEY") clientSecret: String,
+        @Header("Accept") accept: String,
+        @Query("query") query: String,
+        @Query("count") count: String,
+    ): Response<NaverGeocodeResponse>
 
     @GET("map-reversegeocode/v2/gc")
-    suspend fun getAddress(
+    suspend fun reverseGeocode(
         @Header("X-NCP-APIGW-API-KEY-ID") clientId: String,
         @Header("X-NCP-APIGW-API-KEY") clientSecret: String,
         @Query("coords") coords: String,
         @Query("output") output: String,
     ): Response<NaverReverseGeocodeResponse>
+
 }

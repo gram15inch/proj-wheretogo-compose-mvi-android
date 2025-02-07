@@ -27,8 +27,4 @@ class RouteRepositoryImpl @Inject constructor(
     override suspend fun createRoute(waypoints: List<LatLng>): Route {
         return remoteDatasource.getRouteByNaver(waypoints).toRoute()
     }
-
-    override suspend fun getAddress(latlng: LatLng): String {
-        return remoteDatasource.getAddress(latlng)
-    }
 }

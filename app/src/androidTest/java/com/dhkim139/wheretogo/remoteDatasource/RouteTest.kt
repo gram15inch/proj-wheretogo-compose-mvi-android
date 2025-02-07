@@ -1,5 +1,6 @@
 package com.dhkim139.wheretogo.remoteDatasource
 
+import com.wheretogo.data.datasourceimpl.AddressRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.CourseRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.RouteRemoteDatasourceImpl
 import com.wheretogo.data.model.course.RemoteCourse
@@ -28,6 +29,9 @@ class RouteTest {
     @Inject
     lateinit var routeRemoteDatasourceImpl: RouteRemoteDatasourceImpl
 
+    @Inject
+    lateinit var addressRemoteDatasourceImpl: AddressRemoteDatasourceImpl
+
     @Before
     fun init() {
         hiltRule.inject()
@@ -54,12 +58,6 @@ class RouteTest {
     }
 
 
-    @Test
-    fun getAddressWithLatLngTest(): Unit = runBlocking {
-        val datasource = routeRemoteDatasourceImpl
-        val r = datasource.getAddress(LatLng(37.56661, 126.978388))
-        assertEquals(true, r.isNotEmpty())
-    }
 
 
     /*@Test

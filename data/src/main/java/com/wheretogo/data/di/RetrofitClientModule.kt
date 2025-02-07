@@ -2,6 +2,7 @@ package com.wheretogo.data.di
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import com.wheretogo.data.NAVER_OPEN_API_APIGW_URL
 import com.wheretogo.data.NAVER_OPEN_API_URL
 import dagger.Module
 import dagger.Provides
@@ -11,6 +12,7 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.TimeUnit
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -36,7 +38,21 @@ object RetrofitClientModule {
 
     @Singleton
     @Provides
-    fun provideRetrofit(moshi: Moshi, client: OkHttpClient): Retrofit {
+    @Named("apigw")
+    fun provideNaverRetrofit(moshi: Moshi, client: OkHttpClient): Retrofit {
+        return Retrofit.Builder()
+            .addConverterFactory(
+                MoshiConverterFactory.create(moshi)
+            )
+            .client(client)
+            .baseUrl(NAVER_OPEN_API_APIGW_URL)
+            .build()
+    }
+
+    @Singleton
+    @Provides
+    @Named("naver")
+    fun provideXNaverRetrofit(moshi: Moshi, client: OkHttpClient): Retrofit {
         return Retrofit.Builder()
             .addConverterFactory(
                 MoshiConverterFactory.create(moshi)

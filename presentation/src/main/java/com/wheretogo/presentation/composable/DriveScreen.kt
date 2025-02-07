@@ -50,6 +50,7 @@ import com.wheretogo.presentation.composable.content.FloatingButtons
 import com.wheretogo.presentation.composable.content.InfoContent
 import com.wheretogo.presentation.composable.content.MapPopup
 import com.wheretogo.presentation.composable.content.NaverMap
+import com.wheretogo.presentation.composable.content.SearchBar
 import com.wheretogo.presentation.feature.ImeStickyBox
 import com.wheretogo.presentation.feature.naver.setCurrentLocation
 import com.wheretogo.presentation.intent.DriveScreenIntent
@@ -99,6 +100,7 @@ fun DriveScreen(
             .fillMaxSize()
             .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Bottom)),
         overlayMap = state.mapState.mapOverlayGroup,
+        cameraState = state.mapState.cameraState,
         onMapAsync = { map ->
             viewModel.handleIntent(DriveScreenIntent.MapIsReady)
             coroutineScope.launch { map.setCurrentLocation(context) }
@@ -134,6 +136,21 @@ fun DriveScreen(
         contentAlignment = Alignment.BottomCenter
     ) {
         OneHandArea {
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 10.dp, end = 10.dp), contentAlignment = Alignment.CenterEnd
+            ) {
+
+                state.searchBarState.run {
+                    SearchBar(
+                        isLoading = isLoading,
+                        simpleAddressGroup = simpleAddressGroup,
+                        onSubmitClick = { viewModel.handleIntent(DriveScreenIntent.SubmitClick(it)) },
+                        onSearchToggleClick = { viewModel.handleIntent(DriveScreenIntent.SearchToggleClick(it)) },
+                        onAddressItemClick = { viewModel.handleIntent(DriveScreenIntent.AddressItemClick(it)) }
+                    )
+                }
+            }
             FadeAnimation(
                 modifier = Modifier
                     .align(alignment = Alignment.BottomEnd),
@@ -200,7 +217,9 @@ fun DriveScreen(
             }
 
             DriveBottomSheet(
-                modifier = Modifier.align(Alignment.BottomCenter).zIndex(997f),
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .zIndex(997f),
                 isVisible = state.bottomSheetState.isVisible,
                 onBottomSheetClose = {
                     viewModel.handleIntent(DriveScreenIntent.BottomSheetClose)
@@ -262,7 +281,9 @@ fun DriveScreen(
                 }
             )
 
-            ImeStickyBox(modifier = Modifier.align(alignment = Alignment.BottomCenter).zIndex(999f)) {
+            ImeStickyBox(modifier = Modifier
+                .align(alignment = Alignment.BottomCenter)
+                .zIndex(999f)) {
                 DescriptionTextField(
                     modifier = Modifier.heightIn(min = 60.dp),
                     isVisible = state.bottomSheetState.isVisible && it > 30.dp,

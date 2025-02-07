@@ -6,6 +6,7 @@ import com.wheretogo.presentation.model.MapOverlay
 
 
 data class DriveScreenState(
+    val searchBarState: SearchBarState = SearchBarState(),
     val mapState: MapState = MapState(),
     val listState: ListState = ListState(),
     val popUpState: PopUpState = PopUpState(),

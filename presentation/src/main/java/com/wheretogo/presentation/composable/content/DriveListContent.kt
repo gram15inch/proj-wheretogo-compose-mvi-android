@@ -130,7 +130,7 @@ fun DriveListItem(
                         fontFamily = hancomSansFontFamily,
                         fontSize = 16.5.sp
                     )
-                    if(false) // todo 복귀
+                    if(false) // todo 북마크 기능 추가
                         Box(
                             modifier = Modifier
                                 .clip(CircleShape)

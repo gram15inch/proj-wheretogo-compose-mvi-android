@@ -12,6 +12,7 @@ import com.wheretogo.domain.OverlayType
 import com.wheretogo.domain.UseCaseFailType
 import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.dummy.getEmogiDummy
+import com.wheretogo.domain.model.map.SimpleAddress
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.CheckPointAddRequest
 import com.wheretogo.domain.model.map.Course
@@ -29,13 +30,16 @@ import com.wheretogo.domain.usecase.community.ReportCheckPointUseCase
 import com.wheretogo.domain.usecase.community.ReportCommentUseCase
 import com.wheretogo.domain.usecase.community.ReportCourseUseCase
 import com.wheretogo.domain.usecase.map.AddCheckpointToCourseUseCase
+import com.wheretogo.domain.usecase.map.SearchAddressUseCase
 import com.wheretogo.domain.usecase.map.GetCheckpointForMarkerUseCase
 import com.wheretogo.domain.usecase.map.GetImageForPopupUseCase
+import com.wheretogo.domain.usecase.map.GetLatLngFromAddressUseCase
 import com.wheretogo.domain.usecase.map.GetNearByCourseUseCase
 import com.wheretogo.domain.usecase.user.GetHistoryStreamUseCase
 import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
 import com.wheretogo.domain.usecase.user.RemoveHistoryUseCase
 import com.wheretogo.domain.usecase.user.UpdateHistoryUseCase
+import com.wheretogo.presentation.CameraStatus
 import com.wheretogo.presentation.CheckPointAddError
 import com.wheretogo.presentation.CommentType
 import com.wheretogo.presentation.MarkerIconType
@@ -73,23 +77,25 @@ import kotlin.math.round
 @HiltViewModel
 class DriveViewModel @Inject constructor(
     private val getNearByCourseUseCase: GetNearByCourseUseCase,
-    private val getCheckPointForMarkerUseCase: GetCheckpointForMarkerUseCase,
     private val getCommentForCheckPointUseCase: GetCommentForCheckPointUseCase,
+    private val getCheckPointForMarkerUseCase: GetCheckpointForMarkerUseCase,
+    private val getHistoryStreamUseCase: GetHistoryStreamUseCase,
+    private val getUserProfileStreamUseCase: GetUserProfileStreamUseCase,
+    private val getImageForPopupUseCase: GetImageForPopupUseCase,
+    private val getImageInfoUseCase: GetImageInfoUseCase,
+    private val getLatLngFromAddressUseCase: GetLatLngFromAddressUseCase,
+    private val addCheckpointToCourseUseCase: AddCheckpointToCourseUseCase,
     private val addCommentToCheckPointUseCase: AddCommentToCheckPointUseCase,
     private val removeCommentToCheckPointUseCase: RemoveCommentToCheckPointUseCase,
     private val removeCheckPointUseCase: RemoveCheckPointUseCase,
     private val removeCourseUseCase: RemoveCourseUseCase,
+    private val removeHistoryUseCase: RemoveHistoryUseCase,
+    private val updateHistoryUseCase: UpdateHistoryUseCase,
+    private val modifyLikeUseCase: ModifyLikeUseCase,
     private val reportCommentUseCase: ReportCommentUseCase,
     private val reportCourseUseCase: ReportCourseUseCase,
     private val reportCheckPointUseCase: ReportCheckPointUseCase,
-    private val getImageForPopupUseCase: GetImageForPopupUseCase,
-    private val updateHistoryUseCase: UpdateHistoryUseCase,
-    private val removeHistoryUseCase: RemoveHistoryUseCase,
-    private val modifyLikeUseCase: ModifyLikeUseCase,
-    private val getHistoryStreamUseCase: GetHistoryStreamUseCase,
-    private val getUserProfileStreamUseCase: GetUserProfileStreamUseCase,
-    private val addCheckpointToCourseUseCase: AddCheckpointToCourseUseCase,
-    private val getImageInfoUseCase: GetImageInfoUseCase
+    private val searchAddressUseCase: SearchAddressUseCase,
 ) : ViewModel() {
     private val _driveScreenState = MutableStateFlow(DriveScreenState())
     private val _cacheCourseMapOverlayGroup = mutableMapOf<String, MapOverlay>() // courseId
@@ -111,6 +117,12 @@ class DriveViewModel @Inject constructor(
     fun handleIntent(intent: DriveScreenIntent) {
         viewModelScope.launch(exceptionHandler) {
             when (intent) {
+
+                //서치바
+                is DriveScreenIntent.AddressItemClick -> addressItemClick(intent.simpleAddress)
+                is DriveScreenIntent.SearchToggleClick -> searchToggleClick(intent.isBar)
+                is DriveScreenIntent.SubmitClick -> submitClick(intent.submit)
+
                 //지도
                 is DriveScreenIntent.MapIsReady -> mapIsReady()
                 is DriveScreenIntent.UpdateCamera -> updateCamara(intent.cameraState)
@@ -159,6 +171,82 @@ class DriveViewModel @Inject constructor(
             _driveScreenState.combine(getHistoryStreamUseCase(), getUserProfileStreamUseCase())
         }
     }
+
+
+    //서치바
+    private suspend fun addressItemClick(simpleAddress: SimpleAddress){
+        _driveScreenState.value.apply {
+            _driveScreenState.value = run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
+            _driveScreenState.value = run {
+                val latlngResponse = getLatLngFromAddressUseCase(simpleAddress.address)
+                when(latlngResponse.status){
+                    UseCaseResponse.Status.Success->{
+                        val newLatLng = latlngResponse.data!!
+                        copy(
+                            searchBarState = searchBarState.copy(isLoading = false),
+                            mapState = mapState.copy(
+                                cameraState = mapState.cameraState.copy(
+                                    latLng = newLatLng,
+                                    status = CameraStatus.TRACK
+                                )
+                            )
+                        )
+                    }
+                    UseCaseResponse.Status.Fail->{
+                        copy(
+                            searchBarState = searchBarState.copy(isLoading = false)
+                        )
+                    }
+                }
+
+            }
+        }
+    }
+
+    private fun searchToggleClick(isBar:Boolean){
+        _driveScreenState.value.apply {
+            _driveScreenState.value = run {
+                if(!isBar){
+                    copy(
+                        searchBarState = searchBarState.copy(
+                            isLoading = false,
+                            simpleAddressGroup = emptyList()
+                        )
+                    )
+                }else{
+                    copy()
+                }
+            }
+        }
+    }
+
+    private suspend fun submitClick(submit:String){
+        _driveScreenState.value.apply {
+            _driveScreenState.value = run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
+            _driveScreenState.value = run {
+                val addressResponse = searchAddressUseCase(submit)
+                when(addressResponse.status){
+                    UseCaseResponse.Status.Success->{
+                        copy(
+                            searchBarState = searchBarState.copy(
+                                isLoading = false,
+                                simpleAddressGroup = addressResponse.data?: emptyList()
+                            )
+                        )
+                    }
+                    UseCaseResponse.Status.Fail->{
+                        copy(
+                            searchBarState = searchBarState.copy(
+                                isLoading = false
+                            )
+                        )
+                    }
+                }
+
+            }
+        }
+    }
+
 
     //지도
     private fun mapIsReady() {

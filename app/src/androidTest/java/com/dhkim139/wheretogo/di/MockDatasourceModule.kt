@@ -1,5 +1,6 @@
 package com.dhkim139.wheretogo.di
 
+import com.dhkim139.wheretogo.mock.MockAddressRemoteDatasourceImpl
 import com.dhkim139.wheretogo.mock.MockAuthRemoteDatasourceImpl
 import com.dhkim139.wheretogo.mock.MockCheckPointRemoteDatasourceImpl
 import com.dhkim139.wheretogo.mock.MockCourseRemoteDatasourceImpl
@@ -7,6 +8,7 @@ import com.dhkim139.wheretogo.mock.MockImageRemoteDatasourceImpl
 import com.dhkim139.wheretogo.mock.MockReportRemoteDatasourceImpl
 import com.dhkim139.wheretogo.mock.MockRouteRemoteDatasourceImpl
 import com.dhkim139.wheretogo.mock.MockUserRemoteDatasourceImpl
+import com.wheretogo.data.datasource.AddressRemoteDatasource
 import com.wheretogo.data.datasource.AuthRemoteDatasource
 import com.wheretogo.data.datasource.CheckPointLocalDatasource
 import com.wheretogo.data.datasource.CheckPointRemoteDatasource
@@ -64,6 +66,9 @@ abstract class MockDatasourceModule {
 
     @Binds
     abstract fun bindRouteRemoteDatasource(datasource: MockRouteRemoteDatasourceImpl): RouteRemoteDatasource
+
+    @Binds
+    abstract fun bindAddressRemoteDatasource(datasource: MockAddressRemoteDatasourceImpl): AddressRemoteDatasource
 
     @Binds
     abstract fun bindAuthRemoteDatasource(datasource: MockAuthRemoteDatasourceImpl): AuthRemoteDatasource
