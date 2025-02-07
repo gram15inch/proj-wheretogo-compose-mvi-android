@@ -57,6 +57,13 @@ class RouteTest {
         assertEquals(null, courseDatasourceImpl.getCourse(cs.courseId))
     }
 
+    @Test
+    fun createRouteTest():Unit = runBlocking{
+        val course = getCourseDummy().first()
+        val rr= routeRemoteDatasourceImpl.getRouteByNaver(course.waypoints)
+        rr.points
+        assertEquals(true,rr.points.isNotEmpty())
+    }
 
 
 
