@@ -494,24 +494,25 @@ fun PopUpImage(modifier: Modifier, uri: Uri?) {
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
-            .background(Color.Black)
             .sizeIn(maxWidth = 260.dp, maxHeight = 500.dp),
         contentAlignment = Alignment.Center
     ) {
-        if (uri != null)
+        FadeAnimation(visible= uri != null) {
             GlideImage(
                 modifier = Modifier.fillMaxSize(),
                 imageModel = { uri },
                 imageOptions = ImageOptions(contentScale = ContentScale.FillHeight)
             )
-        else
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        }
+        FadeAnimation(visible = uri == null) {
+            Box(modifier = Modifier.fillMaxSize().background(color = Color.White), contentAlignment = Alignment.Center) {
                 Image(
                     modifier = Modifier.size(70.dp),
                     painter = painterResource(R.drawable.ic_picture),
                     contentDescription = ""
                 )
             }
+        }
     }
 
 }

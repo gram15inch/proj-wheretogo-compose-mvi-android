@@ -40,6 +40,7 @@ import androidx.navigation.NavController
 import com.naver.maps.map.overlay.Marker
 import com.wheretogo.presentation.BuildConfig
 import com.wheretogo.presentation.R
+import com.wheretogo.presentation.composable.content.AnimationDirection
 import com.wheretogo.presentation.composable.content.CheckPointAddContent
 import com.wheretogo.presentation.composable.content.DelayLottieAnimation
 import com.wheretogo.presentation.composable.content.DescriptionTextField
@@ -51,6 +52,7 @@ import com.wheretogo.presentation.composable.content.InfoContent
 import com.wheretogo.presentation.composable.content.MapPopup
 import com.wheretogo.presentation.composable.content.NaverMap
 import com.wheretogo.presentation.composable.content.SearchBar
+import com.wheretogo.presentation.composable.content.SlideAnimation
 import com.wheretogo.presentation.feature.ImeStickyBox
 import com.wheretogo.presentation.feature.naver.setCurrentLocation
 import com.wheretogo.presentation.intent.DriveScreenIntent
@@ -86,6 +88,7 @@ fun DriveScreen(
             )
         DelayLottieAnimation(
             modifier = Modifier
+                .padding(top = 40.dp, end = 10.dp)
                 .size(50.dp)
                 .align(alignment = Alignment.TopEnd),
             ltRes = R.raw.lt_loading,
@@ -140,15 +143,16 @@ fun DriveScreen(
                 .fillMaxWidth()
                 .padding(top = 10.dp, end = 10.dp), contentAlignment = Alignment.CenterEnd
             ) {
-
                 state.searchBarState.run {
-                    SearchBar(
-                        isLoading = isLoading,
-                        simpleAddressGroup = simpleAddressGroup,
-                        onSubmitClick = { viewModel.handleIntent(DriveScreenIntent.SubmitClick(it)) },
-                        onSearchToggleClick = { viewModel.handleIntent(DriveScreenIntent.SearchToggleClick(it)) },
-                        onAddressItemClick = { viewModel.handleIntent(DriveScreenIntent.AddressItemClick(it)) }
-                    )
+                    SlideAnimation (visible = isVisible, direction = AnimationDirection.CenterRight) {
+                        SearchBar(
+                            isLoading = isLoading,
+                            simpleAddressGroup = simpleAddressGroup,
+                            onSubmitClick = { viewModel.handleIntent(DriveScreenIntent.SubmitClick(it)) },
+                            onSearchToggleClick = { viewModel.handleIntent(DriveScreenIntent.SearchToggleClick(it)) },
+                            onAddressItemClick = { viewModel.handleIntent(DriveScreenIntent.AddressItemClick(it)) }
+                        )
+                    }
                 }
             }
             FadeAnimation(

@@ -86,18 +86,17 @@ fun NaverMap(
 
                     addOnCameraIdleListener {
                         contentRegion.apply {
-                            onCameraMove(
-                                CameraState(
-                                    latLng = cameraPosition.target.toDomainLatLng(),
-                                    zoom = cameraPosition.zoom,
-                                    viewport = Viewport(
-                                        this[0].latitude,
-                                        this[3].latitude,
-                                        this[0].longitude,
-                                        this[3].longitude
-                                    )
+                            val newCameraState = CameraState(
+                                latLng = cameraPosition.target.toDomainLatLng(),
+                                zoom = cameraPosition.zoom,
+                                viewport = Viewport(
+                                    this[0].latitude,
+                                    this[3].latitude,
+                                    this[0].longitude,
+                                    this[3].longitude
                                 )
                             )
+                            onCameraMove(newCameraState)
                         }
                     }
 

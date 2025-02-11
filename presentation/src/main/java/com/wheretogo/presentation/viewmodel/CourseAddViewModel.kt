@@ -28,11 +28,13 @@ import com.wheretogo.presentation.toNaver
 import com.wheretogo.presentation.toRouteWaypointItemState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 
@@ -89,10 +91,10 @@ class CourseAddViewModel @Inject constructor(
 
     //서치바
     private suspend fun addressItemClick(simpleAddress: SimpleAddress){
-        _courseAddScreenState.value.apply {
-            _courseAddScreenState.value = run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
-            _courseAddScreenState.value = run {
-                val latlngResponse = getLatLngFromAddressUseCase(simpleAddress.address)
+            _courseAddScreenState.value = _courseAddScreenState.value.run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
+        val latlngResponse = withContext(Dispatchers.IO){ getLatLngFromAddressUseCase(simpleAddress.address) }
+            _courseAddScreenState.value = _courseAddScreenState.value.run {
+
                 when(latlngResponse.status){
                     UseCaseResponse.Status.Success->{
                         val newLatLng = latlngResponse.data!!
@@ -113,12 +115,12 @@ class CourseAddViewModel @Inject constructor(
                 }
 
             }
-        }
+
     }
 
     private fun searchToggleClick(isBar:Boolean){
-        _courseAddScreenState.value.apply {
-            _courseAddScreenState.value = run {
+
+            _courseAddScreenState.value = _courseAddScreenState.value.run {
                 if(!isBar){
                     copy(
                         searchBarState = searchBarState.copy(
@@ -130,14 +132,13 @@ class CourseAddViewModel @Inject constructor(
                     copy()
                 }
             }
-        }
+
     }
 
     private suspend fun submitClick(submit:String){
-        _courseAddScreenState.value.apply {
-            _courseAddScreenState.value = run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
-            _courseAddScreenState.value = run {
-                val addressResponse = searchAddressUseCase(submit)
+            _courseAddScreenState.value = _courseAddScreenState.value.run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
+        val addressResponse = withContext(Dispatchers.IO){ searchAddressUseCase(submit) }
+            _courseAddScreenState.value = _courseAddScreenState.value.run {
                 when(addressResponse.status){
                     UseCaseResponse.Status.Success->{
                         copy(
@@ -157,7 +158,7 @@ class CourseAddViewModel @Inject constructor(
                 }
 
             }
-        }
+
     }
 
     
@@ -305,13 +306,14 @@ class CourseAddViewModel @Inject constructor(
 
     //바텀시트
     private suspend fun routeCreateClick() {
-        _courseAddScreenState.value = _courseAddScreenState.value.run {
-            val isWaypoint = waypoints.size >= 2
-            if (!isWaypoint) {
-                _eventFlow.emit(ViewModelEvent.TOAST to R.string.add_marker_by_click_map)
-                return
-            } else {
-                val newRoute = createRouteUseCase(waypoints) ?: return
+        val waypoints =  _courseAddScreenState.value.waypoints
+        val isWaypoint = waypoints.size >= 2
+        if (!isWaypoint) {
+            _eventFlow.emit(ViewModelEvent.TOAST to R.string.add_marker_by_click_map)
+            return
+        } else {
+            val newRoute = withContext(Dispatchers.IO){ createRouteUseCase(waypoints)} ?: return
+            _courseAddScreenState.value =  _courseAddScreenState.value.run {
                 val naverPoints = newRoute.points.toNaver()
                 val newWaypointItemState =
                     newRoute.waypointItems.map { it.toRouteWaypointItemState() }
@@ -387,44 +389,50 @@ class CourseAddViewModel @Inject constructor(
     }
 
     private suspend fun commendClick() {
-        _courseAddScreenState.value.apply {
-            _courseAddScreenState.value = run {
-                if (isDetailContent && isWaypointDone && isDetailDone) {
-                    val newCourse = Course(
-                        courseName = courseName,
-                        waypoints = waypoints,
-                        points = routeState.points,
-                        duration = (routeState.duration / 60000).toString(),
-                        type = detailItemStateGroup.filter { it.data.type == RouteDetailType.TYPE }
-                            .firstOrNull() { it.isClick }?.data!!.code,
-                        level = detailItemStateGroup.filter { it.data.type == RouteDetailType.LEVEL }
-                            .firstOrNull() { it.isClick }?.data!!.code,
-                        relation = detailItemStateGroup.filter { it.data.type == RouteDetailType.RECOMMEND }
-                            .firstOrNull() { it.isClick }?.data!!.code,
-                        cameraLatLng = waypoints.first(),
-                        zoom = ""
-                    )
-
-                    when (addCourseUseCase(newCourse).status) {
-                        UseCaseResponse.Status.Success -> {
-                            _eventFlow.emit(ViewModelEvent.TOAST to R.string.course_add_done)
-                            _eventFlow.emit(ViewModelEvent.NAVIGATION to R.string.navi_home)
-                            copy()
-                        }
-
-                        else -> {
-                            _eventFlow.emit(ViewModelEvent.TOAST to R.string.course_add_error)
-                            copy(
-                                error = "코스 등록 오류"
-                            )
-                        }
+        val isValid = _courseAddScreenState.value.run {
+            isDetailContent && isWaypointDone && isDetailDone
+        }
+        if (isValid) {
+            val addCourseResponse = _courseAddScreenState.value.run {
+                val newCourse = Course(
+                    courseName = courseName,
+                    waypoints = waypoints,
+                    points = routeState.points,
+                    duration = (routeState.duration / 60000).toString(),
+                    type = detailItemStateGroup.filter { it.data.type == RouteDetailType.TYPE }
+                        .firstOrNull() { it.isClick }?.data!!.code,
+                    level = detailItemStateGroup.filter { it.data.type == RouteDetailType.LEVEL }
+                        .firstOrNull() { it.isClick }?.data!!.code,
+                    relation = detailItemStateGroup.filter { it.data.type == RouteDetailType.RECOMMEND }
+                        .firstOrNull() { it.isClick }?.data!!.code,
+                    cameraLatLng = waypoints.first(),
+                    zoom = ""
+                )
+                withContext(Dispatchers.IO) { addCourseUseCase(newCourse) }
+            }
+            _courseAddScreenState.value = _courseAddScreenState.value.run {
+                when (addCourseResponse.status) {
+                    UseCaseResponse.Status.Success -> {
+                        _eventFlow.emit(ViewModelEvent.TOAST to R.string.course_add_done)
+                        _eventFlow.emit(ViewModelEvent.NAVIGATION to R.string.navi_home)
+                        copy()
                     }
-                } else {
-                    copy(
-                        isDetailContent = isWaypointDone,
-                        isCommendActive = isDetailDone
-                    )
+
+                    else -> {
+                        _eventFlow.emit(ViewModelEvent.TOAST to R.string.course_add_error)
+                        copy(
+                            error = "코스 등록 오류"
+                        )
+                    }
                 }
+            }
+
+        } else {
+            _courseAddScreenState.value = _courseAddScreenState.value.run {
+                copy(
+                    isDetailContent = isWaypointDone,
+                    isCommendActive = isDetailDone
+                )
             }
         }
     }
