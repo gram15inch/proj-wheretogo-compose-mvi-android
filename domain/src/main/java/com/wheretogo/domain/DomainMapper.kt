@@ -17,6 +17,15 @@ import java.util.Date
 import java.util.Locale
 import java.util.UUID
 
+fun Profile.toAuthProfile(): AuthProfile{
+    return AuthProfile(
+        uid=uid,
+        userName = name,
+        email = private.mail,
+        authCompany = AuthCompany.PROFILE
+    )
+}
+
 fun List<Pair<HistoryType, HashSet<String>>>.toHistory(): History {
     var history = History()
     this.forEach {
