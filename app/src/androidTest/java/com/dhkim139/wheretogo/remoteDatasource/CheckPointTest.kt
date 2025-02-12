@@ -79,37 +79,4 @@ class CheckPointTest {
         assertFalse(this)
     }
 
-
-    /*    @Test
-        fun initCheckPoint(): Unit = runBlocking {
-            val datasource = checkPointRemoteDatasourceImpl
-
-            val cs1 = cs1.map {
-                it.copy(
-                    titleComment = "\uD83D\uDE0A 주위가 조용해요.",
-                    imageName = "photo_original.jpg"
-                )
-            }
-            val cs2 = cs2.map {
-                it.copy(
-                    titleComment = "\uD83D\uDE0C 경치가 좋아요.",
-                    imageName = "photo_original.jpg"
-                )
-            }
-            val cs6 = cs6.map {
-                it.copy(
-                    titleComment = "\uD83D\uDE1A 또 가고싶어요.",
-                    imageName = "photo_original.jpg"
-                )
-            }
-            cs1.forEach {
-                assertEquals(true, datasource.setCheckPoint(it))
-            }
-            cs2.forEach {
-                assertEquals(true, datasource.setCheckPoint(it))
-            }
-            cs6.forEach {
-                assertEquals(true, datasource.setCheckPoint(it))
-            }
-        }*/
 }

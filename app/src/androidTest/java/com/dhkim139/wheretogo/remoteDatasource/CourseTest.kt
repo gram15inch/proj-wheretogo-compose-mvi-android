@@ -64,21 +64,5 @@ class CourseTest {
         assertEquals(null, datasource.getCourse(local.courseId))
     }
 
-    /*@Test
-    fun courseInit(): Unit = runBlocking {
-        val courseGroup = getCourseDummy()
-        courseGroup.forEach { course ->
-            val r = datasource.setCourse(
-                course.toRemoteCourse().copy(
-                    dataMetaCheckPoint = DataMetaCheckPoint(
-                        course.checkpointIdGroup,
-                        timeStamp = System.currentTimeMillis()
-                    )
-                )
-            )
-            assertEquals(true, r)
-        }
-        val cs1 = courseGroup.first()
-        assertEquals(cs1.courseId, datasource.getCourse(cs1.courseId)!!.courseId)
-    }*/
+
 }
