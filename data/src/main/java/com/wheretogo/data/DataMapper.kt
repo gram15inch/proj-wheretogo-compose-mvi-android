@@ -153,6 +153,7 @@ fun CheckPoint.toRemoteCheckPoint(): RemoteCheckPoint {
     return RemoteCheckPoint(
         checkPointId = checkPointId,
         userId = userId,
+        userName = userName,
         latLng = latLng.toDataLatLng(),
         titleComment = titleComment,
         imageName = imageName,
@@ -164,6 +165,7 @@ fun CheckPoint.toLocalCheckPoint(): LocalCheckPoint {
     return LocalCheckPoint(
         checkPointId = checkPointId,
         userId = userId,
+        userName = userName,
         latLng = latLng,
         titleComment = titleComment,
         imageName = imageName,
@@ -176,6 +178,8 @@ fun CheckPoint.toLocalCheckPoint(): LocalCheckPoint {
 fun RemoteCheckPoint.toCheckPoint(): CheckPoint {
     return CheckPoint(
         checkPointId = checkPointId,
+        userId = userId,
+        userName = userName,
         latLng = latLng.toLatLng(),
         titleComment = titleComment,
         imageName = imageName,
@@ -189,6 +193,8 @@ fun RemoteCheckPoint.toLocalCheckPoint(
 ): LocalCheckPoint {
     return LocalCheckPoint(
         checkPointId = checkPointId,
+        userId= userId,
+        userName= userName,
         latLng = latLng.toLatLng(),
         titleComment = titleComment,
         imageName = imageName,
@@ -201,6 +207,8 @@ fun RemoteCheckPoint.toLocalCheckPoint(
 fun LocalCheckPoint.toCheckPoint(): CheckPoint {
     return CheckPoint(
         checkPointId = checkPointId,
+        userId=userId,
+        userName = userName,
         latLng = latLng,
         titleComment = titleComment,
         imageName = imageName,
@@ -217,6 +225,7 @@ fun LocalCourse.toCourse(
         courseId = courseId,
         courseName = courseName,
         userId = userId,
+        userName = userName,
         waypoints = waypoints,
         checkpointIdGroup = localMetaCheckPoint.checkPointIdGroup,
         points = route,
@@ -237,6 +246,7 @@ fun Course.toLocalCourse(
         courseId = courseId,
         courseName = courseName,
         userId = userId,
+        userName = userName,
         latitude = cameraLatLng.latitude,
         longitude = cameraLatLng.longitude,
         geoHash = cameraLatLng.toGeoHash(6),
@@ -262,6 +272,8 @@ fun RemoteCourse.toLocalCourse(
     return LocalCourse(
         courseId = courseId,
         courseName = courseName,
+        userId = userId,
+        userName = userName,
         latitude = cameraLatLng.latitude,
         longitude = cameraLatLng.longitude,
         geoHash = cameraLatLng.toGeoHash(6),
@@ -285,6 +297,7 @@ fun Course.toRemoteCourse(
         courseId = courseId,
         courseName = courseName,
         userId = userId,
+        userName = userName,
         latitude = cameraLatLng.latitude,
         longitude = cameraLatLng.longitude,
         geoHash = cameraLatLng.toGeoHash(6),
@@ -321,38 +334,6 @@ fun RemoteCourse.toCourse(
     )
 }
 
-fun List<LocalCheckPoint>.toCheckPoint(): List<CheckPoint> {
-    return map {
-        CheckPoint(
-            checkPointId = it.checkPointId,
-            latLng = it.latLng,
-            titleComment = it.titleComment,
-            imageName = it.imageName,
-            imageLocalPath = it.imageLocalPath
-        )
-    }
-}
-
-fun List<CheckPoint>.toLocalCheckPoint(): List<LocalCheckPoint> {
-    return map {
-        LocalCheckPoint(
-            checkPointId = it.checkPointId,
-            latLng = it.latLng,
-            titleComment = it.titleComment,
-            imageName = it.imageName,
-            imageLocalPath = it.imageLocalPath
-        )
-    }
-}
-
-fun MetaCheckPoint.toCheckPointGroup(): List<CheckPoint> {
-    return checkPointIdGroup.map { CheckPoint(checkPointId = it) }
-}
-
-fun MetaCheckPoint.toLocalCheckPointGroup(): List<LocalCheckPoint> {
-    return checkPointIdGroup.map { LocalCheckPoint(checkPointId = it) }
-}
-
 fun MetaCheckPoint.toDataMetaCheckPoint(timeStamp: Long = this.timeStamp): DataMetaCheckPoint {
     return DataMetaCheckPoint(
         checkPointIdGroup = checkPointIdGroup,
@@ -364,15 +345,6 @@ fun DataLatLng.toLatLng(): LatLng {
     return LatLng(this.latitude, this.longitude)
 }
 
-fun List<DataLatLng>.toLatlngList(): List<LatLng> {
-    return this.map { it.toLatLng() }
-}
-
-
 fun LatLng.toDataLatLng(): DataLatLng {
     return DataLatLng(this.latitude, this.longitude)
-}
-
-fun List<LatLng>.toDataLatlngList(): List<DataLatLng> {
-    return this.map { it.toDataLatLng() }
 }

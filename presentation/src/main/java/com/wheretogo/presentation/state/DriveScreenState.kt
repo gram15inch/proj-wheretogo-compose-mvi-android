@@ -42,7 +42,7 @@ data class DriveScreenState(
 
     data class BottomSheetState(
         val isVisible: Boolean = false,
-        val isCheckPointAdd: Boolean = true,
+        val isCheckPointAdd: Boolean = true, // false시 info
         val checkPointAddState: CheckPointAddState = CheckPointAddState(),
         val infoState: InfoState = InfoState()
     )

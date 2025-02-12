@@ -2,13 +2,10 @@ package com.wheretogo.data.repositoryimpl
 
 import com.wheretogo.data.datasource.CheckPointLocalDatasource
 import com.wheretogo.data.datasource.CheckPointRemoteDatasource
-import com.wheretogo.data.model.checkpoint.LocalCheckPoint
 import com.wheretogo.data.toCheckPoint
-import com.wheretogo.data.toLatLng
 import com.wheretogo.data.toLocalCheckPoint
 import com.wheretogo.data.toRemoteCheckPoint
 import com.wheretogo.domain.model.map.CheckPoint
-import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.repository.CheckPointRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -26,21 +23,17 @@ class CheckPointRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getCheckPoint(checkPointId: String): CheckPoint {
+    override suspend fun getCheckPoint(checkPointId: String): CheckPoint? {
         val localCheckPoint = checkPointLocalDatasource.getCheckPoint(checkPointId) ?: run {
             val remoteCheckPoint = checkPointRemoteDatasource.getCheckPoint(checkPointId)
             val remotePath = remoteCheckPoint?.imageName
 
-            LocalCheckPoint(
-                checkPointId = checkPointId,
-                latLng = remoteCheckPoint?.latLng?.toLatLng() ?: LatLng(),
-                titleComment = remoteCheckPoint?.titleComment ?: "",
-                imageName = remotePath ?: "",
-                imageLocalPath = "",
+            remoteCheckPoint?.toLocalCheckPoint(
+                localImgUrl = remotePath?:"",
                 timestamp = System.currentTimeMillis()
-            ).apply { checkPointLocalDatasource.setCheckPoint(this) }
+            )?.apply { checkPointLocalDatasource.setCheckPoint(this) }
         }
-        return localCheckPoint.toCheckPoint()
+        return localCheckPoint?.toCheckPoint()
     }
 
 
@@ -55,7 +48,7 @@ class CheckPointRepositoryImpl @Inject constructor(
                             getCheckPoint(checkPointId) // 체크포인트 저장
                         }
                     }.awaitAll()
-                }
+                }.mapNotNull { it }
             }
     }
 
