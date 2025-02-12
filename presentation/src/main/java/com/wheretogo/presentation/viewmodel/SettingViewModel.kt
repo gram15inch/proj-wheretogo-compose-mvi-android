@@ -11,9 +11,11 @@ import com.wheretogo.presentation.SettingInfoType
 import com.wheretogo.presentation.intent.SettingIntent
 import com.wheretogo.presentation.state.SettingScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -60,11 +62,11 @@ class SettingViewModel @Inject constructor(
     }
 
     private suspend fun userDeleteClick() {
-        deleteUserUseCase()
+        withContext(Dispatchers.IO){ deleteUserUseCase()}
     }
 
     private suspend fun logoutClick() {
-        signOutUseCase()
+        withContext(Dispatchers.IO){ signOutUseCase() }
     }
 
 
