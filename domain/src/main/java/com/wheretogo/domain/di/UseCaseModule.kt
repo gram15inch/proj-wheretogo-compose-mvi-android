@@ -4,7 +4,7 @@ import com.wheretogo.domain.usecase.community.AddCommentToCheckPointUseCase
 import com.wheretogo.domain.usecase.community.GetCommentForCheckPointUseCase
 import com.wheretogo.domain.usecase.community.GetImageInfoUseCase
 import com.wheretogo.domain.usecase.community.GetMyReportUseCase
-import com.wheretogo.domain.usecase.community.ModifyLikeUseCase
+import com.wheretogo.domain.usecase.community.UpdateLikeUseCase
 import com.wheretogo.domain.usecase.community.RemoveCheckPointUseCase
 import com.wheretogo.domain.usecase.community.RemoveCommentToCheckPointUseCase
 import com.wheretogo.domain.usecase.community.RemoveCourseUseCase
@@ -33,7 +33,7 @@ import com.wheretogo.domain.usecaseimpl.community.AddCommentToCheckPointUseCaseI
 import com.wheretogo.domain.usecaseimpl.community.GetCommentForCheckPointUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.community.GetImageInfoUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.community.GetMyMyReportUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.community.ModifyLikeUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.community.UpdateLikeUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.community.RemoveCheckPointUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.community.RemoveCommentToCheckPointUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.community.RemoveCourseUseCaseImpl
@@ -141,7 +141,7 @@ abstract class UseCaseModule {
     abstract fun bindDeleteUserUseCase(useCaseImpl: DeleteUserUseCaseImpl): DeleteUserUseCase
 
     @Binds
-    abstract fun bindModifyLikeUseCase(useCaseImpl: ModifyLikeUseCaseImpl): ModifyLikeUseCase
+    abstract fun bindUpdateLikeUseCase(useCaseImpl: UpdateLikeUseCaseImpl): UpdateLikeUseCase
 
     @Binds
     abstract fun bindGetReportUseCase(useCaseImpl: GetMyMyReportUseCaseImpl): GetMyReportUseCase

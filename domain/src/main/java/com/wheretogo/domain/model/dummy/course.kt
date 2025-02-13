@@ -1,13 +1,15 @@
 package com.wheretogo.domain.model.dummy
 
 import com.wheretogo.domain.CourseDetail
+import com.wheretogo.domain.feature.hashSha256
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.Course
 import com.wheretogo.domain.model.map.LatLng
+import com.wheretogo.domain.model.user.Profile
+import com.wheretogo.domain.model.user.ProfilePrivate
 
 
-fun getCourseDummy(): List<Course> {
-
+fun getWaypointDummy(courseId:String):List<LatLng>{
     val w1 = listOf(
         // 기흥호수공원 순환
         LatLng(37.24049254419747, 127.10069878544695),
@@ -54,125 +56,211 @@ fun getCourseDummy(): List<Course> {
         LatLng(37.293786578277825, 127.21912319980723),
     )
 
+   return  when(courseId){
+       "cs1"->w1
+       "cs2"->w2
+       "cs3"->w3
+       "cs4"->w4
+       "cs5"->w5
+       "cs6"->w6
+       "cs7"->w7
+       else-> emptyList()
+   }
+}
+
+fun getCourseDummy(): List<Course> {
+    val user1 = getProfileDummy()[0]
     return listOf(
         Course(
             courseId = "cs1",
             courseName = "기흥호수공원 순환",
-            userId = "uid1",
-            waypoints = w1,
+            userId = user1.uid,
+            waypoints = getWaypointDummy("cs1"),
             checkpointIdGroup = getCheckPointDummy("cs1").map { it.checkPointId },
             duration = "20",
             type = CourseDetail.DRIVE.code,
             level = CourseDetail.BEGINNER.code,
             relation = CourseDetail.FAMILY.code,
-            cameraLatLng = w1.first(),
+            cameraLatLng = getWaypointDummy("cs1").first(),
             zoom = ""
         ),
         Course(
             courseId = "cs2",
             courseName = "광교호수공원 순환",
-            userId = "uid1",
-            waypoints = w2,
+            userId = user1.uid,
+            waypoints = getWaypointDummy("cs2"),
             checkpointIdGroup = getCheckPointDummy("cs2").map { it.checkPointId },
             duration = "25",
             type = CourseDetail.DRIVE.code,
             level = CourseDetail.BEGINNER.code,
             relation = CourseDetail.FRIEND.code,
-            cameraLatLng = w2.first(),
+            cameraLatLng = getWaypointDummy("cs2").first(),
             zoom = ""
         ),
         Course(
             courseId = "cs3",
             courseName = "에버랜드 장미원 <-> 1bw 주차장",
-            userId = "uid1",
-            waypoints = w3,
+            userId = user1.uid,
+            waypoints = getWaypointDummy("cs3"),
             checkpointIdGroup = getCheckPointDummy().map { it.checkPointId },
             duration = "13",
             type = CourseDetail.SPORT.code,
             level = CourseDetail.EXPERT.code,
             relation = CourseDetail.SOLO.code,
-            cameraLatLng = w3.first(),
+            cameraLatLng = getWaypointDummy("cs3").first(),
             zoom = ""
         ),
         Course(
             courseId = "cs4",
             courseName = "에버랜드 장미원 <-> 백련사",
-            userId = "uid1",
-            waypoints = w4,
+            userId = user1.uid,
+            waypoints = getWaypointDummy("cs4"),
             checkpointIdGroup = getCheckPointDummy().map { it.checkPointId },
             duration = "4",
             type = CourseDetail.SPORT.code,
             level = CourseDetail.LOVER.code,
             relation = CourseDetail.SOLO.code,
-            cameraLatLng = w4.first(),
+            cameraLatLng = getWaypointDummy("cs4").first(),
             zoom = ""
         ),
         Course(
             courseId = "cs5",
             courseName = "기흥역 <-> 역북램프 공영주차장",
-            userId = "uid1",
-            waypoints = w5,
+            userId = user1.uid,
+            waypoints = getWaypointDummy("cs5"),
             checkpointIdGroup = getCheckPointDummy().map { it.checkPointId },
             duration = "7",
             type = CourseDetail.TRAINING.code,
             level = CourseDetail.BEGINNER.code,
             relation = CourseDetail.SOLO.code,
-            cameraLatLng = w5.first(),
+            cameraLatLng = getWaypointDummy("cs5").first(),
             zoom = ""
         ),
 
         Course(
             courseId = "cs6",
             courseName = "기흥역 <-> 용인 운전면허시험 <-> 신갈오거리",
-            userId = "uid1",
-            waypoints = w6,
+            userId = user1.uid,
+            waypoints = getWaypointDummy("cs6"),
             checkpointIdGroup = getCheckPointDummy("cs6").map { it.checkPointId },
             duration = "5",
             type = CourseDetail.TRAINING.code,
             level = CourseDetail.BEGINNER.code,
             relation = CourseDetail.SOLO.code,
-            cameraLatLng = w6.first(),
+            cameraLatLng = getWaypointDummy("cs6").first(),
             zoom = ""
         ),
 
         Course(
             courseId = "cs7",
             courseName = "에버랜드1b주차장 <-> 용인 스피드웨이",
-            userId = "uid1",
-            waypoints = w7,
+            userId = user1.uid,
+            waypoints = getWaypointDummy("cs7"),
             checkpointIdGroup = getCheckPointDummy().map { it.checkPointId },
             duration = "12",
             type = CourseDetail.SPORT.code,
             level = CourseDetail.PRO.code,
             relation = CourseDetail.SOLO.code,
-            cameraLatLng = w7.first(),
+            cameraLatLng = getWaypointDummy("cs7").first(),
             zoom = ""
         ),
     )
 }
 
-
 fun getCheckPointDummy(courseId: String = ""): List<CheckPoint> {
-    val list = mutableListOf<String>()
+    val list = mutableListOf<CheckPoint>()
+    val profileGroup = getProfileDummy()
     when (courseId) {
         "cs1" -> {
-            (1..4).forEach {
-                list.add("cp$it")
+            getWaypointDummy("cs1").forEachIndexed {i,latlng->
+                val user = profileGroup[0]
+                list.add(
+                    CheckPoint(
+                        checkPointId = "cs1_cp${i}",
+                        userId = user.uid,
+                        userName = user.name,
+                        latLng = latlng
+                    )
+                )
             }
         }
 
         "cs2" -> {
-            (5..8).forEach {
-                list.add("cp$it")
+            val user = profileGroup[1]
+            getWaypointDummy("cs2").forEachIndexed {i,latlng->
+                list.add(
+                    CheckPoint(
+                        checkPointId = "cs2_cp${i}",
+                        userId = user.uid,
+                        userName = user.name,
+                        latLng = latlng
+                    )
+                )
             }
         }
 
         "cs6" -> {
-            (9..12).forEach {
-                list.add("cp$it")
+            val user = profileGroup[2]
+            getWaypointDummy("cs6").forEachIndexed {i,latlng->
+                list.add(
+                    CheckPoint(
+                        checkPointId = "cs6_cp${i}",
+                        userId = user.uid,
+                        userName = user.name,
+                        latlng
+                    )
+                )
             }
         }
     }
 
-    return list.map { CheckPoint(checkPointId = it) }
+    return list
+}
+
+fun getProfileDummy():List<Profile> {
+    val list = mutableListOf<Profile>()
+    (1..3).forEach {
+        list.add(
+            Profile(
+                uid="dummyUid$it",
+                name = "dummyName$it",
+                hashMail = hashSha256("dummyMail$it@mail.com"),
+                private = ProfilePrivate(
+                    mail = "dummyMail$it@mail.com",
+                    lastVisited = System.currentTimeMillis(),
+                    accountCreation = System.currentTimeMillis(),
+                )
+            )
+        )
+    }
+    list.mapIndexed {i,p->
+        when(i){
+            0->{
+                p.copy(
+                    private = p.private.copy(
+                        isAdmin = true,
+                        isAdRemove = true
+                    )
+                )
+            }
+            1->{
+                p.copy(
+                    private = p.private.copy(
+                        isAdmin = false,
+                        isAdRemove = true
+                    )
+                )
+            }
+            2->{
+                p.copy(
+                    private = p.private.copy(
+                        isAdmin = false,
+                        isAdRemove = false
+                    )
+                )
+            }
+            else->p
+        }
+    }
+    return list
 }

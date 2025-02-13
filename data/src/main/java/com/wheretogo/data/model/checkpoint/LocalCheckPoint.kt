@@ -12,6 +12,7 @@ data class LocalCheckPoint(
     @PrimaryKey
     val checkPointId: String = DATA_NULL,
     val userId: String = "",
+    val userName :String = "",
     val latLng: LatLng = LatLng(),
     val titleComment: String = "",
     val imageName: String = "",

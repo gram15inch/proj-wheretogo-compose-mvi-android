@@ -65,26 +65,4 @@ class RouteTest {
         assertEquals(true,rr.points.isNotEmpty())
     }
 
-
-
-    /*@Test
-    fun initRouteByNaverTest(): Unit = runBlocking {
-        val datasource = routeRemoteDatasourceImpl
-
-        val rtGroup = getCourseDummy().map {
-            RemoteRoute(
-                courseId = it.courseId,
-                points = datasource.getRouteByNaver(it.waypoints).points
-            )
-        }
-
-        assertEquals(true, rtGroup.first().points.isNotEmpty())
-        rtGroup.forEach {
-            assertEquals(true, datasource.setRouteInCourse(it))
-        }
-
-        rtGroup.forEachIndexed { idx, route ->
-            assertEquals(route, datasource.getRouteInCourse(route.courseId))
-        }
-    }*/
 }

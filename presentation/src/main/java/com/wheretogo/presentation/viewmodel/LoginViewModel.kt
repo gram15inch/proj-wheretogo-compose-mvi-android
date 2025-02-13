@@ -11,11 +11,13 @@ import com.wheretogo.presentation.model.ToastMsg
 import com.wheretogo.presentation.state.LoginScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -51,7 +53,7 @@ class LoginViewModel @Inject constructor(
                 }
                 return@launch
             }
-            val result = userSignUpAndSignInUseCase(authRequest)
+            val result = withContext(Dispatchers.IO){ userSignUpAndSignInUseCase(authRequest) }
             when (result.status) {
                 UseCaseResponse.Status.Success -> {
                     _loginScreenState.value = _loginScreenState.value.run {
@@ -77,7 +79,7 @@ class LoginViewModel @Inject constructor(
 
     fun signInPass() {
         viewModelScope.launch(exceptionHandler) {
-            userSignUpAndSignInUseCase.signInPass()
+            withContext(Dispatchers.IO){ userSignUpAndSignInUseCase.signInPass() }
             _loginScreenState.value = _loginScreenState.value.run {
                 copy(isExit = true)
             }

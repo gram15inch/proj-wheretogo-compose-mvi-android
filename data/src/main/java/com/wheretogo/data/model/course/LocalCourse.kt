@@ -17,6 +17,7 @@ data class LocalCourse(
     val courseId: String = DATA_NULL,
     val courseName: String = "",
     val userId: String = DATA_NULL,
+    val userName : String = "",
     val latitude: Double = 0.0,
     val longitude: Double = 0.0,
     val geoHash: String = "",
