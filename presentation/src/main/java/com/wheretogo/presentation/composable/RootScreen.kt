@@ -8,21 +8,30 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.wheretogo.presentation.AppEvent
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.content.AnimationDirection
 import com.wheretogo.presentation.composable.content.SlideAnimation
+import com.wheretogo.presentation.feature.EventBus
+import com.wheretogo.presentation.feature.shortShow
+import com.wheretogo.presentation.feature.getString
 import com.wheretogo.presentation.theme.WhereTogoTheme
 import com.wheretogo.presentation.theme.White100
 import com.wheretogo.presentation.viewmodel.RootViewModel
@@ -32,6 +41,24 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
     WhereTogoTheme {
         val navController = rememberNavController()
         val state by viewModel.rootScreenState.collectAsState()
+        val context = LocalContext.current
+
+        LaunchedEffect(Unit) {
+            EventBus.eventFlow.collect{
+                val eventMsg = it.second
+                when (it.first) {
+                    AppEvent.SNACKMAR -> {
+                        val msg = eventMsg.getString(context)
+                        viewModel.snackbarHostState.shortShow(msg)
+                    }
+
+                    AppEvent.NAVIGATION -> {
+                        val navigation = eventMsg.getString(context)
+                        navController.navigate(navigation)
+                    }
+                }
+            }
+        }
 
         Box(
             modifier = Modifier
@@ -39,6 +66,21 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                 .fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
+            SnackbarHost(
+                modifier = Modifier
+                    .navigationBarsPadding()
+                    .align(Alignment.BottomCenter)
+                    .zIndex(1f),
+                hostState = viewModel.snackbarHostState,
+                snackbar = { snackbarData ->
+                    Snackbar(
+                        snackbarData,
+                        containerColor = Color.DarkGray,
+                        contentColor = Color.White,
+                        actionColor = Color.Cyan
+                    )
+                }
+            )
             SlideAnimation(
                 modifier = Modifier.zIndex(1f),
                 visible = state.isRequestLogin,
@@ -66,7 +108,7 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                      composable(courseAdd,
                         enterTransition = { slideInVertically(initialOffsetY = { it }) },
                         exitTransition = { slideOutVertically(targetOffsetY = { it }) }
-                    ) { CourseAddScreen(navController) }
+                    ) { CourseAddScreen() }
                     composable(setting,
                         enterTransition = { slideInHorizontally(initialOffsetX = { it }) },
                         exitTransition = { slideOutHorizontally(targetOffsetX = { it }) }

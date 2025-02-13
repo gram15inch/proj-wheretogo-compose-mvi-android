@@ -1,5 +1,6 @@
 package com.wheretogo.presentation.viewmodel
 
+import androidx.compose.material3.SnackbarHostState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wheretogo.domain.repository.UserRepository
@@ -15,6 +16,7 @@ class RootViewModel @Inject constructor(private val userRepository: UserReposito
     ViewModel() {
     private val _mainScreenState = MutableStateFlow(RootScreenState())
     val rootScreenState: StateFlow<RootScreenState> = _mainScreenState
+    val snackbarHostState = SnackbarHostState()
 
     init {
         viewModelScope.launch {

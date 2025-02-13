@@ -7,14 +7,13 @@ import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.auth.AuthRequest
 import com.wheretogo.domain.usecase.user.UserSignUpAndSignInUseCase
 import com.wheretogo.presentation.R
-import com.wheretogo.presentation.model.ToastMsg
+import com.wheretogo.presentation.feature.EventBus
+import com.wheretogo.presentation.model.EventMsg
 import com.wheretogo.presentation.state.LoginScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -27,9 +26,6 @@ class LoginViewModel @Inject constructor(
 ) : ViewModel() {
     private val _loginScreenState = MutableStateFlow(LoginScreenState())
     val loginScreenState: StateFlow<LoginScreenState> = _loginScreenState
-    private val _toastShare = MutableSharedFlow<Pair<Boolean, ToastMsg>>()
-    val toastShare: SharedFlow<Pair<Boolean, ToastMsg>> = _toastShare
-
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
         when (exception) {
             else -> {
@@ -45,7 +41,7 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch(exceptionHandler) {
             _loginScreenState.value = _loginScreenState.value.copy(isLoading = true)
             if(authRequest==null) {
-                _toastShare.emit(true to ToastMsg(R.string.login_cancel))
+                EventBus.sendMsg(EventMsg(R.string.login_cancel))
                 _loginScreenState.value = _loginScreenState.value.run {
                     copy(
                         isLoading = false
@@ -62,7 +58,7 @@ class LoginViewModel @Inject constructor(
                             isLoading = false
                         )
                     }
-                    _toastShare.emit(true to ToastMsg(R.string.welcome_user, result.data?:"unknown"))
+                    EventBus.sendMsg(EventMsg(R.string.welcome_user, result.data?:"unknown"))
                 }
 
                 UseCaseResponse.Status.Fail -> {
@@ -71,7 +67,7 @@ class LoginViewModel @Inject constructor(
                             isLoading = false
                         )
                     }
-                    _toastShare.emit(true to ToastMsg(R.string.login_fail))
+                    EventBus.sendMsg(EventMsg(R.string.login_fail))
                 }
             }
         }
