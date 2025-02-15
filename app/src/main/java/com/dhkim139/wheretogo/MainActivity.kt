@@ -16,7 +16,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             RootScreen()
         }
-        //CoroutineScope(Dispatchers.Default).launch { createDummy(this@MainActivity) }
         locationRequest { }
     }
 }

@@ -18,9 +18,8 @@ import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-class UserRemoteDatasourceImpl @Inject constructor(
-    private val firestore: FirebaseFirestore
-) : UserRemoteDatasource {
+class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
+    private val firestore by lazy { FirebaseFirestore.getInstance() }
     private val userTable = FireStoreCollections.USER.name()
     private val historyTable = FireStoreCollections.HISTORY.name()
     private val likeTypeTable = FireStoreCollections.LIKE.name()

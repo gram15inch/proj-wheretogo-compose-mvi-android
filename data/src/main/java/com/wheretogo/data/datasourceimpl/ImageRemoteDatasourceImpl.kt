@@ -12,9 +12,8 @@ import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-class ImageRemoteDatasourceImpl @Inject constructor(
-    private val firebaseStorage: FirebaseStorage
-) : ImageRemoteDatasource {
+class ImageRemoteDatasourceImpl @Inject constructor() : ImageRemoteDatasource {
+    private val firebaseStorage by lazy { FirebaseStorage.getInstance() }
 
     override suspend fun setImage(uri: Uri, filename: String, size: ImageSize): Boolean {
         val storageRef: StorageReference =

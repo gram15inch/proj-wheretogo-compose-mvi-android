@@ -14,9 +14,9 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 class RouteRemoteDatasourceImpl @Inject constructor(
-    private val firestore: FirebaseFirestore,
     private val naverApiService: NaverMapApiService,
 ) : RouteRemoteDatasource {
+    private val firestore by lazy { FirebaseFirestore.getInstance() }
     private val courseTable = FireStoreCollections.COURSE.name()
     private val routeTable = FireStoreCollections.ROUTE.name()
 

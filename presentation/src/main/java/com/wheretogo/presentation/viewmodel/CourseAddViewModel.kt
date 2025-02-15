@@ -17,8 +17,9 @@ import com.wheretogo.domain.usecase.map.GetLatLngFromAddressUseCase
 import com.wheretogo.domain.usecase.map.SearchAddressUseCase
 import com.wheretogo.presentation.CameraStatus
 import com.wheretogo.presentation.R
-import com.wheretogo.presentation.ViewModelEvent
+import com.wheretogo.presentation.feature.EventBus
 import com.wheretogo.presentation.intent.CourseAddIntent
+import com.wheretogo.presentation.model.EventMsg
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.state.CameraState
 import com.wheretogo.presentation.state.CourseAddScreenState
@@ -29,9 +30,7 @@ import com.wheretogo.presentation.toRouteWaypointItemState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -47,8 +46,6 @@ class CourseAddViewModel @Inject constructor(
 ) : ViewModel() {
     private val _courseAddScreenState = MutableStateFlow(CourseAddScreenState())
     val courseAddScreenState: StateFlow<CourseAddScreenState> = _courseAddScreenState
-    private val _eventFlow = MutableSharedFlow<Pair<ViewModelEvent, Int>>()
-    val eventFlow: SharedFlow<Pair<ViewModelEvent, Int>> = _eventFlow
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
         when (exception) {
             else -> {
@@ -309,7 +306,7 @@ class CourseAddViewModel @Inject constructor(
         val waypoints =  _courseAddScreenState.value.waypoints
         val isWaypoint = waypoints.size >= 2
         if (!isWaypoint) {
-            _eventFlow.emit(ViewModelEvent.TOAST to R.string.add_marker_by_click_map)
+            EventBus.sendMsg(EventMsg(R.string.add_marker_by_click_map))
             return
         } else {
             val newRoute = withContext(Dispatchers.IO){ createRouteUseCase(waypoints)} ?: return
@@ -413,13 +410,13 @@ class CourseAddViewModel @Inject constructor(
             _courseAddScreenState.value = _courseAddScreenState.value.run {
                 when (addCourseResponse.status) {
                     UseCaseResponse.Status.Success -> {
-                        _eventFlow.emit(ViewModelEvent.TOAST to R.string.course_add_done)
-                        _eventFlow.emit(ViewModelEvent.NAVIGATION to R.string.navi_home)
+                        EventBus.sendMsg(EventMsg(R.string.course_add_done))
+                        EventBus.navigation(R.string.navi_home)
                         copy()
                     }
 
                     else -> {
-                        _eventFlow.emit(ViewModelEvent.TOAST to R.string.course_add_error)
+                        EventBus.sendMsg(EventMsg(R.string.course_add_error))
                         copy(
                             error = "코스 등록 오류"
                         )

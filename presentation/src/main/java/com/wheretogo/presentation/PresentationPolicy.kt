@@ -23,8 +23,8 @@ enum class CheckPointAddError{
     EMPTY_IMG, EMPTY_DESCRIPTION
 }
 
-enum class ViewModelEvent{
-    NAVIGATION, TOAST
+enum class AppEvent{
+    NAVIGATION, SNACKMAR
 }
 
 enum class ExportMap{

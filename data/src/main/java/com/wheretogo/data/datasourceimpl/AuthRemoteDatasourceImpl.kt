@@ -12,9 +12,8 @@ import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-class AuthRemoteDatasourceImpl @Inject constructor(
-    private val firebaseAuth: FirebaseAuth
-) : AuthRemoteDatasource {
+class AuthRemoteDatasourceImpl @Inject constructor() : AuthRemoteDatasource {
+    private val firebaseAuth by lazy { FirebaseAuth.getInstance() }
 
     override suspend fun authGoogle(authToken: AuthToken): AuthResponse {
         val credential = GoogleAuthProvider.getCredential(authToken.idToken, null)

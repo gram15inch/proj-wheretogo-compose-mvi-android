@@ -1,16 +1,16 @@
 package com.wheretogo.data.datasourceimpl
 
 import com.wheretogo.data.datasource.CourseLocalDatasource
-import com.wheretogo.data.datasourceimpl.database.CourseDao
+import com.wheretogo.data.datasourceimpl.database.CourseDatabase
 import com.wheretogo.data.model.course.DataMetaCheckPoint
 import com.wheretogo.data.model.course.LocalCourse
 import com.wheretogo.data.model.meta.LocalMetaGeoHash
 import javax.inject.Inject
 
 class CourseLocalDatasourceImpl @Inject constructor(
-    private val courseDao: CourseDao,
+    private val courseDatabase: CourseDatabase
 ) : CourseLocalDatasource {
-
+    private val courseDao by lazy { courseDatabase.courseDao() }
     override suspend fun getCourse(courseId: String): LocalCourse? {
         return courseDao.select(courseId)
     }

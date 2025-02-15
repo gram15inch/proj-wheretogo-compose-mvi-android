@@ -28,10 +28,6 @@ object DaoDatabaseModule {
             .build()
     }
 
-    @Singleton
-    @Provides
-    fun provideCourseDao(database: CourseDatabase) = database.courseDao()
-
     @Provides
     @Singleton
     fun provideCheckPointDatabase(@ApplicationContext context: Context): CheckPointDatabase {
@@ -43,10 +39,6 @@ object DaoDatabaseModule {
             .build()
     }
 
-    @Singleton
-    @Provides
-    fun provideCheckPointDao(database: CheckPointDatabase) = database.checkPointDao()
-
     @Provides
     @Singleton
     fun provideReportDatabase(@ApplicationContext context: Context): ReportDatabase {
@@ -57,9 +49,5 @@ object DaoDatabaseModule {
         ).fallbackToDestructiveMigration()
             .build()
     }
-
-    @Singleton
-    @Provides
-    fun provideReportDao(database: ReportDatabase) = database.reportDao()
 
 }

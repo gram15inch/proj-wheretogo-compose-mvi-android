@@ -27,8 +27,6 @@ class MockDaoDatabaseModule {
             .build()
     }
 
-    @Provides
-    fun provideCourseDao(database: CourseDatabase) = database.courseDao()
 
     @Provides
     @Singleton
@@ -38,9 +36,6 @@ class MockDaoDatabaseModule {
             .build()
     }
 
-    @Provides
-    fun provideCheckPointDao(database: CheckPointDatabase) = database.checkPointDao()
-
 
     @Provides
     @Singleton
@@ -49,8 +44,5 @@ class MockDaoDatabaseModule {
             .allowMainThreadQueries()
             .build()
     }
-
-    @Provides
-    fun provideReportDao(database: ReportDatabase) = database.reportDao()
 
 }

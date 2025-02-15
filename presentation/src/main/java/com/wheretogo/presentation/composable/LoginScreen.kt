@@ -1,6 +1,5 @@
 package com.wheretogo.presentation.composable
 
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -22,7 +21,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -46,9 +44,8 @@ import com.wheretogo.domain.toAuthProfile
 import com.wheretogo.presentation.BuildConfig
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.content.DelayLottieAnimation
-import com.wheretogo.presentation.feature.googleAuthOnDevice
 import com.wheretogo.presentation.feature.consumptionEvent
-import com.wheretogo.presentation.model.ToastMsg
+import com.wheretogo.presentation.feature.googleAuthOnDevice
 import com.wheretogo.presentation.state.LoginScreenState
 import com.wheretogo.presentation.theme.interFontFamily
 import com.wheretogo.presentation.viewmodel.LoginViewModel
@@ -58,24 +55,9 @@ import kotlinx.coroutines.launch
 @Composable
 fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
     val state by viewModel.loginScreenState.collectAsState()
-    val toastStream by viewModel.toastShare.collectAsState(false to ToastMsg(-1))
     val context = LocalContext.current
     val coroutine  = rememberCoroutineScope()
     BackHandler {} // 로그인창 뒤로가기 막기
-
-    LaunchedEffect(toastStream) {
-        if (toastStream.first) {
-            toastStream.second.let{
-                val msg = if(it.arg!=null){
-                    context.getString(it.strRes, it.arg)
-                } else {
-                    context.getString(it.strRes)
-                }
-                Toast.makeText(context.applicationContext, msg, Toast.LENGTH_SHORT)
-                    .show()
-            }
-        }
-    }
 
     LoginContent(
         state,

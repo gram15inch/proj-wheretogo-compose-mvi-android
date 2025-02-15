@@ -1,7 +1,6 @@
 package com.wheretogo.presentation.composable
 
 import android.content.Context
-import android.widget.Toast
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -37,7 +36,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -58,10 +56,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.naver.maps.map.overlay.Marker
 import com.wheretogo.presentation.R
-import com.wheretogo.presentation.ViewModelEvent
 import com.wheretogo.presentation.composable.content.AnimationDirection
 import com.wheretogo.presentation.composable.content.DelayLottieAnimation
 import com.wheretogo.presentation.composable.content.DragHandle
@@ -84,7 +80,6 @@ import kotlin.math.min
 
 @Composable
 fun CourseAddScreen(
-    navController: NavController,
     viewModel: CourseAddViewModel = hiltViewModel()
 ) {
     val state by viewModel.courseAddScreenState.collectAsState()
@@ -95,25 +90,9 @@ fun CourseAddScreen(
         animationSpec = tween(durationMillis = 350)
     )
 
-    LaunchedEffect(Unit) {
-        viewModel.eventFlow.collect {
-            val string = context.resources.getString(it.second)
-            when (it.first) {
-                ViewModelEvent.TOAST -> {
-                    Toast.makeText(context.applicationContext, string, Toast.LENGTH_SHORT).show()
-                }
-
-                ViewModelEvent.NAVIGATION -> {
-                    navController.navigate(string)
-                }
-            }
-        }
-    }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .statusBarsPadding()
             .navigationBarsPadding()
     ) {
         if (state.isFloatMarker)
@@ -135,6 +114,7 @@ fun CourseAddScreen(
 
         SearchBar(
             modifier = Modifier.zIndex(1f)
+                .statusBarsPadding()
                 .padding(top = 10.dp, end = 10.dp)
                 .align(alignment = Alignment.TopEnd),
             isLoading = state.isLoading,

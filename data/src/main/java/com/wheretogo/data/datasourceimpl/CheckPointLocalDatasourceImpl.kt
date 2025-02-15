@@ -1,16 +1,16 @@
 package com.wheretogo.data.datasourceimpl
 
 import com.wheretogo.data.datasource.CheckPointLocalDatasource
-import com.wheretogo.data.datasourceimpl.database.CheckPointDao
+import com.wheretogo.data.datasourceimpl.database.CheckPointDatabase
 import com.wheretogo.data.model.checkpoint.LocalCheckPoint
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import javax.inject.Inject
 
 class CheckPointLocalDatasourceImpl @Inject constructor(
-    private val checkPointDao: CheckPointDao
+    private val checkPointDatabase: CheckPointDatabase
 ) : CheckPointLocalDatasource {
-
+    private val checkPointDao by lazy { checkPointDatabase.checkPointDao() }
     override suspend fun getCheckPointGroup(checkPointIdGroup: List<String>): List<LocalCheckPoint> {
         return coroutineScope {
             checkPointIdGroup.map {

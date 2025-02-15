@@ -10,9 +10,8 @@ import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-class ReportRemoteDatasourceImpl @Inject constructor(
-    private val firestore: FirebaseFirestore
-) : ReportRemoteDatasource {
+class ReportRemoteDatasourceImpl @Inject constructor() : ReportRemoteDatasource {
+    private val firestore by lazy { FirebaseFirestore.getInstance() }
     private val reportTable = FireStoreCollections.REPORT.name()
     override suspend fun addReport(report: RemoteReport): Boolean {
         return suspendCancellableCoroutine { continuation ->
