@@ -93,7 +93,6 @@ fun CourseAddScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .statusBarsPadding()
             .navigationBarsPadding()
     ) {
         if (state.isFloatMarker)
@@ -115,6 +114,7 @@ fun CourseAddScreen(
 
         SearchBar(
             modifier = Modifier.zIndex(1f)
+                .statusBarsPadding()
                 .padding(top = 10.dp, end = 10.dp)
                 .align(alignment = Alignment.TopEnd),
             isLoading = state.isLoading,

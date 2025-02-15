@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.wheretogo.domain.repository.UserRepository
 import com.wheretogo.presentation.state.RootScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -19,7 +20,7 @@ class RootViewModel @Inject constructor(private val userRepository: UserReposito
     val snackbarHostState = SnackbarHostState()
 
     init {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             userRepository.isRequestLoginStream().collect {
                 _mainScreenState.value = _mainScreenState.value.run {
                     copy(isRequestLogin = it)
