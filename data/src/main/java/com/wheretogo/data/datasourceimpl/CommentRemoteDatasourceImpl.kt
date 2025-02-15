@@ -13,9 +13,8 @@ import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-class CommentRemoteDatasourceImpl @Inject constructor(
-    private val firestore: FirebaseFirestore
-) : CommentRemoteDatasource {
+class CommentRemoteDatasourceImpl @Inject constructor() : CommentRemoteDatasource {
+    private val firestore by lazy { FirebaseFirestore.getInstance() }
     private val commentTable = FireStoreCollections.COMMENT.name()
 
     override suspend fun getCommentGroupInCheckPoint(groupId: String): RemoteCommentGroupWrapper? {

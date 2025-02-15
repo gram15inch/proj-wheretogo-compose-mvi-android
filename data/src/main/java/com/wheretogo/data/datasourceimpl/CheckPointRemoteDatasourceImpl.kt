@@ -10,9 +10,8 @@ import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-class CheckPointRemoteDatasourceImpl @Inject constructor(
-    private val firestore: FirebaseFirestore
-) : CheckPointRemoteDatasource {
+class CheckPointRemoteDatasourceImpl @Inject constructor() : CheckPointRemoteDatasource {
+    private val firestore by lazy { FirebaseFirestore.getInstance() }
     private val checkPointTable = FireStoreCollections.CHECKPOINT.name()
 
     override suspend fun getCheckPointGroup(checkPoints: List<String>): List<RemoteCheckPoint> {
