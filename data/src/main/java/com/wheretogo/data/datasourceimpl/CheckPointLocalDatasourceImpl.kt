@@ -4,6 +4,7 @@ import com.wheretogo.data.datasource.CheckPointLocalDatasource
 import com.wheretogo.data.datasourceimpl.database.CheckPointDatabase
 import com.wheretogo.data.model.checkpoint.LocalCheckPoint
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import javax.inject.Inject
 
@@ -17,7 +18,7 @@ class CheckPointLocalDatasourceImpl @Inject constructor(
                 async {
                     checkPointDao.select(it)
                 }
-            }.mapNotNull { it.await() }
+            }.awaitAll().mapNotNull { it }
         }
     }
 

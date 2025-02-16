@@ -1,6 +1,5 @@
 package com.wheretogo.data.repositoryimpl
 
-import android.util.Log
 import com.wheretogo.data.datasource.CourseLocalDatasource
 import com.wheretogo.data.datasource.CourseRemoteDatasource
 import com.wheretogo.data.datasource.RouteRemoteDatasource
@@ -17,6 +16,8 @@ import com.wheretogo.domain.repository.CourseRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 
 class CourseRepositoryImpl @Inject constructor(
@@ -24,6 +25,7 @@ class CourseRepositoryImpl @Inject constructor(
     private val courseLocalDatasource: CourseLocalDatasource,
     private val routeRemoteDatasource: RouteRemoteDatasource
 ) : CourseRepository {
+    private val cacheLock = Mutex()
     private val _cacheRouteGroup = mutableMapOf<String, List<LatLng>>()// id
 
     override suspend fun getCourse(courseId: String): Course? {
@@ -41,21 +43,25 @@ class CourseRepositoryImpl @Inject constructor(
         } else {
             courseRemoteDatasource.getCourseGroupByGeoHash(geoHash, "$geoHash\uf8ff") // 구역에 해당하는 코스들 가져오기
                 .run {
-                    courseLocalDatasource.setMetaGeoHash(
-                        LocalMetaGeoHash(geoHash = geoHash, timestamp = System.currentTimeMillis())
-                    )
                     coroutineScope {
                         map {
                             async {
-                                val route = _cacheRouteGroup.getOrPut(it.courseId) {
-                                    routeRemoteDatasource.getRouteInCourse(it.courseId).points
+                                val route = cacheLock.withLock {
+                                    _cacheRouteGroup.getOrPut(it.courseId) {
+                                        routeRemoteDatasource.getRouteInCourse(it.courseId).points
+                                    }
                                 }
 
-                                //체크포인트 아이디만 저장
-                                it.toLocalCourse(
-                                    route = route
-                                ).apply {
-                                    courseLocalDatasource.setCourse(this) // 불러온 코스 저장
+
+                                it.toLocalCourse(route = route)  //체크포인트 아이디만 저장
+                                    .apply {
+                                        courseLocalDatasource.setMetaGeoHash(
+                                            LocalMetaGeoHash(
+                                                geoHash = geoHash,
+                                                timestamp = System.currentTimeMillis()
+                                            )
+                                        )
+                                        courseLocalDatasource.setCourse(this) // 불러온 코스 저장
                                 }
                             }
                         }.awaitAll()
