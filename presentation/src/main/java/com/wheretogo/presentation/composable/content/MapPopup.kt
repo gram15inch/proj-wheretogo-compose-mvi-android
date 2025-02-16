@@ -100,6 +100,7 @@ fun PopupPreview() {
             imageUri = Uri.parse(""),
             isWideSize = false,
             onPopupImageClick = {},
+            onPopupBlurClick = {},
             onCommentListItemClick = {},
             onCommentListItemLongClick = {},
             onCommentLikeClick = {},
@@ -120,7 +121,8 @@ fun MapPopup(
     commentState: CommentState,
     imageUri: Uri?,
     isWideSize: Boolean,
-    onPopupImageClick: () -> Unit ={},
+    onPopupImageClick: () -> Unit ,
+    onPopupBlurClick:() -> Unit ,
     onCommentListItemClick: (CommentItemState) -> Unit,
     onCommentListItemLongClick: (CommentItemState) -> Unit,
     onCommentLikeClick: (CommentItemState) -> Unit,
@@ -150,7 +152,7 @@ fun MapPopup(
                             .sizeIn(maxWidth = 260.dp, maxHeight = 500.dp)
                             .clip(RoundedCornerShape(16.dp)),
                         onClick = {
-                            onPopupImageClick()
+                            onPopupBlurClick()
                         })
                 }
                 SlideAnimation(
@@ -161,6 +163,7 @@ fun MapPopup(
                 ) {
                     Box(
                         modifier = Modifier
+                            .consumptionEvent()
                             .clip(RoundedCornerShape(16.dp))
                             .background(colorResource(R.color.white))
                     ) {

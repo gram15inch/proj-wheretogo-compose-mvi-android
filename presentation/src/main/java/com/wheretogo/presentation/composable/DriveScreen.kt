@@ -190,6 +190,9 @@ fun DriveScreen(
                     onPopupImageClick = {
                         viewModel.handleIntent(DriveScreenIntent.CommentFloatingButtonClick)
                     },
+                    onPopupBlurClick = {
+                        viewModel.handleIntent(DriveScreenIntent.DismissPopupComment)
+                    },
                     onCommentListItemClick = { item ->
                         viewModel.handleIntent(DriveScreenIntent.CommentListItemClick(item))
                     },

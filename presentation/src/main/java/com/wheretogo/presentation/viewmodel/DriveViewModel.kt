@@ -49,6 +49,7 @@ import com.wheretogo.presentation.model.OverlayTag
 import com.wheretogo.presentation.parse
 import com.wheretogo.presentation.state.CameraState
 import com.wheretogo.presentation.state.CheckPointAddState
+import com.wheretogo.presentation.state.CommentState
 import com.wheretogo.presentation.state.CommentState.CommentAddState
 import com.wheretogo.presentation.state.CommentState.CommentItemState
 import com.wheretogo.presentation.state.DriveScreenState
@@ -122,6 +123,7 @@ class DriveViewModel @Inject constructor(
 
                     //팝업
                     is DriveScreenIntent.DismissPopup -> dismissPopup()
+                    is DriveScreenIntent.DismissPopupComment -> dismissPopupComment()
                     is DriveScreenIntent.CommentListItemClick -> commentListItemClick(intent.itemState)
                     is DriveScreenIntent.CommentListItemLongClick -> commentListItemLongClick(intent.itemState)
                     is DriveScreenIntent.CommentLikeClick -> commentLikeClick(intent.itemState)
@@ -363,6 +365,10 @@ class DriveViewModel @Inject constructor(
     //팝업
     private fun dismissPopup() {
         _driveScreenState.value = visibleInitWithLevelState(2)
+    }
+
+    private fun dismissPopupComment() {
+        _driveScreenState.value = visibleInitWithLevelState(3)
     }
 
     private fun commentListItemClick(itemState: CommentItemState) {
@@ -960,6 +966,9 @@ class DriveViewModel @Inject constructor(
                         floatingButtonState = DriveScreenState.FloatingButtonState(
                             true, false, true, true, false, true
                         ),
+                        popUpState = popUpState.copy(
+                            commentState = CommentState()
+                        )
                     )
                 }
 

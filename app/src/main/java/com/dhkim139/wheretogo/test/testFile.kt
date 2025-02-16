@@ -12,7 +12,6 @@ import kotlinx.coroutines.runBlocking
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
-import java.io.InputStream
 
 
 fun createDummy(context: Context) {
@@ -60,10 +59,11 @@ fun Context.cacheScaleImageFromAsset(source: String, w: Int, h: Int, compress: I
 
 
     val resizedBitmap = Bitmap.createScaledBitmap(rotatedBitmap, w, h, true)
-    val outputStream = ByteArrayOutputStream()
-    resizedBitmap.compress(Bitmap.CompressFormat.JPEG, compress, outputStream)
-    val scaledData = outputStream.toByteArray()
-    saveCache(scaledData, "${source}_${w}x${h}_${compress}.jpg")
+    ByteArrayOutputStream().use {
+        resizedBitmap.compress(Bitmap.CompressFormat.JPEG, compress, it)
+        val scaledData = it.toByteArray()
+        saveCache(scaledData, "${source}_${w}x${h}_${compress}.jpg")
+    }
 }
 
 
