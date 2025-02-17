@@ -70,7 +70,7 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                 modifier = Modifier
                     .navigationBarsPadding()
                     .align(Alignment.BottomCenter)
-                    .zIndex(1f),
+                    .zIndex(99f),
                 hostState = viewModel.snackbarHostState,
                 snackbar = { snackbarData ->
                     Snackbar(
