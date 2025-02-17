@@ -14,6 +14,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -29,12 +30,12 @@ import com.naver.maps.map.overlay.OverlayImage
 import com.naver.maps.map.util.FusedLocationSource
 import com.wheretogo.domain.OverlayType
 import com.wheretogo.domain.model.map.LatLng
-import com.wheretogo.domain.model.map.Viewport
 import com.wheretogo.presentation.CameraStatus
 import com.wheretogo.presentation.MarkerIconType
 import com.wheretogo.presentation.model.ContentPadding
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.state.CameraState
+import com.wheretogo.presentation.toCameraState
 import com.wheretogo.presentation.toDomainLatLng
 import com.wheretogo.presentation.toNaver
 
@@ -56,137 +57,160 @@ fun NaverMap(
     val lifecycleOwner = LocalLifecycleOwner.current
     var mapView: MapView? by remember { mutableStateOf(null) }
 
+    //맵 초기화
     LaunchedEffect(Unit) {
-        mapView =  MapView(context).apply {
-                getMapAsync { naverMap ->
-                    naverMap.apply {
-                        onMapAsync(this)
+        mapView = MapView(context).apply {
+            getMapAsync { naverMap ->
+                naverMap.apply {
+                    onMapAsync(this)
 
-                        naverMap.locationTrackingMode = LocationTrackingMode.NoFollow
-                        naverMap.locationSource = context.getMyLocationSource()
-                        uiSettings.apply {
-                            isLocationButtonEnabled = true
-                            isZoomControlEnabled = false
-                            naverMap.minZoom = 8.0
-                            logoGravity = 2
-                            setLogoMargin(20, 100, 0, 0)
-                        }
+                    naverMap.setUiSetting(context)
 
-                        addOnCameraIdleListener {
-                            contentRegion.apply {
-                                val newCameraState = CameraState(
-                                    latLng = cameraPosition.target.toDomainLatLng(),
-                                    zoom = cameraPosition.zoom,
-                                    viewport = Viewport(
-                                        this[0].latitude,
-                                        this[3].latitude,
-                                        this[0].longitude,
-                                        this[3].longitude
-                                    )
-                                )
-                                onCameraMove(newCameraState)
-                            }
-                        }
+                    addOnCameraIdleListener {
+                        onCameraMove(naverMap.toCameraState())
+                    }
 
-                        setOnMapClickListener { _, latlng ->
-                            onMapClickListener(latlng.toDomainLatLng())
-                        }
+                    setOnMapClickListener { _, latlng ->
+                        onMapClickListener(latlng.toDomainLatLng())
                     }
                 }
             }
+        }
+
     }
 
-    DisposableEffect(Unit) {
-        val lifecycleObserver =
-            LifecycleEventObserver { _, event ->
-                mapView?.syncLifecycle(event)?.let { it() }
-            }
-        lifecycleOwner.lifecycle.addObserver(lifecycleObserver)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(lifecycleObserver) }
+    mapView?.let { syncMapView ->
+        DisposableEffect(Unit) {
+            val lifecycleObserver =
+                LifecycleEventObserver { _, event ->
+                    syncMapView.syncLifecycle(event)()
+                }
+            lifecycleOwner.lifecycle.addObserver(lifecycleObserver)
+            onDispose { lifecycleOwner.lifecycle.removeObserver(lifecycleObserver) }
+        }
     }
+
+    //맵 업데이트
     mapView?.getMapAsync { naverMap ->
-        var isRendered = overlayMap.isEmpty()
-        contentPadding.apply {
-            with(density) {
-                naverMap.setContentPadding(
-                    start.toPx().toInt(),
-                    top.toPx().toInt(),
-                    end.toPx().toInt(),
-                    bottom.toPx().toInt()
-                )
-            }
-        }
-        overlayMap.map { overlay ->
-            overlay.markerGroup.forEach {
-                if (it.position.latitude.toString() != "NaN") {
-                    isRendered = true
-                    it.map = naverMap
-                    when (overlay.overlayType) {
-                        OverlayType.CHECKPOINT -> {
-                            if (overlay.iconType != MarkerIconType.DEFAULT)
-                                it.icon = OverlayImage.fromResource(overlay.iconType.res)
-                            it.setOnClickListener {
-                                onCheckPointMarkerClick(it)
-                                true
-                            }
-                        }
+        naverMap.contentPaddingUpdate(density, contentPadding)
 
-                        OverlayType.COURSE -> {
-                            it.icon = OverlayImage.fromResource(overlay.iconType.res)
-                            it.setOnClickListener {
-                                onCourseMarkerClick(it)
-                                true
-                            }
+        naverMap.overlayUpdate(
+            overlayMap = overlayMap,
+            onCheckPointMarkerClick = onCheckPointMarkerClick,
+            onCourseMarkerClick = onCourseMarkerClick,
+            onOverlayRenderComplete= onOverlayRenderComplete
+        )
 
-                        }
-
-                        else -> {}
-                    }
-                }
-            }
-
-
-            overlay.path?.apply {
-                if (coords.isNotEmpty()) {
-                    isRendered = true
-                    this.map = naverMap
-                }
-
-            }
-
-            if (isRendered)
-                onOverlayRenderComplete(true)
-
-            cameraState.apply {
-                when (status) {
-                    CameraStatus.TRACK -> {
-                        naverMap.moveCamera(
-                            CameraUpdate.zoomTo(cameraState.zoom).animate(
-                                CameraAnimation.Easing
-                            )
-                        )
-                        naverMap.moveCamera(
-                            CameraUpdate.scrollTo(cameraState.latLng.toNaver()).animate(
-                                CameraAnimation.Easing
-                            )
-                        )
-                    }
-
-                    CameraStatus.INIT -> {
-                        naverMap.cameraPosition =
-                            CameraPosition(cameraState.latLng.toNaver(), cameraState.zoom)
-                    }
-
-                    else -> {}
-                }
-            }
-        }
+        naverMap.cameraUpdate(cameraState)
     }
     mapView?.apply {
         AndroidView(modifier = modifier, factory = { this })
     }
 }
 
+
+
+private fun NaverMap.setUiSetting(context:Context){
+    val naverMap = this
+    naverMap.locationTrackingMode = LocationTrackingMode.NoFollow
+    naverMap.locationSource = context.getMyLocationSource()
+    uiSettings.apply {
+        isLocationButtonEnabled = true
+        isZoomControlEnabled = false
+        naverMap.minZoom = 8.0
+        logoGravity = 2
+        setLogoMargin(20, 100, 0, 0)
+    }
+}
+
+private fun NaverMap.contentPaddingUpdate(density:Density,contentPadding: ContentPadding){
+    val naverMap = this
+    density.run {
+        naverMap.setContentPadding(
+            contentPadding.start.toPx().toInt(),
+            contentPadding.top.toPx().toInt(),
+            contentPadding.end.toPx().toInt(),
+            contentPadding.bottom.toPx().toInt()
+        )
+    }
+}
+
+private fun NaverMap.overlayUpdate(
+    overlayMap: Set<MapOverlay>,
+    onCheckPointMarkerClick: (Overlay) -> Unit = {},
+    onCourseMarkerClick: (Overlay) -> Unit = {},
+    onOverlayRenderComplete: (Boolean) -> Unit = {}
+) {
+    val naverMap = this@overlayUpdate
+    var isRendered = overlayMap.isEmpty()
+    overlayMap.map { overlay ->
+        overlay.markerGroup.forEach {
+            if (it.position.latitude.toString() != "NaN") {
+                isRendered = true
+                it.map = naverMap
+                when (overlay.overlayType) {
+                    OverlayType.CHECKPOINT -> {
+                        if (overlay.iconType != MarkerIconType.DEFAULT)
+                            it.icon = OverlayImage.fromResource(overlay.iconType.res)
+                        it.setOnClickListener {
+                            onCheckPointMarkerClick(it)
+                            true
+                        }
+                    }
+
+                    OverlayType.COURSE -> {
+                        it.icon = OverlayImage.fromResource(overlay.iconType.res)
+                        it.setOnClickListener {
+                            onCourseMarkerClick(it)
+                            true
+                        }
+
+                    }
+
+                    else -> {}
+                }
+            }
+        }
+
+        overlay.path?.apply {
+            if (coords.isNotEmpty()) {
+                isRendered = true
+                this.map = naverMap
+            }
+
+        }
+
+        if (isRendered)
+            onOverlayRenderComplete(true)
+    }
+}
+
+private fun NaverMap.cameraUpdate(cameraState: CameraState){
+    val naverMap = this
+    cameraState.apply {
+        when (status) {
+            CameraStatus.TRACK -> {
+                naverMap.moveCamera(
+                    CameraUpdate.zoomTo(cameraState.zoom).animate(
+                        CameraAnimation.Easing
+                    )
+                )
+                naverMap.moveCamera(
+                    CameraUpdate.scrollTo(cameraState.latLng.toNaver()).animate(
+                        CameraAnimation.Easing
+                    )
+                )
+            }
+
+            CameraStatus.INIT -> {
+                naverMap.cameraPosition =
+                    CameraPosition(cameraState.latLng.toNaver(), cameraState.zoom)
+            }
+
+            else -> {}
+        }
+    }
+}
 
 private fun Context.getMyLocationSource(): FusedLocationSource {
     return FusedLocationSource(this as ComponentActivity, 1000)
@@ -201,7 +225,7 @@ private fun MapView.syncLifecycle(event: Lifecycle.Event): () -> Unit {
             Lifecycle.Event.ON_PAUSE -> { onPause() }
             Lifecycle.Event.ON_STOP -> onStop()
             Lifecycle.Event.ON_DESTROY -> onDestroy()
-            Lifecycle.Event.ON_ANY -> { Log.d("tst_","ON_ANY") }
+            Lifecycle.Event.ON_ANY -> {}
         }
     }
 }
