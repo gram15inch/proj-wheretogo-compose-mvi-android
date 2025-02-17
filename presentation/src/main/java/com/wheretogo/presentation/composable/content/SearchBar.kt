@@ -39,6 +39,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -56,6 +57,7 @@ import kotlinx.coroutines.launch
 fun SearchBar(
     modifier: Modifier = Modifier,
     isLoading: Boolean = false,
+    isEmptyVisible:Boolean = false,
     simpleAddressGroup: List<SimpleAddress> = emptyList(),
     onAddressItemClick: (SimpleAddress) -> Unit = {},
     onSearchToggleClick: (Boolean) -> Unit = {},
@@ -104,6 +106,7 @@ fun SearchBar(
                             .focusRequester(focusRequester),
                         textStyle = textStyle,
                         value = editText,
+                        maxLines = 1,
                         keyboardOptions = KeyboardOptions.Default.copy(
                             imeAction = ImeAction.Done
                         ),
@@ -151,16 +154,19 @@ fun SearchBar(
                 }
             }
         }
-        LazyColumn(
-            horizontalAlignment = Alignment.End,
-            verticalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            items(simpleAddressGroup, key = { Math.random() }) { item ->
-                AddressItem(modifier = Modifier.clickable {
-                    onAddressItemClick(item)
-                }, simpleAddress = item)
+        if(isEmptyVisible)
+            AddressItem(simpleAddress = SimpleAddress(title = stringResource(R.string.no_search_data), address = ""))
+        else
+            LazyColumn(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                items(simpleAddressGroup, key = { Math.random() }) { item ->
+                    AddressItem(modifier = Modifier.clickable {
+                        onAddressItemClick(item)
+                    }, simpleAddress = item)
+                }
             }
-        }
     }
 }
 
@@ -209,6 +215,7 @@ fun SearchBarPreview() {
         SearchBar(
             modifier = Modifier.padding(top = 15.dp, bottom = 20.dp, end = 15.dp),
             isLoading = isLoading,
+            isEmptyVisible = false,
             simpleAddressGroup = simpleAddressGroups,
             onAddressItemClick = {
                 CoroutineScope(Dispatchers.Main).launch {

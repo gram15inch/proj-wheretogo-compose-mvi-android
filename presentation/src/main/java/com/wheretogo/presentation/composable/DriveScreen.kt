@@ -147,6 +147,7 @@ fun DriveScreen(
                     SlideAnimation (visible = isVisible, direction = AnimationDirection.CenterRight) {
                         SearchBar(
                             isLoading = isLoading,
+                            isEmptyVisible = isEmptyVisible,
                             simpleAddressGroup = simpleAddressGroup,
                             onSubmitClick = { viewModel.handleIntent(DriveScreenIntent.SubmitClick(it)) },
                             onSearchToggleClick = { viewModel.handleIntent(DriveScreenIntent.SearchToggleClick(it)) },

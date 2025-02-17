@@ -84,6 +84,11 @@
     <string name="terms"> 이용약관 </string>
     <string name="delete_user"> 계정삭제 </string>
 
+
+
+    <string name="no_search_data">검색 결과 없음</string>
+
+
     // 이미지 설명
     <string name="google_logo">google logo</string>
 
