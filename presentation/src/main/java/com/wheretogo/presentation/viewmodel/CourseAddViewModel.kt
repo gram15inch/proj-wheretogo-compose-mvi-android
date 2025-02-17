@@ -141,6 +141,7 @@ class CourseAddViewModel @Inject constructor(
                         copy(
                             searchBarState = searchBarState.copy(
                                 isLoading = false,
+                                isEmptyVisible = addressResponse.data?.isEmpty()?:false,
                                 simpleAddressGroup = addressResponse.data?: emptyList()
                             )
                         )

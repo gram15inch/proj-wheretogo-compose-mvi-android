@@ -117,7 +117,8 @@ fun CourseAddScreen(
                 .statusBarsPadding()
                 .padding(top = 10.dp, end = 10.dp)
                 .align(alignment = Alignment.TopEnd),
-            isLoading = state.isLoading,
+            isLoading = state.searchBarState.isLoading,
+            isEmptyVisible = state.searchBarState.isEmptyVisible,
             simpleAddressGroup = state.searchBarState.simpleAddressGroup,
             onSubmitClick = { viewModel.handleIntent(CourseAddIntent.SubmitClick(it)) },
             onSearchToggleClick = { viewModel.handleIntent(CourseAddIntent.SearchToggleClick(it)) },

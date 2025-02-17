@@ -2,7 +2,10 @@ package com.wheretogo.presentation
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import com.naver.maps.map.NaverMap
 import com.wheretogo.domain.CourseDetail
+import com.wheretogo.domain.model.map.Viewport
+import com.wheretogo.presentation.state.CameraState
 
 enum class CommentType(@StringRes val typeRes: Int) {
     ONE(R.string.oneline_review), DETAIL(R.string.detail_review)
@@ -49,5 +52,20 @@ fun getCourseIconType(courseType:String):MarkerIconType{
         }
     }catch (e:Exception){
         MarkerIconType.DEFAULT
+    }
+}
+
+fun NaverMap.toCameraState(): CameraState {
+    return contentRegion.run {
+        CameraState(
+            latLng = cameraPosition.target.toDomainLatLng(),
+            zoom = cameraPosition.zoom,
+            viewport = Viewport(
+                this[0].latitude,
+                this[3].latitude,
+                this[0].longitude,
+                this[3].longitude
+            )
+        )
     }
 }
