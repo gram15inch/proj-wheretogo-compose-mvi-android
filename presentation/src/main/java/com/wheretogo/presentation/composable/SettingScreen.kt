@@ -39,6 +39,7 @@ import androidx.navigation.NavController
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.SettingInfoType
+import com.wheretogo.presentation.feature.openActivity
 import com.wheretogo.presentation.feature.openWeb
 import com.wheretogo.presentation.intent.SettingIntent
 import com.wheretogo.presentation.parseLogoImgRes
@@ -75,7 +76,7 @@ fun SettingContentPreview() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(500.dp)
+            .height(550.dp)
     ) {
         SettingContent(
             navController = null,
@@ -159,7 +160,7 @@ fun SettingContent(
                         contentAlignment = Alignment.CenterStart
                     ) {
                         Text(
-                            text = "로그인이 필요합니다",
+                            text = stringResource(R.string.need_login),
                             fontFamily = hancomSansFontFamily,
                             fontSize = 16.sp
                         )
@@ -174,7 +175,7 @@ fun SettingContent(
         )
         Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)) {
             Text(
-                text = "정보",
+                text = stringResource(R.string.info),
                 fontFamily = hancomSansFontFamily,
                 color = colorResource(R.color.gray_6F6F6F)
             )
@@ -202,6 +203,16 @@ fun SettingContent(
                     R.drawable.ic_licence,
                     SettingInfoType.LICENCE,
                     onWebInfoButtonClick
+                )
+                InfoButton(
+                    R.string.map_legal_notice,
+                    R.drawable.ic_book,
+                    SettingInfoType.LegalNotice
+                )
+                InfoButton(
+                    R.string.map_open_source,
+                    R.drawable.ic_explore,
+                    SettingInfoType.OpenSourceLicense
                 )
             }
         }
@@ -300,7 +311,7 @@ fun InfoButton(
     text: Int,
     icon: Int,
     type: SettingInfoType,
-    onInfoButtonClick: (SettingInfoType) -> Unit
+    onInfoButtonClick: (SettingInfoType) -> Unit = {}
 ) {
     val context = LocalContext.current
     Box(
@@ -309,7 +320,17 @@ fun InfoButton(
             .height(40.dp)
             .clickable {
                 onInfoButtonClick(type)
-                openWeb(context, type.url)
+                when(type) {
+                    SettingInfoType.LegalNotice -> {
+                        openActivity(context, type.url)
+                    }
+                    SettingInfoType.OpenSourceLicense -> {
+                        openActivity(context, type.url)
+                    }
+                    else -> {
+                        openWeb(context, type.url)
+                    }
+                }
             },
         contentAlignment = Alignment.Center
     ) {

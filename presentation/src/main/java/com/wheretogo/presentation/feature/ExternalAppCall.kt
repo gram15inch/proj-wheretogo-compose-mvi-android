@@ -147,3 +147,11 @@ fun openWeb(context: Context, url: String) {
     val customTabsIntent = CustomTabsIntent.Builder().build()
     customTabsIntent.launchUrl(context, Uri.parse(url))
 }
+
+
+fun openActivity(context:Context, activity: String){
+    runCatching {
+        val intent = Intent(context, Class.forName(activity))
+        context.startActivity(intent)
+    }
+}

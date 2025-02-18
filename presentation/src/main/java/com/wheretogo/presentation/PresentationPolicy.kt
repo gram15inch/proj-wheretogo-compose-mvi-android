@@ -3,6 +3,8 @@ package com.wheretogo.presentation
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.naver.maps.map.NaverMap
+import com.naver.maps.map.app.LegalNoticeActivity
+import com.naver.maps.map.app.OpenSourceLicenseActivity
 import com.wheretogo.domain.CourseDetail
 import com.wheretogo.domain.model.map.Viewport
 import com.wheretogo.presentation.state.CameraState
@@ -20,6 +22,8 @@ enum class SettingInfoType(val url: String) {
     LICENCE("https://accurate-flight-2c4.notion.site/179cb3833d768056bfa8e97a3349e0cf?pvs=4"),
     TERMS("https://accurate-flight-2c4.notion.site/179cb3833d768036836dcfc55d8d38aa?pvs=4"),
     GUIDE("https://accurate-flight-2c4.notion.site/17acb3833d7680278027d26f36ce97c6?pvs=4"),
+    LegalNotice(LegalNoticeActivity::class.java.name),
+    OpenSourceLicense(OpenSourceLicenseActivity::class.java.name)
 }
 
 enum class CheckPointAddError{
