@@ -115,11 +115,10 @@ private fun NaverMap.setUiSetting(context:Context){
     naverMap.locationTrackingMode = LocationTrackingMode.NoFollow
     naverMap.locationSource = context.getMyLocationSource()
     uiSettings.apply {
+        isLogoClickEnabled = false
         isLocationButtonEnabled = true
         isZoomControlEnabled = false
         naverMap.minZoom = 8.0
-        logoGravity = 2
-        setLogoMargin(20, 100, 0, 0)
     }
 }
 

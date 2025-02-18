@@ -76,12 +76,17 @@
     <string name="login_cancel">로그인 취소</string>
     <string name="login_fail">로그인 실패</string>
     <string name="logout"> 로그아웃 </string>
+    <string name="need_login">로그인이 필요합니다</string>
     <string name="explore_without_login">로그인 없이 앱 둘러보기</string>
     <string name="welcome_user">반갑습니다 %1$s님!</string>
 
+    <string name="info"> 정보 </string>
     <string name="privacy"> 개인정보처리방침 </string>
     <string name="open_licence"> 오픈 라이선스 </string>
     <string name="terms"> 이용약관 </string>
+    <string name="map_legal_notice">지도 법적 공지</string>
+    <string name="map_open_source">지도 오픈 라이선스</string>
+
     <string name="delete_user"> 계정삭제 </string>
 
 
