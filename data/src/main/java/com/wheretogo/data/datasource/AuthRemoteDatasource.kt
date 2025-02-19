@@ -5,7 +5,7 @@ import com.wheretogo.domain.model.user.AuthResponse
 
 interface AuthRemoteDatasource {
 
-    suspend fun authGoogle(authToken: AuthToken): AuthResponse
+    suspend fun authGoogleWithFirebase(authToken: AuthToken): AuthResponse
 
     suspend fun signOutOnFirebase()
 

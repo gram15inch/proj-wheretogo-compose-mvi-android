@@ -90,8 +90,11 @@ dependencies {
     implementation(platform(Kotlin.KOTLIN_BOM))
     implementation(platform(AndroidX.COMPOSE_BOM))
     implementation("androidx.datastore:datastore-preferences-core-jvm:1.1.2")
+    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
     androidTestImplementation(AndroidX.TEST_RUNNER)
     androidTestImplementation(platform(AndroidX.COMPOSE_BOM))
+
+    androidTestImplementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
 
     //compose
     implementation(AndroidX.COMPOSE_UI)

@@ -39,7 +39,7 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
                 .addOnSuccessListener { result ->
                     continuation.resume(true)
                 }.addOnFailureListener { e ->
-                    continuation.resumeWithException(Exception(e))
+                    continuation.resumeWithException(e)
                 }
         }
     }
@@ -51,7 +51,7 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
                 .addOnSuccessListener { result ->
                     continuation.resume(true)
                 }.addOnFailureListener { e ->
-                    continuation.resumeWithException(Exception(e))
+                    continuation.resumeWithException(e)
                 }
         }
     }
@@ -74,7 +74,7 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
                         continuation.resume(null)
                     }
                 }.addOnFailureListener { e ->
-                    continuation.resumeWithException(Exception(e))
+                    continuation.resumeWithException(e)
                 }
         }
     }
@@ -98,7 +98,7 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
                         continuation.resume(null)
                     }
                 }.addOnFailureListener { e ->
-                    continuation.resumeWithException(Exception(e))
+                    continuation.resumeWithException(e)
                 }
         }
     }
@@ -121,7 +121,7 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
                         continuation.resume(null)
                     }
                 }.addOnFailureListener { e ->
-                    continuation.resumeWithException(Exception(e))
+                    continuation.resumeWithException(e)
                 }
         }
     }
@@ -140,7 +140,7 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
                 .addOnSuccessListener {
                     continuation.resume(true)
                 }.addOnFailureListener { e ->
-                    continuation.resumeWithException(Exception(e))
+                    continuation.resumeWithException(e)
                 }
         }
     }
@@ -162,7 +162,7 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
                 .addOnSuccessListener { result ->
                     continuation.resume(true)
                 }.addOnFailureListener { e ->
-                    continuation.resumeWithException(Exception(e))
+                    continuation.resumeWithException(e)
                 }
         }
     }
@@ -222,7 +222,7 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
                     }
 
                 }.addOnFailureListener { e ->
-                    continuation.resumeWithException(Exception(e))
+                    continuation.resumeWithException(e)
                 }
         }
     }

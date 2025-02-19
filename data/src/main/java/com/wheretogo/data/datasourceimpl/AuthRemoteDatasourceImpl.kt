@@ -15,7 +15,7 @@ import kotlin.coroutines.resumeWithException
 class AuthRemoteDatasourceImpl @Inject constructor() : AuthRemoteDatasource {
     private val firebaseAuth by lazy { FirebaseAuth.getInstance() }
 
-    override suspend fun authGoogle(authToken: AuthToken): AuthResponse {
+    override suspend fun authGoogleWithFirebase(authToken: AuthToken): AuthResponse {
         val credential = GoogleAuthProvider.getCredential(authToken.idToken, null)
         return suspendCancellableCoroutine { continuation ->
             firebaseAuth.signInWithCredential(credential)
