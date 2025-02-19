@@ -4,6 +4,7 @@ import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.wheretogo.data.datasource.AuthRemoteDatasource
+import com.wheretogo.domain.AuthCompany
 import com.wheretogo.domain.model.auth.AuthToken
 import com.wheretogo.domain.model.user.AuthProfile
 import com.wheretogo.domain.model.user.AuthResponse
@@ -29,6 +30,7 @@ class AuthRemoteDatasourceImpl @Inject constructor() : AuthRemoteDatasource {
                                         uid = it.uid,
                                         email = it.email ?: "",
                                         userName = it.displayName ?: "",
+                                        authCompany = AuthCompany.GOOGLE
                                     )
                                 )
                             )
