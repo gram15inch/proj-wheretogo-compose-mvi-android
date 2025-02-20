@@ -11,7 +11,7 @@ import javax.inject.Inject
 class MockAuthRemoteDatasourceImpl @Inject constructor(
     private val mockRemoteUser: MockRemoteUser
 ) : AuthRemoteDatasource {
-    override suspend fun authGoogle(authToken: AuthToken): AuthResponse {
+    override suspend fun authGoogleWithFirebase(authToken: AuthToken): AuthResponse {
         return if (mockRemoteUser.token.isNotBlank()) {
             AuthResponse(
                 isSuccess = true,

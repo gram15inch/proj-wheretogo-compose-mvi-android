@@ -4,6 +4,7 @@ import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.wheretogo.data.datasource.AuthRemoteDatasource
+import com.wheretogo.domain.AuthCompany
 import com.wheretogo.domain.model.auth.AuthToken
 import com.wheretogo.domain.model.user.AuthProfile
 import com.wheretogo.domain.model.user.AuthResponse
@@ -15,7 +16,7 @@ import kotlin.coroutines.resumeWithException
 class AuthRemoteDatasourceImpl @Inject constructor() : AuthRemoteDatasource {
     private val firebaseAuth by lazy { FirebaseAuth.getInstance() }
 
-    override suspend fun authGoogle(authToken: AuthToken): AuthResponse {
+    override suspend fun authGoogleWithFirebase(authToken: AuthToken): AuthResponse {
         val credential = GoogleAuthProvider.getCredential(authToken.idToken, null)
         return suspendCancellableCoroutine { continuation ->
             firebaseAuth.signInWithCredential(credential)
@@ -29,6 +30,7 @@ class AuthRemoteDatasourceImpl @Inject constructor() : AuthRemoteDatasource {
                                         uid = it.uid,
                                         email = it.email ?: "",
                                         userName = it.displayName ?: "",
+                                        authCompany = AuthCompany.GOOGLE
                                     )
                                 )
                             )

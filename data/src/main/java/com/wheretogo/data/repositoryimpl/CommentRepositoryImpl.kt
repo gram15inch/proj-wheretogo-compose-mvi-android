@@ -37,7 +37,7 @@ class CommentRepositoryImpl @Inject constructor(
             listOf()
         } - comment
         _cacheCommentGroup.put(comment.groupId, commentGroup)
-        remoteDatasource.removeCommentInCheckPoint(comment.toRemoteComment())
+        remoteDatasource.updateCommentInCheckPoint(comment.toRemoteComment())
     }
 
     override suspend fun setCommentGroup(groupId: String, group: List<Comment>) {

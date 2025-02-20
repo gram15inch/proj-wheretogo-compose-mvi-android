@@ -12,5 +12,7 @@ interface CommentRemoteDatasource {
 
     suspend fun setCommentInCheckPoint(comment: RemoteComment, isInit: Boolean): Boolean
 
-    suspend fun removeCommentInCheckPoint(comment: RemoteComment): Boolean
+    suspend fun updateCommentInCheckPoint(comment: RemoteComment): Boolean
+
+    suspend fun removeCommentInCheckPoint(commentGroupId:String):Boolean
 }

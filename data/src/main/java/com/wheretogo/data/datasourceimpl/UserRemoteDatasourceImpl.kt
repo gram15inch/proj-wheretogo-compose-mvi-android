@@ -39,7 +39,7 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
                 .addOnSuccessListener { result ->
                     continuation.resume(true)
                 }.addOnFailureListener { e ->
-                    continuation.resumeWithException(Exception(e))
+                    continuation.resumeWithException(e)
                 }
         }
     }
@@ -51,7 +51,7 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
                 .addOnSuccessListener { result ->
                     continuation.resume(true)
                 }.addOnFailureListener { e ->
-                    continuation.resumeWithException(Exception(e))
+                    continuation.resumeWithException(e)
                 }
         }
     }
@@ -74,7 +74,7 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
                         continuation.resume(null)
                     }
                 }.addOnFailureListener { e ->
-                    continuation.resumeWithException(Exception(e))
+                    continuation.resumeWithException(e)
                 }
         }
     }
@@ -82,7 +82,6 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
     override suspend fun getProfilePublicWithMail(hashMail: String): ProfilePublic? {
 
         return suspendCancellableCoroutine { continuation ->
-
             firestore.collection(userTable).whereEqualTo(ProfilePublic::hashMail.name, hashMail)
                 .limit(1)
                 .get()
@@ -98,7 +97,7 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
                         continuation.resume(null)
                     }
                 }.addOnFailureListener { e ->
-                    continuation.resumeWithException(Exception(e))
+                    continuation.resumeWithException(e)
                 }
         }
     }
@@ -121,7 +120,7 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
                         continuation.resume(null)
                     }
                 }.addOnFailureListener { e ->
-                    continuation.resumeWithException(Exception(e))
+                    continuation.resumeWithException(e)
                 }
         }
     }
@@ -140,7 +139,7 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
                 .addOnSuccessListener {
                     continuation.resume(true)
                 }.addOnFailureListener { e ->
-                    continuation.resumeWithException(Exception(e))
+                    continuation.resumeWithException(e)
                 }
         }
     }
@@ -162,7 +161,7 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
                 .addOnSuccessListener { result ->
                     continuation.resume(true)
                 }.addOnFailureListener { e ->
-                    continuation.resumeWithException(Exception(e))
+                    continuation.resumeWithException(e)
                 }
         }
     }
@@ -199,7 +198,10 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
         }
     }
 
-    override suspend fun getHistoryGroup(uid: String, type: HistoryType): Pair<HistoryType, HashSet<String>> {
+    override suspend fun getHistoryGroup(
+        uid: String,
+        type: HistoryType
+    ): Pair<HistoryType, HashSet<String>> {
         val typeTable = when (type) {
             HistoryType.LIKE -> likeTypeTable
             HistoryType.BOOKMARK -> bookMarkTypeTable
@@ -214,15 +216,15 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
                 .get()
                 .addOnSuccessListener { result ->
                     val data = result.toObject(RemoteHistoryGroupWrapper::class.java)
-                    if(data!=null){
+                    if (data != null) {
                         val pair = type to data.historyIdGroup.toHashSet()
                         continuation.resume(pair)
-                    }else{
+                    } else {
                         continuation.resume(type to hashSetOf())
                     }
 
                 }.addOnFailureListener { e ->
-                    continuation.resumeWithException(Exception(e))
+                    continuation.resumeWithException(e)
                 }
         }
     }
