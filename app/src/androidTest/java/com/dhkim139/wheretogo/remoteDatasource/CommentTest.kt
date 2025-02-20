@@ -47,7 +47,7 @@ class CommentTest {
             commentGroupId = "cp10",
             oneLineReview = "hi"
         )
-        datasource.removeCommentInCheckPoint(comment)
+        datasource.updateCommentInCheckPoint(comment)
     }
 
     @Test

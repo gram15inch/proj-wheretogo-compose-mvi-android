@@ -63,7 +63,7 @@ class CommentRemoteDatasourceImpl @Inject constructor() : CommentRemoteDatasourc
         }
     }
 
-    override suspend fun removeCommentInCheckPoint(comment: RemoteComment): Boolean {
+    override suspend fun updateCommentInCheckPoint(comment: RemoteComment): Boolean {
         return suspendCancellableCoroutine { continuation ->
             firestore.collection(commentTable).document(comment.commentGroupId)
                 .update(
@@ -78,5 +78,16 @@ class CommentRemoteDatasourceImpl @Inject constructor() : CommentRemoteDatasourc
         }
     }
 
+    override suspend fun removeCommentInCheckPoint(commentGroupId:String):Boolean {
+        return suspendCancellableCoroutine { continuation ->
+            firestore.collection(commentTable).document(commentGroupId)
+                .delete()
+                .addOnSuccessListener {
+                    continuation.resume(true)
+                }.addOnFailureListener {
+                    continuation.resumeWithException(it)
+                }
+        }
+    }
 }
 
