@@ -35,6 +35,7 @@ import com.wheretogo.domain.usecase.map.GetNearByCourseUseCase
 import com.wheretogo.domain.usecase.map.SearchAddressUseCase
 import com.wheretogo.domain.usecase.user.GetHistoryStreamUseCase
 import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
+import com.wheretogo.presentation.BuildConfig
 import com.wheretogo.presentation.CameraStatus
 import com.wheretogo.presentation.CheckPointAddError
 import com.wheretogo.presentation.CommentType
@@ -94,8 +95,11 @@ class DriveViewModel @Inject constructor(
 ) : ViewModel() {
     private val _driveScreenState =
         MutableStateFlow(DriveScreenState()).withLogging { caller, value ->
-            caller?.let { Log.d("tst_state", "${caller.shortPath()} --> " +
-                    "isCourseInfo-${value.bottomSheetState.infoState.run { checkPoint.userId }}")}
+            if(BuildConfig.DEBUG)
+                caller?.let {
+                    val msg =""
+                    Log.d("tst_state", "${caller.shortPath()} --> $msg")
+                }
         }
     private val _cacheCourseMapOverlayGroup = mutableMapOf<String, MapOverlay>() // courseId
     private val _cacheCheckPointMapOverlayGroup = mutableMapOf<String, MapOverlay>() // courseId

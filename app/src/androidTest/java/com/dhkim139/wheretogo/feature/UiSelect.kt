@@ -10,5 +10,5 @@ fun pickAccount(name: String) {
     val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
     device.waitForIdle()
     device.wait(Until.hasObject(By.text(name)), 5000)
-    device.findObject(By.text(name))?.click()
+    device.findObject(By.text(name))?.click() ?: throw Exception("noAccount")
 }

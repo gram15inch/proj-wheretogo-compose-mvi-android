@@ -56,7 +56,7 @@ class CheckPointRemoteDatasourceImpl @Inject constructor() : CheckPointRemoteDat
                 .addOnSuccessListener {
                     continuation.resume(true)
                 }.addOnFailureListener {
-                    continuation.resume(false)
+                    continuation.resumeWithException(it)
                 }
         }
     }

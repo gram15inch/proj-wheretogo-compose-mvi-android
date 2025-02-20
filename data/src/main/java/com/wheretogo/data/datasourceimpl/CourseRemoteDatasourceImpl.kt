@@ -1,6 +1,5 @@
 package com.wheretogo.data.datasourceimpl
 
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.wheretogo.data.FireStoreCollections
 import com.wheretogo.data.datasource.CourseRemoteDatasource
@@ -53,7 +52,7 @@ class CourseRemoteDatasourceImpl @Inject constructor() : CourseRemoteDatasource 
                 .addOnSuccessListener {
                     continuation.resume(true)
                 }.addOnFailureListener {
-                    continuation.resume(false)
+                    continuation.resumeWithException(it)
                 }
         }
     }
@@ -65,7 +64,7 @@ class CourseRemoteDatasourceImpl @Inject constructor() : CourseRemoteDatasource 
                 .addOnSuccessListener {
                     continuation.resume(true)
                 }.addOnFailureListener {
-                    continuation.resume(false)
+                    continuation.resumeWithException(it)
                 }
         }
     }
@@ -80,7 +79,7 @@ class CourseRemoteDatasourceImpl @Inject constructor() : CourseRemoteDatasource 
                 .addOnSuccessListener {
                     continuation.resume(true)
                 }.addOnFailureListener {
-                    continuation.resume(false)
+                    continuation.resumeWithException(it)
                 }
         }
     }
