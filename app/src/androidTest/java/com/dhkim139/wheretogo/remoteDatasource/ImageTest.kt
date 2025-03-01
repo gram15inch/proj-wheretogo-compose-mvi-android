@@ -26,7 +26,7 @@ class ImageTest {
     lateinit var imageRemoteDatasourceImpl: ImageRemoteDatasourceImpl
 
     @Inject
-    lateinit var local: ImageLocalDatasource
+    lateinit var imageLocalDatasourceImpl: ImageLocalDatasource
 
 
     @Before
@@ -38,15 +38,15 @@ class ImageTest {
     fun setAndGetImageTest(): Unit = runBlocking {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val uri = getAssetFileUri(context, "photo_opt.jpg")!!
-        val repository = ImageRepositoryImpl(imageRemoteDatasourceImpl, local)
-        val imageName = "testImage.jpg"
+        val repository = ImageRepositoryImpl(imageRemoteDatasourceImpl, imageLocalDatasourceImpl)
 
-        assertEquals(true, repository.setImage(uri, imageName))
-        assertEquals(true, repository.getImage(imageName, ImageSize.NORMAL)!!.exists())
-        assertEquals(true, repository.getImage(imageName, ImageSize.SMALL)!!.exists())
+        val imageName = repository.setImage(uri).getOrNull()!!
 
-        assertEquals(true, repository.removeImage(imageName))
-        assertEquals(null, repository.getImage(imageName, ImageSize.NORMAL))
-        assertEquals(null, repository.getImage(imageName, ImageSize.SMALL))
+        assertEquals(true, repository.getImage(imageName, ImageSize.NORMAL).getOrNull()!!.exists())
+        assertEquals(true, repository.getImage(imageName, ImageSize.SMALL).getOrNull()!!.exists())
+
+        assertEquals(true, repository.removeImage(imageName).isSuccess)
+        assertEquals(null, repository.getImage(imageName, ImageSize.NORMAL).getOrNull())
+        assertEquals(null, repository.getImage(imageName, ImageSize.SMALL).getOrNull())
     }
 }

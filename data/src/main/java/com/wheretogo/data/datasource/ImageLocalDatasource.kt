@@ -9,8 +9,13 @@ interface ImageLocalDatasource {
 
     suspend fun getImage(fileName: String, size: ImageSize): File
 
-    suspend fun setImage(uri: Uri, fileName: String)
-
     suspend fun removeImage(fileName: String, size: ImageSize)
 
+    suspend fun saveImage(byteArray: ByteArray, fileName: String, size: ImageSize): Uri
+
+    suspend fun openAndResizeImage(
+        sourceUri: Uri,
+        sizeGroup: List<ImageSize>,
+        compressionQuality: Int = 80
+    ): List<Pair<ImageSize, ByteArray>>
 }

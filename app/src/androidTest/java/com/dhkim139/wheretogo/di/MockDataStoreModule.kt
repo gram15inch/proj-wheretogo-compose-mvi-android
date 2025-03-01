@@ -29,6 +29,6 @@ class MockDataStoreModule {
     @Provides
     @Singleton
     fun provideImageFile(): File {
-        return File.createTempFile("test", ".jpg_pb")
+        return File.createTempFile("test_image", "")
     }
 }

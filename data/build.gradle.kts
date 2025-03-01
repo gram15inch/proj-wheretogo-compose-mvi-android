@@ -86,6 +86,7 @@ dependencies {
     implementation("com.google.firebase:firebase-auth-ktx:23.1.0")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
     implementation("androidx.datastore:datastore-preferences:1.1.1")
+    implementation("de.huxhorn.sulky:de.huxhorn.sulky.ulid:8.2.0")
 }
 
 fun getAppKey(propertyKey: String): String {
