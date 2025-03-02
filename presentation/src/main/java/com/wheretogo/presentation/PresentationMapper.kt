@@ -41,23 +41,11 @@ fun LatLng.toNaver(): NaverLatLng {
 
 fun CommentAddState.toComment(): Comment {
     return Comment(
-        commentId = this.commentId,
         groupId = this.groupId,
         emoji = this.largeEmoji.ifEmpty { emogiGroup.firstOrNull() ?: "" },
         oneLineReview = if (CommentType.ONE == commentType) editText.text else this.oneLineReview,
         detailedReview = if (CommentType.DETAIL == commentType) editText.text else this.detailReview,
         date = System.currentTimeMillis()
-    )
-}
-
-
-fun Comment.toCommentAddState(): CommentAddState {
-    return CommentAddState(
-        commentId = this.commentId,
-        groupId = this.groupId,
-        largeEmoji = this.emoji,
-        oneLineReview = oneLineReview,
-        detailReview = detailedReview,
     )
 }
 

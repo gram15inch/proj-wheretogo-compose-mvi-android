@@ -68,7 +68,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.UUID
 import javax.inject.Inject
 import kotlin.math.round
 
@@ -415,7 +414,7 @@ class DriveViewModel @Inject constructor(
     }
 
     private suspend fun commentAddClick(itemState: CommentAddState) {
-        val comment = itemState.toComment().copy(commentId = UUID.randomUUID().toString())
+        val comment = itemState.toComment()
         val response = withContext(Dispatchers.IO) { addCommentToCheckPointUseCase(comment) }
         when (response.status) {
             UseCaseResponse.Status.Success -> {
@@ -427,10 +426,12 @@ class DriveViewModel @Inject constructor(
                             ),
                                 commentItemGroup = withContext(Dispatchers.IO) {
                                     getCommentForCheckPointUseCase(checkPointId = comment.groupId).map {
+                                        val isUserCreated = it.isMine()
                                         CommentItemState(
                                             data = it,
                                             isLike = false,
-                                            isFold = comment.detailedReview.length >= 70
+                                            isFold = comment.detailedReview.length >= 70,
+                                            isUserCreated = isUserCreated
                                         )
                                     }
                                 })
@@ -580,8 +581,8 @@ class DriveViewModel @Inject constructor(
                         isCommentVisible = !popUpState.commentState.isCommentVisible,
                         commentAddState = CommentAddState(
                             groupId = checkPointId,
-                            emogiGroup = emogiGroup,
-                            largeEmoji = emogiGroup.firstOrNull() ?: ""
+                            largeEmoji = emogiGroup.firstOrNull() ?: "",
+                            emogiGroup = emogiGroup
                         )
                     ),
                 ),
@@ -1135,6 +1136,7 @@ class DriveViewModel @Inject constructor(
     }
     private suspend fun Comment.isMine():Boolean{
         val profile =  getUserProfileStreamUseCase().first().data
+        Log.d("tst_","${profile?.uid}/$userId")
         return profile?.run { userId == profile.uid  }?:false
     }
 
