@@ -38,23 +38,23 @@ class CheckPointRemoteDatasourceImpl @Inject constructor() : CheckPointRemoteDat
         }
     }
 
-    override suspend fun setCheckPoint(checkPoint: RemoteCheckPoint): Boolean {
+    override suspend fun setCheckPoint(checkPoint: RemoteCheckPoint) {
         return suspendCancellableCoroutine { continuation ->
             firestore.collection(checkPointTable).document(checkPoint.checkPointId)
                 .set(checkPoint).addOnSuccessListener {
-                    continuation.resume(true)
+                    continuation.resume(Unit)
                 }.addOnFailureListener {
                     continuation.resumeWithException(it)
                 }
         }
     }
 
-    override suspend fun removeCheckPoint(checkPointId: String): Boolean {
-        return suspendCancellableCoroutine<Boolean> { continuation ->
+    override suspend fun removeCheckPoint(checkPointId: String) {
+        suspendCancellableCoroutine { continuation ->
             firestore.collection(checkPointTable).document(checkPointId)
                 .delete()
                 .addOnSuccessListener {
-                    continuation.resume(true)
+                    continuation.resume(Unit)
                 }.addOnFailureListener {
                     continuation.resumeWithException(it)
                 }

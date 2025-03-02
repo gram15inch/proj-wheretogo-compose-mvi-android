@@ -21,11 +21,11 @@ class MockCheckPointRemoteDatasourceImpl @Inject constructor() : CheckPointRemot
         }
     }
 
-    override suspend fun setCheckPoint(checkPoint: RemoteCheckPoint): Boolean {
-        return newCheckPointGroup.add(checkPoint)
+    override suspend fun setCheckPoint(checkPoint: RemoteCheckPoint) {
+        newCheckPointGroup.add(checkPoint)
     }
 
-    override suspend fun removeCheckPoint(checkPointId: String): Boolean {
-        return newCheckPointGroup.removeIf { it.checkPointId == checkPointId }
+    override suspend fun removeCheckPoint(checkPointId: String) {
+        newCheckPointGroup.removeIf { it.checkPointId == checkPointId }
     }
 }
