@@ -82,7 +82,26 @@ class UserRepositoryImpl @Inject constructor(
                 type
             )
         )
+    }
 
+    override suspend fun removeHistoryGroup(
+        userId: String,
+        historyIdGroup: HashSet<String>,
+        type: HistoryType
+    ) {
+        userId.isEmpty().let { if (it) throw UserNotExistException("inValid userId: $userId") }
+        val newHistoryIdGroup = userLocalDatasource.getHistoryFlow(type).first().filter {
+            require(it.isNotEmpty()) { "inValid historyId: $historyIdGroup" }
+            it !in historyIdGroup
+        }
+        userRemoteDatasource.setHistoryGroup(
+            uid = getProfileStream().first().uid,
+            wrapper = RemoteHistoryGroupWrapper(
+                newHistoryIdGroup,
+                type
+            )
+        )
+        userLocalDatasource.setHistoryGroup(newHistoryIdGroup.toHashSet(), type)
     }
 
     override suspend fun getHistoryIdStream(type: HistoryType): Flow<HashSet<String>> {
@@ -144,11 +163,11 @@ class UserRepositoryImpl @Inject constructor(
         return coroutineScope {
             val profile = getProfile(uid)
                 ?: return@coroutineScope UserResponse(
-                     status = UserResponse.Status.Fail,
-                     msg = "프로필 로드 에러"
-                 )
+                    status = UserResponse.Status.Fail,
+                    msg = "프로필 로드 에러"
+                )
             val newPrivate = profile.private.copy(lastVisited = System.currentTimeMillis()).apply {
-                launch { userRemoteDatasource.setProfilePrivate(uid,this@apply) }
+                launch { userRemoteDatasource.setProfilePrivate(uid, this@apply) }
             }
             val newProfile = profile.copy(private = newPrivate)
             val history = async { getRemoteHistory(uid) }
@@ -175,9 +194,9 @@ class UserRepositoryImpl @Inject constructor(
     override suspend fun checkUser(mail: String): UserResponse {
         val hashMail = hashSha256(mail)
         val public = userRemoteDatasource.getProfilePublicWithMail(hashMail)
-        return if(public!=null)
-                UserResponse(UserResponse.Status.Success, public.toProfile())
-            else
-                UserResponse(UserResponse.Status.Fail, msg = "프로필 없음")
+        return if (public != null)
+            UserResponse(UserResponse.Status.Success, public.toProfile())
+        else
+            UserResponse(UserResponse.Status.Fail, msg = "프로필 없음")
     }
 }

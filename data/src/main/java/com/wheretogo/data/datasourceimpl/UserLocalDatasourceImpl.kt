@@ -58,6 +58,13 @@ class UserLocalDatasourceImpl @Inject constructor(
         }
     }
 
+    override suspend fun setHistoryGroup(historyIdGroup: HashSet<String>, type: HistoryType) {
+        val key = getHistoryKey(type)
+        userDataStore.edit { preferences ->
+            preferences[key] = historyIdGroup
+        }
+    }
+
     override suspend fun removeHistory(historyId: String, type: HistoryType) {
         val key = getHistoryKey(type)
         userDataStore.edit { preferences ->

@@ -14,6 +14,8 @@ interface UserLocalDatasource {
 
     suspend fun addHistory(historyId: String, type: HistoryType)
 
+    suspend fun setHistoryGroup(historyIdGroup: HashSet<String>, type: HistoryType)
+
     fun getHistoryFlow(type: HistoryType): Flow<HashSet<String>>
 
     suspend fun setProfile(profile: Profile)

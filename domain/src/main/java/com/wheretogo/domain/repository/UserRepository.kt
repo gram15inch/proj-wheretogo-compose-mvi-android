@@ -29,6 +29,12 @@ interface UserRepository {
         type: HistoryType
     )
 
+    suspend fun removeHistoryGroup(
+        userId: String,
+        historyIdGroup: HashSet<String>,
+        type: HistoryType
+    )
+
     suspend fun getHistoryIdStream(type: HistoryType): Flow<HashSet<String>>
 
     suspend fun getProfileStream(): Flow<Profile>
