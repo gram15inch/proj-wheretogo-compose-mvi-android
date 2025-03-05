@@ -5,6 +5,6 @@ import com.wheretogo.domain.model.map.CheckPointAddRequest
 
 interface AddCheckpointToCourseUseCase {
     suspend operator fun invoke(
-        checkpoint: CheckPointAddRequest
+        checkpointAddRequest: CheckPointAddRequest
     ): UseCaseResponse<String>
 }

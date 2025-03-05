@@ -123,12 +123,13 @@ fun List<CheckPoint>.toMetaCheckPoint(
 fun CheckPointAddRequest.toCheckpoint(
     userId: String,
     checkPointId: String,
+    imageName: String,
 ): CheckPoint {
     return CheckPoint(
         checkPointId = checkPointId,
         userId = userId,
-        latLng = latLng,
         imageName = imageName,
+        latLng = latLng,
         description = description
     )
 }

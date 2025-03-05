@@ -50,17 +50,28 @@ class CheckPointScenarioTest {
         hiltRule.inject()
     }
 
-    @Inject lateinit var user: MockRemoteUser
-    @Inject lateinit var signInUseCase: UserSignInUseCase
-    @Inject lateinit var signUpAndSignInUseCase: UserSignUpAndSignInUseCase
-    @Inject lateinit var signOutUseCase: UserSignOutUseCase
-    @Inject lateinit var addCourseUseCase: AddCourseUseCase
-    @Inject lateinit var addCheckpointToCourseUseCase: AddCheckpointToCourseUseCase
-    @Inject lateinit var removeCheckPointUseCase: RemoveCheckPointUseCase
-    @Inject lateinit var reportCheckPointUseCase: ReportCheckPointUseCase
-    @Inject lateinit var getCheckpointForMarkerUseCase: GetCheckpointForMarkerUseCase
-    @Inject lateinit var getHistoryStreamUseCase: GetHistoryStreamUseCase
-    @Inject lateinit var getMyReportUseCase: GetMyReportUseCase
+    @Inject
+    lateinit var user: MockRemoteUser
+    @Inject
+    lateinit var signInUseCase: UserSignInUseCase
+    @Inject
+    lateinit var signUpAndSignInUseCase: UserSignUpAndSignInUseCase
+    @Inject
+    lateinit var signOutUseCase: UserSignOutUseCase
+    @Inject
+    lateinit var addCourseUseCase: AddCourseUseCase
+    @Inject
+    lateinit var addCheckpointToCourseUseCase: AddCheckpointToCourseUseCase
+    @Inject
+    lateinit var removeCheckPointUseCase: RemoveCheckPointUseCase
+    @Inject
+    lateinit var reportCheckPointUseCase: ReportCheckPointUseCase
+    @Inject
+    lateinit var getCheckpointForMarkerUseCase: GetCheckpointForMarkerUseCase
+    @Inject
+    lateinit var getHistoryStreamUseCase: GetHistoryStreamUseCase
+    @Inject
+    lateinit var getMyReportUseCase: GetMyReportUseCase
 
     @Test // 인증된 사용자가 체크포인트를 추가하거나 삭제하기
     fun scenario1(): Unit = runBlocking {
@@ -74,7 +85,6 @@ class CheckPointScenarioTest {
         val addCheckPoint = CheckPointAddRequest(
             courseId = addCourse.courseId,
             latLng = addCourse.waypoints.first(),
-            imageName = "imgName1",
             imageUri = uri,
             description = "description1"
         )
@@ -94,20 +104,20 @@ class CheckPointScenarioTest {
     fun scenario2(): Unit = runBlocking {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val uri = getAssetFileUri(context, "photo_opt.jpg")
-        val reportUser = AuthProfile(uid = "report1", email = "report1@email.com", userName = "report1")
+        val reportUser =
+            AuthProfile(uid = "report1", email = "report1@email.com", userName = "report1")
         val authRequest = AuthRequest(authType = AuthType.PROFILE, authProfile = reportUser)
-        val baseCourse = getCourseDummy().first().run { copy(courseId="cs_cp1", userId= reportUser.uid, points = waypoints) }
+        val baseCourse = getCourseDummy().first()
+            .run { copy(courseId = "cs_cp1", userId = reportUser.uid, points = waypoints) }
         val reportCheckPointAdd = CheckPointAddRequest(
             courseId = baseCourse.courseId,
-            latLng = LatLng(1.0,1.0),
-            imageName = "imgName1",
+            latLng = LatLng(1.0, 1.0),
             imageUri = uri,
             description = "description1"
         )
         val normalCheckPointAdd = CheckPointAddRequest(
             courseId = baseCourse.courseId,
-            latLng = LatLng(1.1,1.1),
-            imageName = "imgName2",
+            latLng = LatLng(1.1, 1.1),
             imageUri = uri,
             description = "description2"
         )
@@ -128,11 +138,11 @@ class CheckPointScenarioTest {
     }
 
 
-    private fun UseCaseResponse<String>.success():String {
+    private fun UseCaseResponse<String>.success(): String {
         return this.run {
             Log.d(tag, "${this}")
             assertEquals(UseCaseResponse.Status.Success, this.status)
-            this.data?:""
+            this.data ?: ""
         }
     }
 
@@ -145,13 +155,19 @@ class CheckPointScenarioTest {
 
     @JvmName("co1")
     private fun List<CheckPoint>.contain(checkpointId: String) {
-        Log.d(tag, "contain($checkpointId): ${checkpointId in this.map { it.checkPointId }} / ${this.map { it.checkPointId }}")
+        Log.d(
+            tag,
+            "contain($checkpointId): ${checkpointId in this.map { it.checkPointId }} / ${this.map { it.checkPointId }}"
+        )
         assertTrue(checkpointId in this.map { it.checkPointId })
     }
 
     @JvmName("no1")
     private fun List<CheckPoint>.empty(checkpointId: String) {
-        Log.d(tag, "empty($checkpointId): ${checkpointId !in this.map { it.checkPointId }} / ${this.map { it.checkPointId }}")
+        Log.d(
+            tag,
+            "empty($checkpointId): ${checkpointId !in this.map { it.checkPointId }} / ${this.map { it.checkPointId }}"
+        )
         assertTrue(checkpointId !in this.map { it.checkPointId })
     }
 
@@ -168,12 +184,12 @@ class CheckPointScenarioTest {
         assertEquals(null, this.firstOrNull { it.contentId == checkPointId })
     }
 
-    private fun HashSet<String>.contain(id:String){
+    private fun HashSet<String>.contain(id: String) {
         Log.d(tag, "contain: ${id in this} / ${this}")
         assertTrue(id in this)
     }
 
-    private fun HashSet<String>.empty(id:String){
+    private fun HashSet<String>.empty(id: String) {
         Log.d(tag, "empty: ${id !in this} / ${this}")
         assertFalse(id in this)
     }

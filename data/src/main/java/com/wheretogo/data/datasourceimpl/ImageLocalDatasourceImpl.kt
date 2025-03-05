@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.util.Log
 import androidx.core.net.toUri
 import androidx.exifinterface.media.ExifInterface
 import com.wheretogo.data.datasource.ImageLocalDatasource
@@ -26,9 +25,10 @@ class ImageLocalDatasourceImpl @Inject constructor(
     private val imageFile: File
 ) : ImageLocalDatasource {
     override suspend fun getImage(fileName: String, size: ImageSize): File {
-        val localFile = File(imageFile.parentFile, "${size.pathName}/${fileName}").apply {
-            if (!parentFile!!.exists())
+        val localFile = File(imageFile.parentFile, "image/${size.pathName}/${fileName}").apply {
+            if (!parentFile!!.exists()) {
                 parentFile?.mkdirs()
+            }
         }
         return localFile
     }
@@ -91,5 +91,4 @@ class ImageLocalDatasourceImpl @Inject constructor(
             }.awaitAll()
         }
     }
-
 }

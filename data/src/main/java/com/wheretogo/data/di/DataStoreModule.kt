@@ -27,6 +27,6 @@ object DataStoreModule {
     @Provides
     @Singleton
     fun provideImageFile(@ApplicationContext context: Context): File {
-        return File(context.cacheDir, "image").absoluteFile
+        return File(context.cacheDir, "")
     }
 }

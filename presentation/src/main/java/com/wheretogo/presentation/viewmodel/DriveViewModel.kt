@@ -94,9 +94,9 @@ class DriveViewModel @Inject constructor(
 ) : ViewModel() {
     private val _driveScreenState =
         MutableStateFlow(DriveScreenState()).withLogging { caller, value ->
-            if(BuildConfig.DEBUG)
+            if (BuildConfig.DEBUG)
                 caller?.let {
-                    val msg =""
+                    val msg = ""
                     Log.d("tst_state", "${caller.shortPath()} --> $msg")
                 }
         }
@@ -108,52 +108,58 @@ class DriveViewModel @Inject constructor(
     fun handleIntent(intent: DriveScreenIntent) {
         viewModelScope.launch {
             when (intent) {
-                    //서치바
-                    is DriveScreenIntent.AddressItemClick -> addressItemClick(intent.simpleAddress)
-                    is DriveScreenIntent.SearchToggleClick -> searchToggleClick(intent.isBar)
-                    is DriveScreenIntent.SubmitClick -> submitClick(intent.submit)
+                //서치바
+                is DriveScreenIntent.AddressItemClick -> addressItemClick(intent.simpleAddress)
+                is DriveScreenIntent.SearchToggleClick -> searchToggleClick(intent.isBar)
+                is DriveScreenIntent.SubmitClick -> submitClick(intent.submit)
 
-                    //지도
-                    is DriveScreenIntent.MapIsReady -> mapIsReady()
-                    is DriveScreenIntent.UpdateCamera -> updateCamara(intent.cameraState)
-                    is DriveScreenIntent.OverlayRenderComplete -> overlayRenderComplete(intent.isRendered)
-                    is DriveScreenIntent.CourseMarkerClick -> courseMarkerClick(intent.tag)
-                    is DriveScreenIntent.CheckPointMarkerClick -> checkPointMarkerClick(intent.tag)
+                //지도
+                is DriveScreenIntent.MapIsReady -> mapIsReady()
+                is DriveScreenIntent.UpdateCamera -> updateCamara(intent.cameraState)
+                is DriveScreenIntent.OverlayRenderComplete -> overlayRenderComplete(intent.isRendered)
+                is DriveScreenIntent.CourseMarkerClick -> courseMarkerClick(intent.tag)
+                is DriveScreenIntent.CheckPointMarkerClick -> checkPointMarkerClick(intent.tag)
 
-                    //목록
-                    is DriveScreenIntent.DriveListItemClick -> driveListItemClick(intent.itemState)
-                    is DriveScreenIntent.DriveListItemBookmarkClick -> driveListItemBookmarkClick(intent.itemState)
+                //목록
+                is DriveScreenIntent.DriveListItemClick -> driveListItemClick(intent.itemState)
+                is DriveScreenIntent.DriveListItemBookmarkClick -> driveListItemBookmarkClick(intent.itemState)
 
-                    //팝업
-                    is DriveScreenIntent.DismissPopup -> dismissPopup()
-                    is DriveScreenIntent.DismissPopupComment -> dismissPopupComment()
-                    is DriveScreenIntent.CommentListItemClick -> commentListItemClick(intent.itemState)
-                    is DriveScreenIntent.CommentListItemLongClick -> commentListItemLongClick(intent.itemState)
-                    is DriveScreenIntent.CommentLikeClick -> commentLikeClick(intent.itemState)
-                    is DriveScreenIntent.CommentAddClick -> commentAddClick(intent.itemState)
-                    is DriveScreenIntent.CommentRemoveClick -> commentRemoveClick(intent.itemState)
-                    is DriveScreenIntent.CommentReportClick -> commentReportClick(intent.itemState)
-                    is DriveScreenIntent.CommentEditValueChange -> commentEditValueChange(intent.textFiled)
-                    is DriveScreenIntent.CommentEmogiPress -> commentEmogiPress(intent.emogi)
-                    is DriveScreenIntent.CommentTypePress -> commentTypePress(intent.type)
+                //팝업
+                is DriveScreenIntent.DismissPopup -> dismissPopup()
+                is DriveScreenIntent.DismissPopupComment -> dismissPopupComment()
+                is DriveScreenIntent.CommentListItemClick -> commentListItemClick(intent.itemState)
+                is DriveScreenIntent.CommentListItemLongClick -> commentListItemLongClick(intent.itemState)
+                is DriveScreenIntent.CommentLikeClick -> commentLikeClick(intent.itemState)
+                is DriveScreenIntent.CommentAddClick -> commentAddClick(intent.itemState)
+                is DriveScreenIntent.CommentRemoveClick -> commentRemoveClick(intent.itemState)
+                is DriveScreenIntent.CommentReportClick -> commentReportClick(intent.itemState)
+                is DriveScreenIntent.CommentEditValueChange -> commentEditValueChange(intent.textFiled)
+                is DriveScreenIntent.CommentEmogiPress -> commentEmogiPress(intent.emogi)
+                is DriveScreenIntent.CommentTypePress -> commentTypePress(intent.type)
 
-                    //플로팅
-                    is DriveScreenIntent.CommentFloatingButtonClick -> commentFloatingButtonClick()
-                    is DriveScreenIntent.CheckpointAddFloatingButtonClick -> checkpointAddFloatingButtonClick()
-                    is DriveScreenIntent.InfoFloatingButtonClick -> infoFloatingButtonClick()
-                    is DriveScreenIntent.ExportMapFloatingButtonClick -> exportMapFloatingButtonClick()
-                    is DriveScreenIntent.FoldFloatingButtonClick -> foldFloatingButtonClick()
+                //플로팅
+                is DriveScreenIntent.CommentFloatingButtonClick -> commentFloatingButtonClick()
+                is DriveScreenIntent.CheckpointAddFloatingButtonClick -> checkpointAddFloatingButtonClick()
+                is DriveScreenIntent.InfoFloatingButtonClick -> infoFloatingButtonClick()
+                is DriveScreenIntent.ExportMapFloatingButtonClick -> exportMapFloatingButtonClick()
+                is DriveScreenIntent.FoldFloatingButtonClick -> foldFloatingButtonClick()
 
-                    //바텀시트
-                    is DriveScreenIntent.BottomSheetClose -> bottomSheetClose()
-                    is DriveScreenIntent.CheckpointLocationSliderChange -> checkpointLocationSliderChange(intent.percent)
-                    is DriveScreenIntent.CheckpointDescriptionChange -> checkpointDescriptionChange(intent.text)
-                    is DriveScreenIntent.CheckpointDescriptionEnterClick -> checkpointDescriptionEnterClick()
-                    is DriveScreenIntent.CheckpointImageChange -> checkpointImageChange(intent.imgUri)
-                    is DriveScreenIntent.CheckpointSubmitClick -> checkpointSubmitClick()
-                    is DriveScreenIntent.InfoReportClick -> infoReportClick(intent.infoState)
-                    is DriveScreenIntent.InfoRemoveClick -> infoRemoveClick(intent.infoState)
-                }
+                //바텀시트
+                is DriveScreenIntent.BottomSheetClose -> bottomSheetClose()
+                is DriveScreenIntent.CheckpointLocationSliderChange -> checkpointLocationSliderChange(
+                    intent.percent
+                )
+
+                is DriveScreenIntent.CheckpointDescriptionChange -> checkpointDescriptionChange(
+                    intent.text
+                )
+
+                is DriveScreenIntent.CheckpointDescriptionEnterClick -> checkpointDescriptionEnterClick()
+                is DriveScreenIntent.CheckpointImageChange -> checkpointImageChange(intent.imgUri)
+                is DriveScreenIntent.CheckpointSubmitClick -> checkpointSubmitClick()
+                is DriveScreenIntent.InfoReportClick -> infoReportClick(intent.infoState)
+                is DriveScreenIntent.InfoRemoveClick -> infoRemoveClick(intent.infoState)
+            }
         }
     }
 
@@ -212,7 +218,7 @@ class DriveViewModel @Inject constructor(
                     copy(
                         searchBarState = searchBarState.copy(
                             isLoading = false,
-                            isEmptyVisible = addressResponse.data?.isEmpty()?:false,
+                            isEmptyVisible = addressResponse.data?.isEmpty() ?: false,
                             simpleAddressGroup = addressResponse.data ?: emptyList()
                         )
                     )
@@ -311,7 +317,8 @@ class DriveViewModel @Inject constructor(
                     )
                 )
             }
-            val image = withContext(Dispatchers.IO) { getImageForPopupUseCase(checkpoint.imageName) }
+            val image =
+                withContext(Dispatchers.IO) { getImageForPopupUseCase(checkpoint.imageName) }
             _driveScreenState.value = _driveScreenState.value.run {
                 copy(
                     isLoading = false,
@@ -407,7 +414,12 @@ class DriveViewModel @Inject constructor(
 
     private suspend fun commentLikeClick(itemState: CommentItemState) {
         likeSwitch(itemState.data.commentId, itemState.isLike)
-        val isLikeUpdate = withContext(Dispatchers.IO) { updateLikeUseCase(comment = itemState.data, !itemState.isLike) }
+        val isLikeUpdate = withContext(Dispatchers.IO) {
+            updateLikeUseCase(
+                comment = itemState.data,
+                !itemState.isLike
+            )
+        }
         if (!isLikeUpdate) {
             likeSwitch(itemState.data.commentId, !itemState.isLike)
         }
@@ -421,9 +433,10 @@ class DriveViewModel @Inject constructor(
                 _driveScreenState.value = _driveScreenState.value.run {
                     this.copy(
                         popUpState = popUpState.copy(
-                            commentState = popUpState.commentState.copy(commentAddState = CommentAddState(
-                                groupId = comment.groupId, emogiGroup = getEmogiDummy()
-                            ),
+                            commentState = popUpState.commentState.copy(
+                                commentAddState = CommentAddState(
+                                    groupId = comment.groupId, emogiGroup = getEmogiDummy()
+                                ),
                                 commentItemGroup = withContext(Dispatchers.IO) {
                                     getCommentForCheckPointUseCase(checkPointId = comment.groupId).map {
                                         val isUserCreated = it.isMine()
@@ -475,8 +488,8 @@ class DriveViewModel @Inject constructor(
     private suspend fun commentReportClick(itemState: CommentItemState) {
         val reportResponse = withContext(Dispatchers.IO) { reportCommentUseCase(itemState.data) }
 
-        when(reportResponse.status){
-            UseCaseResponse.Status.Success->{
+        when (reportResponse.status) {
+            UseCaseResponse.Status.Success -> {
                 val commentItemGroup = getCommentItemGroup(itemState.data.groupId)
                 _driveScreenState.value = _driveScreenState.value.run {
                     this.copy(
@@ -490,7 +503,8 @@ class DriveViewModel @Inject constructor(
                     )
                 }
             }
-            UseCaseResponse.Status.Fail->{
+
+            UseCaseResponse.Status.Fail -> {
 
             }
         }
@@ -641,9 +655,9 @@ class DriveViewModel @Inject constructor(
 
     private suspend fun infoFloatingButtonClick() {
         _driveScreenState.value = _driveScreenState.value.run {
-            val isMine = if(bottomSheetState.infoState.isCourseInfo){
+            val isMine = if (bottomSheetState.infoState.isCourseInfo) {
                 bottomSheetState.infoState.course.isMine()
-            }else{
+            } else {
                 bottomSheetState.infoState.checkPoint.isMine()
             }
             copy(
@@ -778,16 +792,17 @@ class DriveViewModel @Inject constructor(
                 CheckPointAddRequest(
                     courseId = course.courseId,
                     latLng = bottomSheetState.checkPointAddState.addMarker.markerGroup.first().position.toDomainLatLng(),
-                    imageName = bottomSheetState.checkPointAddState.imgInfo?.fileName ?: "",
                     imageUri = bottomSheetState.checkPointAddState.imgUri,
                     description = bottomSheetState.checkPointAddState.description
                 )
             }
 
-            val addCheckPointResponse = withContext(Dispatchers.IO) { addCheckpointToCourseUseCase(newCheckpointAddRequest) }
+            val addCheckPointResponse =
+                withContext(Dispatchers.IO) { addCheckpointToCourseUseCase(newCheckpointAddRequest) }
             when (addCheckPointResponse.status) {
                 UseCaseResponse.Status.Success -> {
-                    val checkPointGroup = withContext(Dispatchers.IO) { getCheckPointForMarkerUseCase(course.courseId) }
+                    val checkPointGroup =
+                        withContext(Dispatchers.IO) { getCheckPointForMarkerUseCase(course.courseId) }
                     _driveScreenState.value = _driveScreenState.value.run {
                         val newMapOverlayGroup =
                             mapState.mapOverlayGroup + getOverlayGroup(
@@ -826,28 +841,34 @@ class DriveViewModel @Inject constructor(
     private suspend fun infoRemoveClick(infoState: InfoState) {
         _driveScreenState.value = _driveScreenState.value.run { copy(isLoading = true) }
         if (infoState.isCourseInfo) { // 코스
-            val reportResponse = withContext(Dispatchers.IO) { removeCourseUseCase(infoState.course.courseId) }
-            when(reportResponse.status){
-                UseCaseResponse.Status.Success->{
+            val reportResponse =
+                withContext(Dispatchers.IO) { removeCourseUseCase(infoState.course.courseId) }
+            when (reportResponse.status) {
+                UseCaseResponse.Status.Success -> {
                     removeCourseMapOverlay(infoState.course.courseId)
                     infoState.course.checkpointIdGroup.forEach { removeCheckPointMapOverlay(it) }
                     closeAndInitCommentBottomSheet()
                 }
-                else->{
+
+                else -> {
                     _driveScreenState.value = _driveScreenState.value.copy(isLoading = false)
                 }
             }
 
         } else { // 체크포인트
             val reportResponse = withContext(Dispatchers.IO) {
-                removeCheckPointUseCase(infoState.course.courseId, infoState.checkPoint.checkPointId)
+                removeCheckPointUseCase(
+                    infoState.course.courseId,
+                    infoState.checkPoint.checkPointId
+                )
             }
-            when(reportResponse.status){
-                UseCaseResponse.Status.Success->{
+            when (reportResponse.status) {
+                UseCaseResponse.Status.Success -> {
                     removeCheckPointMapOverlay(infoState.checkPoint.checkPointId)
                     closeAndInitCommentBottomSheet()
                 }
-                else->{
+
+                else -> {
                     _driveScreenState.value = _driveScreenState.value.copy(isLoading = false)
                 }
             }
@@ -858,16 +879,18 @@ class DriveViewModel @Inject constructor(
         _driveScreenState.value = _driveScreenState.value.copy(isLoading = true)
         if (infoState.isCourseInfo) { // 코스
             val reportResponse = withContext(Dispatchers.IO) {
-                reportCourseUseCase(infoState.course, infoState.reason) }
-            when(reportResponse.status){
-                UseCaseResponse.Status.Success->{
+                reportCourseUseCase(infoState.course, infoState.reason)
+            }
+            when (reportResponse.status) {
+                UseCaseResponse.Status.Success -> {
                     removeCourseMapOverlay(infoState.course.courseId)
                     infoState.course.checkpointIdGroup.forEach {
                         removeCheckPointMapOverlay(it)
                     }
                     closeAndInitCommentBottomSheet()
                 }
-                else->{
+
+                else -> {
                     _driveScreenState.value = _driveScreenState.value.copy(isLoading = false)
                 }
             }
@@ -877,12 +900,13 @@ class DriveViewModel @Inject constructor(
                 reportCheckPointUseCase(infoState.checkPoint.checkPointId, "")
             }
 
-            when(reportResponse.status){
-                UseCaseResponse.Status.Success->{
+            when (reportResponse.status) {
+                UseCaseResponse.Status.Success -> {
                     removeCheckPointMapOverlay(infoState.checkPoint.checkPointId)
                     closeAndInitCommentBottomSheet()
                 }
-                else->{
+
+                else -> {
                     _driveScreenState.value = _driveScreenState.value.copy(isLoading = false)
                 }
             }
@@ -891,11 +915,11 @@ class DriveViewModel @Inject constructor(
 
     }
 
-    private suspend fun closeAndInitCommentBottomSheet(){
+    private suspend fun closeAndInitCommentBottomSheet() {
         val cameraLatLng = _driveScreenState.value.mapState.cameraState.latLng
         val newCourseGroup = withContext(Dispatchers.IO) { getNearByCourseUseCase(cameraLatLng) }
         _driveScreenState.value = _driveScreenState.value.run {
-            val newMapOverlay = getOverlayGroup(newCourseGroup,false)
+            val newMapOverlay = getOverlayGroup(newCourseGroup, false)
             val newList = newCourseGroup.filterNearByListGroup(
                 center = cameraLatLng,
                 meter = 3000
@@ -921,7 +945,6 @@ class DriveViewModel @Inject constructor(
     }
 
 
-
     private fun CheckPointAddState.isValidateAddCheckPoint(): Result<Unit> {
         return runCatching {
             require(this.imgUri != null) { CheckPointAddError.EMPTY_IMG }
@@ -935,12 +958,14 @@ class DriveViewModel @Inject constructor(
             1 -> {//목록
                 _driveScreenState.value.run {
                     copy(
-                            searchBarState = searchBarState.copy(isVisible = true),
-                            listState = listState.copy(isVisible = true,
-                                clickItem = DriveScreenState.ListState.ListItemState()),
-                            popUpState = popUpState.copy(isVisible = false),
-                            floatingButtonState = DriveScreenState.FloatingButtonState(),
-                            bottomSheetState = DriveScreenState.BottomSheetState()
+                        searchBarState = searchBarState.copy(isVisible = true),
+                        listState = listState.copy(
+                            isVisible = true,
+                            clickItem = DriveScreenState.ListState.ListItemState()
+                        ),
+                        popUpState = popUpState.copy(isVisible = false),
+                        floatingButtonState = DriveScreenState.FloatingButtonState(),
+                        bottomSheetState = DriveScreenState.BottomSheetState()
                     )
                 }
             }
@@ -1075,26 +1100,6 @@ class DriveViewModel @Inject constructor(
         }
     }
 
-    private suspend fun List<CheckPoint>.imagePreLoad() {
-        coroutineScope {
-            forEach {
-                launch(Dispatchers.IO) {
-                    getImageForPopupUseCase(it.imageName)  // 체크포인트 이미지 미리로드
-                }
-            }
-        }
-    }
-
-    private suspend fun List<CheckPoint>.commentPreLoad() {
-        coroutineScope {
-            forEach {
-                launch(Dispatchers.IO) {
-                    getCommentForCheckPointUseCase(it.checkPointId)
-                }
-            }
-        }
-    }
-
     private fun removeCourseMapOverlay(courseId: String) {
         _cacheCourseMapOverlayGroup.get(courseId)?.apply {
             path?.map = null
@@ -1126,23 +1131,25 @@ class DriveViewModel @Inject constructor(
     }
 
 
-    private suspend fun Course.isMine():Boolean{
-        val profile =  getUserProfileStreamUseCase().first().data
-        return profile?.run { userId == profile.uid  }?:false
-    }
-    private suspend fun CheckPoint.isMine():Boolean{
-        val profile =  getUserProfileStreamUseCase().first().data
-        return profile?.run { userId == profile.uid  }?:false
-    }
-    private suspend fun Comment.isMine():Boolean{
-        val profile =  getUserProfileStreamUseCase().first().data
-        Log.d("tst_","${profile?.uid}/$userId")
-        return profile?.run { userId == profile.uid  }?:false
+    private suspend fun Course.isMine(): Boolean {
+        val profile = getUserProfileStreamUseCase().first().data
+        return profile?.run { userId == profile.uid } ?: false
     }
 
-    private fun likeSwitch(commentId:String, isLike:Boolean){
+    private suspend fun CheckPoint.isMine(): Boolean {
+        val profile = getUserProfileStreamUseCase().first().data
+        return profile?.run { userId == profile.uid } ?: false
+    }
+
+    private suspend fun Comment.isMine(): Boolean {
+        val profile = getUserProfileStreamUseCase().first().data
+        Log.d("tst_", "${profile?.uid}/$userId")
+        return profile?.run { userId == profile.uid } ?: false
+    }
+
+    private fun likeSwitch(commentId: String, isLike: Boolean) {
         val isVisible = _driveScreenState.value.popUpState.commentState.isCommentVisible
-        if(isVisible){
+        if (isVisible) {
             _driveScreenState.value = _driveScreenState.value.run {
                 val newCommentStateGroup =
                     popUpState.commentState.commentItemGroup.map {

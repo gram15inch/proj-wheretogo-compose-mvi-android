@@ -28,10 +28,10 @@ class ImageRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun setImage(imgUri: Uri): Result<String> {
+    override suspend fun setImage(imgUri: Uri, customName: String): Result<String> {
         return runCatching {
             coroutineScope {
-                val imageName = "${ULID().nextULID()}.jpg"
+                val imageName = customName.ifBlank { "${ULID().nextULID()}.jpg" }
                 imageLocalDatasource.openAndResizeImage(imgUri, ImageSize.entries).map { image ->
                     async {
                         val size = image.first
