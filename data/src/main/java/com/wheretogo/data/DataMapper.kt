@@ -218,7 +218,7 @@ fun LocalCheckPoint.toCheckPoint(): CheckPoint {
 
 
 fun LocalCourse.toCourse(
-    route: List<LatLng> = this.route,
+    points: List<LatLng> = this.points,
     like: Int = this.like
 ): Course {
     return Course(
@@ -228,7 +228,7 @@ fun LocalCourse.toCourse(
         userName = userName,
         waypoints = waypoints,
         checkpointIdGroup = localMetaCheckPoint.checkPointIdGroup,
-        points = route,
+        points = points,
         duration = duration,
         type = type,
         level = level,
@@ -251,7 +251,7 @@ fun Course.toLocalCourse(
         longitude = cameraLatLng.longitude,
         geoHash = cameraLatLng.toGeoHash(6),
         waypoints = waypoints,
-        route = points,
+        points = points,
         localMetaCheckPoint = checkPoint,
         duration = duration,
         type = type,
@@ -265,7 +265,7 @@ fun Course.toLocalCourse(
 
 
 fun RemoteCourse.toLocalCourse(
-    route: List<LatLng> = emptyList(),
+    points: List<LatLng> = emptyList(),
     checkPoint: DataMetaCheckPoint = DataMetaCheckPoint(checkPointIdGroup = this.dataMetaCheckPoint.checkPointIdGroup),
     like: Int = 0
 ): LocalCourse {
@@ -278,7 +278,7 @@ fun RemoteCourse.toLocalCourse(
         longitude = cameraLatLng.longitude,
         geoHash = cameraLatLng.toGeoHash(6),
         waypoints = waypoints,
-        route = route,
+        points = points,
         localMetaCheckPoint = checkPoint,
         duration = duration,
         type = type,
@@ -313,7 +313,7 @@ fun Course.toRemoteCourse(
 }
 
 fun RemoteCourse.toCourse(
-    route: List<LatLng> = emptyList(),
+    points: List<LatLng> = emptyList(),
     like: Int = 0
 ): Course {
     return Course(
@@ -323,7 +323,7 @@ fun RemoteCourse.toCourse(
         userName = userName,
         waypoints = waypoints,
         checkpointIdGroup = dataMetaCheckPoint.checkPointIdGroup,
-        points = route,
+        points = points,
         duration = duration,
         type = type,
         level = level,

@@ -6,6 +6,8 @@ import com.firebase.geofire.GeoLocation
 import com.wheretogo.domain.feature.hashSha256
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.CheckPointAddRequest
+import com.wheretogo.domain.model.map.Course
+import com.wheretogo.domain.model.map.CourseAddRequest
 import com.wheretogo.domain.model.map.History
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.MetaCheckPoint
@@ -15,6 +17,43 @@ import com.wheretogo.domain.model.user.ProfilePrivate
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+
+
+fun Course.toCourseAddRequest(): CourseAddRequest {
+    return CourseAddRequest(
+        courseName = courseName,
+        waypoints = waypoints,
+        points = points,
+        duration = duration,
+        type = type,
+        level = level,
+        relation = relation,
+        cameraLatLng = cameraLatLng,
+        zoom = zoom,
+    )
+}
+
+fun CourseAddRequest.toCourse(
+    courseId: String,
+    userId: String,
+    userName: String
+): Course {
+    return Course(
+        courseId = courseId,
+        courseName = courseName,
+        userId = userId,
+        userName = userName,
+        waypoints = waypoints,
+        points = points,
+        duration = duration,
+        type = type,
+        level = level,
+        relation = relation,
+        cameraLatLng = cameraLatLng,
+        zoom = zoom,
+    )
+}
+
 
 fun Profile.toAuthProfile(): AuthProfile {
     return AuthProfile(

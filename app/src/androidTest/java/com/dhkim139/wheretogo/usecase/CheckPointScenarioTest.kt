@@ -14,6 +14,7 @@ import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.CheckPointAddRequest
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.user.AuthProfile
+import com.wheretogo.domain.toCourseAddRequest
 import com.wheretogo.domain.usecase.community.GetMyReportUseCase
 import com.wheretogo.domain.usecase.community.RemoveCheckPointUseCase
 import com.wheretogo.domain.usecase.community.ReportCheckPointUseCase
@@ -80,24 +81,26 @@ class CheckPointScenarioTest {
         val authRequest = AuthRequest(authType = AuthType.PROFILE, authProfile = addUser)
         val addCourse = MockModelModule().provideRemoteCourseGroup()
             .first { it.courseId == "cs3" }
-            .run { this.copy("cs999").toCourse(route = waypoints) }
+            .run { toCourse(points = waypoints).toCourseAddRequest() }
         val uri = getAssetFileUri(context, "photo_opt.jpg")
-        val addCheckPoint = CheckPointAddRequest(
-            courseId = addCourse.courseId,
+
+        //로그인후 코스, 체크포인트 추가
+        signUpAndSignInUseCase(authRequest).success()
+        val inputCourseId = addCourseUseCase(addCourse).success()
+        val inputCheckPointAddRequest = CheckPointAddRequest(
+            courseId = inputCourseId,
             latLng = addCourse.waypoints.first(),
             imageUri = uri,
             description = "description1"
         )
-        signUpAndSignInUseCase(authRequest).success()
-        addCourseUseCase(addCourse).success()
+        val outputCheckPointId = addCheckpointToCourseUseCase(inputCheckPointAddRequest).success()
+        getCheckpointForMarkerUseCase(inputCourseId).contain(outputCheckPointId)
+        getHistoryStreamUseCase().first().checkpointGroup.contain(outputCheckPointId)
 
-        val cp1 = addCheckpointToCourseUseCase(addCheckPoint).success()
-        getCheckpointForMarkerUseCase(addCourse.courseId).contain(cp1)
-        getHistoryStreamUseCase().first().checkpointGroup.contain(cp1)
-
-        removeCheckPointUseCase(addCourse.courseId, cp1).success()
-        getHistoryStreamUseCase().first().checkpointGroup.empty(cp1)
-        getCheckpointForMarkerUseCase(addCourse.courseId).empty(cp1)
+        //체크포인트 삭제
+        removeCheckPointUseCase(inputCourseId, outputCheckPointId).success()
+        getHistoryStreamUseCase().first().checkpointGroup.empty(outputCheckPointId)
+        getCheckpointForMarkerUseCase(inputCourseId).empty(outputCheckPointId)
     }
 
     @Test // 인증된 사용자가 체크포인트를 신고하기
@@ -107,34 +110,38 @@ class CheckPointScenarioTest {
         val reportUser =
             AuthProfile(uid = "report1", email = "report1@email.com", userName = "report1")
         val authRequest = AuthRequest(authType = AuthType.PROFILE, authProfile = reportUser)
-        val baseCourse = getCourseDummy().first()
-            .run { copy(courseId = "cs_cp1", userId = reportUser.uid, points = waypoints) }
+        val baseCourse = getCourseDummy().first().toCourseAddRequest()
+
+
+        //로그인후 코스, 체크포인트 추가
+        signUpAndSignInUseCase(authRequest).success()
+        val inputCourseId = addCourseUseCase(baseCourse).success()
         val reportCheckPointAdd = CheckPointAddRequest(
-            courseId = baseCourse.courseId,
+            courseId = inputCourseId,
             latLng = LatLng(1.0, 1.0),
             imageUri = uri,
             description = "description1"
         )
         val normalCheckPointAdd = CheckPointAddRequest(
-            courseId = baseCourse.courseId,
+            courseId = inputCourseId,
             latLng = LatLng(1.1, 1.1),
             imageUri = uri,
             description = "description2"
         )
-
-        signUpAndSignInUseCase(authRequest).success()
-        addCourseUseCase(baseCourse).success()
         val reportCpId = addCheckpointToCourseUseCase(reportCheckPointAdd).success()
         val normalCpId = addCheckpointToCourseUseCase(normalCheckPointAdd).success()
 
+        //체크포인트 신고후 숨기기
         reportCheckPointUseCase(reportCpId, "test")
         getMyReportUseCase().data!!.contain(reportCpId)
         getMyReportUseCase().data!!.empty(normalCpId)
-        getCheckpointForMarkerUseCase(baseCourse.courseId).empty(reportCpId)
-        getCheckpointForMarkerUseCase(baseCourse.courseId).contain(normalCpId)
+        getCheckpointForMarkerUseCase(inputCourseId).empty(reportCpId)
+        getCheckpointForMarkerUseCase(inputCourseId).contain(normalCpId)
 
+        //로그아웃후 모든 체크포인트 보이기
         signOutUseCase().success()
-        getCheckpointForMarkerUseCase(baseCourse.courseId).contain(reportCpId)
+        getCheckpointForMarkerUseCase(inputCourseId).contain(reportCpId)
+        getCheckpointForMarkerUseCase(inputCourseId).contain(normalCpId)
     }
 
 

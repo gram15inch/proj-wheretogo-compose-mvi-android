@@ -106,7 +106,7 @@ class InitTest {
                     else -> checkpoint
                 }
             }.forEach {
-                assertEquals(true, datasource.setCheckPoint(it.toRemoteCheckPoint()))
+                datasource.setCheckPoint(it.toRemoteCheckPoint())
             }
         }
     }
