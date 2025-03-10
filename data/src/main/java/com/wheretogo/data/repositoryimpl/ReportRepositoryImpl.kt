@@ -12,39 +12,51 @@ import com.wheretogo.domain.repository.ReportRepository
 import javax.inject.Inject
 
 class ReportRepositoryImpl @Inject constructor(
-    private val reportRemoteDatasource : ReportRemoteDatasource,
-    private val reportLocalDatasource : ReportLocalDatasource
+    private val reportRemoteDatasource: ReportRemoteDatasource,
+    private val reportLocalDatasource: ReportLocalDatasource
 ) : ReportRepository {
-    override suspend fun addReport(report: Report) {
-        reportRemoteDatasource.addReport(report.toRemoteReport())
-        reportLocalDatasource.addReport(report.toLocalReport())
-    }
-
-    override suspend fun getReport(reportId: String): Report? {
-        return reportLocalDatasource.getReport(reportId)?.toReport() ?: run {
-            val newReport = reportRemoteDatasource.getReport(reportId)?.toReport()
-            newReport?.let { reportLocalDatasource.addReport(it.toLocalReport()) }
-            newReport
+    override suspend fun addReport(report: Report): Result<Unit> {
+        return runCatching {
+            reportRemoteDatasource.addReport(report.toRemoteReport())
+            reportLocalDatasource.addReport(report.toLocalReport())
         }
     }
 
-    override suspend fun removeReport(reportId: String): Boolean {
-        return reportRemoteDatasource.removeReport(reportId).apply {
+    override suspend fun getReport(reportId: String): Result<Report> {
+        return runCatching {
+            reportLocalDatasource.getReport(reportId)?.toReport() ?: run {
+                val newReport = reportRemoteDatasource.getReport(reportId)?.toReport()
+                checkNotNull(newReport) { "report not found: $reportId" }
+                reportLocalDatasource.addReport(newReport.toLocalReport())
+                newReport
+            }
+        }
+    }
+
+    override suspend fun removeReport(reportId: String): Result<Unit> {
+        return runCatching {
+            reportRemoteDatasource.removeReport(reportId)
             reportLocalDatasource.removeReport(reportId)
         }
     }
 
-    override suspend fun getReportByType(reportType: ReportType): List<Report> {
-        return reportRemoteDatasource.getReportByType(reportType.name).map { it.toReport() }
+    override suspend fun getReportByType(reportType: ReportType): Result<List<Report>> {
+        return runCatching {
+            reportRemoteDatasource.getReportByType(reportType.name).map { it.toReport() }
+        }
     }
 
-    override suspend fun getReportByStatus(reportStatus: ReportStatus): List<Report> {
-        return reportRemoteDatasource.getReportByType(reportStatus.name).map { it.toReport() }
+    override suspend fun getReportByStatus(reportStatus: ReportStatus): Result<List<Report>> {
+        return runCatching {
+            reportRemoteDatasource.getReportByType(reportStatus.name).map { it.toReport() }
+        }
     }
 
-    override suspend fun getReportByUid(userId: String): List<Report> {
-        return reportRemoteDatasource.getReportByUid(userId).map { it.toReport() }.apply {
-            forEach { reportLocalDatasource.addReport(it.toLocalReport()) }
+    override suspend fun getReportByUid(userId: String): Result<List<Report>> {
+        return runCatching {
+            reportRemoteDatasource.getReportByUid(userId).map { it.toReport() }.apply {
+                forEach { reportLocalDatasource.addReport(it.toLocalReport()) }
+            }
         }
     }
 }
