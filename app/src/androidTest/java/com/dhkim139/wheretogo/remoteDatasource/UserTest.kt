@@ -1,7 +1,7 @@
 package com.dhkim139.wheretogo.remoteDatasource
 
-import androidx.test.platform.app.InstrumentationRegistry
 import com.wheretogo.data.datasourceimpl.UserRemoteDatasourceImpl
+import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
 import com.wheretogo.data.model.user.ProfilePublic
 import com.wheretogo.data.toProfile
 import com.wheretogo.data.toProfilePublic
@@ -33,12 +33,6 @@ class UserTest {
         hiltRule.inject()
     }
 
-    @Test
-    fun useAppContext() {
-        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.dhkim139.wheretogo", appContext.packageName)
-    }
-
     private fun getLocalProfile(id: String): Profile {
         val public1 = ProfilePublic(
             name = "name$id",
@@ -51,20 +45,20 @@ class UserTest {
             accountCreation = 0L,
             isAdRemove = false
         )
-        return public1.toProfile().copy(private = private1)
+        return public1.toProfile().copy(uid = "user_test$id",private = private1)
     }
 
     @Test
-    fun getAndSetProfileTest(): Unit = runBlocking {
+    fun get_set_delete_user_should_work_correctly(): Unit = runBlocking {
         val remoteDatasource = userRemoteDatasourceImpl
         val p1 = getLocalProfile("1")
-        assertEquals(true, remoteDatasource.setProfilePublic(p1.toProfilePublic()))
+        remoteDatasource.setProfilePublic(p1.toProfilePublic())
         assertEquals(p1.toProfilePublic(), remoteDatasource.getProfilePublic(p1.uid))
 
-        assertEquals(true, remoteDatasource.setProfilePrivate(p1.uid, p1.private))
+        remoteDatasource.setProfilePrivate(p1.uid, p1.private)
         assertEquals(p1.private, remoteDatasource.getProfilePrivate(p1.uid))
 
-        assertEquals(true, remoteDatasource.deleteProfile(p1.uid))
+        remoteDatasource.deleteProfile(p1.uid)
     }
 
     @Test
@@ -88,24 +82,43 @@ class UserTest {
         )
         assertEquals(null, userRemoteDatasourceImpl.getProfilePublicWithMail(hashSha256(mail3)))
 
-        assertEquals(true, userRemoteDatasourceImpl.deleteProfile(p1.uid))
-        assertEquals(true, userRemoteDatasourceImpl.deleteProfile(p2.uid))
+        userRemoteDatasourceImpl.deleteProfile(p1.uid)
+        userRemoteDatasourceImpl.deleteProfile(p2.uid)
     }
 
     @Test
-    fun setHistoryTest(): Unit = runBlocking {
+    fun get_set_history_should_work_correctly(): Unit = runBlocking {
         val remoteDatasource = userRemoteDatasourceImpl
-        val uid = "xXGqqUYVViM42AoWPPDoYc0gAG12"
-        val hid = "rp_comment1"
+        val p1 = getLocalProfile("1")
+        remoteDatasource.setProfilePublic(p1.toProfilePublic())
+        val inputHistory1 ="${p1.uid}_his1"
+        val inputHistory2 ="${p1.uid}_his2"
         remoteDatasource.addHistory(
-            uid = uid,
-            historyId = hid,
+            uid =  p1.uid,
+            historyId = inputHistory1,
+            type = HistoryType.REPORT_CONTENT
+        )
+        remoteDatasource.addHistory(
+            uid =  p1.uid,
+            historyId = inputHistory2,
             type = HistoryType.REPORT_CONTENT
         )
 
-        val hid2 = remoteDatasource.getHistoryGroup(uid, HistoryType.REPORT_CONTENT)
+        val outputHistory = remoteDatasource.getHistoryGroup(p1.uid, HistoryType.REPORT_CONTENT)
+        assertEquals(true, inputHistory1 in outputHistory.second)
+        assertEquals(true, inputHistory2 in outputHistory.second)
 
-        assertEquals(true, hid2.second.isNotEmpty())
-        assertEquals(hid, hid2.second.first())
+        val wrapper = RemoteHistoryGroupWrapper(outputHistory.second.filter { inputHistory1 ==it },HistoryType.REPORT_CONTENT)
+        remoteDatasource.setHistoryGroup(p1.uid, wrapper)
+        val outputHistory2 = remoteDatasource.getHistoryGroup(p1.uid, HistoryType.REPORT_CONTENT)
+        assertEquals(true, inputHistory1 in outputHistory2.second)
+        assertEquals(false, inputHistory2 in outputHistory2.second)
+
+        remoteDatasource.deleteHistory(p1.uid,HistoryType.REPORT_CONTENT)
+        val outputHistory3 = remoteDatasource.getHistoryGroup(p1.uid, HistoryType.REPORT_CONTENT)
+        assertEquals(false, inputHistory1 in outputHistory3.second)
+        assertEquals(false, inputHistory2 in outputHistory3.second)
+
+        remoteDatasource.deleteProfile(p1.uid)
     }
 }

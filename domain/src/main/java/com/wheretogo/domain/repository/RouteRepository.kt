@@ -6,12 +6,12 @@ import com.wheretogo.domain.model.map.Route
 
 interface RouteRepository {
 
-    suspend fun getRouteInCourse(courseId: String): Route
+    suspend fun getRouteInCourse(courseId: String): Result<Route>
 
-    suspend fun setRouteInCourse(route: Route): Boolean
+    suspend fun setRouteInCourse(route: Route): Result<Unit>
 
-    suspend fun removeRouteInCourse(courseId: String): Boolean
+    suspend fun removeRouteInCourse(courseId: String): Result<Unit>
 
-    suspend fun createRoute(waypoints: List<LatLng>): Route
+    suspend fun createRoute(waypoints: List<LatLng>): Result<Route>
 
 }

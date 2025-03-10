@@ -1,22 +1,24 @@
 package com.dhkim139.wheretogo.mock
 
-import android.net.Uri
 import com.wheretogo.data.datasource.ImageRemoteDatasource
 import com.wheretogo.domain.ImageSize
-import java.io.File
 import javax.inject.Inject
 
 class MockImageRemoteDatasourceImpl @Inject constructor() : ImageRemoteDatasource {
 
-    override suspend fun setImage(uri: Uri, filename: String, size: ImageSize): Boolean {
-        return true
+    override suspend fun uploadImage(
+        imageByteArray: ByteArray,
+        imageName: String,
+        size: ImageSize
+    ) {
+
     }
 
-    override suspend fun getImage(localFile: File, filename: String, size: ImageSize): File? {
-        return localFile
+    override suspend fun downloadImage(filename: String, size: ImageSize): ByteArray {
+        return byteArrayOf()
     }
 
-    override suspend fun removeImage(filename: String, size: ImageSize): Boolean{
-        return true
+    override suspend fun removeImage(filename: String, size: ImageSize) {
+
     }
 }

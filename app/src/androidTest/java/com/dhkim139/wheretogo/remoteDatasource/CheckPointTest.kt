@@ -7,9 +7,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -31,31 +29,16 @@ class CheckPointTest {
     }
 
     @Test
-    fun setAndGetCheckPointTest(): Unit = runBlocking {
-        val datasource = checkPointRemoteDatasourceImpl
+    fun get_set_remove_should_work_correctly(): Unit = runBlocking {
+        val inputCp1 = RemoteCheckPoint(checkPointId = "TestCp1", userId = "TestCp-User1")
+        checkPointRemoteDatasourceImpl.removeCheckPoint(inputCp1.checkPointId)
+        checkPointRemoteDatasourceImpl.getCheckPoint(inputCp1.checkPointId).empty()
 
-        val cp1 = datasource.getCheckPoint("cp1")
-        Log.d(tag, "$cp1")
-        assertEquals(true, cp1?.imageName?.isNotEmpty())
-        assertEquals(true, cp1?.titleComment?.isNotEmpty())
-        assertNotEquals(0.0, cp1?.latLng?.latitude)
-    }
+        checkPointRemoteDatasourceImpl.setCheckPoint(inputCp1)
+        checkPointRemoteDatasourceImpl.getCheckPoint(inputCp1.checkPointId).assertEquals(inputCp1)
 
-    @Test
-    fun removeCheckPointTest(): Unit = runBlocking {
-        val datasource = checkPointRemoteDatasourceImpl
-        val removeCheckPoint = RemoteCheckPoint(
-            checkPointId = "cs_test1",
-            userId = "uid1",
-        )
-
-        datasource.getCheckPoint(removeCheckPoint.checkPointId).empty()
-        datasource.setCheckPoint(removeCheckPoint).success()
-
-        datasource.getCheckPoint(removeCheckPoint.checkPointId).full()
-        datasource.removeCheckPoint(removeCheckPoint.checkPointId).success()
-
-        datasource.getCheckPoint(removeCheckPoint.checkPointId).empty()
+        checkPointRemoteDatasourceImpl.removeCheckPoint(inputCp1.checkPointId)
+        checkPointRemoteDatasourceImpl.getCheckPoint(inputCp1.checkPointId).empty()
     }
 
 
@@ -64,19 +47,9 @@ class CheckPointTest {
         assertEquals(null, this)
     }
 
-    private fun RemoteCheckPoint?.full() {
+    private fun RemoteCheckPoint?.assertEquals(input: RemoteCheckPoint) {
         Log.d(tag, "cp: $this")
         assertNotEquals(null, this)
+        assertEquals(input, this)
     }
-
-    private fun Boolean.success() {
-        Log.d(tag, "result: $this")
-        assertTrue(this)
-    }
-
-    private fun Boolean.fail() {
-        Log.d(tag, "result: $this")
-        assertFalse(this)
-    }
-
 }

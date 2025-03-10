@@ -52,4 +52,5 @@ dependencies {
 
     implementation ("com.firebase:geofire-android:3.2.0")
     implementation ("com.firebase:geofire-android-common:3.2.0")
+    implementation("de.huxhorn.sulky:de.huxhorn.sulky.ulid:8.2.0")
 }

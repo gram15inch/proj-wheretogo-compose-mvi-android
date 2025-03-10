@@ -6,6 +6,8 @@ import com.firebase.geofire.GeoLocation
 import com.wheretogo.domain.feature.hashSha256
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.CheckPointAddRequest
+import com.wheretogo.domain.model.map.Course
+import com.wheretogo.domain.model.map.CourseAddRequest
 import com.wheretogo.domain.model.map.History
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.MetaCheckPoint
@@ -15,11 +17,47 @@ import com.wheretogo.domain.model.user.ProfilePrivate
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import java.util.UUID
 
-fun Profile.toAuthProfile(): AuthProfile{
+
+fun Course.toCourseAddRequest(): CourseAddRequest {
+    return CourseAddRequest(
+        courseName = courseName,
+        waypoints = waypoints,
+        points = points,
+        duration = duration,
+        type = type,
+        level = level,
+        relation = relation,
+        cameraLatLng = cameraLatLng,
+        zoom = zoom,
+    )
+}
+
+fun CourseAddRequest.toCourse(
+    courseId: String,
+    userId: String,
+    userName: String
+): Course {
+    return Course(
+        courseId = courseId,
+        courseName = courseName,
+        userId = userId,
+        userName = userName,
+        waypoints = waypoints,
+        points = points,
+        duration = duration,
+        type = type,
+        level = level,
+        relation = relation,
+        cameraLatLng = cameraLatLng,
+        zoom = zoom,
+    )
+}
+
+
+fun Profile.toAuthProfile(): AuthProfile {
     return AuthProfile(
-        uid=uid,
+        uid = uid,
         userName = name,
         email = private.mail,
         authCompany = AuthCompany.PROFILE
@@ -34,25 +72,59 @@ fun List<Pair<HistoryType, HashSet<String>>>.toHistory(): History {
     return history
 }
 
-fun History.map(type: HistoryType, data:HashSet<String>) : History{
-   return when (type) {
-        HistoryType.COURSE -> {  copy(courseGroup = data) }
-        HistoryType.CHECKPOINT -> {  copy(checkpointGroup = data) }
-        HistoryType.COMMENT -> {  copy(commentGroup = data) }
-        HistoryType.REPORT_CONTENT -> {  copy(reportGroup = data) }
-        HistoryType.LIKE -> {  copy(likeGroup = data) }
-        HistoryType.BOOKMARK -> {  copy(bookmarkGroup = data) }
+fun History.map(type: HistoryType, data: HashSet<String>): History {
+    return when (type) {
+        HistoryType.COURSE -> {
+            copy(courseGroup = data)
+        }
+
+        HistoryType.CHECKPOINT -> {
+            copy(checkpointGroup = data)
+        }
+
+        HistoryType.COMMENT -> {
+            copy(commentGroup = data)
+        }
+
+        HistoryType.REPORT_CONTENT -> {
+            copy(reportGroup = data)
+        }
+
+        HistoryType.LIKE -> {
+            copy(likeGroup = data)
+        }
+
+        HistoryType.BOOKMARK -> {
+            copy(bookmarkGroup = data)
+        }
     }
 }
 
-fun History.get(type:HistoryType):HashSet<String>{
+fun History.get(type: HistoryType): HashSet<String> {
     return when (type) {
-        HistoryType.COURSE -> {  courseGroup }
-        HistoryType.CHECKPOINT -> { checkpointGroup }
-        HistoryType.COMMENT -> {  commentGroup }
-        HistoryType.REPORT_CONTENT -> {  reportGroup }
-        HistoryType.LIKE -> {  likeGroup }
-        HistoryType.BOOKMARK -> {  bookmarkGroup }
+        HistoryType.COURSE -> {
+            courseGroup
+        }
+
+        HistoryType.CHECKPOINT -> {
+            checkpointGroup
+        }
+
+        HistoryType.COMMENT -> {
+            commentGroup
+        }
+
+        HistoryType.REPORT_CONTENT -> {
+            reportGroup
+        }
+
+        HistoryType.LIKE -> {
+            likeGroup
+        }
+
+        HistoryType.BOOKMARK -> {
+            bookmarkGroup
+        }
     }
 }
 
@@ -88,13 +160,15 @@ fun List<CheckPoint>.toMetaCheckPoint(
 }
 
 fun CheckPointAddRequest.toCheckpoint(
-    userId: String = ""
+    userId: String,
+    checkPointId: String,
+    imageName: String,
 ): CheckPoint {
     return CheckPoint(
-        checkPointId = UUID.randomUUID().toString(),
+        checkPointId = checkPointId,
         userId = userId,
-        latLng = latLng,
         imageName = imageName,
+        latLng = latLng,
         description = description
     )
 }

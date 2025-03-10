@@ -218,7 +218,7 @@ class AccessTest {
         val authRequest = googleAuthOnDevice(getGoogleIdOption, context)
         val authResponse =
             authRemoteDatasourceImpl.authGoogleWithFirebase(authRequest!!.authToken!!)
-        return authResponse.data!!
+        return authResponse!!
     }
 
     private suspend fun logout() {

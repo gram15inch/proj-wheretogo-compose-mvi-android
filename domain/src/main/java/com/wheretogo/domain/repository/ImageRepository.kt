@@ -5,7 +5,7 @@ import com.wheretogo.domain.ImageSize
 import java.io.File
 
 interface ImageRepository {
-    suspend fun getImage(fileName: String, size: ImageSize): File?
-    suspend fun setImage(imgUri: Uri, fileName: String): Boolean
-    suspend fun removeImage(fileName: String): Boolean
+    suspend fun getImage(fileName: String, size: ImageSize): Result<File>
+    suspend fun setImage(imgUri: Uri, customName: String = ""): Result<String>
+    suspend fun removeImage(fileName: String): Result<Unit>
 }

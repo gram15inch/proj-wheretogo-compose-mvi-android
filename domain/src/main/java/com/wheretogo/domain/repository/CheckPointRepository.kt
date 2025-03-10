@@ -4,14 +4,14 @@ import com.wheretogo.domain.model.map.CheckPoint
 
 interface CheckPointRepository {
 
-    suspend fun setCheckPoint(checkPoint: CheckPoint): Boolean
+    suspend fun setCheckPoint(checkPoint: CheckPoint): Result<Unit>
 
-    suspend fun getCheckPoint(checkPointId: String): CheckPoint?
+    suspend fun getCheckPoint(checkPointId: String): Result<CheckPoint>
 
     suspend fun getCheckPointGroup(
         checkpointIdGroup: List<String>
-    ): List<CheckPoint>
+    ): Result<List<CheckPoint>>
 
-    suspend fun removeCheckPoint(checkPointId: String): Boolean
+    suspend fun removeCheckPoint(checkPointId: String): Result<Unit>
 
 }

@@ -5,10 +5,10 @@ import com.wheretogo.domain.ReportType
 import com.wheretogo.domain.model.community.Report
 
 interface ReportRepository {
-    suspend fun addReport(report: Report)
-    suspend fun getReport(reportId: String): Report?
-    suspend fun removeReport(reportId: String): Boolean
-    suspend fun getReportByType(reportType: ReportType): List<Report>
-    suspend fun getReportByStatus(reportStatus: ReportStatus): List<Report>
-    suspend fun getReportByUid(userId: String): List<Report>
+    suspend fun addReport(report: Report): Result<Unit>
+    suspend fun getReport(reportId: String): Result<Report>
+    suspend fun removeReport(reportId: String): Result<Unit>
+    suspend fun getReportByType(reportType: ReportType): Result<List<Report>>
+    suspend fun getReportByStatus(reportStatus: ReportStatus): Result<List<Report>>
+    suspend fun getReportByUid(userId: String): Result<List<Report>>
 }

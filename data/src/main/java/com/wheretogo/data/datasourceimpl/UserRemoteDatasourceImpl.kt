@@ -32,24 +32,24 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
     private val private = FireStoreCollections.PRIVATE.name()
 
 
-    override suspend fun setProfilePublic(public: ProfilePublic): Boolean {
+    override suspend fun setProfilePublic(public: ProfilePublic) {
         return suspendCancellableCoroutine { continuation ->
             firestore.collection(userTable).document(public.uid)
                 .set(public)
-                .addOnSuccessListener { result ->
-                    continuation.resume(true)
+                .addOnSuccessListener { _ ->
+                    continuation.resume(Unit)
                 }.addOnFailureListener { e ->
                     continuation.resumeWithException(e)
                 }
         }
     }
 
-    override suspend fun setProfilePrivate(uid: String, privateProfile: ProfilePrivate): Boolean {
+    override suspend fun setProfilePrivate(uid: String, privateProfile: ProfilePrivate) {
         return suspendCancellableCoroutine { continuation ->
             firestore.collection(userTable).document(uid).collection(private).document(private)
                 .set(privateProfile)
-                .addOnSuccessListener { result ->
-                    continuation.resume(true)
+                .addOnSuccessListener { _ ->
+                    continuation.resume(Unit)
                 }.addOnFailureListener { e ->
                     continuation.resumeWithException(e)
                 }
@@ -125,7 +125,7 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
         }
     }
 
-    override suspend fun deleteProfile(uid: String): Boolean {
+    override suspend fun deleteProfile(uid: String) {
         return suspendCancellableCoroutine { continuation ->
             val root = firestore.collection(userTable).document(uid)
             root.collection(historyTable).document(bookMarkTypeTable).delete()
@@ -137,7 +137,7 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
             root.collection(public).document(uid).delete()
             root.delete()
                 .addOnSuccessListener {
-                    continuation.resume(true)
+                    continuation.resume(Unit)
                 }.addOnFailureListener { e ->
                     continuation.resumeWithException(e)
                 }
@@ -145,7 +145,7 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
     }
 
 
-    override suspend fun setHistoryGroup(uid: String, wrapper: RemoteHistoryGroupWrapper): Boolean {
+    override suspend fun setHistoryGroup(uid: String, wrapper: RemoteHistoryGroupWrapper) {
         val typeTable = when (wrapper.type) {
             HistoryType.LIKE -> likeTypeTable
             HistoryType.BOOKMARK -> bookMarkTypeTable
@@ -158,15 +158,36 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
             firestore.collection(userTable).document(uid).collection(historyTable)
                 .document(typeTable)
                 .set(wrapper)
-                .addOnSuccessListener { result ->
-                    continuation.resume(true)
+                .addOnSuccessListener { _ ->
+                    continuation.resume(Unit)
                 }.addOnFailureListener { e ->
                     continuation.resumeWithException(e)
                 }
         }
     }
 
-    override suspend fun addHistory(uid: String, historyId: String, type: HistoryType): Boolean {
+    override suspend fun deleteHistory(uid: String,type:HistoryType){
+        val typeTable = when (type) {
+            HistoryType.LIKE -> likeTypeTable
+            HistoryType.BOOKMARK -> bookMarkTypeTable
+            HistoryType.COMMENT -> commentTypeTable
+            HistoryType.COURSE -> courseTypeTable
+            HistoryType.CHECKPOINT -> checkpointTypeTable
+            HistoryType.REPORT_CONTENT -> reportTable
+        }
+        suspendCancellableCoroutine { continuation ->
+            firestore.collection(userTable).document(uid).collection(historyTable)
+                .document(typeTable)
+                .delete()
+                .addOnSuccessListener { _ ->
+                    continuation.resume(Unit)
+                }.addOnFailureListener { e ->
+                    continuation.resumeWithException(e)
+                }
+        }
+    }
+
+    override suspend fun addHistory(uid: String, historyId: String, type: HistoryType) {
 
         val typeTable = when (type) {
             HistoryType.LIKE -> likeTypeTable
@@ -185,12 +206,12 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
                     FieldValue.arrayUnion(historyId)
                 )
                 .addOnSuccessListener {
-                    continuation.resume(true)
+                    continuation.resume(Unit)
                 }.addOnFailureListener { e ->
                     CoroutineScope(Dispatchers.IO).launch {
                         if (e is FirebaseFirestoreException) {
                             setHistoryGroup(uid, RemoteHistoryGroupWrapper(listOf(historyId), type))
-                            continuation.resume(true)
+                            continuation.resume(Unit)
                         } else
                             continuation.resumeWithException(e)
                     }

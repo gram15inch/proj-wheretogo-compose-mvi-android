@@ -22,7 +22,7 @@ data class LocalCourse(
     val longitude: Double = 0.0,
     val geoHash: String = "",
     val waypoints: List<LatLng> = emptyList(),
-    val route: List<LatLng> = emptyList(),
+    val points: List<LatLng> = emptyList(),
     val localMetaCheckPoint: DataMetaCheckPoint = DataMetaCheckPoint(),
     val duration: String = "",
     val type: String = "",

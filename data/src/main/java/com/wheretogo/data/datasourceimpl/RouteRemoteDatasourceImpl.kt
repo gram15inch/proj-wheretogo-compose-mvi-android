@@ -19,12 +19,12 @@ class RouteRemoteDatasourceImpl @Inject constructor(
     private val firestore by lazy { FirebaseFirestore.getInstance() }
     private val courseTable = FireStoreCollections.COURSE.name()
     private val routeTable = FireStoreCollections.ROUTE.name()
+    private val routeDocument = FireStoreCollections.ROUTE.name()+"_DOC"
 
     override suspend fun getRouteInCourse(courseId: String): RemoteRoute {
         return suspendCancellableCoroutine { continuation ->
-            val routeId = getRouteId(courseId)
             firestore.collection(courseTable).document(courseId)
-                .collection(routeTable).document(routeId)
+                .collection(routeTable).document(routeDocument)
                 .get()
                 .addOnSuccessListener {
                     val route =
@@ -38,9 +38,8 @@ class RouteRemoteDatasourceImpl @Inject constructor(
 
     override suspend fun setRouteInCourse(remoteRoute: RemoteRoute): Boolean {
         return suspendCancellableCoroutine { continuation ->
-            val routeId = getRouteId(remoteRoute.courseId)
             firestore.collection(courseTable).document(remoteRoute.courseId)
-                .collection(routeTable).document(routeId)
+                .collection(routeTable).document(routeDocument)
                 .set(remoteRoute)
                 .addOnSuccessListener {
                     continuation.resume(true)
@@ -53,20 +52,15 @@ class RouteRemoteDatasourceImpl @Inject constructor(
 
     override suspend fun removeRouteInCourse(courseId: String): Boolean {
         return suspendCancellableCoroutine { continuation ->
-            val routeId = getRouteId(courseId)
             firestore.collection(courseTable).document(courseId)
-                .collection(routeTable).document(routeId)
+                .collection(routeTable).document(routeDocument)
                 .delete()
                 .addOnSuccessListener {
                     continuation.resume(true)
                 }.addOnFailureListener {
-                    continuation.resume(false)
+                    continuation.resumeWithException(it)
                 }
         }
-    }
-
-    private fun getRouteId(courseId: String): String {
-        return "${courseId}_route"
     }
 
     private fun convertLatLng(latlng: LatLng): String = "${latlng.longitude}, ${latlng.latitude}"

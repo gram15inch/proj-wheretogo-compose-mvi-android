@@ -14,19 +14,25 @@ class AddressRepositoryImpl @Inject constructor(
     private val cacheSimpleAddress = mutableMapOf<String, List<SimpleAddress>>()
     private val cacheAddress = mutableMapOf<String, List<Address>>()
 
-    override suspend fun getAddress(address: String): Address {
-        return cacheAddress.getOrPut(address + "address") {
-            remoteDatasource.geocode(address)
-        }.first()
+    override suspend fun getAddress(address: String): Result<Address> {
+        return runCatching {
+            cacheAddress.getOrPut(address + "address") {
+                remoteDatasource.geocode(address)
+            }.first()
+        }
     }
 
-    override suspend fun getAddressFromLatlng(latlng: LatLng): String {
-        return remoteDatasource.reverseGeocode(latlng)
+    override suspend fun getAddressFromLatlng(latlng: LatLng): Result<String> {
+        return runCatching {
+            remoteDatasource.reverseGeocode(latlng)
+        }
     }
 
-    override suspend fun getAddressFromKeyword(query: String): List<SimpleAddress> {
-        return cacheSimpleAddress.getOrPut(query + "keyword") {
-            remoteDatasource.getSimpleAddressFromKeyword(query)
+    override suspend fun getAddressFromKeyword(query: String): Result<List<SimpleAddress>> {
+        return runCatching {
+            cacheSimpleAddress.getOrPut(query + "keyword") {
+                remoteDatasource.getSimpleAddressFromKeyword(query)
+            }
         }
     }
 }

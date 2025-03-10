@@ -19,7 +19,7 @@ data class CommentState(
     )
 
     data class CommentAddState(
-        val commentId: String = "",
+        //코멘트 ID 유즈케이스에서 생성
         val groupId: String = "",
         val largeEmoji: String = "",
         val emogiGroup: List<String> = emptyList(),

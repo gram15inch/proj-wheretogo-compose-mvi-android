@@ -8,7 +8,7 @@ import com.naver.maps.map.overlay.PathOverlay
 import com.wheretogo.domain.OverlayType
 import com.wheretogo.domain.RouteDetailType
 import com.wheretogo.domain.model.UseCaseResponse
-import com.wheretogo.domain.model.map.Course
+import com.wheretogo.domain.model.map.CourseAddRequest
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.SimpleAddress
 import com.wheretogo.domain.usecase.map.AddCourseUseCase
@@ -60,12 +60,12 @@ class CourseAddViewModel @Inject constructor(
     fun handleIntent(intent: CourseAddIntent) {
         viewModelScope.launch(exceptionHandler) {
             when (intent) {
-                
+
                 //서치바
                 is CourseAddIntent.AddressItemClick -> addressItemClick(intent.simpleAddress)
                 is CourseAddIntent.SearchToggleClick -> searchToggleClick(intent.isBar)
                 is CourseAddIntent.SubmitClick -> submitClick(intent.submit)
-                
+
                 //지도
                 is CourseAddIntent.UpdatedCamera -> updatedCamara(intent.cameraState)
                 is CourseAddIntent.MapClick -> mapClick(intent.latLng)
@@ -87,79 +87,84 @@ class CourseAddViewModel @Inject constructor(
     }
 
     //서치바
-    private suspend fun addressItemClick(simpleAddress: SimpleAddress){
-            _courseAddScreenState.value = _courseAddScreenState.value.run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
-        val latlngResponse = withContext(Dispatchers.IO){ getLatLngFromAddressUseCase(simpleAddress.address) }
-            _courseAddScreenState.value = _courseAddScreenState.value.run {
+    private suspend fun addressItemClick(simpleAddress: SimpleAddress) {
+        _courseAddScreenState.value =
+            _courseAddScreenState.value.run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
+        val latlngResponse =
+            withContext(Dispatchers.IO) { getLatLngFromAddressUseCase(simpleAddress.address) }
+        _courseAddScreenState.value = _courseAddScreenState.value.run {
 
-                when(latlngResponse.status){
-                    UseCaseResponse.Status.Success->{
-                        val newLatLng = latlngResponse.data!!
-                        copy(
-                            searchBarState = searchBarState.copy(isLoading = false),
-                            cameraState = cameraState.copy(
-                                latLng = newLatLng,
-                                status = CameraStatus.TRACK
-                            )
+            when (latlngResponse.status) {
+                UseCaseResponse.Status.Success -> {
+                    val newLatLng = latlngResponse.data!!
+                    copy(
+                        searchBarState = searchBarState.copy(isLoading = false),
+                        cameraState = cameraState.copy(
+                            latLng = newLatLng,
+                            status = CameraStatus.TRACK
+                        )
 
-                        )
-                    }
-                    UseCaseResponse.Status.Fail->{
-                        copy(
-                            searchBarState = searchBarState.copy(isLoading = false)
-                        )
-                    }
+                    )
                 }
 
+                UseCaseResponse.Status.Fail -> {
+                    copy(
+                        searchBarState = searchBarState.copy(isLoading = false)
+                    )
+                }
             }
+
+        }
 
     }
 
-    private fun searchToggleClick(isBar:Boolean){
+    private fun searchToggleClick(isBar: Boolean) {
 
-            _courseAddScreenState.value = _courseAddScreenState.value.run {
-                if(!isBar){
+        _courseAddScreenState.value = _courseAddScreenState.value.run {
+            if (!isBar) {
+                copy(
+                    searchBarState = searchBarState.copy(
+                        isLoading = false,
+                        simpleAddressGroup = emptyList()
+                    )
+                )
+            } else {
+                copy()
+            }
+        }
+
+    }
+
+    private suspend fun submitClick(submit: String) {
+        _courseAddScreenState.value =
+            _courseAddScreenState.value.run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
+        val addressResponse = withContext(Dispatchers.IO) { searchAddressUseCase(submit) }
+        _courseAddScreenState.value = _courseAddScreenState.value.run {
+            when (addressResponse.status) {
+                UseCaseResponse.Status.Success -> {
                     copy(
                         searchBarState = searchBarState.copy(
                             isLoading = false,
-                            simpleAddressGroup = emptyList()
+                            isEmptyVisible = addressResponse.data?.isEmpty() ?: false,
+                            simpleAddressGroup = addressResponse.data ?: emptyList()
                         )
                     )
-                }else{
-                    copy()
+                }
+
+                UseCaseResponse.Status.Fail -> {
+                    copy(
+                        searchBarState = searchBarState.copy(
+                            isLoading = false
+                        )
+                    )
                 }
             }
 
-    }
-
-    private suspend fun submitClick(submit:String){
-            _courseAddScreenState.value = _courseAddScreenState.value.run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
-        val addressResponse = withContext(Dispatchers.IO){ searchAddressUseCase(submit) }
-            _courseAddScreenState.value = _courseAddScreenState.value.run {
-                when(addressResponse.status){
-                    UseCaseResponse.Status.Success->{
-                        copy(
-                            searchBarState = searchBarState.copy(
-                                isLoading = false,
-                                isEmptyVisible = addressResponse.data?.isEmpty()?:false,
-                                simpleAddressGroup = addressResponse.data?: emptyList()
-                            )
-                        )
-                    }
-                    UseCaseResponse.Status.Fail->{
-                        copy(
-                            searchBarState = searchBarState.copy(
-                                isLoading = false
-                            )
-                        )
-                    }
-                }
-
-            }
+        }
 
     }
 
-    
+
     //지도
     private fun updatedCamara(cameraState: CameraState) {
         _courseAddScreenState.value = _courseAddScreenState.value.run {
@@ -304,14 +309,14 @@ class CourseAddViewModel @Inject constructor(
 
     //바텀시트
     private suspend fun routeCreateClick() {
-        val waypoints =  _courseAddScreenState.value.waypoints
+        val waypoints = _courseAddScreenState.value.waypoints
         val isWaypoint = waypoints.size >= 2
         if (!isWaypoint) {
             EventBus.sendMsg(EventMsg(R.string.add_marker_by_click_map))
             return
         } else {
-            val newRoute = withContext(Dispatchers.IO){ createRouteUseCase(waypoints)} ?: return
-            _courseAddScreenState.value =  _courseAddScreenState.value.run {
+            val newRoute = withContext(Dispatchers.IO) { createRouteUseCase(waypoints) } ?: return
+            _courseAddScreenState.value = _courseAddScreenState.value.run {
                 val naverPoints = newRoute.points.toNaver()
                 val newWaypointItemState =
                     newRoute.waypointItems.map { it.toRouteWaypointItemState() }
@@ -392,7 +397,7 @@ class CourseAddViewModel @Inject constructor(
         }
         if (isValid) {
             val addCourseResponse = _courseAddScreenState.value.run {
-                val newCourse = Course(
+                val newCourse = CourseAddRequest(
                     courseName = courseName,
                     waypoints = waypoints,
                     points = routeState.points,

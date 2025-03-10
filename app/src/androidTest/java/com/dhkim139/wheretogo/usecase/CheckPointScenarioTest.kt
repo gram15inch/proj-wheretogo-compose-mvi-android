@@ -14,6 +14,7 @@ import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.CheckPointAddRequest
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.user.AuthProfile
+import com.wheretogo.domain.toCourseAddRequest
 import com.wheretogo.domain.usecase.community.GetMyReportUseCase
 import com.wheretogo.domain.usecase.community.RemoveCheckPointUseCase
 import com.wheretogo.domain.usecase.community.ReportCheckPointUseCase
@@ -50,17 +51,28 @@ class CheckPointScenarioTest {
         hiltRule.inject()
     }
 
-    @Inject lateinit var user: MockRemoteUser
-    @Inject lateinit var signInUseCase: UserSignInUseCase
-    @Inject lateinit var signUpAndSignInUseCase: UserSignUpAndSignInUseCase
-    @Inject lateinit var signOutUseCase: UserSignOutUseCase
-    @Inject lateinit var addCourseUseCase: AddCourseUseCase
-    @Inject lateinit var addCheckpointToCourseUseCase: AddCheckpointToCourseUseCase
-    @Inject lateinit var removeCheckPointUseCase: RemoveCheckPointUseCase
-    @Inject lateinit var reportCheckPointUseCase: ReportCheckPointUseCase
-    @Inject lateinit var getCheckpointForMarkerUseCase: GetCheckpointForMarkerUseCase
-    @Inject lateinit var getHistoryStreamUseCase: GetHistoryStreamUseCase
-    @Inject lateinit var getMyReportUseCase: GetMyReportUseCase
+    @Inject
+    lateinit var user: MockRemoteUser
+    @Inject
+    lateinit var signInUseCase: UserSignInUseCase
+    @Inject
+    lateinit var signUpAndSignInUseCase: UserSignUpAndSignInUseCase
+    @Inject
+    lateinit var signOutUseCase: UserSignOutUseCase
+    @Inject
+    lateinit var addCourseUseCase: AddCourseUseCase
+    @Inject
+    lateinit var addCheckpointToCourseUseCase: AddCheckpointToCourseUseCase
+    @Inject
+    lateinit var removeCheckPointUseCase: RemoveCheckPointUseCase
+    @Inject
+    lateinit var reportCheckPointUseCase: ReportCheckPointUseCase
+    @Inject
+    lateinit var getCheckpointForMarkerUseCase: GetCheckpointForMarkerUseCase
+    @Inject
+    lateinit var getHistoryStreamUseCase: GetHistoryStreamUseCase
+    @Inject
+    lateinit var getMyReportUseCase: GetMyReportUseCase
 
     @Test // 인증된 사용자가 체크포인트를 추가하거나 삭제하기
     fun scenario1(): Unit = runBlocking {
@@ -69,70 +81,75 @@ class CheckPointScenarioTest {
         val authRequest = AuthRequest(authType = AuthType.PROFILE, authProfile = addUser)
         val addCourse = MockModelModule().provideRemoteCourseGroup()
             .first { it.courseId == "cs3" }
-            .run { this.copy("cs999").toCourse(route = waypoints) }
+            .run { toCourse(points = waypoints).toCourseAddRequest() }
         val uri = getAssetFileUri(context, "photo_opt.jpg")
-        val addCheckPoint = CheckPointAddRequest(
-            courseId = addCourse.courseId,
+
+        //로그인후 코스, 체크포인트 추가
+        signUpAndSignInUseCase(authRequest).success()
+        val inputCourseId = addCourseUseCase(addCourse).success()
+        val inputCheckPointAddRequest = CheckPointAddRequest(
+            courseId = inputCourseId,
             latLng = addCourse.waypoints.first(),
-            imageName = "imgName1",
             imageUri = uri,
             description = "description1"
         )
-        signUpAndSignInUseCase(authRequest).success()
-        addCourseUseCase(addCourse).success()
+        val outputCheckPointId = addCheckpointToCourseUseCase(inputCheckPointAddRequest).success()
+        getCheckpointForMarkerUseCase(inputCourseId).contain(outputCheckPointId)
+        getHistoryStreamUseCase().first().checkpointGroup.contain(outputCheckPointId)
 
-        val cp1 = addCheckpointToCourseUseCase(addCheckPoint).success()
-        getCheckpointForMarkerUseCase(addCourse.courseId).contain(cp1)
-        getHistoryStreamUseCase().first().checkpointGroup.contain(cp1)
-
-        removeCheckPointUseCase(addCourse.courseId, cp1).success()
-        getHistoryStreamUseCase().first().checkpointGroup.empty(cp1)
-        getCheckpointForMarkerUseCase(addCourse.courseId).empty(cp1)
+        //체크포인트 삭제
+        removeCheckPointUseCase(inputCourseId, outputCheckPointId).success()
+        getHistoryStreamUseCase().first().checkpointGroup.empty(outputCheckPointId)
+        getCheckpointForMarkerUseCase(inputCourseId).empty(outputCheckPointId)
     }
 
     @Test // 인증된 사용자가 체크포인트를 신고하기
     fun scenario2(): Unit = runBlocking {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val uri = getAssetFileUri(context, "photo_opt.jpg")
-        val reportUser = AuthProfile(uid = "report1", email = "report1@email.com", userName = "report1")
+        val reportUser =
+            AuthProfile(uid = "report1", email = "report1@email.com", userName = "report1")
         val authRequest = AuthRequest(authType = AuthType.PROFILE, authProfile = reportUser)
-        val baseCourse = getCourseDummy().first().run { copy(courseId="cs_cp1", userId= reportUser.uid, points = waypoints) }
+        val baseCourse = getCourseDummy().first().toCourseAddRequest()
+
+
+        //로그인후 코스, 체크포인트 추가
+        signUpAndSignInUseCase(authRequest).success()
+        val inputCourseId = addCourseUseCase(baseCourse).success()
         val reportCheckPointAdd = CheckPointAddRequest(
-            courseId = baseCourse.courseId,
-            latLng = LatLng(1.0,1.0),
-            imageName = "imgName1",
+            courseId = inputCourseId,
+            latLng = LatLng(1.0, 1.0),
             imageUri = uri,
             description = "description1"
         )
         val normalCheckPointAdd = CheckPointAddRequest(
-            courseId = baseCourse.courseId,
-            latLng = LatLng(1.1,1.1),
-            imageName = "imgName2",
+            courseId = inputCourseId,
+            latLng = LatLng(1.1, 1.1),
             imageUri = uri,
             description = "description2"
         )
-
-        signUpAndSignInUseCase(authRequest).success()
-        addCourseUseCase(baseCourse).success()
         val reportCpId = addCheckpointToCourseUseCase(reportCheckPointAdd).success()
         val normalCpId = addCheckpointToCourseUseCase(normalCheckPointAdd).success()
 
+        //체크포인트 신고후 숨기기
         reportCheckPointUseCase(reportCpId, "test")
         getMyReportUseCase().data!!.contain(reportCpId)
         getMyReportUseCase().data!!.empty(normalCpId)
-        getCheckpointForMarkerUseCase(baseCourse.courseId).empty(reportCpId)
-        getCheckpointForMarkerUseCase(baseCourse.courseId).contain(normalCpId)
+        getCheckpointForMarkerUseCase(inputCourseId).empty(reportCpId)
+        getCheckpointForMarkerUseCase(inputCourseId).contain(normalCpId)
 
+        //로그아웃후 모든 체크포인트 보이기
         signOutUseCase().success()
-        getCheckpointForMarkerUseCase(baseCourse.courseId).contain(reportCpId)
+        getCheckpointForMarkerUseCase(inputCourseId).contain(reportCpId)
+        getCheckpointForMarkerUseCase(inputCourseId).contain(normalCpId)
     }
 
 
-    private fun UseCaseResponse<String>.success():String {
+    private fun UseCaseResponse<String>.success(): String {
         return this.run {
             Log.d(tag, "${this}")
             assertEquals(UseCaseResponse.Status.Success, this.status)
-            this.data?:""
+            this.data ?: ""
         }
     }
 
@@ -145,13 +162,19 @@ class CheckPointScenarioTest {
 
     @JvmName("co1")
     private fun List<CheckPoint>.contain(checkpointId: String) {
-        Log.d(tag, "contain($checkpointId): ${checkpointId in this.map { it.checkPointId }} / ${this.map { it.checkPointId }}")
+        Log.d(
+            tag,
+            "contain($checkpointId): ${checkpointId in this.map { it.checkPointId }} / ${this.map { it.checkPointId }}"
+        )
         assertTrue(checkpointId in this.map { it.checkPointId })
     }
 
     @JvmName("no1")
     private fun List<CheckPoint>.empty(checkpointId: String) {
-        Log.d(tag, "empty($checkpointId): ${checkpointId !in this.map { it.checkPointId }} / ${this.map { it.checkPointId }}")
+        Log.d(
+            tag,
+            "empty($checkpointId): ${checkpointId !in this.map { it.checkPointId }} / ${this.map { it.checkPointId }}"
+        )
         assertTrue(checkpointId !in this.map { it.checkPointId })
     }
 
@@ -168,12 +191,12 @@ class CheckPointScenarioTest {
         assertEquals(null, this.firstOrNull { it.contentId == checkPointId })
     }
 
-    private fun HashSet<String>.contain(id:String){
+    private fun HashSet<String>.contain(id: String) {
         Log.d(tag, "contain: ${id in this} / ${this}")
         assertTrue(id in this)
     }
 
-    private fun HashSet<String>.empty(id:String){
+    private fun HashSet<String>.empty(id: String) {
         Log.d(tag, "empty: ${id !in this} / ${this}")
         assertFalse(id in this)
     }

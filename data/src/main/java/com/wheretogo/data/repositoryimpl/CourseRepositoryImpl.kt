@@ -28,71 +28,79 @@ class CourseRepositoryImpl @Inject constructor(
     private val cacheLock = Mutex()
     private val _cacheRouteGroup = mutableMapOf<String, List<LatLng>>()// id
 
-    override suspend fun getCourse(courseId: String): Course? {
-        val course = courseLocalDatasource.getCourse(courseId)?.toCourse() ?: run {
-            courseRemoteDatasource.getCourse(courseId)?.run {
-                this.toLocalCourse(route = routeRemoteDatasource.getRouteInCourse(courseId).points)
-            }?.toCourse()
+    override suspend fun getCourse(courseId: String): Result<Course> {
+        return runCatching {
+            courseLocalDatasource.getCourse(courseId)?.toCourse() ?: run {
+                courseRemoteDatasource.getCourse(courseId)?.run {
+                    this.toLocalCourse(points = routeRemoteDatasource.getRouteInCourse(courseId).points)
+                }?.toCourse() ?: throw NoSuchElementException("Course not found with id: $courseId")
+            }
         }
-        return course
     }
 
-    override suspend fun getCourseGroupByGeoHash(geoHash: String): List<Course> {
-        return if (courseLocalDatasource.isExistMetaGeoHash(geoHash)) { // geohash로 구역 호출 여부 확인
-            courseLocalDatasource.getCourseGroupByGeoHash(geoHash)
-        } else {
-            courseRemoteDatasource.getCourseGroupByGeoHash(geoHash, "$geoHash\uf8ff") // 구역에 해당하는 코스들 가져오기
-                .run {
-                    coroutineScope {
-                        map {
-                            async {
-                                val route = cacheLock.withLock {
-                                    _cacheRouteGroup.getOrPut(it.courseId) {
-                                        routeRemoteDatasource.getRouteInCourse(it.courseId).points
+    override suspend fun getCourseGroupByGeoHash(geoHash: String): Result<List<Course>> {
+        return runCatching {
+            if (courseLocalDatasource.isExistMetaGeoHash(geoHash)) { // geohash로 구역 호출 여부 확인
+                courseLocalDatasource.getCourseGroupByGeoHash(geoHash)
+            } else {
+                courseRemoteDatasource.getCourseGroupByGeoHash(geoHash, "$geoHash\uf8ff") // 구역에 해당하는 코스들 가져오기
+                    .run {
+                        coroutineScope {
+                            map {
+                                async {
+                                    val route = cacheLock.withLock {
+                                        _cacheRouteGroup.getOrPut(it.courseId) {
+                                            routeRemoteDatasource.getRouteInCourse(it.courseId).points
+                                        }
                                     }
-                                }
 
 
-                                it.toLocalCourse(route = route)  //체크포인트 아이디만 저장
-                                    .apply {
-                                        courseLocalDatasource.setMetaGeoHash(
-                                            LocalMetaGeoHash(
-                                                geoHash = geoHash,
-                                                timestamp = System.currentTimeMillis()
+                                    it.toLocalCourse(points = route)  //체크포인트 아이디만 저장
+                                        .apply {
+                                            courseLocalDatasource.setMetaGeoHash(
+                                                LocalMetaGeoHash(
+                                                    geoHash = geoHash,
+                                                    timestamp = System.currentTimeMillis()
+                                                )
                                             )
-                                        )
-                                        courseLocalDatasource.setCourse(this) // 불러온 코스 저장
+                                            courseLocalDatasource.setCourse(this) // 불러온 코스 저장
+                                        }
                                 }
-                            }
-                        }.awaitAll()
+                            }.awaitAll()
+                        }
                     }
-                }
-        }.map {
-            it.toCourse()
+            }.map {
+                it.toCourse()
+            }
         }
     }
 
     override suspend fun setCourse(
         course: Course,
         checkPoints: List<CheckPoint>
-    ) {
-        courseRemoteDatasource.setCourse(course.toRemoteCourse())
-        courseLocalDatasource.setCourse(course.toLocalCourse())
+    ): Result<Unit> {
+        return runCatching {
+            courseRemoteDatasource.setCourse(course.toRemoteCourse())
+            courseLocalDatasource.setCourse(course.toLocalCourse())
+        }
     }
 
-    override suspend fun removeCourse(courseId: String) {
-        courseRemoteDatasource.removeCourse(courseId)
-        courseLocalDatasource.removeCourse(courseId)
+    override suspend fun removeCourse(courseId: String): Result<Unit> {
+        return runCatching {
+            courseRemoteDatasource.removeCourse(courseId)
+            courseLocalDatasource.removeCourse(courseId)
+        }
     }
 
     override suspend fun updateMetaCheckpoint(
         courseId: String,
         metaCheckPoint: MetaCheckPoint
-    ): Boolean {
-        return courseRemoteDatasource.updateMetaCheckpoint(
-            courseId,
-            metaCheckPoint.toDataMetaCheckPoint()
-        ).apply {
+    ): Result<Unit> {
+        return runCatching {
+            courseRemoteDatasource.updateMetaCheckpoint(
+                courseId,
+                metaCheckPoint.toDataMetaCheckPoint()
+            )
             courseLocalDatasource.updateMetaCheckPoint(
                 courseId,
                 metaCheckPoint.toDataMetaCheckPoint()

@@ -3,7 +3,6 @@ package com.wheretogo.domain.repository
 import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePrivate
-import com.wheretogo.domain.model.user.UserResponse
 import kotlinx.coroutines.flow.Flow
 
 interface UserRepository {
@@ -15,37 +14,43 @@ interface UserRepository {
         userId: String = "",
         historyId: String,
         type: HistoryType
-    )
+    ): Result<Unit>
 
     suspend fun setHistoryGroup(
         userId: String = "",
         historyGroup: HashSet<String>,
         type: HistoryType
-    )
+    ): Result<Unit>
 
     suspend fun removeHistory(
         userId: String,
         historyId: String,
         type: HistoryType
-    )
+    ): Result<Unit>
+
+    suspend fun removeHistoryGroup(
+        userId: String,
+        historyIdGroup: HashSet<String>,
+        type: HistoryType
+    ): Result<Unit>
 
     suspend fun getHistoryIdStream(type: HistoryType): Flow<HashSet<String>>
 
     suspend fun getProfileStream(): Flow<Profile>
 
-    suspend fun getProfile(userId: String): Profile?
+    suspend fun getProfile(userId: String): Result<Profile>
 
-    suspend fun getProfilePrivate(userId: String): ProfilePrivate?
+    suspend fun getProfilePrivate(userId: String): Result<ProfilePrivate>
 
-    suspend fun setProfile(profile: Profile): Boolean
+    suspend fun setProfile(profile: Profile): Result<Unit>
 
-    suspend fun createUser(profile: Profile): UserResponse
+    suspend fun createUser(profile: Profile): Result<Unit>
 
-    suspend fun syncUser(uid: String): UserResponse
+    suspend fun syncUser(uid: String): Result<Profile>
 
-    suspend fun clearUser(): UserResponse
+    suspend fun clearUser()
 
-    suspend fun deleteUser(userId: String): Boolean
+    suspend fun deleteUser(userId: String): Result<Unit>
 
-    suspend fun checkUser(mail:String): UserResponse
+    suspend fun checkUser(mail:String): Result<Profile>
 }

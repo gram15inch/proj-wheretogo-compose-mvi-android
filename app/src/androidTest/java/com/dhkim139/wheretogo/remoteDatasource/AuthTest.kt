@@ -58,8 +58,8 @@ class AuthTest {
         assertTrue(firebase.currentUser == null)
         val authResponse =
             authRemoteDatasourceImpl.authGoogleWithFirebase(authRequest!!.authToken!!)
-        assertTrue(authResponse.data != null)
-        Log.d(tag, "${authResponse.data}")
+        assertTrue(authResponse != null)
+        Log.d(tag, "${authResponse}")
 
         assertTrue(firebase.currentUser?.email != null)
         Log.d(tag, "${firebase.currentUser?.email}")

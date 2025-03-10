@@ -28,20 +28,7 @@ class ReportTest {
     }
 
     @Test
-    fun getAndAddReportTest(): Unit = runBlocking {
-        val rp = RemoteReport(
-            reportId = "rp1",
-            type = ReportType.COMMENT.name,
-            userId = "uid1",
-            contentId = "cm1",
-        )
-        reportRemoteDatasourceImpl.addReport(rp)
-        assertEquals(rp, reportRemoteDatasourceImpl.getReport(rp.reportId))
-
-    }
-
-    @Test
-    fun removeReportTest(): Unit = runBlocking {
+    fun get_set_remove_should_work_correctly(): Unit = runBlocking {
         val rp = RemoteReport(
             reportId = "rp1",
             type = ReportType.COMMENT.name,
@@ -49,6 +36,8 @@ class ReportTest {
             contentId = "cm1",
         )
         assertEquals(null, reportRemoteDatasourceImpl.getReport(rp.reportId))
+        reportRemoteDatasourceImpl.addReport(rp)
+        assertEquals(rp, reportRemoteDatasourceImpl.getReport(rp.reportId))
         reportRemoteDatasourceImpl.addReport(rp)
         assertEquals(rp, reportRemoteDatasourceImpl.getReport(rp.reportId))
         reportRemoteDatasourceImpl.removeReport(rp.reportId)

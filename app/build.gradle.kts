@@ -93,7 +93,7 @@ dependencies {
     androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
     androidTestImplementation(AndroidX.TEST_RUNNER)
     androidTestImplementation(platform(AndroidX.COMPOSE_BOM))
-
+    androidTestImplementation("de.huxhorn.sulky:de.huxhorn.sulky.ulid:8.2.0")
     androidTestImplementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
 
     //compose
