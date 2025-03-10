@@ -18,7 +18,7 @@ class MockUserRemoteDatasourceImpl @Inject constructor(
     private var userRemoteGroup =
         mutableMapOf<String, MockRemoteUser>(mockRemoteUser.profile.uid to mockRemoteUser) // userId
 
-    override suspend fun setProfilePublic(public: ProfilePublic): Boolean {
+    override suspend fun setProfilePublic(public: ProfilePublic) {
         val uid = public.uid
         val newUser = userRemoteGroup.getOrPut(uid) {
             MockRemoteUser(
@@ -29,20 +29,18 @@ class MockUserRemoteDatasourceImpl @Inject constructor(
             copy(profile = profile)
         }
         userRemoteGroup.put(uid, newUser)
-        return true
     }
 
-    override suspend fun setProfilePrivate(uid: String, privateProfile: ProfilePrivate): Boolean {
+    override suspend fun setProfilePrivate(uid: String, privateProfile: ProfilePrivate) {
         val newUser = userRemoteGroup.getOrPut(uid) {
             MockRemoteUser(
                 uid,
-                getProfilePublic(uid)?.toProfile()?.copy(uid=uid,private = privateProfile)?:return false
+                getProfilePublic(uid)?.toProfile()?.copy(uid=uid,private = privateProfile)?:return
             )
         }.run {
             copy(profile = profile.copy(private = privateProfile))
         }
         userRemoteGroup.put(uid, newUser)
-        return true
     }
 
     override suspend fun getProfilePublic(uid: String): ProfilePublic? {
@@ -53,21 +51,27 @@ class MockUserRemoteDatasourceImpl @Inject constructor(
         return userRemoteGroup.get(uid)?.profile?.private
     }
 
-    override suspend fun deleteProfile(uid: String): Boolean {
+    override suspend fun deleteProfile(uid: String) {
         userRemoteGroup.remove(uid)
-        return true
     }
 
-    override suspend fun addHistory(uid: String, historyId: String, type: HistoryType): Boolean {
+    override suspend fun addHistory(uid: String, historyId: String, type: HistoryType) {
         val user = userRemoteGroup.get(uid)
-        return if (user != null) {
+        if (user != null) {
             val newContent = (user.history.get(type) + historyId).toHashSet()
             val newHistory = user.history.map(type, newContent)
             val newUser = user.copy(history = newHistory)
             userRemoteGroup[uid] = newUser
-            true
-        } else {
-            false
+        }
+    }
+
+    override suspend fun deleteHistory(uid: String, type: HistoryType) {
+        val user = userRemoteGroup.get(uid)
+        if (user != null) {
+            val newContent = hashSetOf<String>()
+            val newHistory = user.history.map(type, newContent)
+            val newUser = user.copy(history = newHistory)
+            userRemoteGroup[uid] = newUser
         }
     }
 
@@ -78,9 +82,9 @@ class MockUserRemoteDatasourceImpl @Inject constructor(
         return (type to userRemoteGroup.get(uid)?.history?.get(type) as HashSet)
     }
 
-    override suspend fun setHistoryGroup(uid: String, wrapper: RemoteHistoryGroupWrapper): Boolean {
+    override suspend fun setHistoryGroup(uid: String, wrapper: RemoteHistoryGroupWrapper) {
         val user = userRemoteGroup.get(uid)
-        return if (user != null) {
+        if (user != null) {
             val newUser = user.copy(
                 history = user.history.map(
                     wrapper.type,
@@ -88,9 +92,6 @@ class MockUserRemoteDatasourceImpl @Inject constructor(
                 )
             )
             userRemoteGroup[uid] = newUser
-            true
-        } else {
-            false
         }
     }
 

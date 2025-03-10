@@ -7,39 +7,31 @@ import com.wheretogo.data.datasource.AuthRemoteDatasource
 import com.wheretogo.domain.AuthCompany
 import com.wheretogo.domain.model.auth.AuthToken
 import com.wheretogo.domain.model.user.AuthProfile
-import com.wheretogo.domain.model.user.AuthResponse
 import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
 import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 
 class AuthRemoteDatasourceImpl @Inject constructor() : AuthRemoteDatasource {
     private val firebaseAuth by lazy { FirebaseAuth.getInstance() }
 
-    override suspend fun authGoogleWithFirebase(authToken: AuthToken): AuthResponse {
+    override suspend fun authGoogleWithFirebase(authToken: AuthToken): AuthProfile? {
         val credential = GoogleAuthProvider.getCredential(authToken.idToken, null)
         return suspendCancellableCoroutine { continuation ->
             firebaseAuth.signInWithCredential(credential)
                 .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        task.result.user?.let {
-                            continuation.resume(
-                                AuthResponse(
-                                    isSuccess = true,
-                                    data = AuthProfile(
-                                        uid = it.uid,
-                                        email = it.email ?: "",
-                                        userName = it.displayName ?: "",
-                                        authCompany = AuthCompany.GOOGLE
-                                    )
-                                )
-                            )
-                        }
-                    } else {
-                        continuation.resume(AuthResponse(false))
+                    runCatching {
+                        val user = task.result.user!!
+                        AuthProfile(
+                            uid = user.uid,
+                            email = user.email ?: "",
+                            userName = user.displayName ?: "",
+                            authCompany = AuthCompany.GOOGLE
+                        )
+                    }.onSuccess {
+                        continuation.resume(it)
+                    }.onFailure {
+                        continuation.resume(null)
                     }
-                }.addOnFailureListener { e ->
-                    continuation.resumeWithException(Exception(e))
                 }
         }
     }
@@ -50,18 +42,8 @@ class AuthRemoteDatasourceImpl @Inject constructor() : AuthRemoteDatasource {
     }
 
     override suspend fun deleteUser(): Boolean {
-        return suspendCancellableCoroutine { continuation ->
-            val user = firebaseAuth.currentUser
-            if (user == null) {
-                continuation.resume(false)
-            } else {
-                user.delete().addOnSuccessListener {
-                    continuation.resume(true)
-                }.addOnFailureListener {
-                    continuation.resumeWithException(it)
-                }
-            }
-        }
+        val user = firebaseAuth.currentUser
+        return user?.delete()?.isSuccessful ?: false
     }
 
     private fun checkUserStatus() {
