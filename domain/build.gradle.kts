@@ -1,6 +1,7 @@
 import wheretogo.AndroidX
 import wheretogo.Dagger
 import wheretogo.Kotlin
+import wheretogo.Libraries
 import wheretogo.Squareup
 
 plugins {
@@ -37,20 +38,24 @@ android {
 }
 
 dependencies {
-    implementation(AndroidX.CORE_KTX)
+    // BOM
     implementation(platform(Kotlin.KOTLIN_BOM))
-    implementation("androidx.exifinterface:exifinterface:1.3.7")
 
-    //hilt
+    // AndroidX
+    implementation(AndroidX.CORE_KTX)
+    implementation(AndroidX.EXIFINTERFACE)
+
+    // Dagger
     implementation(Dagger.HILT_ANDROID)
     ksp(Dagger.HILT_COMPILER)
 
-    //retrofit
-    implementation (Squareup.RETROFIT)
-    implementation (Squareup.RETROFIT_CONVERTER_MOSHI)
+    // Retrofit
+    implementation(Squareup.RETROFIT)
+    implementation(Squareup.RETROFIT_CONVERTER_MOSHI)
     implementation(Squareup.MOSHI_KOTLIN)
 
-    implementation ("com.firebase:geofire-android:3.2.0")
-    implementation ("com.firebase:geofire-android-common:3.2.0")
-    implementation("de.huxhorn.sulky:de.huxhorn.sulky.ulid:8.2.0")
+    // Libraries
+    implementation(Libraries.FIREBASE_GEOFIRE)
+    implementation(Libraries.FIREBASE_GEOFIRE_COMMON)
+    implementation(Libraries.HUXHORN_SULKY_ULID)
 }

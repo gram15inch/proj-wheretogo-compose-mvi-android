@@ -1,7 +1,9 @@
 import wheretogo.AndroidX
 import wheretogo.Firebase
 import wheretogo.Dagger
+import wheretogo.Google
 import wheretogo.Kotlin
+import wheretogo.Libraries
 import wheretogo.Squareup
 import java.util.Properties
 
@@ -57,36 +59,38 @@ android {
 dependencies {
     implementation(project(mapOf("path" to ":domain")))
 
-    implementation(AndroidX.CORE_KTX)
-    api(AndroidX.ROOM_KTX)
-    implementation("androidx.exifinterface:exifinterface:1.3.7")
-
-    //bom
+    // Bom
     implementation(platform(Kotlin.KOTLIN_BOM))
 
-    //hilt
+    // Androidx
+    api(AndroidX.ROOM_KTX)
+    implementation(AndroidX.CORE_KTX)
+    implementation(AndroidX.EXIFINTERFACE)
+    implementation(AndroidX.DATASTORE_PREFERENCES)
+
+    // Dagger
     implementation(Dagger.HILT_ANDROID)
     ksp(Dagger.HILT_COMPILER)
 
-    //retrofit
+    // Retrofit
     api(Squareup.RETROFIT)
     api(Squareup.RETROFIT_CONVERTER_MOSHI)
     api(Squareup.MOSHI_KOTLIN)
 
-
-    //Room
+    // Room
     api(AndroidX.ROOM_RUNTIME)
     ksp(AndroidX.ROOM_COMPILER)
 
+    // Firebase
     implementation(platform(Firebase.FIREBASE_BOM))
     implementation(Firebase.FIREBASE_DATABASE)
     implementation(Firebase.FIREBASE_FIRESTORE_KTX)
     implementation(Firebase.FIREBASE_STORAGE_KTX)
+    implementation(Firebase.FIREBASE_AUTH_KTX)
 
-    implementation("com.google.firebase:firebase-auth-ktx:23.1.0")
-    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
-    implementation("androidx.datastore:datastore-preferences:1.1.1")
-    implementation("de.huxhorn.sulky:de.huxhorn.sulky.ulid:8.2.0")
+    // Libraries
+    implementation(Google.IDENTITY_GOOGLEID)
+    implementation(Libraries.HUXHORN_SULKY_ULID)
 }
 
 fun getAppKey(propertyKey: String): String {

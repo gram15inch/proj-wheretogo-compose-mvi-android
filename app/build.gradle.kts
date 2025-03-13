@@ -3,6 +3,7 @@ import wheretogo.AndroidX
 import wheretogo.Firebase
 import wheretogo.Dagger
 import wheretogo.Kotlin
+import wheretogo.Compose
 import wheretogo.Libraries
 import wheretogo.UnitTest
 import wheretogo.Versions
@@ -82,70 +83,69 @@ dependencies {
     implementation(project(mapOf("path" to ":data")))
     implementation(project(mapOf("path" to ":domain")))
 
+    implementation(platform(Kotlin.KOTLIN_BOM))
+
+    // AndroidX
     implementation(AndroidX.CORE_KTX)
     implementation(AndroidX.LIFECYCLE_RUNTIME_KTX)
     implementation(AndroidX.WORK_RUNTIME_KTX)
     implementation(AndroidX.TEST_CORE_KTX)
-
-    implementation(platform(Kotlin.KOTLIN_BOM))
-    implementation(platform(AndroidX.COMPOSE_BOM))
-    implementation("androidx.datastore:datastore-preferences-core-jvm:1.1.2")
-    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
-    androidTestImplementation(AndroidX.TEST_RUNNER)
-    androidTestImplementation(platform(AndroidX.COMPOSE_BOM))
-    androidTestImplementation("de.huxhorn.sulky:de.huxhorn.sulky.ulid:8.2.0")
-    androidTestImplementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
-
-    //compose
-    implementation(AndroidX.COMPOSE_UI)
-    implementation(AndroidX.COMPOSE_UI_GRAPHICS)
-    implementation(AndroidX.COMPOSE_UI_TOOL_PREVIEW)
-    implementation(AndroidX.COMPOSE_MATERIAL3)
-    implementation(AndroidX.LIFECYCLE_VIEWMODEL_COMPOSE)
-    implementation(AndroidX.ACTIVITY_COMPOSE)
-
-    implementation(Libraries.LOTTIE_COMPOSE)
-
-    androidTestImplementation(AndroidX.COMPOSE_UI_TEST_JUNIT4)
-    androidTestImplementation(Libraries.LOTTIE_COMPOSE)
-
-    debugImplementation(AndroidX.COMPOSE_UI_TOOL)
-    debugImplementation(AndroidX.COMPOSE_UI_TEST_MANIFEST)
-
-
-    //hilt
-    implementation(Dagger.HILT_ANDROID)
     implementation(AndroidX.HILT_COMMON)
     implementation(AndroidX.HILT_WORK)
     implementation(AndroidX.HILT_NAVIGATION_COMPOSE)
-    testImplementation(Libraries.MOCKK)
-
+    implementation(AndroidX.LIFECYCLE_VIEWMODEL_COMPOSE)
+    implementation(AndroidX.ACTIVITY_COMPOSE)
+    implementation(AndroidX.DATASTORE_PREFERENCE_CORE)
     ksp(AndroidX.HILT_COMPILER)
+
+    // Compose
+    implementation(platform(Compose.COMPOSE_BOM))
+    implementation(Compose.COMPOSE_UI)
+    implementation(Compose.COMPOSE_UI_GRAPHICS)
+    implementation(Compose.COMPOSE_UI_TOOL_PREVIEW)
+    implementation(Compose.COMPOSE_MATERIAL3)
+    debugImplementation(Compose.COMPOSE_UI_TOOL)
+    debugImplementation(Compose.COMPOSE_UI_TEST_MANIFEST)
+
+    // Libraries
+    implementation(Libraries.LOTTIE_COMPOSE)
+
+
+    // Dagger
+    implementation(Dagger.HILT_ANDROID)
     ksp(Dagger.HILT_COMPILER)
 
-    testImplementation(Dagger.HILT_ANDROID_TESTING)
-    kspTest(Dagger.HILT_ANDROID_COMPILER)
-    androidTestImplementation(Dagger.HILT_ANDROID_TESTING)
-    kspAndroidTest(Dagger.HILT_ANDROID_COMPILER)
-
-    // test
-    androidTestImplementation(UnitTest.JUNIT_JUPITER_API)
-    androidTestImplementation(UnitTest.JUNIT_JUPITER_PARAMS)
-    androidTestImplementation(UnitTest.JUNIT_JUPITER_ENGINE)
-    androidTestImplementation(UnitTest.JUNIT_VINTAGE_ENGINE)
-    testImplementation(UnitTest.JUNIT_JUPITER_API)
-    testImplementation(UnitTest.JUNIT_JUPITER_PARAMS)
-    testImplementation(UnitTest.JUNIT_JUPITER_ENGINE)
-    testImplementation(UnitTest.JUNIT_VINTAGE_ENGINE)
-
-    // firebase
+    // Firebase
     implementation(platform(Firebase.FIREBASE_BOM))
     implementation(Firebase.FIREBASE_CRASHLYTICS)
     implementation(Firebase.FIREBASE_ANALYTICS)
     implementation(Firebase.FIREBASE_FIRESTORE_KTX)
     implementation(Firebase.FIREBASE_STORAGE_KTX)
+    implementation(Firebase.FIREBASE_AUTH_KTX)
 
-    implementation("com.google.firebase:firebase-auth-ktx:23.1.0")
+    // Test
+    androidTestImplementation(Dagger.HILT_ANDROID_TESTING)
+    androidTestImplementation(UnitTest.JUNIT_JUPITER_API)
+    androidTestImplementation(UnitTest.JUNIT_JUPITER_PARAMS)
+    androidTestImplementation(UnitTest.JUNIT_JUPITER_ENGINE)
+    androidTestImplementation(UnitTest.JUNIT_VINTAGE_ENGINE)
+    androidTestImplementation(Libraries.HUXHORN_SULKY_ULID)
+    androidTestImplementation(Libraries.LIBRARIES_IDENTITY_GOOGLEID)
+    androidTestImplementation(Libraries.LOTTIE_COMPOSE)
+    androidTestImplementation(Compose.COMPOSE_UI_TEST_JUNIT4)
+    androidTestImplementation(AndroidX.TEST_UIAUTOMATOR)
+    androidTestImplementation(AndroidX.TEST_RUNNER)
+    androidTestImplementation(platform(Compose.COMPOSE_BOM))
+
+    testImplementation(UnitTest.JUNIT_JUPITER_API)
+    testImplementation(UnitTest.JUNIT_JUPITER_PARAMS)
+    testImplementation(UnitTest.JUNIT_JUPITER_ENGINE)
+    testImplementation(UnitTest.JUNIT_VINTAGE_ENGINE)
+    testImplementation(Dagger.HILT_ANDROID_TESTING)
+    testImplementation(Libraries.MOCKK)
+
+    kspTest(Dagger.HILT_ANDROID_COMPILER)
+    kspAndroidTest(Dagger.HILT_ANDROID_COMPILER)
 }
 
 tasks.withType(Test::class) {
