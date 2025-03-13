@@ -1,6 +1,8 @@
 import wheretogo.AndroidX
 import wheretogo.Dagger
 import wheretogo.Kotlin
+import wheretogo.Compose
+import wheretogo.Google
 import wheretogo.Libraries
 import wheretogo.Squareup
 import java.util.Properties
@@ -53,67 +55,55 @@ dependencies {
     implementation(project(mapOf("path" to ":domain")))
 
     implementation(AndroidX.CORE_KTX)
-    implementation("androidx.exifinterface:exifinterface:1.3.7")
 
-    //BOM
+    // BOM
     implementation(platform(Kotlin.KOTLIN_BOM))
-    implementation(platform(AndroidX.COMPOSE_BOM))
-    androidTestImplementation(platform(AndroidX.COMPOSE_BOM))
+    implementation(platform(Compose.COMPOSE_BOM))
 
+    // Compose
+    implementation(Compose.COMPOSE_UI)
+    implementation(Compose.COMPOSE_UI_GRAPHICS)
+    implementation(Compose.COMPOSE_UI_TOOL_PREVIEW)
+    implementation(Compose.COMPOSE_MATERIAL3)
+    debugImplementation(Compose.COMPOSE_UI_TOOL)
+    debugImplementation(Compose.COMPOSE_UI_TEST_MANIFEST)
 
-    //compose
-    implementation(AndroidX.COMPOSE_UI)
-    implementation(AndroidX.COMPOSE_UI_GRAPHICS)
-    implementation(AndroidX.COMPOSE_UI_TOOL_PREVIEW)
-    implementation(AndroidX.COMPOSE_MATERIAL3)
-
-    implementation(Libraries.LOTTIE_COMPOSE)
-
+    // AndroidX
     implementation(AndroidX.LIFECYCLE_RUNTIME_KTX)
     implementation(AndroidX.LIFECYCLE_VIEWMODEL_COMPOSE)
     implementation(AndroidX.ACTIVITY_COMPOSE)
-
-    androidTestImplementation(AndroidX.COMPOSE_UI_TEST_JUNIT4)
-    androidTestImplementation(Libraries.LOTTIE_COMPOSE)
-
-    debugImplementation(AndroidX.COMPOSE_UI_TOOL)
-    debugImplementation(AndroidX.COMPOSE_UI_TEST_MANIFEST)
-
-    //navigation
     implementation(AndroidX.NAVIGATION_COMPOSE)
-
-    //hilt
-    implementation(Dagger.HILT_ANDROID)
     implementation(AndroidX.HILT_NAVIGATION_COMPOSE)
-
+    implementation(AndroidX.EXIFINTERFACE)
+    implementation(AndroidX.CREDENTIALS)
+    implementation(AndroidX.CREDENTIALS_AUTH)
+    implementation (AndroidX.BROWSER)
     ksp(AndroidX.HILT_COMPILER)
+
+    // Dagger
+    implementation(Dagger.HILT_ANDROID)
     ksp(Dagger.HILT_COMPILER)
     ksp(Dagger.HILT_ANDROID_COMPILER)
 
-    //retrofit
+    // Retrofit
     implementation(Squareup.RETROFIT)
     implementation(Squareup.RETROFIT_CONVERTER_MOSHI)
     implementation(Squareup.MOSHI_KOTLIN)
 
-    //Map
-    implementation("com.kakao.maps.open:android:2.11.9")
-    implementation("com.naver.maps:map-sdk:3.19.1")
+    // Goggle
+    implementation(Google.IDENTITY_GOOGLEID)
+    implementation(Google.PLAY_SERVICES_LOCATION)
+    implementation(Google.ACCOMPANIST_NAVIGATION_ANIMATION)
+
+    // Libraries
+    implementation(Libraries.KAKAO_MAPS)
+    implementation(Libraries.NAVER_MAPS)
     implementation(files("libs/com.skt.Tmap_1.76.jar"))
-
-
-    implementation("androidx.credentials:credentials:1.3.0")
-    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
-    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
-
-    //etc
-    implementation("com.valentinilk.shimmer:compose-shimmer:1.3.1")
-    implementation("com.google.android.gms:play-services-location:21.3.0")
-    implementation("com.github.skydoves:landscapist-glide:2.4.0")
-    implementation("com.google.accompanist:accompanist-navigation-animation:0.31.1-alpha")
-
-    implementation ("com.firebase:geofire-android:3.2.0")
-    implementation ("com.firebase:geofire-android-common:3.2.0")
-    implementation ("androidx.browser:browser:1.8.0")
+    implementation(Libraries.LOTTIE_COMPOSE)
+    implementation(Libraries.SHIMMER_COMPOSE)
+    implementation(Libraries.LANDSCAPIST_GLIDE)
+    implementation(Libraries.FIREBASE_GEOFIRE)
+    implementation(Libraries.FIREBASE_GEOFIRE_COMMON)
 }
 
 fun getAppKey(propertyKey: String): String {
