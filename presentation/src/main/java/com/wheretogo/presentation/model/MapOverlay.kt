@@ -11,4 +11,12 @@ data class MapOverlay(
     val iconType: MarkerIconType = MarkerIconType.DEFAULT,
     val markerGroup: List<Marker> = emptyList(),
     val path: PathOverlay? = null
-)
+){
+    override fun equals(other: Any?): Boolean {
+        return other is MapOverlay && this.overlayId == other.overlayId
+    }
+
+    override fun hashCode(): Int {
+        return overlayId.hashCode()
+    }
+}

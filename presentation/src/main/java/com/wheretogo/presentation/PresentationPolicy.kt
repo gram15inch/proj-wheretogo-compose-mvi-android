@@ -6,8 +6,20 @@ import com.naver.maps.map.NaverMap
 import com.naver.maps.map.app.LegalNoticeActivity
 import com.naver.maps.map.app.OpenSourceLicenseActivity
 import com.wheretogo.domain.CourseDetail
+import com.wheretogo.domain.OverlayType
 import com.wheretogo.domain.model.map.Viewport
 import com.wheretogo.presentation.state.CameraState
+
+const val DRIVE_LIST_MIN_ZOOM = 9.5
+
+fun OverlayType.minZoomLevel():Double{
+    return when(this){
+        OverlayType.COURSE-> 8.0
+        OverlayType.PATH-> 9.5
+        OverlayType.CHECKPOINT-> 9.5
+        else-> 8.0
+    }
+}
 
 enum class CommentType(@StringRes val typeRes: Int) {
     ONE(R.string.oneline_review), DETAIL(R.string.detail_review)

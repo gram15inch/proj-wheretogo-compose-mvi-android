@@ -1,5 +1,6 @@
 package com.wheretogo.data.repositoryimpl
 
+import com.wheretogo.data.ROUTE_GEOHASH_MIN_LENGTH
 import com.wheretogo.data.datasource.CourseLocalDatasource
 import com.wheretogo.data.datasource.CourseRemoteDatasource
 import com.wheretogo.data.datasource.RouteRemoteDatasource
@@ -48,21 +49,18 @@ class CourseRepositoryImpl @Inject constructor(
                         coroutineScope {
                             map {
                                 async {
-                                    val route = cacheLock.withLock {
-                                        _cacheRouteGroup.getOrPut(it.courseId) {
-                                            routeRemoteDatasource.getRouteInCourse(it.courseId).points
+                                    val route = if (geoHash.length >= ROUTE_GEOHASH_MIN_LENGTH) {
+                                        cacheLock.withLock {
+                                            _cacheRouteGroup.getOrPut(it.courseId) {
+                                                routeRemoteDatasource.getRouteInCourse(it.courseId).points
+                                            }
                                         }
+                                    } else {
+                                        emptyList()
                                     }
-
-
                                     it.toLocalCourse(points = route)  //체크포인트 아이디만 저장
                                         .apply {
-                                            courseLocalDatasource.setMetaGeoHash(
-                                                LocalMetaGeoHash(
-                                                    geoHash = geoHash,
-                                                    timestamp = System.currentTimeMillis()
-                                                )
-                                            )
+                                            courseLocalDatasource.setMetaGeoHash(LocalMetaGeoHash(geoHash, System.currentTimeMillis()))
                                             courseLocalDatasource.setCourse(this) // 불러온 코스 저장
                                         }
                                 }

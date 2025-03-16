@@ -5,6 +5,7 @@ import com.wheretogo.data.datasourceimpl.database.CourseDatabase
 import com.wheretogo.data.model.course.DataMetaCheckPoint
 import com.wheretogo.data.model.course.LocalCourse
 import com.wheretogo.data.model.meta.LocalMetaGeoHash
+import com.wheretogo.domain.COURSE_UPDATE_TIME
 import javax.inject.Inject
 
 class CourseLocalDatasourceImpl @Inject constructor(
@@ -32,7 +33,9 @@ class CourseLocalDatasourceImpl @Inject constructor(
     }
 
     override suspend fun isExistMetaGeoHash(geoHash: String): Boolean {
-        return courseDao.getMetaGeoHash(geoHash) != null
+        val metaGeoHash = courseDao.getMetaGeoHash(geoHash)
+        return metaGeoHash != null
+                && (System.currentTimeMillis() - metaGeoHash.timestamp) < COURSE_UPDATE_TIME
     }
 
     override suspend fun setMetaGeoHash(entity: LocalMetaGeoHash) {
