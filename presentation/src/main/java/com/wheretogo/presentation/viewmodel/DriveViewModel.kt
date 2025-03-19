@@ -59,6 +59,7 @@ import com.wheretogo.presentation.state.InfoState
 import com.wheretogo.presentation.toComment
 import com.wheretogo.presentation.toDomainLatLng
 import com.wheretogo.presentation.toNaver
+import com.wheretogo.presentation.toStringTag
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -283,7 +284,17 @@ class DriveViewModel @Inject constructor(
 
     private fun overlayRenderComplete(isRendered: Boolean) {}
 
-    private fun courseMarkerClick(tag: OverlayTag?) {}
+    private fun courseMarkerClick(tag: OverlayTag?) {
+        tag?.let {
+            _driveScreenState.value = _driveScreenState.value.run {
+                val zoom = if(mapState.cameraState.zoom > DRIVE_LIST_MIN_ZOOM) mapState.cameraState.zoom else DRIVE_LIST_MIN_ZOOM+0.1
+                val newCameraState = CameraState(it.latlng, zoom, status = CameraStatus.TRACK)
+                copy(
+                    mapState = mapState.copy(cameraState = newCameraState)
+                )
+            }
+        }
+    }
 
     private suspend fun checkPointMarkerClick(tag: OverlayTag?) {
         tag?.let { tag ->
@@ -626,13 +637,12 @@ class DriveViewModel @Inject constructor(
                 val newMarker = listOf(Marker().apply {
                     val latlng = course.waypoints.first()
                     zIndex = 999
-                    tag = "${latlng.latitude}${latlng.longitude}"
+                    tag = OverlayTag("checkPointAddId","",OverlayType.CHECKPOINT, MarkerIconType.PHOTO, latlng).toStringTag()
                     position = latlng.toNaver()
                 })
                 val newMapOverlay = MapOverlay(
                     overlayId = "new",
                     overlayType = OverlayType.CHECKPOINT,
-                    iconType = MarkerIconType.PHOTO,
                     markerGroup = newMarker
                 )
                 copy(
@@ -735,9 +745,9 @@ class DriveViewModel @Inject constructor(
                 val newMarker = addMarker.markerGroup.first().apply {
                     val newLatlng = points[round(points.size * percent).toInt()]
                     position = newLatlng.toNaver()
-                    tag = "${newLatlng.latitude}${newLatlng.latitude}"
+                    tag = OverlayTag("checkPointAddId","",OverlayType.CHECKPOINT, MarkerIconType.PHOTO, newLatlng).toStringTag()
                 }
-                val newMapOverlay = addMarker.copy(
+                    val newMapOverlay = addMarker.copy(
                     markerGroup = listOf(newMarker)
                 )
                 copy(

@@ -122,15 +122,20 @@ fun parseLogoImgRes(company: String): Int {
     }
 }
 
-fun OverlayTag.toStringTag() = "${this.overlayId}/${this.parentId}/${this.type}"
+fun OverlayTag.toStringTag() = "${this.overlayId}/${this.parentId}/${this.overlayType}/${this.iconType}/${this.latlng.latitude}:${this.latlng.longitude}"
 
 fun OverlayTag.Companion.parse(stringTag: String): OverlayTag? {
     return try {
         val list = stringTag.split("/")
+        val latLng= list[4].split(":")
+        println(list[4])
+        println(latLng)
         OverlayTag(
             list[0],
             list[1],
-            OverlayType.valueOf(list[2])
+            OverlayType.valueOf(list[2]),
+            MarkerIconType.valueOf(list[3]),
+            LatLng(latLng[0].toDouble(),latLng[1].toDouble())
         )
     } catch (e: Exception) {
         null

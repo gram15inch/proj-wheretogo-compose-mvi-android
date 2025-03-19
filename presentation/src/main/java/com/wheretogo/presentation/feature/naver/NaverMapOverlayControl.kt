@@ -16,32 +16,32 @@ import com.wheretogo.domain.OverlayType
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.Course
 import com.wheretogo.domain.model.map.LatLng
-import com.wheretogo.presentation.MarkerIconType
 import com.wheretogo.presentation.getCourseIconType
 import com.wheretogo.presentation.minZoomLevel
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.OverlayTag
+import com.wheretogo.presentation.toDomainLatLng
 import com.wheretogo.presentation.toNaver
 import com.wheretogo.presentation.toStringTag
 
 
 fun getMapOverlay(item: Course): MapOverlay {
-    val overlayTag = OverlayTag(item.courseId, item.courseId, OverlayType.COURSE)
+    val overlayTag = OverlayTag(item.courseId, item.courseId, OverlayType.COURSE, latlng = item.cameraLatLng)
     check(item.waypoints.isNotEmpty())
     return MapOverlay(
         overlayId = overlayTag.overlayId,
-        overlayType = overlayTag.type,
-        iconType = getCourseIconType(item.type),
+        overlayType = overlayTag.overlayType,
         markerGroup = listOf(getMarkerOverlay(item)),
         path = getPathOverlay(item.courseId, item.points)
     )
 }
 
 fun getMarkerOverlay(course:Course):Marker{
-    val overlayTag = OverlayTag(course.courseId, course.courseId, OverlayType.COURSE)
+    val markerPosition = course.waypoints.firstOrNull()!!.toNaver()
+    val overlayTag = OverlayTag(course.courseId, course.courseId, OverlayType.COURSE, getCourseIconType(course.type), markerPosition.toDomainLatLng())
     return Marker().apply {
         tag = overlayTag.toStringTag()
-        position = course.waypoints.firstOrNull()!!.toNaver()
+        position = markerPosition
         captionText = course.courseName
         captionOffset = 20
         captionTextSize = 16f
@@ -69,8 +69,7 @@ fun getMapOverlay(courseId: String, item: CheckPoint): MapOverlay {
     val overlayTag = OverlayTag(item.checkPointId, courseId, OverlayType.CHECKPOINT)
     return MapOverlay(
         overlayTag.overlayId,
-        overlayTag.type,
-        MarkerIconType.DEFAULT,
+        overlayTag.overlayType,
         listOf(Marker().apply {
             tag = overlayTag.toStringTag()
             captionText = item.titleComment

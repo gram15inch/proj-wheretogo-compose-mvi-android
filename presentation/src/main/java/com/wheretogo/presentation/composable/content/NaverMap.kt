@@ -2,7 +2,6 @@ package com.wheretogo.presentation.composable.content
 
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -34,6 +33,8 @@ import com.wheretogo.presentation.CameraStatus
 import com.wheretogo.presentation.MarkerIconType
 import com.wheretogo.presentation.model.ContentPadding
 import com.wheretogo.presentation.model.MapOverlay
+import com.wheretogo.presentation.model.OverlayTag
+import com.wheretogo.presentation.parse
 import com.wheretogo.presentation.state.CameraState
 import com.wheretogo.presentation.toCameraState
 import com.wheretogo.presentation.toDomainLatLng
@@ -147,10 +148,11 @@ private fun NaverMap.overlayUpdate(
             if (it.position.latitude.toString() != "NaN") {
                 isRendered = true
                 it.map = naverMap
+                val overlayTag = OverlayTag.parse(it.tag as String)?.iconType?:MarkerIconType.DEFAULT
                 when (overlay.overlayType) {
                     OverlayType.CHECKPOINT -> {
-                        if (overlay.iconType != MarkerIconType.DEFAULT)
-                            it.icon = OverlayImage.fromResource(overlay.iconType.res)
+                        if(overlayTag != MarkerIconType.DEFAULT)
+                            it.icon = OverlayImage.fromResource(overlayTag.res)
                         it.setOnClickListener {
                             onCheckPointMarkerClick(it)
                             true
@@ -158,7 +160,7 @@ private fun NaverMap.overlayUpdate(
                     }
 
                     OverlayType.COURSE -> {
-                        it.icon = OverlayImage.fromResource(overlay.iconType.res)
+                        it.icon = OverlayImage.fromResource(overlayTag.res)
                         it.setOnClickListener {
                             onCourseMarkerClick(it)
                             true
@@ -190,14 +192,8 @@ private fun NaverMap.cameraUpdate(cameraState: CameraState){
         when (status) {
             CameraStatus.TRACK -> {
                 naverMap.moveCamera(
-                    CameraUpdate.zoomTo(cameraState.zoom).animate(
-                        CameraAnimation.Easing
-                    )
-                )
-                naverMap.moveCamera(
-                    CameraUpdate.scrollTo(cameraState.latLng.toNaver()).animate(
-                        CameraAnimation.Easing
-                    )
+                    CameraUpdate.scrollAndZoomTo(latLng.toNaver(),zoom)
+                        .animate(CameraAnimation.Easing)
                 )
             }
 
