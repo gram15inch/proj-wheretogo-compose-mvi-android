@@ -743,7 +743,8 @@ class DriveViewModel @Inject constructor(
             val newCheckPointAddState = bottomSheetState.checkPointAddState.run {
                 val points = listState.clickItem.course.points
                 val newMarker = addMarker.markerGroup.first().apply {
-                    val newLatlng = points[round(points.size * percent).toInt()]
+                    val index = round((points.size-1) * percent).toInt()
+                    val newLatlng = points[index]
                     position = newLatlng.toNaver()
                     tag = OverlayTag("checkPointAddId","",OverlayType.CHECKPOINT, MarkerIconType.PHOTO, newLatlng).toStringTag()
                 }
