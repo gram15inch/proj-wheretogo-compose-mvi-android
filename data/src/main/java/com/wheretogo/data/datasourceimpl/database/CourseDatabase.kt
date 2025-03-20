@@ -11,7 +11,6 @@ import androidx.room.TypeConverters
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import com.wheretogo.data.model.checkpoint.LocalCheckPoint
 import com.wheretogo.data.model.course.DataMetaCheckPoint
 import com.wheretogo.data.model.course.LocalCourse
 import com.wheretogo.data.model.meta.LocalMetaGeoHash
@@ -70,11 +69,6 @@ class CourseJsonConverters {
         Types.newParameterizedType(List::class.java, LatLng::class.java)
     private val latLngGroupAdapter = moshi.adapter<List<LatLng>>(latLngListType)
     private val latLngAdapter = moshi.adapter(LatLng::class.java)
-
-    private val checkPointListType: Type =
-        Types.newParameterizedType(List::class.java, LocalCheckPoint::class.java)
-    private val checkPointListAdapter = moshi.adapter<List<LocalCheckPoint>>(checkPointListType)
-
     private val metaCheckPointAdapter = moshi.adapter(DataMetaCheckPoint::class.java)
 
     @TypeConverter
@@ -87,15 +81,6 @@ class CourseJsonConverters {
         return jsonString?.let { latLngGroupAdapter.fromJson(it) }
     }
 
-    @TypeConverter
-    fun fromCheckPointList(latLngList: List<LocalCheckPoint>?): String? {
-        return latLngList?.let { checkPointListAdapter.toJson(it) }
-    }
-
-    @TypeConverter
-    fun toCheckPointList(jsonString: String?): List<LocalCheckPoint>? {
-        return jsonString?.let { checkPointListAdapter.fromJson(it) }
-    }
 
     @TypeConverter
     fun toLatLng(jsonString: String?): LatLng? {

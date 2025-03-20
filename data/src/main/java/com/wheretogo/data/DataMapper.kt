@@ -9,6 +9,7 @@ import com.wheretogo.data.model.course.RemoteCourse
 import com.wheretogo.data.model.map.DataLatLng
 import com.wheretogo.data.model.report.LocalReport
 import com.wheretogo.data.model.report.RemoteReport
+import com.wheretogo.data.model.route.LocalRoute
 import com.wheretogo.data.model.route.RemoteRoute
 import com.wheretogo.data.model.user.ProfilePublic
 import com.wheretogo.domain.ReportStatus
@@ -69,7 +70,27 @@ fun LocalReport.toReport():Report{
     )
 }
 
-fun Route.toRoute(): RemoteRoute {
+
+fun Route.toLocalRoute(): LocalRoute {
+    return LocalRoute(
+        courseId = courseId,
+        points = points,
+        duration = duration,
+        distance = distance
+    )
+}
+
+
+fun LocalRoute.toRoute(): Route {
+    return Route(
+        courseId = courseId,
+        points = points,
+        duration = duration,
+        distance = distance
+    )
+}
+
+fun Route.toRemoteRoute(): RemoteRoute {
     return RemoteRoute(
         courseId = courseId,
         points = points,
@@ -218,7 +239,7 @@ fun LocalCheckPoint.toCheckPoint(): CheckPoint {
 
 
 fun LocalCourse.toCourse(
-    points: List<LatLng> = this.points,
+    points: List<LatLng> = emptyList(),
     like: Int = this.like
 ): Course {
     return Course(
@@ -251,7 +272,6 @@ fun Course.toLocalCourse(
         longitude = cameraLatLng.longitude,
         geoHash = cameraLatLng.toGeoHash(6),
         waypoints = waypoints,
-        points = points,
         localMetaCheckPoint = checkPoint,
         duration = duration,
         type = type,
@@ -265,7 +285,6 @@ fun Course.toLocalCourse(
 
 
 fun RemoteCourse.toLocalCourse(
-    points: List<LatLng> = emptyList(),
     checkPoint: DataMetaCheckPoint = DataMetaCheckPoint(checkPointIdGroup = this.dataMetaCheckPoint.checkPointIdGroup),
     like: Int = 0
 ): LocalCourse {
@@ -278,7 +297,6 @@ fun RemoteCourse.toLocalCourse(
         longitude = cameraLatLng.longitude,
         geoHash = cameraLatLng.toGeoHash(6),
         waypoints = waypoints,
-        points = points,
         localMetaCheckPoint = checkPoint,
         duration = duration,
         type = type,

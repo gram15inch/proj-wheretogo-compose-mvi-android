@@ -15,55 +15,70 @@ import com.naver.maps.map.overlay.PathOverlay
 import com.wheretogo.domain.OverlayType
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.Course
-import com.wheretogo.presentation.MarkerIconType
+import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.presentation.getCourseIconType
+import com.wheretogo.presentation.minZoomLevel
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.OverlayTag
+import com.wheretogo.presentation.toDomainLatLng
 import com.wheretogo.presentation.toNaver
 import com.wheretogo.presentation.toStringTag
 
 
 fun getMapOverlay(item: Course): MapOverlay {
-    val naverPoints = item.points.toNaver()
-    val overlayTag = OverlayTag(item.courseId, item.courseId, OverlayType.COURSE)
+    val overlayTag = OverlayTag(item.courseId, item.courseId, OverlayType.COURSE, latlng = item.cameraLatLng)
+    check(item.waypoints.isNotEmpty())
     return MapOverlay(
-        overlayTag.overlayId,
-        overlayTag.type,
-        getCourseIconType(item.type),
-        listOf(Marker().apply {
-            this.captionText = item.courseName
-            this.setCaptionAligns(Align.Top, Align.Right)
-            this.captionOffset = 20
-            this.captionTextSize = 16f
-            naverPoints.getOrNull(0)
-                ?.let { position = it }
-            isHideCollidedMarkers = true
-            tag = overlayTag.toStringTag()
-        }),
-        PathOverlay().apply {
-            if (naverPoints.size >= 2) {
-                coords = naverPoints
-                tag = overlayTag.copy(type = OverlayType.PATH).toStringTag()
-                width = 18
-                outlineWidth = 3
-            }
-        }
+        overlayId = overlayTag.overlayId,
+        overlayType = overlayTag.overlayType,
+        markerGroup = listOf(getMarkerOverlay(item)),
+        path = getPathOverlay(item.courseId, item.points)
     )
+}
+
+fun getMarkerOverlay(course:Course):Marker{
+    val markerPosition = course.waypoints.firstOrNull()!!.toNaver()
+    val overlayTag = OverlayTag(course.courseId, course.courseId, OverlayType.COURSE, getCourseIconType(course.type), markerPosition.toDomainLatLng())
+    return Marker().apply {
+        tag = overlayTag.toStringTag()
+        position = markerPosition
+        captionText = course.courseName
+        captionOffset = 20
+        captionTextSize = 16f
+        isHideCollidedMarkers = true
+        minZoom= OverlayType.COURSE.minZoomLevel()
+        setCaptionAligns(Align.Top, Align.Right)
+    }
+}
+
+fun getPathOverlay(courseId: String, point:List<LatLng>):PathOverlay?{
+    val overlayTag = OverlayTag(courseId, courseId, OverlayType.PATH)
+    val naverPoints = point.toNaver()
+    return  if(naverPoints.size >= 2){
+        PathOverlay().apply {
+            tag = overlayTag.toStringTag()
+            coords = naverPoints
+            width = 18
+            outlineWidth = 3
+            minZoom= OverlayType.PATH.minZoomLevel()
+        }
+    }else null
 }
 
 fun getMapOverlay(courseId: String, item: CheckPoint): MapOverlay {
     val overlayTag = OverlayTag(item.checkPointId, courseId, OverlayType.CHECKPOINT)
     return MapOverlay(
         overlayTag.overlayId,
-        overlayTag.type,
-        MarkerIconType.DEFAULT,
+        overlayTag.overlayType,
         listOf(Marker().apply {
-            this.captionText = item.titleComment
-            this.setCaptionAligns(Align.Top, Align.Right)
-            this.captionOffset = 20
-            this.captionTextSize = 16f
+            tag = overlayTag.toStringTag()
+            captionText = item.titleComment
+            captionOffset = 20
+            captionTextSize = 16f
             position = item.latLng.toNaver()
             isHideCollidedMarkers = true
+            minZoom = OverlayType.CHECKPOINT.minZoomLevel()
+            setCaptionAligns(Align.Top, Align.Right)
             if (item.imageLocalPath.isNotEmpty()) {
                 val bitmap = BitmapFactory.decodeFile(item.imageLocalPath)
                 icon = OverlayImage.fromBitmap(
@@ -76,9 +91,8 @@ fun getMapOverlay(courseId: String, item: CheckPoint): MapOverlay {
                     )
                 )
             }
-            tag = overlayTag.toStringTag()
         }),
-        PathOverlay()
+        null
     )
 }
 

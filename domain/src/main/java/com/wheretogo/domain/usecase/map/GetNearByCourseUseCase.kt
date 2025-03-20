@@ -4,5 +4,5 @@ import com.wheretogo.domain.model.map.Course
 import com.wheretogo.domain.model.map.LatLng
 
 interface GetNearByCourseUseCase {
-    suspend operator fun invoke(current: LatLng): List<Course>
+    suspend operator fun invoke(center: LatLng, zoom: Double): List<Course>
 }

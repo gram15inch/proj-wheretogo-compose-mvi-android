@@ -4,10 +4,7 @@ const val NAVER_OPEN_API_APIGW_URL = "https://naveropenapi.apigw.ntruss.com"
 const val NAVER_OPEN_API_URL = "https://openapi.naver.com/"
 
 const val DATA_NULL = ""
-const val DAY = 86400000L
-const val CHECKPOINT_UPDATE_TIME = DAY
 const val IMAGE_DOWN_MAX_MB = 10
-
 //파이어스토어 컬렉션명
 enum class FireStoreCollections {
     USER,
@@ -35,8 +32,4 @@ fun FireStoreCollections.name(): String {
 
 enum class LikeObject {
     COURSE_LIKE
-}
-
-fun getImageChildPath(){
-
 }
