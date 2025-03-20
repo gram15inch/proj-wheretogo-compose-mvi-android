@@ -5,7 +5,6 @@ const val NAVER_OPEN_API_URL = "https://openapi.naver.com/"
 
 const val DATA_NULL = ""
 const val IMAGE_DOWN_MAX_MB = 10
-const val ROUTE_GEOHASH_MIN_LENGTH = 4
 //파이어스토어 컬렉션명
 enum class FireStoreCollections {
     USER,

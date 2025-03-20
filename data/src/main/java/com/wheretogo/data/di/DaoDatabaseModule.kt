@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.wheretogo.data.datasourceimpl.database.CheckPointDatabase
 import com.wheretogo.data.datasourceimpl.database.CourseDatabase
 import com.wheretogo.data.datasourceimpl.database.ReportDatabase
+import com.wheretogo.data.datasourceimpl.database.RouteDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -46,6 +47,17 @@ object DaoDatabaseModule {
             context,
             ReportDatabase::class.java,
             "report_db"
+        ).fallbackToDestructiveMigration()
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideRouteDatabase(@ApplicationContext context: Context): RouteDatabase {
+        return Room.databaseBuilder(
+            context,
+            RouteDatabase::class.java,
+            "route_db"
         ).fallbackToDestructiveMigration()
             .build()
     }

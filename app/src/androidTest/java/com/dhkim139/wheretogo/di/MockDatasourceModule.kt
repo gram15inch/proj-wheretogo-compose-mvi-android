@@ -20,6 +20,7 @@ import com.wheretogo.data.datasource.ImageRemoteDatasource
 import com.wheretogo.data.datasource.LikeRemoteDatasource
 import com.wheretogo.data.datasource.ReportLocalDatasource
 import com.wheretogo.data.datasource.ReportRemoteDatasource
+import com.wheretogo.data.datasource.RouteLocalDatasource
 import com.wheretogo.data.datasource.RouteRemoteDatasource
 import com.wheretogo.data.datasource.UserLocalDatasource
 import com.wheretogo.data.datasource.UserRemoteDatasource
@@ -29,6 +30,7 @@ import com.wheretogo.data.datasourceimpl.CourseLocalDatasourceImpl
 import com.wheretogo.data.datasourceimpl.ImageLocalDatasourceImpl
 import com.wheretogo.data.datasourceimpl.LikeRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.ReportLocalDatasourceImpl
+import com.wheretogo.data.datasourceimpl.RouteLocalDatasourceImpl
 import com.wheretogo.data.datasourceimpl.UserLocalDatasourceImpl
 import com.wheretogo.data.di.DatasourceModule
 import dagger.Binds
@@ -59,6 +61,9 @@ abstract class MockDatasourceModule {
 
     @Binds
     abstract fun bindReportLocalDatasource(datasource: ReportLocalDatasourceImpl): ReportLocalDatasource
+
+    @Binds
+    abstract fun bindRouteLocalDatasource(datasource: RouteLocalDatasourceImpl): RouteLocalDatasource
 
     //remote
     @Binds

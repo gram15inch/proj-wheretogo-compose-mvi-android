@@ -11,6 +11,7 @@ const val HOUR = 60*MIN
 const val DAY = 24*HOUR
 const val CHECKPOINT_UPDATE_TIME = 3*HOUR
 const val COURSE_UPDATE_TIME = DAY
+const val ROUTE_GEOHASH_MIN_LENGTH = 4
 const val USER_DATE_FORMAT = "yyyy-MM-dd"
 const val DOMAIN_EMPTY = ""
 
@@ -76,9 +77,9 @@ enum class AuthType{
 
 fun zoomToGeohashLength(zoom: Double): Int {
     return when (zoom) {
-        in 0.0..9.5 ->  3
-        in 9.5..10.5 -> 4
-        in 10.5..12.5 -> 4
+        in 0.0..< 9.5 ->  3
+        in 9.5..< 10.5 -> 4
+        in 10.5..< 12.5 -> 4
         else -> 5
 
     }

@@ -1,9 +1,7 @@
 package com.wheretogo.data.repositoryimpl
 
-import com.wheretogo.data.ROUTE_GEOHASH_MIN_LENGTH
 import com.wheretogo.data.datasource.CourseLocalDatasource
 import com.wheretogo.data.datasource.CourseRemoteDatasource
-import com.wheretogo.data.datasource.RouteRemoteDatasource
 import com.wheretogo.data.model.meta.LocalMetaGeoHash
 import com.wheretogo.data.toCourse
 import com.wheretogo.data.toDataMetaCheckPoint
@@ -11,29 +9,23 @@ import com.wheretogo.data.toLocalCourse
 import com.wheretogo.data.toRemoteCourse
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.Course
-import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.MetaCheckPoint
 import com.wheretogo.domain.repository.CourseRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 
 class CourseRepositoryImpl @Inject constructor(
     private val courseRemoteDatasource: CourseRemoteDatasource,
     private val courseLocalDatasource: CourseLocalDatasource,
-    private val routeRemoteDatasource: RouteRemoteDatasource
 ) : CourseRepository {
-    private val cacheLock = Mutex()
-    private val _cacheRouteGroup = mutableMapOf<String, List<LatLng>>()// id
 
     override suspend fun getCourse(courseId: String): Result<Course> {
         return runCatching {
             courseLocalDatasource.getCourse(courseId)?.toCourse() ?: run {
                 courseRemoteDatasource.getCourse(courseId)?.run {
-                    this.toLocalCourse(points = routeRemoteDatasource.getRouteInCourse(courseId).points)
+                    this.toLocalCourse()
                 }?.toCourse() ?: throw NoSuchElementException("Course not found with id: $courseId")
             }
         }
@@ -49,18 +41,11 @@ class CourseRepositoryImpl @Inject constructor(
                         coroutineScope {
                             map {
                                 async {
-                                    val route = if (geoHash.length >= ROUTE_GEOHASH_MIN_LENGTH) {
-                                        cacheLock.withLock {
-                                            _cacheRouteGroup.getOrPut(it.courseId) {
-                                                routeRemoteDatasource.getRouteInCourse(it.courseId).points
-                                            }
-                                        }
-                                    } else {
-                                        emptyList()
-                                    }
-                                    it.toLocalCourse(points = route)  //체크포인트 아이디만 저장
+                                    it.toLocalCourse()  //경로(points) 없이 변환
                                         .apply {
-                                            courseLocalDatasource.setMetaGeoHash(LocalMetaGeoHash(geoHash, System.currentTimeMillis()))
+                                            courseLocalDatasource.setMetaGeoHash( //체크포인트 아이디만 저장
+                                                LocalMetaGeoHash(geoHash, System.currentTimeMillis())
+                                            )
                                             courseLocalDatasource.setCourse(this) // 불러온 코스 저장
                                         }
                                 }

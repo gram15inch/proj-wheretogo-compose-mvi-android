@@ -53,19 +53,19 @@ class CourseScenarioTest {
 
     @Test // 누구나 위치기반 코스 불러오기
     fun scenario1(): Unit = runBlocking {
-        val addUser = AuthProfile(uid = "addUser1", email = "addUser1@email.com", userName = "add1")
+        val addUser = AuthProfile(uid = "addUser1", email = "addUse  r1@email.com", userName = "add1")
         val authRequest = AuthRequest(authType = AuthType.PROFILE, authProfile = addUser)
         val inputCourse = MockModelModule().provideRemoteCourseGroup().first().run {
             this.toCourse(points = waypoints)
         }
 
-        getNearByCourseUseCase(inputCourse.cameraLatLng, 3.0)
+        getNearByCourseUseCase(inputCourse.cameraLatLng, 8.0).empty(inputCourse.courseId)
 
         signUpAndSignInUseCase(authRequest).success()
         val outputCourseId = addCourseUseCase(inputCourse.toCourseAddRequest()).success()
 
         signOutUseCase().success()
-        getNearByCourseUseCase(inputCourse.cameraLatLng, 3.0)
+        getNearByCourseUseCase(inputCourse.cameraLatLng, 8.0).contain(outputCourseId)
 
     }
 
@@ -74,27 +74,29 @@ class CourseScenarioTest {
         val addUser = AuthProfile(uid = "addUser1", email = "addUser1@email.com", userName = "add1")
         val authRequest = AuthRequest(authType = AuthType.PROFILE, authProfile = addUser)
         val inputCourse = MockModelModule().provideRemoteCourseGroup().first().run {
-            this.toCourse(points = waypoints).toCourseAddRequest()
+            this.toCourse(points = waypoints)
         }
 
         signUpAndSignInUseCase(authRequest).success()
 
-        val outputCourse = addCourseUseCase(inputCourse).success()
-        val outputRemoveCourse = addCourseUseCase(inputCourse).success()
-        getNearByCourseUseCase(inputCourse.cameraLatLng, 3.0)
-        getNearByCourseUseCase(inputCourse.cameraLatLng, 3.0)
-        getHistoryStreamUseCase().first().courseGroup.contain(outputCourse)
-        getHistoryStreamUseCase().first().courseGroup.contain(outputRemoveCourse)
+        val outputCourseId = addCourseUseCase(inputCourse.toCourseAddRequest()).success()
+        val outputRemoveCourseId = addCourseUseCase(inputCourse.toCourseAddRequest()).success()
+        getNearByCourseUseCase(inputCourse.cameraLatLng, 8.0).contain(outputCourseId)
+        getNearByCourseUseCase(inputCourse.cameraLatLng, 8.0).contain(outputRemoveCourseId)
+        getNearByCourseUseCase(inputCourse.cameraLatLng, 9.5).assertEquals(inputCourse.copy(courseId = outputCourseId))
+        getNearByCourseUseCase(inputCourse.cameraLatLng, 9.0).assertEquals(inputCourse.copy(courseId = outputCourseId, points = emptyList()))
+        getHistoryStreamUseCase().first().courseGroup.contain(outputCourseId)
+        getHistoryStreamUseCase().first().courseGroup.contain(outputRemoveCourseId)
 
-        removeCourseUseCase(outputRemoveCourse).success()
-        getNearByCourseUseCase(inputCourse.cameraLatLng, 3.0)
-        getNearByCourseUseCase(inputCourse.cameraLatLng, 3.0)
-        getHistoryStreamUseCase().first().courseGroup.contain(outputCourse)
-        getHistoryStreamUseCase().first().courseGroup.empty(outputRemoveCourse)
+        removeCourseUseCase(outputRemoveCourseId).success()
+        getNearByCourseUseCase(inputCourse.cameraLatLng, 8.0).contain(outputCourseId)
+        getNearByCourseUseCase(inputCourse.cameraLatLng, 8.0).empty(outputRemoveCourseId)
+        getHistoryStreamUseCase().first().courseGroup.contain(outputCourseId)
+        getHistoryStreamUseCase().first().courseGroup.empty(outputRemoveCourseId)
 
         signOutUseCase().success()
-        addCourseUseCase(inputCourse).fail()
-        removeCourseUseCase(outputRemoveCourse).fail()
+        addCourseUseCase(inputCourse.toCourseAddRequest()).fail()
+        removeCourseUseCase(outputRemoveCourseId).fail()
 
     }
 
@@ -110,8 +112,8 @@ class CourseScenarioTest {
         signUpAndSignInUseCase(reportAuthRequest).success("[로그인] ")
         val inputCourseId1= addCourseUseCase(baseCourse.toCourseAddRequest()).success()
         val inputCourseId2= addCourseUseCase(baseCourse.toCourseAddRequest()).success()
-        val outputCourse1 = getNearByCourseUseCase(baseCourse.cameraLatLng, 3.0).first { it.courseId==inputCourseId1 }
-        val outputCourse2 = getNearByCourseUseCase(baseCourse.cameraLatLng, 3.0).first { it.courseId==inputCourseId2 }
+        val outputCourse1 = getNearByCourseUseCase(baseCourse.cameraLatLng, 8.0).first { it.courseId==inputCourseId1 }
+        val outputCourse2 = getNearByCourseUseCase(baseCourse.cameraLatLng, 8.0).first { it.courseId==inputCourseId2 }
 
 
         //신고한 코스 숨기기
@@ -121,8 +123,8 @@ class CourseScenarioTest {
         getMyReportUseCase().data!!.contain(inputCourseId2)
         getHistoryStreamUseCase().first().reportGroup.contain(inputCourseId1)
         getHistoryStreamUseCase().first().reportGroup.contain(inputCourseId2)
-        getNearByCourseUseCase(baseCourse.cameraLatLng, 3.0)
-        getNearByCourseUseCase(baseCourse.cameraLatLng, 3.0)
+        getNearByCourseUseCase(baseCourse.cameraLatLng, 8.0).empty(inputCourseId1)
+        getNearByCourseUseCase(baseCourse.cameraLatLng, 8.0).empty(inputCourseId2)
 
         // 신고취소한 코스 보이기
         reportCancelUseCase(reportId1, "test").success("[신고 취소] ")
@@ -130,20 +132,20 @@ class CourseScenarioTest {
         getMyReportUseCase().data!!.contain(inputCourseId2)
         getHistoryStreamUseCase().first().reportGroup.empty(inputCourseId1)
         getHistoryStreamUseCase().first().reportGroup.contain(inputCourseId2)
-        getNearByCourseUseCase(baseCourse.cameraLatLng, 3.0)
-        getNearByCourseUseCase(baseCourse.cameraLatLng, 3.0)
+        getNearByCourseUseCase(baseCourse.cameraLatLng, 8.0).contain(inputCourseId1)
+        getNearByCourseUseCase(baseCourse.cameraLatLng, 8.0).empty(inputCourseId2)
 
         //로그아웃 후에 모든 코스 보이기
         signOutUseCase().success("[로그아웃] ")
-        getNearByCourseUseCase(baseCourse.cameraLatLng, 3.0)
-        getNearByCourseUseCase(baseCourse.cameraLatLng, 3.0)
+        getNearByCourseUseCase(baseCourse.cameraLatLng, 8.0).contain(inputCourseId1)
+        getNearByCourseUseCase(baseCourse.cameraLatLng, 8.0).contain(inputCourseId2)
 
         //신고하지 않은 사용자 로그인후 모든 코스 보이기
         signUpAndSignInUseCase(unknownAuthRequest).success("[로그인] ")
         getMyReportUseCase().data!!.empty(reportId1)
         getMyReportUseCase().data!!.empty(reportId2)
-        getNearByCourseUseCase(baseCourse.cameraLatLng, 3.0)
-        getNearByCourseUseCase(baseCourse.cameraLatLng, 3.0)
+        getNearByCourseUseCase(baseCourse.cameraLatLng, 8.0).contain(inputCourseId1)
+        getNearByCourseUseCase(baseCourse.cameraLatLng, 8.0).contain(inputCourseId2)
     }
 
     private fun UseCaseResponse<String>.success(msg:String=""):String {
@@ -183,6 +185,15 @@ class CourseScenarioTest {
     private fun List<Report>.empty(courseId: String) {
         Log.d(tag, "empty($courseId): ${courseId !in this.map { it.contentId }} / ${this.map { it.contentId }}")
         assertTrue(courseId !in this.map { it.contentId })
+    }
+
+    @JvmName("co3")
+    private fun List<Course>.assertEquals(course:Course){
+        val matchedCourse = firstOrNull { it.courseId == course.courseId }!!
+        Log.d(tag, "contain(${course.courseId}): ${matchedCourse.points.size} / ${course.waypoints.size}}")
+        assertEquals(course.courseName, matchedCourse.courseName)
+        assertEquals(course.waypoints, matchedCourse.waypoints)
+        assertEquals(course.points, matchedCourse.points)
     }
 
     private fun HashSet<String>.contain(contentId:String){
