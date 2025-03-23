@@ -176,7 +176,7 @@ fun CheckPoint.toRemoteCheckPoint(): RemoteCheckPoint {
         userId = userId,
         userName = userName,
         latLng = latLng.toDataLatLng(),
-        titleComment = titleComment,
+        caption = caption,
         imageName = imageName,
         description = description
     )
@@ -188,7 +188,7 @@ fun CheckPoint.toLocalCheckPoint(): LocalCheckPoint {
         userId = userId,
         userName = userName,
         latLng = latLng,
-        titleComment = titleComment,
+        caption = caption,
         imageName = imageName,
         imageLocalPath = this.imageLocalPath,
         description = description,
@@ -202,7 +202,7 @@ fun RemoteCheckPoint.toCheckPoint(): CheckPoint {
         userId = userId,
         userName = userName,
         latLng = latLng.toLatLng(),
-        titleComment = titleComment,
+        caption = caption,
         imageName = imageName,
         description = description
     )
@@ -217,7 +217,7 @@ fun RemoteCheckPoint.toLocalCheckPoint(
         userId= userId,
         userName= userName,
         latLng = latLng.toLatLng(),
-        titleComment = titleComment,
+        caption = caption,
         imageName = imageName,
         imageLocalPath = localImgUrl,
         description = description,
@@ -231,7 +231,7 @@ fun LocalCheckPoint.toCheckPoint(): CheckPoint {
         userId=userId,
         userName = userName,
         latLng = latLng,
-        titleComment = titleComment,
+        caption = caption,
         imageName = imageName,
         imageLocalPath = imageLocalPath,
     )

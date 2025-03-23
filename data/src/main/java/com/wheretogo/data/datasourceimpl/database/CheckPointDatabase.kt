@@ -35,6 +35,9 @@ interface CheckPointDao {
     @Query("DELETE FROM LocalCheckPoint WHERE checkPointId = :checkPointId")
     suspend fun delete(checkPointId: String)
 
+    @Query("UPDATE LocalCheckPoint SET caption =:caption WHERE checkPointId = :checkPointId")
+    suspend fun update(checkPointId: String, caption: String)
+
 }
 
 class CheckPointJsonConverters {

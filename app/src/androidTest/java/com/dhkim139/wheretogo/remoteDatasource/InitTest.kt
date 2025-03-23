@@ -87,19 +87,19 @@ class InitTest {
                 when(course.courseId){
                     getCourseDummy()[0].courseId->{
                         checkpoint.copy(
-                            titleComment = "\uD83D\uDE0A 주위가 조용해요.",
+                            caption = "\uD83D\uDE0A 주위가 조용해요.",
                             imageName = "photo_original.jpg"
                         )
                     }
                     getCourseDummy()[1].courseId->{
                         checkpoint.copy(
-                            titleComment = "\uD83D\uDE0C 경치가 좋아요.",
+                            caption = "\uD83D\uDE0C 경치가 좋아요.",
                             imageName = "photo_original.jpg"
                         )
                     }
                     getCourseDummy()[5].courseId->{
                         checkpoint.copy(
-                            titleComment = "\uD83D\uDE1A 또 가고싶어요.",
+                            caption = "\uD83D\uDE1A 또 가고싶어요.",
                             imageName = "photo_original.jpg"
                         )
                     }

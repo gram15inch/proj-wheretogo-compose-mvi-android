@@ -15,10 +15,11 @@ class CommentRepositoryImpl @Inject constructor(
     private val _cacheCommentGroup = mutableMapOf<String, List<Comment>>() // 체크포인트id
     override suspend fun getComment(groupId: String): Result<List<Comment>> {
         return runCatching {
-            _cacheCommentGroup.getOrPut(groupId) {
-                remoteDatasource.getCommentGroupInCheckPoint(groupId)
-                    ?.remoteCommentGroup
-                    ?.map { it.toComment() } ?: emptyList()
+            remoteDatasource.getCommentGroupInCheckPoint(groupId)
+                ?.remoteCommentGroup
+                ?.map { it.toComment() } ?: emptyList<Comment>().run {
+                _cacheCommentGroup[groupId] = this
+                this
             }
         }
     }
@@ -31,11 +32,11 @@ class CommentRepositoryImpl @Inject constructor(
             val commentGroup = _cacheCommentGroup.getOrPut(comment.groupId) {
                 listOf()
             } + comment
-            _cacheCommentGroup.put(comment.groupId, commentGroup)
             remoteDatasource.setCommentInCheckPoint(
                 comment.toRemoteComment(),
                 commentGroup.size == 1
             )
+            _cacheCommentGroup.put(comment.groupId, commentGroup)
         }
     }
 
@@ -44,24 +45,26 @@ class CommentRepositoryImpl @Inject constructor(
             val commentGroup = _cacheCommentGroup.getOrPut(comment.groupId) {
                 listOf()
             } - comment
-            _cacheCommentGroup.put(comment.groupId, commentGroup)
             remoteDatasource.updateCommentInCheckPoint(comment.toRemoteComment())
+            _cacheCommentGroup.put(comment.groupId, commentGroup)
+        }
+    }
+
+    override suspend fun removeCommentGroup(groupId: String): Result<Unit> {
+        return runCatching {
+            remoteDatasource.removeCommentGroupInCheckPoint(groupId)
+            _cacheCommentGroup.remove(groupId)
         }
     }
 
     override suspend fun setCommentGroup(groupId: String, group: List<Comment>): Result<Unit> {
         return runCatching {
-            _cacheCommentGroup.put(groupId, group)
             remoteDatasource.setCommentGroupInCheckPoint(
                 RemoteCommentGroupWrapper(
                     groupId = groupId,
                     remoteCommentGroup = group.map { it.toRemoteComment() })
             )
-
+            _cacheCommentGroup.put(groupId, group)
         }
-    }
-
-    override fun cacheClear() {
-        _cacheCommentGroup.clear()
     }
 }

@@ -5,7 +5,7 @@ data class CheckPoint(
     val userId: String = "",
     val userName: String = "",
     val latLng: LatLng = LatLng(),
-    val titleComment: String = "",
+    val caption: String = "",
     val imageName: String = "",
     val imageLocalPath: String = "",
     val description: String = ""

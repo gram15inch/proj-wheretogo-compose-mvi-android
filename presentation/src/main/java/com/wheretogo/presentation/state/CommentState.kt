@@ -15,7 +15,8 @@ data class CommentState(
         val data: Comment = Comment(),
         val isLike: Boolean = false,
         val isFold: Boolean = true,
-        val isUserCreated: Boolean = false
+        val isUserCreated: Boolean = false,
+        val isFocus: Boolean = false
     )
 
     data class CommentAddState(

@@ -45,6 +45,7 @@ import com.wheretogo.presentation.feature.geo.distanceTo
 import com.wheretogo.presentation.feature.naver.getMapOverlay
 import com.wheretogo.presentation.feature.naver.getPathOverlay
 import com.wheretogo.presentation.feature.withLogging
+import com.wheretogo.presentation.getFocusComment
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.OverlayTag
@@ -65,6 +66,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -102,8 +104,8 @@ class DriveViewModel @Inject constructor(
                     //Log.d("tst_state", "${caller.shortPath()} --> $msg")
                 }
         }
-    private val _cacheCourseMapOverlayGroup = mutableMapOf<String, MapOverlay>() // courseId
-    private val _cacheCheckPointMapOverlayGroup = mutableMapOf<String, MapOverlay>() // courseId
+    private val _cacheCourseMapOverlayGroup = mutableMapOf<String, MapOverlay>() // key: courseId
+    private val _cacheCheckPointMapOverlayGroup = mutableMapOf<String, MapOverlay>() // key: checkpointId
     val driveScreenState: StateFlow<DriveScreenState> = _driveScreenState
     private var isMapUpdate = true
 
@@ -320,24 +322,31 @@ class DriveViewModel @Inject constructor(
                 }
             }
             _driveScreenState.value = _driveScreenState.value.run {
-                copy(
-                    bottomSheetState = bottomSheetState.copy(
-                        infoState = bottomSheetState.infoState.copy(
-                            checkPoint = checkpoint
+                if(popUpState.isVisible)
+                    copy(
+                        bottomSheetState = bottomSheetState.copy(
+                            infoState = bottomSheetState.infoState.copy(
+                                checkPoint = checkpoint
+                            )
                         )
                     )
-                )
+                else
+                    this
             }
             val image =
                 withContext(Dispatchers.IO) { getImageForPopupUseCase(checkpoint.imageName) }
             _driveScreenState.value = _driveScreenState.value.run {
-                copy(
-                    isLoading = false,
-                    popUpState = popUpState.copy(
-                        checkPointId = checkpoint.checkPointId,
-                        imageUri = image
+                if(popUpState.isVisible)
+                    copy(
+                        isLoading = false,
+                        popUpState = popUpState.copy(
+                            checkPointId = checkpoint.checkPointId,
+                            imageUri = image
+                        )
                     )
-                )
+                else{
+                    this
+                }
             }
         }
 
@@ -378,7 +387,6 @@ class DriveViewModel @Inject constructor(
                     isLoading = false
                 )
         }
-
     }
 
     private fun driveListItemBookmarkClick(itemState: DriveScreenState.ListState.ListItemState) {}
@@ -425,14 +433,31 @@ class DriveViewModel @Inject constructor(
 
     private suspend fun commentLikeClick(itemState: CommentItemState) {
         likeSwitch(itemState.data.commentId, itemState.isLike)
-        val isLikeUpdate = withContext(Dispatchers.IO) {
-            updateLikeUseCase(
-                comment = itemState.data,
-                !itemState.isLike
-            )
+        withContext(Dispatchers.IO) {
+            updateLikeUseCase(comment = itemState.data, isLike = !itemState.isLike)
         }
-        if (!isLikeUpdate) {
-            likeSwitch(itemState.data.commentId, !itemState.isLike)
+        val commentItemGroup = getCommentItemGroupAndUpdateCaption(itemState.data.groupId)
+        _driveScreenState.value = _driveScreenState.value.run {
+            if(popUpState.isVisible)
+                copy(
+                    popUpState = popUpState.copy(
+                        commentState = popUpState.commentState.copy(
+                            commentItemGroup = commentItemGroup
+                        )
+                    )
+                )
+            else
+                this
+        }
+    }
+
+    private suspend fun updateCheckPointCaption(checkPointId:String, caption:String){
+        withContext(Dispatchers.Main){
+            _cacheCheckPointMapOverlayGroup.getOrElse(checkPointId) { null }?.let { course ->
+                course.markerGroup.firstOrNull()?.let { cp ->
+                    cp.captionText = caption
+                }
+            }
         }
     }
 
@@ -441,6 +466,7 @@ class DriveViewModel @Inject constructor(
         val response = withContext(Dispatchers.IO) { addCommentToCheckPointUseCase(comment) }
         when (response.status) {
             UseCaseResponse.Status.Success -> {
+                val commentItemGroup = getCommentItemGroupAndUpdateCaption(itemState.groupId)
                 _driveScreenState.value = _driveScreenState.value.run {
                     this.copy(
                         popUpState = popUpState.copy(
@@ -448,17 +474,7 @@ class DriveViewModel @Inject constructor(
                                 commentAddState = CommentAddState(
                                     groupId = comment.groupId, emogiGroup = getEmogiDummy()
                                 ),
-                                commentItemGroup = withContext(Dispatchers.IO) {
-                                    getCommentForCheckPointUseCase(checkPointId = comment.groupId).map {
-                                        val isUserCreated = it.isMine()
-                                        CommentItemState(
-                                            data = it,
-                                            isLike = false,
-                                            isFold = comment.detailedReview.length >= 70,
-                                            isUserCreated = isUserCreated
-                                        )
-                                    }
-                                })
+                                commentItemGroup = commentItemGroup)
                         )
                     )
                 }
@@ -482,7 +498,7 @@ class DriveViewModel @Inject constructor(
     private suspend fun commentRemoveClick(itemState: CommentItemState) {
         withContext(Dispatchers.IO) { removeCommentToCheckPointUseCase(itemState.data) }
         val checkPointId = _driveScreenState.value.popUpState.checkPointId
-        val commentItemGroup = getCommentItemGroup(checkPointId)
+        val commentItemGroup = getCommentItemGroupAndUpdateCaption(checkPointId)
         _driveScreenState.value = _driveScreenState.value.run {
             this.copy(
                 popUpState = popUpState.copy(
@@ -498,10 +514,9 @@ class DriveViewModel @Inject constructor(
 
     private suspend fun commentReportClick(itemState: CommentItemState) {
         val reportResponse = withContext(Dispatchers.IO) { reportCommentUseCase(itemState.data) }
-
         when (reportResponse.status) {
             UseCaseResponse.Status.Success -> {
-                val commentItemGroup = getCommentItemGroup(itemState.data.groupId)
+                val commentItemGroup = getCommentItemGroupAndUpdateCaption(itemState.data.groupId)
                 _driveScreenState.value = _driveScreenState.value.run {
                     this.copy(
                         popUpState = popUpState.copy(
@@ -614,14 +629,16 @@ class DriveViewModel @Inject constructor(
                 floatingButtonState = floatingButtonState.copy(isBackPlateVisible = false)
             )
         }
-        val commentItemState = getCommentItemGroup(checkPointId)
+
+        val commentItemGroup = getCommentItemGroupAndUpdateCaption(checkPointId)
+        delay(200) // 슬라이드 에니메이션중 버벅임 예방
         _driveScreenState.value = _driveScreenState.value.run {
             if (popUpState.commentState.isCommentVisible)
                 copy(
                     isLoading = false,
                     popUpState = popUpState.copy(
                         commentState = popUpState.commentState.copy(
-                            commentItemGroup = commentItemState
+                            commentItemGroup = commentItemGroup
                         )
                     )
                 )
@@ -1036,21 +1053,34 @@ class DriveViewModel @Inject constructor(
 
 
     //유틸
-    private suspend fun getCommentItemGroup(checkPointId: String): List<CommentItemState> {
+    private suspend fun getCommentItemGroupAndUpdateCaption(checkPointId: String): List<CommentItemState> {
         return withContext(Dispatchers.IO) {
-            getCommentForCheckPointUseCase(checkPointId).map {
-                val isLike = it.commentId in getHistoryStreamUseCase().first().likeGroup
-                val isUserCreated = it.isMine()
-                CommentItemState(
-                    data = it,
-                    isLike = isLike,
-                    isFold = it.detailedReview.length >= 70,
-                    isUserCreated = isUserCreated
-                )
+            val newCommentGroup = getCommentForCheckPointUseCase(checkPointId)
+            if(newCommentGroup.isEmpty()) {
+                updateCheckPointCaption(checkPointId, "")
+                emptyList()
+            } else {
+                newCommentGroup.map {
+                    val isLike = it.commentId in getHistoryStreamUseCase().first().likeGroup
+                    val isUserCreated = it.isMine()
+                    val isFocus = newCommentGroup.isFocus(it)
+                    if(isFocus){
+                        updateCheckPointCaption(checkPointId, it.toCation())
+                    }
+                    CommentItemState(
+                        data = it,
+                        isLike = isLike,
+                        isFold = it.detailedReview.length >= 70,
+                        isFocus = isFocus,
+                        isUserCreated = isUserCreated,
+                    )
+                }
             }
         }
     }
-
+    private fun List<Comment>.isFocus(comment:Comment):Boolean{
+        return getFocusComment().commentId == comment.commentId
+    }
     private fun List<Course>.filterNearByListGroup(
         center: LatLng,
         meter: Int
@@ -1168,30 +1198,26 @@ class DriveViewModel @Inject constructor(
 
     private suspend fun Comment.isMine(): Boolean {
         val profile = getUserProfileStreamUseCase().first().data
-        Log.d("tst_", "${profile?.uid}/$userId")
         return profile?.run { userId == profile.uid } ?: false
     }
 
     private fun likeSwitch(commentId: String, isLike: Boolean) {
-        val isVisible = _driveScreenState.value.popUpState.commentState.isCommentVisible
-        if (isVisible) {
-            _driveScreenState.value = _driveScreenState.value.run {
-                val newCommentStateGroup =
-                    popUpState.commentState.commentItemGroup.map {
-                        if (it.data.commentId == commentId)
-                            it.copy(
-                                data = it.data.copy(like = it.data.like + if (isLike) -1 else 1),
-                                isLike = !isLike
-                            )
-                        else
-                            it
-                    }
-                copy(
-                    popUpState = popUpState.copy(
-                        commentState = popUpState.commentState.copy(commentItemGroup = newCommentStateGroup)
-                    )
+        _driveScreenState.value = _driveScreenState.value.run {
+            val newCommentStateGroup =
+                popUpState.commentState.commentItemGroup.map {
+                    if (it.data.commentId == commentId)
+                        it.copy(
+                            data = it.data.copy(like = it.data.like + if (isLike) -1 else 1),
+                            isLike = !isLike
+                        )
+                    else
+                        it
+                }
+            copy(
+                popUpState = popUpState.copy(
+                    commentState = popUpState.commentState.copy(commentItemGroup = newCommentStateGroup)
                 )
-            }
+            )
         }
     }
 }

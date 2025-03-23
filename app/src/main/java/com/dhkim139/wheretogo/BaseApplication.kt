@@ -7,6 +7,7 @@ import androidx.work.Configuration
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
@@ -38,6 +39,7 @@ class BaseApplication : Application(), Configuration.Provider {
             FirebaseCrashlytics.getInstance().isCrashlyticsCollectionEnabled = !BuildConfig.DEBUG
             FirebaseStorage.getInstance()
             FirebaseAuth.getInstance()
+            FirebaseFirestore.getInstance()
         }
     }
 

@@ -184,6 +184,7 @@ fun DriveScreen(
                     commentState = state.popUpState.commentState,
                     imageUri = state.popUpState.imageUri,
                     isWideSize = isWideSize,
+                    isLoading = state.isLoading,
                     onPopupImageClick = {
                         viewModel.handleIntent(DriveScreenIntent.CommentFloatingButtonClick)
                     },

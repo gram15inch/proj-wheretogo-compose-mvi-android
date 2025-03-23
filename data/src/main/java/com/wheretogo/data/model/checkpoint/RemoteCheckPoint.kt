@@ -7,7 +7,7 @@ data class RemoteCheckPoint(
     val userId: String = "",
     val userName : String = "",
     val latLng: DataLatLng = DataLatLng(),
-    val titleComment: String = "",
+    val caption: String = "",
     val imageName: String = "",
     val description: String = ""
 )

@@ -78,7 +78,7 @@ class CommentRemoteDatasourceImpl @Inject constructor() : CommentRemoteDatasourc
         }
     }
 
-    override suspend fun removeCommentInCheckPoint(commentGroupId:String):Boolean {
+    override suspend fun removeCommentGroupInCheckPoint(commentGroupId:String):Boolean {
         return suspendCancellableCoroutine { continuation ->
             firestore.collection(commentTable).document(commentGroupId)
                 .delete()

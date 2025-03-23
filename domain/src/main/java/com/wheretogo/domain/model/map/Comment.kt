@@ -13,4 +13,6 @@ data class Comment(
     val date: Long = 0,
     val like: Int = 0,
     val timestamp: Long = 0
-)
+) {
+    fun toCation() = "$emoji $oneLineReview"
+}

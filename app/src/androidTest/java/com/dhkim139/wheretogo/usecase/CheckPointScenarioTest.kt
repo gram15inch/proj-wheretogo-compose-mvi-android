@@ -12,9 +12,12 @@ import com.wheretogo.domain.model.community.Report
 import com.wheretogo.domain.model.dummy.getCourseDummy
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.CheckPointAddRequest
+import com.wheretogo.domain.model.map.Comment
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.user.AuthProfile
 import com.wheretogo.domain.toCourseAddRequest
+import com.wheretogo.domain.usecase.community.AddCommentToCheckPointUseCase
+import com.wheretogo.domain.usecase.community.GetCommentForCheckPointUseCase
 import com.wheretogo.domain.usecase.community.GetMyReportUseCase
 import com.wheretogo.domain.usecase.community.RemoveCheckPointUseCase
 import com.wheretogo.domain.usecase.community.ReportCheckPointUseCase
@@ -64,11 +67,15 @@ class CheckPointScenarioTest {
     @Inject
     lateinit var addCheckpointToCourseUseCase: AddCheckpointToCourseUseCase
     @Inject
+    lateinit var addCommentToCheckPointUseCase: AddCommentToCheckPointUseCase
+    @Inject
     lateinit var removeCheckPointUseCase: RemoveCheckPointUseCase
     @Inject
     lateinit var reportCheckPointUseCase: ReportCheckPointUseCase
     @Inject
     lateinit var getCheckpointForMarkerUseCase: GetCheckpointForMarkerUseCase
+    @Inject
+    lateinit var getCommentForCheckPointUseCase: GetCommentForCheckPointUseCase
     @Inject
     lateinit var getHistoryStreamUseCase: GetHistoryStreamUseCase
     @Inject
@@ -94,12 +101,19 @@ class CheckPointScenarioTest {
             description = "description1"
         )
         val outputCheckPointId = addCheckpointToCourseUseCase(inputCheckPointAddRequest).success()
+        val inputComment = Comment(
+            commentId = "cm1",
+            groupId = outputCheckPointId
+        )
+        addCommentToCheckPointUseCase(inputComment).success()
         getCheckpointForMarkerUseCase(inputCourseId).contain(outputCheckPointId)
+        getCommentForCheckPointUseCase(outputCheckPointId).notEmpty()
         getHistoryStreamUseCase().first().checkpointGroup.contain(outputCheckPointId)
 
         //체크포인트 삭제
         removeCheckPointUseCase(inputCourseId, outputCheckPointId).success()
         getHistoryStreamUseCase().first().checkpointGroup.empty(outputCheckPointId)
+        getCommentForCheckPointUseCase(outputCheckPointId).empty()
         getCheckpointForMarkerUseCase(inputCourseId).empty(outputCheckPointId)
     }
 
@@ -201,4 +215,13 @@ class CheckPointScenarioTest {
         assertFalse(id in this)
     }
 
+    private fun List<Comment>.empty(){
+        Log.d(tag, "empty: / ${this}")
+        assertTrue(this.isEmpty())
+    }
+
+    private fun List<Comment>.notEmpty(){
+        Log.d(tag, "empty: / ${this}")
+        assertTrue(this.isNotEmpty())
+    }
 }

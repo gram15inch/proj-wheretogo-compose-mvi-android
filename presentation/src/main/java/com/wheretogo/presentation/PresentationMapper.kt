@@ -114,7 +114,7 @@ fun parseLogoImgRes(company: String): Int {
 
     return when (auth) {
         AuthCompany.GOOGLE -> {
-            R.drawable.ic_heart
+            R.drawable.ic_heart_line
         }
         else->{
             R.drawable.lg_app
@@ -128,8 +128,6 @@ fun OverlayTag.Companion.parse(stringTag: String): OverlayTag? {
     return try {
         val list = stringTag.split("/")
         val latLng= list[4].split(":")
-        println(list[4])
-        println(latLng)
         OverlayTag(
             list[0],
             list[1],

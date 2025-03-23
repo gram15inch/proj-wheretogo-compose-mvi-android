@@ -181,7 +181,7 @@ class AccessTest {
         assertThrowsPermission { commentRemoteDatasourceImpl.updateCommentInCheckPoint(naviComment) }
 
         login("navi")
-        commentRemoteDatasourceImpl.removeCommentInCheckPoint(naviComment.commentGroupId)
+        commentRemoteDatasourceImpl.removeCommentGroupInCheckPoint(naviComment.commentGroupId)
         checkPointRemoteDatasourceImpl.removeCheckPoint(naviCheckpoint.checkPointId)
         logout()
     }
