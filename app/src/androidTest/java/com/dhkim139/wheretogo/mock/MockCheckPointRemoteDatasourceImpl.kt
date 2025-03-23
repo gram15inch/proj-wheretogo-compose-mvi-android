@@ -28,4 +28,13 @@ class MockCheckPointRemoteDatasourceImpl @Inject constructor() : CheckPointRemot
     override suspend fun removeCheckPoint(checkPointId: String) {
         newCheckPointGroup.removeIf { it.checkPointId == checkPointId }
     }
+
+    override suspend fun updateCheckPoint(checkPointId: String, captioin: String) {
+        getCheckPoint(checkPointId)?.let{
+            removeCheckPoint(checkPointId)
+            newCheckPointGroup.add(
+               it.copy(caption = captioin)
+            )
+        }
+    }
 }

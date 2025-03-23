@@ -14,4 +14,6 @@ interface CheckPointRepository {
 
     suspend fun removeCheckPoint(checkPointId: String): Result<Unit>
 
+    suspend fun updateCaption(checkPointId: String, caption: String): Result<Unit>
+
 }

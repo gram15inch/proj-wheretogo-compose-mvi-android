@@ -63,4 +63,11 @@ class CheckPointRepositoryImpl @Inject constructor(
             checkPointLocalDatasource.removeCheckPoint(checkPointId)
         }
     }
+
+    override suspend fun updateCaption(checkPointId: String, caption: String): Result<Unit> {
+        return runCatching {
+            checkPointRemoteDatasource.updateCheckPoint(checkPointId, caption)
+            checkPointLocalDatasource.updateCheckPoint(checkPointId, caption)
+        }
+    }
 }

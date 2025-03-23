@@ -49,6 +49,17 @@ class CheckPointRemoteDatasourceImpl @Inject constructor() : CheckPointRemoteDat
         }
     }
 
+    override suspend fun updateCheckPoint(checkPointId: String, captioin: String) {
+        return suspendCancellableCoroutine { continuation ->
+            firestore.collection(checkPointTable).document(checkPointId)
+                .update(RemoteCheckPoint::caption.name, captioin).addOnSuccessListener {
+                    continuation.resume(Unit)
+                }.addOnFailureListener {
+                    continuation.resumeWithException(it)
+                }
+        }
+    }
+
     override suspend fun removeCheckPoint(checkPointId: String) {
         suspendCancellableCoroutine { continuation ->
             firestore.collection(checkPointTable).document(checkPointId)

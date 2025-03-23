@@ -72,7 +72,7 @@ fun getMapOverlay(courseId: String, item: CheckPoint): MapOverlay {
         overlayTag.overlayType,
         listOf(Marker().apply {
             tag = overlayTag.toStringTag()
-            captionText = item.titleComment
+            captionText = item.caption
             captionOffset = 20
             captionTextSize = 16f
             position = item.latLng.toNaver()

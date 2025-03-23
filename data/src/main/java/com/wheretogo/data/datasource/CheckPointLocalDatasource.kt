@@ -12,4 +12,6 @@ interface CheckPointLocalDatasource {
 
     suspend fun removeCheckPoint(checkPointId: String)
 
+    suspend fun updateCheckPoint(checkPointId: String, caption: String)
+
 }

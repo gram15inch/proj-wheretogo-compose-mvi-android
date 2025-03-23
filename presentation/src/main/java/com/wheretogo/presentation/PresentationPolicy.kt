@@ -7,6 +7,7 @@ import com.naver.maps.map.app.LegalNoticeActivity
 import com.naver.maps.map.app.OpenSourceLicenseActivity
 import com.wheretogo.domain.CourseDetail
 import com.wheretogo.domain.OverlayType
+import com.wheretogo.domain.model.map.Comment
 import com.wheretogo.domain.model.map.Viewport
 import com.wheretogo.presentation.state.CameraState
 
@@ -84,4 +85,9 @@ fun NaverMap.toCameraState(): CameraState {
             )
         )
     }
+}
+
+fun Collection<Comment>.getFocusComment():Comment{
+    return this.maxWith(compareBy<Comment> { it.like }
+        .thenByDescending { it.timestamp })
 }

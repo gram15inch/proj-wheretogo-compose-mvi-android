@@ -36,14 +36,14 @@ class CommentTest {
             commentGroupId = "test_cm_gp1",
             oneLineReview = "hi"
         )
-        commentRemoteDatasourceImpl.removeCommentInCheckPoint(comment.commentGroupId)
+        commentRemoteDatasourceImpl.removeCommentGroupInCheckPoint(comment.commentGroupId)
         commentRemoteDatasourceImpl.getCommentGroupInCheckPoint(comment.commentGroupId).empty()
 
         commentRemoteDatasourceImpl.setCommentInCheckPoint(comment, true)
         commentRemoteDatasourceImpl.getCommentGroupInCheckPoint(comment.commentGroupId)!!.remoteCommentGroup.first()
             .assertEquals(comment)
 
-        commentRemoteDatasourceImpl.removeCommentInCheckPoint(comment.commentGroupId)
+        commentRemoteDatasourceImpl.removeCommentGroupInCheckPoint(comment.commentGroupId)
         commentRemoteDatasourceImpl.getCommentGroupInCheckPoint(comment.commentGroupId).empty()
     }
 
