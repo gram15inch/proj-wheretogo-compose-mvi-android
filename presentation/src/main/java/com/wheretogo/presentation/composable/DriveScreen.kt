@@ -1,6 +1,8 @@
 package com.wheretogo.presentation.composable
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -21,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -33,8 +36,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.naver.maps.map.overlay.Marker
 import com.wheretogo.presentation.BuildConfig
+import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.content.AnimationDirection
 import com.wheretogo.presentation.composable.content.CheckPointAddContent
@@ -53,8 +56,6 @@ import com.wheretogo.presentation.feature.ImeStickyBox
 import com.wheretogo.presentation.feature.naver.setCurrentLocation
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.model.ContentPadding
-import com.wheretogo.presentation.model.OverlayTag
-import com.wheretogo.presentation.parse
 import com.wheretogo.presentation.viewmodel.DriveViewModel
 import kotlinx.coroutines.launch
 
@@ -66,6 +67,11 @@ fun DriveScreen(
     val state by viewModel.driveScreenState.collectAsState()
     val context = LocalContext.current
     val isWideSize = screenSize(true) > 650.dp
+    var bottomSheetHeight by remember { mutableStateOf(0.dp) }
+    val mapBottomPadding by animateDpAsState(
+        targetValue = bottomSheetHeight,
+        animationSpec = tween(durationMillis = 300)
+    )
     val coroutineScope = rememberCoroutineScope()
     BackHandler {
         navController.navigateUp()
@@ -79,7 +85,7 @@ fun DriveScreen(
         if(BuildConfig.DEBUG)
             Text(
                 modifier = Modifier.align(alignment = Alignment.TopStart),
-                text = "${state.mapState.mapOverlayGroup.size}",
+                text = "${state.mapState.overlayGroup.size}",
                 fontSize = 50.sp
             )
         DelayLottieAnimation(
@@ -98,27 +104,23 @@ fun DriveScreen(
             .zIndex(0f)
             .fillMaxSize()
             .navigationBarsPadding(),
-        overlayMap = state.mapState.mapOverlayGroup,
+        mapOverlayGroup = state.mapState.overlayGroup,
         cameraState = state.mapState.cameraState,
         onMapAsync = { map ->
             viewModel.handleIntent(DriveScreenIntent.MapIsReady)
             coroutineScope.launch { map.setCurrentLocation(context) }
         },
-        onCameraMove = { camera ->
-            viewModel.handleIntent(DriveScreenIntent.UpdateCamera(camera))
+        onCameraUpdate = { camera ->
+            viewModel.handleIntent(DriveScreenIntent.CameraUpdated(camera))
         },
         onCourseMarkerClick = { overlay ->
-            val marker = overlay as Marker
-            viewModel.handleIntent(DriveScreenIntent.CourseMarkerClick(OverlayTag.parse(marker.tag as String)))
+            viewModel.handleIntent(DriveScreenIntent.CourseMarkerClick(overlay))
         },
         onCheckPointMarkerClick = { overlay ->
-            val marker = overlay as Marker
-            viewModel.handleIntent(DriveScreenIntent.CheckPointMarkerClick(OverlayTag.parse(marker.tag as String)))
+            viewModel.handleIntent(DriveScreenIntent.CheckPointMarkerClick(overlay))
         },
-        onOverlayRenderComplete = { isRendered ->
-            viewModel.handleIntent(DriveScreenIntent.OverlayRenderComplete(isRendered))
-        },
-        contentPadding = ContentPadding()
+        onOverlayRenderComplete = {},
+        contentPadding = ContentPadding(bottom = mapBottomPadding)
     )
 
     FadeAnimation(visible = state.popUpState.isVisible) {
@@ -145,7 +147,7 @@ fun DriveScreen(
                             isLoading = isLoading,
                             isEmptyVisible = isEmptyVisible,
                             simpleAddressGroup = simpleAddressGroup,
-                            onSubmitClick = { viewModel.handleIntent(DriveScreenIntent.SubmitClick(it)) },
+                            onSearchSubmit = { viewModel.handleIntent(DriveScreenIntent.SearchSubmit(it)) },
                             onSearchToggleClick = { viewModel.handleIntent(DriveScreenIntent.SearchToggleClick(it)) },
                             onAddressItemClick = { viewModel.handleIntent(DriveScreenIntent.AddressItemClick(it)) }
                         )
@@ -165,12 +167,8 @@ fun DriveScreen(
                     onItemClick = { selectedItem ->
                         viewModel.handleIntent(DriveScreenIntent.DriveListItemClick(selectedItem))
                     },
-                    onBookmarkClick = {
-                        viewModel.handleIntent(DriveScreenIntent.DriveListItemBookmarkClick(it))
-                    },
-                    onHeightPxChange = {
-
-                    }
+                    onBookmarkClick = {},
+                    onHeightPxChange = {}
                 )
             }
 
@@ -226,49 +224,60 @@ fun DriveScreen(
                     .align(Alignment.BottomCenter)
                     .zIndex(997f),
                 isVisible = state.bottomSheetState.isVisible,
+                onHeightChange = {dp->
+                    bottomSheetHeight = dp
+                    viewModel.handleIntent(DriveScreenIntent.ContentPaddingChanged(dp.value.toInt()))
+                },
                 onBottomSheetClose = {
                     viewModel.handleIntent(DriveScreenIntent.BottomSheetClose)
                 }
             ) {
-                if (state.bottomSheetState.isCheckPointAdd)
-                    CheckPointAddContent(
-                        state = state.bottomSheetState.checkPointAddState,
-                        onSubmitClick = {
-                            viewModel.handleIntent(DriveScreenIntent.CheckpointSubmitClick)
-                        },
-                        onSliderChange = {
-                            viewModel.handleIntent(
-                                DriveScreenIntent.CheckpointLocationSliderChange(
-                                    it
+                when (state.bottomSheetState.content) {
+                    DriveBottomSheetContent.CHECKPOINT_ADD -> {
+                        CheckPointAddContent(
+                            state = state.bottomSheetState.checkPointAddState,
+                            onSubmitClick = {
+                                viewModel.handleIntent(DriveScreenIntent.CheckpointSubmitClick)
+                            },
+                            onSliderChange = {
+                                viewModel.handleIntent(
+                                    DriveScreenIntent.CheckpointLocationSliderChange(
+                                        it
+                                    )
                                 )
-                            )
-                        },
-                        onImageChange = {
-                            viewModel.handleIntent(DriveScreenIntent.CheckpointImageChange(it))
-                        }
-                    )
-                else
-                    InfoContent(
-                        state = state.bottomSheetState.infoState,
-                        onRemoveClick = {
-                            viewModel.handleIntent(DriveScreenIntent.InfoRemoveClick(it))
-                        },
-                        onReportClick = {
-                            viewModel.handleIntent(DriveScreenIntent.InfoReportClick(it))
-                        }
-                    )
+                            },
+                            onImageChange = {
+                                viewModel.handleIntent(DriveScreenIntent.CheckpointImageChange(it))
+                            }
+                        )
+                    }
+
+                    DriveBottomSheetContent.INFO -> {
+                        InfoContent(
+                            state = state.bottomSheetState.infoState,
+                            onRemoveClick = {
+                                viewModel.handleIntent(DriveScreenIntent.InfoRemoveClick(it))
+                            },
+                            onReportClick = {
+                                viewModel.handleIntent(DriveScreenIntent.InfoReportClick(it))
+                            }
+                        )
+                    }
+
+                    else -> {}
+                }
             }
 
-            val isNotComment = !state.popUpState.commentState.isCommentVisible
+            val isNotOtherVisible = !state.popUpState.commentState.isCommentVisible && !state.bottomSheetState.isVisible
             FloatingButtons(
                 modifier = Modifier.fillMaxSize(),
                 course = state.listState.clickItem.course,
-                isCommentVisible = state.floatingButtonState.isCommentVisible && isNotComment,
-                isCheckpointAddVisible = state.floatingButtonState.isCheckpointAddVisible && isNotComment,
-                isInfoVisible = state.floatingButtonState.isInfoVisible && isNotComment,
-                isExportVisible = state.floatingButtonState.isExportVisible && isNotComment,
+                isCommentVisible = state.floatingButtonState.isCommentVisible && isNotOtherVisible,
+                isCheckpointAddVisible = state.floatingButtonState.isCheckpointAddVisible && isNotOtherVisible,
+                isInfoVisible = state.floatingButtonState.isInfoVisible && isNotOtherVisible,
+                isExportVisible = state.floatingButtonState.isExportVisible && isNotOtherVisible,
                 isExportBackPlate = state.floatingButtonState.isBackPlateVisible,
-                isFoldVisible = state.floatingButtonState.isFoldVisible && isNotComment,
+                isFoldVisible = state.floatingButtonState.isFoldVisible && isNotOtherVisible,
                 onCommentClick = {
                     viewModel.handleIntent(DriveScreenIntent.CommentFloatingButtonClick)
                 },

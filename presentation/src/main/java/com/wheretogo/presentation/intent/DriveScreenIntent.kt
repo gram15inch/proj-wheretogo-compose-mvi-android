@@ -4,7 +4,7 @@ import android.net.Uri
 import androidx.compose.ui.text.input.TextFieldValue
 import com.wheretogo.domain.model.map.SimpleAddress
 import com.wheretogo.presentation.CommentType
-import com.wheretogo.presentation.model.OverlayTag
+import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.state.CameraState
 import com.wheretogo.presentation.state.CommentState.CommentAddState
 import com.wheretogo.presentation.state.CommentState.CommentItemState
@@ -16,18 +16,18 @@ sealed class DriveScreenIntent {
     //서치바
     data class AddressItemClick(val simpleAddress:SimpleAddress) : DriveScreenIntent()
     data class SearchToggleClick(val isBar:Boolean) : DriveScreenIntent()
-    data class SubmitClick(val submit:String) : DriveScreenIntent()
+    data class SearchSubmit(val submit:String) : DriveScreenIntent()
 
     //지도
     data object MapIsReady : DriveScreenIntent()
-    data class UpdateCamera(val cameraState: CameraState) : DriveScreenIntent()
-    data class OverlayRenderComplete(val isRendered: Boolean) : DriveScreenIntent()
-    data class CourseMarkerClick(val tag: OverlayTag?) : DriveScreenIntent()
-    data class CheckPointMarkerClick(val tag: OverlayTag?) : DriveScreenIntent()
+    data class CameraUpdated(val cameraState: CameraState) : DriveScreenIntent()
+    data class CourseMarkerClick(val overlay: MapOverlay.MarkerContainer) : DriveScreenIntent()
+    data class CheckPointMarkerClick(val overlay: MapOverlay.MarkerContainer) : DriveScreenIntent()
+    data class ContentPaddingChanged(val amount:Int) : DriveScreenIntent()
+
 
     //목록
     data class DriveListItemClick(val itemState: ListItemState) : DriveScreenIntent()
-    data class DriveListItemBookmarkClick(val itemState: ListItemState) : DriveScreenIntent()
 
     //팝업
     data object DismissPopup : DriveScreenIntent()
@@ -60,5 +60,4 @@ sealed class DriveScreenIntent {
     data object CheckpointSubmitClick : DriveScreenIntent()
     data class InfoReportClick(val infoState: InfoState) : DriveScreenIntent()
     data class InfoRemoveClick(val infoState: InfoState) : DriveScreenIntent()
-
 }

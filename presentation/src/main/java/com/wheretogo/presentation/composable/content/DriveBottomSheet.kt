@@ -23,15 +23,22 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wheretogo.domain.model.community.ImageInfo
@@ -43,14 +50,18 @@ import com.wheretogo.presentation.state.DriveScreenState
 import com.wheretogo.presentation.state.InfoState
 import com.wheretogo.presentation.theme.interBoldFontFamily
 import com.wheretogo.presentation.theme.interFontFamily
+import androidx.core.net.toUri
 
 @Composable
 fun DriveBottomSheet(
     modifier: Modifier = Modifier,
     isVisible: Boolean = false,
     onBottomSheetClose: () -> Unit,
+    onHeightChange: (Dp)-> Unit,
     content: @Composable () -> Unit,
 ) {
+    val density = LocalDensity.current
+    var latestDp by remember { mutableStateOf(0.dp) }
     SlideAnimation(
         modifier = modifier,
         visible = isVisible,
@@ -58,6 +69,14 @@ fun DriveBottomSheet(
     ) {
         Box(
             modifier = modifier
+                .onGloballyPositioned { coordinates ->
+                    val heightPx = coordinates.size.height
+                    val dp= if(isVisible) with(density) { heightPx.toDp() } else 0.dp
+                    if(dp!= latestDp){
+                        onHeightChange(dp)
+                        latestDp = dp
+                    }
+                }
                 .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
                 .fillMaxWidth()
                 .consumptionEvent()
@@ -269,13 +288,14 @@ fun CheckpointAddBottomSheetPreview() {
         infoState = InfoState(isRemoveButton = true),
         checkPointAddState = CheckPointAddState(
             isLoading = false, description = "안녕하세요",
-            imgInfo = ImageInfo(Uri.parse("")!!, "새로운 사진.jpg", 30L)
+            imgInfo = ImageInfo("".toUri(), "새로운 사진.jpg", 30L)
         )
     )
     Box(modifier = Modifier.width(400.dp)) {
         DriveBottomSheet(
             modifier = Modifier,
             isVisible = true,
+            {},
             {},
         ) {
             if (state.isVisible) {

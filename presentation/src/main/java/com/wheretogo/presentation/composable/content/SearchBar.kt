@@ -61,7 +61,7 @@ fun SearchBar(
     simpleAddressGroup: List<SimpleAddress> = emptyList(),
     onAddressItemClick: (SimpleAddress) -> Unit = {},
     onSearchToggleClick: (Boolean) -> Unit = {},
-    onSubmitClick: (String) -> Unit = {}
+    onSearchSubmit: (String) -> Unit = {}
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
@@ -112,7 +112,7 @@ fun SearchBar(
                         ),
                         keyboardActions = KeyboardActions(
                             onDone = {
-                                onSubmitClick(editText)
+                                onSearchSubmit(editText)
                                 keyboardController?.hide()
                                 focusManager.clearFocus()
                             }
@@ -229,7 +229,7 @@ fun SearchBarPreview() {
                 if (!it)
                     simpleAddressGroups = emptyList()
             },
-            onSubmitClick = {
+            onSearchSubmit = {
                 simpleAddressGroups += SimpleAddress(it, "경기도 용인시 기흥구 120")
             }
         )

@@ -17,7 +17,7 @@ object EventBus {
     val eventFlow = _eventFlow.asSharedFlow()
 
     suspend fun sendMsg(msg: EventMsg) {
-        _eventFlow.emit(Pair(AppEvent.SNACKMAR, msg))
+        _eventFlow.emit(Pair(AppEvent.SNACKBAR, msg))
     }
 
     suspend fun navigation(@StringRes navigation: Int) {

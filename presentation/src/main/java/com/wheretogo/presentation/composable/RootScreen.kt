@@ -47,7 +47,7 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
             EventBus.eventFlow.collect{
                 val eventMsg = it.second
                 when (it.first) {
-                    AppEvent.SNACKMAR -> {
+                    AppEvent.SNACKBAR -> {
                         val msg = eventMsg.getString(context)
                         viewModel.snackbarHostState.shortShow(msg)
                     }

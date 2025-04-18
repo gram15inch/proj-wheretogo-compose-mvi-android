@@ -65,6 +65,7 @@
     <string name="description">설명</string>
     <string name="submit">등록</string>
     <string name="add_marker_by_click_map">지도를 클릭해 마커를 추가해주세요.</string>
+    <string name="route_create_error">경로 생성 오류.</string>
 
 
     <string name="contact_banner">비즈니스 / 광고문의</string>

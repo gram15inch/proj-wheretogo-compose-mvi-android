@@ -1,26 +1,20 @@
 package com.wheretogo.domain
 
+import com.wheretogo.domain.model.map.Comment
 
-const val COURSE_TYPE = 0
-const val CHECKPOINT_TYPE = 1
-const val PATH_TYPE = 2
 
 const val SECOND = 1000L
 const val MIN = 60*SECOND
 const val HOUR = 60*MIN
 const val DAY = 24*HOUR
-const val CHECKPOINT_UPDATE_TIME = 3*HOUR
 const val COURSE_UPDATE_TIME = DAY
 const val ROUTE_GEOHASH_MIN_LENGTH = 4
 const val USER_DATE_FORMAT = "yyyy-MM-dd"
 const val DOMAIN_EMPTY = ""
 
+const val LIST_ITEM_ZOOM = 12.0
 
 enum class AuthCompany { GOOGLE, PROFILE }
-
-enum class OverlayType {
-    NONE, COURSE, CHECKPOINT, PATH
-}
 
 enum class HistoryType {
     COMMENT, COURSE, CHECKPOINT, LIKE, BOOKMARK, REPORT_CONTENT
@@ -75,6 +69,8 @@ enum class AuthType{
     TOKEN, PROFILE
 }
 
+class UserNotExistException(message: String) : NoSuchElementException(message)
+
 fun zoomToGeohashLength(zoom: Double): Int {
     return when (zoom) {
         in 0.0..< 9.5 ->  3
@@ -85,4 +81,7 @@ fun zoomToGeohashLength(zoom: Double): Int {
     }
 }
 
-class UserNotExistException(message: String) : NoSuchElementException(message)
+fun Collection<Comment>.getFocusComment(): Comment {
+    return this.maxWith(compareBy<Comment> { it.like }
+        .thenByDescending { it.timestamp })
+}
