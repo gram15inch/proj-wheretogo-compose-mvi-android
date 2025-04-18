@@ -2,6 +2,7 @@ package com.wheretogo.presentation.state
 
 import android.net.Uri
 import com.wheretogo.domain.model.map.Course
+import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.model.MapOverlay
 
 
@@ -12,13 +13,13 @@ data class DriveScreenState(
     val popUpState: PopUpState = PopUpState(),
     val bottomSheetState: BottomSheetState = BottomSheetState(),
     val floatingButtonState: FloatingButtonState = FloatingButtonState(),
-    val isLoading: Boolean = true,
+    val isLoading: Boolean = false,
     val error: String? = null
 ) {
     data class MapState(
-        val isMapReady: Boolean = false,
+        val overlayGroup: Collection<MapOverlay> = emptyList(),
         val cameraState: CameraState = CameraState(),
-        val mapOverlayGroup: Set<MapOverlay> = emptySet()
+        val isMapReady: Boolean = false
     )
 
     data class ListState(
@@ -42,7 +43,7 @@ data class DriveScreenState(
 
     data class BottomSheetState(
         val isVisible: Boolean = false,
-        val isCheckPointAdd: Boolean = true, // false시 info
+        val content: DriveBottomSheetContent = DriveBottomSheetContent.EMPTY,
         val checkPointAddState: CheckPointAddState = CheckPointAddState(),
         val infoState: InfoState = InfoState()
     )

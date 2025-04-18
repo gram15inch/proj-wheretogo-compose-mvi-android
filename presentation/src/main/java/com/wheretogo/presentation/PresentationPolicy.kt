@@ -6,28 +6,26 @@ import com.naver.maps.map.NaverMap
 import com.naver.maps.map.app.LegalNoticeActivity
 import com.naver.maps.map.app.OpenSourceLicenseActivity
 import com.wheretogo.domain.CourseDetail
-import com.wheretogo.domain.OverlayType
-import com.wheretogo.domain.model.map.Comment
 import com.wheretogo.domain.model.map.Viewport
 import com.wheretogo.presentation.state.CameraState
 
 const val DRIVE_LIST_MIN_ZOOM = 9.5
+const val COURSE_NAME_MAX_LENGTH = 17
 
-fun OverlayType.minZoomLevel():Double{
-    return when(this){
-        OverlayType.COURSE-> 8.0
-        OverlayType.PATH-> 9.5
-        OverlayType.CHECKPOINT-> 9.5
-        else-> 8.0
-    }
+const val CHECKPOINT_ADD_MARKER = "CHECKPOINT_ADD_MARKER_ID"
+const val SEARCH_MARKER = "SEARCH_MARKER_ID"
+
+
+enum class OverlayType {
+   SPOT, CHECKPOINT, PATH
 }
 
 enum class CommentType(@StringRes val typeRes: Int) {
     ONE(R.string.oneline_review), DETAIL(R.string.detail_review)
 }
 
-enum class CameraStatus {
-    NONE, TRACK, INIT
+enum class CameraUpdateSource {
+    USER, APP_EASING, APP_LINEAR
 }
 
 enum class SettingInfoType(val url: String) {
@@ -44,31 +42,38 @@ enum class CheckPointAddError{
 }
 
 enum class AppEvent{
-    NAVIGATION, SNACKMAR
+    NAVIGATION, SNACKBAR
 }
 
 enum class ExportMap{
     NAVER, KAKAO, SKT
 }
 
-enum class MarkerIconType(@DrawableRes val res: Int) {
+enum class DriveBottomSheetContent{
+   EMPTY ,CHECKPOINT_ADD, INFO
+}
+
+enum class MarkerType{
+    SPOT, CHECKPOINT
+}
+
+enum class PathType{
+    PARTIAL, FULL
+}
+
+
+enum class CourseMarkerIcon(@DrawableRes val res: Int) {
     DEFAULT(R.drawable.ic_mk_df),
     CAR(R.drawable.ic_mk_cr),
     RACING(R.drawable.ic_mk_sp),
     TRAINING(R.drawable.ic_mk_bg),
-    PHOTO(R.drawable.ic_mk_cm)
 }
 
-fun getCourseIconType(courseType:String):MarkerIconType{
-    return  try {
-        when(CourseDetail.fromCode(courseType)){
-            CourseDetail.DRIVE->{ MarkerIconType.CAR }
-            CourseDetail.SPORT->{  MarkerIconType.RACING  }
-            CourseDetail.TRAINING->{ MarkerIconType.TRAINING}
-            else->{  MarkerIconType.DEFAULT }
-        }
-    }catch (e:Exception){
-        MarkerIconType.DEFAULT
+fun OverlayType.minZoomLevel():Double{
+    return when(this){
+        OverlayType.SPOT-> 8.0
+        OverlayType.PATH-> 9.5
+        OverlayType.CHECKPOINT-> 9.5
     }
 }
 
@@ -82,12 +87,21 @@ fun NaverMap.toCameraState(): CameraState {
                 this[3].latitude,
                 this[0].longitude,
                 this[3].longitude
-            )
+            ),
+            updateSource = CameraUpdateSource.USER
         )
     }
 }
 
-fun Collection<Comment>.getFocusComment():Comment{
-    return this.maxWith(compareBy<Comment> { it.like }
-        .thenByDescending { it.timestamp })
+fun parseCourseMarkerIcon(courseType:String):CourseMarkerIcon{
+    return  try {
+        when(CourseDetail.fromCode(courseType)){
+            CourseDetail.DRIVE->{ CourseMarkerIcon.CAR }
+            CourseDetail.SPORT->{  CourseMarkerIcon.RACING  }
+            CourseDetail.TRAINING->{ CourseMarkerIcon.TRAINING}
+            else->{  CourseMarkerIcon.DEFAULT }
+        }
+    }catch (e:Exception){
+        CourseMarkerIcon.DEFAULT
+    }
 }

@@ -2,20 +2,22 @@ package com.wheretogo.presentation.model
 
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.PathOverlay
-import com.wheretogo.domain.OverlayType
-import com.wheretogo.presentation.MarkerIconType
+import com.wheretogo.presentation.MarkerType
+import com.wheretogo.presentation.PathType
 
-data class MapOverlay(
-    val overlayId: String = "",
-    val overlayType: OverlayType = OverlayType.COURSE,
-    val markerGroup: List<Marker> = emptyList(),
-    val path: PathOverlay? = null
-){
-    override fun equals(other: Any?): Boolean {
-        return other is MapOverlay && this.overlayId == other.overlayId
-    }
+sealed class MapOverlay(
+    open val id: String
+) {
+    data class MarkerContainer(
+        override val id: String,
+        val type: MarkerType = MarkerType.SPOT,
+        val marker: Marker
+    ) : MapOverlay(id)
 
-    override fun hashCode(): Int {
-        return overlayId.hashCode()
-    }
+    data class PathContainer(
+        override val id: String,
+        val type: PathType = PathType.FULL,
+        val path: PathOverlay
+    ) : MapOverlay(id)
 }
+

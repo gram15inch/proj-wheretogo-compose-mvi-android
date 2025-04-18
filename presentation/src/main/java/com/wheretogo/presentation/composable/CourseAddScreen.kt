@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -38,8 +39,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -56,7 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.naver.maps.map.overlay.Marker
+import com.wheretogo.presentation.BuildConfig
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.content.AnimationDirection
 import com.wheretogo.presentation.composable.content.DelayLottieAnimation
@@ -85,22 +88,37 @@ fun CourseAddScreen(
     val state by viewModel.courseAddScreenState.collectAsState()
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    val bottomSheetHeight by animateDpAsState(
-        targetValue = if (state.isBottomSheetDown) 60.dp else 400.dp,
-        animationSpec = tween(durationMillis = 350)
+    var bottomSheetHeight by remember { mutableStateOf(400.dp) }
+    val mapBottomPadding by animateDpAsState(
+        targetValue = bottomSheetHeight,
+        animationSpec = tween(durationMillis = 300)
     )
-
     Box(
         modifier = Modifier
             .fillMaxSize()
             .navigationBarsPadding()
     ) {
+        if (BuildConfig.DEBUG) {
+            Box(
+                modifier = Modifier
+                    .systemBarsPadding()
+                    .fillMaxWidth()
+                    .zIndex(1f)
+            ) {
+                Text(
+                    modifier = Modifier.align(alignment = Alignment.TopStart),
+                    text = "${state.overlayGroup.size}",
+                    fontSize = 50.sp
+                )
+            }
+        }
+
         if (state.isFloatMarker)
             Box(// 중앙 마커
                 modifier = Modifier
                     .fillMaxSize()
                     .zIndex(1f)
-                    .padding(bottom = bottomSheetHeight),
+                    .padding(bottom = mapBottomPadding),
                 contentAlignment = Alignment.Center
             ) {
                 Image(
@@ -113,14 +131,15 @@ fun CourseAddScreen(
             }
 
         SearchBar(
-            modifier = Modifier.zIndex(1f)
+            modifier = Modifier
+                .zIndex(1f)
                 .statusBarsPadding()
                 .padding(top = 10.dp, end = 10.dp)
                 .align(alignment = Alignment.TopEnd),
             isLoading = state.searchBarState.isLoading,
             isEmptyVisible = state.searchBarState.isEmptyVisible,
             simpleAddressGroup = state.searchBarState.simpleAddressGroup,
-            onSubmitClick = { viewModel.handleIntent(CourseAddIntent.SubmitClick(it)) },
+            onSearchSubmit = { viewModel.handleIntent(CourseAddIntent.SubmitClick(it)) },
             onSearchToggleClick = { viewModel.handleIntent(CourseAddIntent.SearchToggleClick(it)) },
             onAddressItemClick = { viewModel.handleIntent(CourseAddIntent.AddressItemClick(it)) }
         )
@@ -131,16 +150,16 @@ fun CourseAddScreen(
                 .height(300.dp)
                 .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Bottom))
                 .background(color = Color.Green),
-            overlayMap = setOf(state.mapOverlay),
+            mapOverlayGroup = state.overlayGroup,
             onMapAsync = { map ->
                 coroutineScope.launch { map.setCurrentLocation(context) }
             },
             cameraState = state.cameraState,
-            onCameraMove = { viewModel.handleIntent(CourseAddIntent.UpdatedCamera(it)) },
+            onCameraUpdate = { viewModel.handleIntent(CourseAddIntent.CameraUpdated(it)) },
             onMapClickListener = { viewModel.handleIntent(CourseAddIntent.MapClick(it)) },
-            onCourseMarkerClick = { viewModel.handleIntent(CourseAddIntent.CourseMarkerClick(it as Marker)) },
+            onCheckPointMarkerClick = { viewModel.handleIntent(CourseAddIntent.WaypointMarkerClick(it)) },
             contentPadding = ContentPadding(
-                bottom = bottomSheetHeight
+                bottom = mapBottomPadding
             )
         )
     }
@@ -165,7 +184,6 @@ fun CourseAddScreen(
                 )
             }
             CourseAddBottomSheet(
-                height = bottomSheetHeight,
                 state = state,
                 onRouteCreateClick = { viewModel.handleIntent(CourseAddIntent.RouteCreateClick) },
                 onRouteDetailItemClick = {
@@ -178,13 +196,11 @@ fun CourseAddScreen(
                 onCommendClick = { viewModel.handleIntent(CourseAddIntent.CommendClick) },
                 onBackClick = { viewModel.handleIntent(CourseAddIntent.DetailBackClick) },
                 onDragClick = { viewModel.handleIntent(CourseAddIntent.DragClick) },
-                onNameEditValueChange = {
-                    viewModel.handleIntent(
-                        CourseAddIntent.NameEditValueChange(
-                            it
-                        )
-                    )
-                }
+                onNameEditValueChange = { viewModel.handleIntent(CourseAddIntent.NameEditValueChange(it)) },
+                onHeightChange = {dp->
+                    bottomSheetHeight = dp
+                    viewModel.handleIntent(CourseAddIntent.ContentPaddingChanged(dp.value.toInt()))
+                },
             )
         }
     }
@@ -197,13 +213,14 @@ fun CourseAddScreenPreview() {
     CourseAddBottomSheet(
         modifier = Modifier,
         CourseAddScreenState(),
-        height = 400.dp,
         {},
         {},
         {},
         {},
         {},
-        {})
+        {},
+        {}
+    )
 }
 
 @Composable
@@ -244,32 +261,39 @@ fun FloatingButtonGroup(
 fun CourseAddBottomSheet(
     modifier: Modifier = Modifier,
     state: CourseAddScreenState,
-    height: Dp,
     onRouteDetailItemClick: (RouteDetailItemState) -> Unit,
     onRouteCreateClick: () -> Unit,
     onCommendClick: () -> Unit,
     onBackClick: () -> Unit,
     onDragClick: () -> Unit,
     onNameEditValueChange: (String) -> Unit,
+    onHeightChange: (Dp)-> Unit,
 ) {
     val context = LocalContext.current
     val scrollState = rememberScrollState()
+    var latestDp by remember { mutableStateOf(400.dp) }
+    val height = if(state.isBottomSheetDown) 60.dp else 400.dp
+    val heightAni by animateDpAsState(targetValue = height, animationSpec = tween(300))
+    if(latestDp!=height){
+        onHeightChange(height)
+        latestDp = height
+    }
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
             .widthIn(context.getAddPopUpWidthDp())
-            .height(height)
+            .height(heightAni)
             .consumptionEvent()
             .verticalScroll(scrollState)
             .background(colorResource(R.color.white))
 
     ) {
-        val contentHeight = min(height.value.toInt(), 340).dp
+        val contentHeight = min(heightAni.value.toInt(), 340).dp
         Column {
             Box(modifier = Modifier.height(contentHeight)) {
                 DragHandle(Modifier.clickable { onDragClick() })
                 SlideAnimation(
-                    visible = !state.isDetailContent,
+                    visible = !state.isTwoStep,
                     direction = AnimationDirection.CenterUp
                 ) {
                     RouteWaypointContent(
@@ -285,7 +309,7 @@ fun CourseAddBottomSheet(
                 }
 
                 SlideAnimation(
-                    visible = state.isDetailContent,
+                    visible = state.isTwoStep,
                     direction = AnimationDirection.CenterDown
                 ) {
                     RouteDetailContent(
@@ -300,8 +324,8 @@ fun CourseAddBottomSheet(
             }
             CommendButton(
                 modifier = Modifier.height(60.dp),
-                isDetailContent = state.isDetailContent,
-                isDone = state.isCommendActive,
+                isDetailContent = state.isTwoStep,
+                isDone = state.isNextStepButtonActive,
                 isLoading = state.isBottomSheetDown,
                 onCommendClick = onCommendClick
             )
@@ -552,27 +576,6 @@ fun RouteWaypointContent(
     }
 }
 
-@Composable
-fun Context.getMapPadding(): ContentPadding {
-
-
-    val width = resources.displayMetrics.run {
-        widthPixels / density
-    }
-    val height = resources.displayMetrics.run {
-        heightPixels / density
-    }
-
-    val end = if (width >= 600) getAddPopUpWidthDp() else 0.dp
-    val bottom = if (height >= 600) getAddPopUpHeightDp() else 0.dp
-
-
-    return ContentPadding(
-        end = end,
-        bottom = bottom
-    )
-}
-
 fun Context.getAddPopUpWidthDp(): Dp {
     val width = resources.displayMetrics.run {
         widthPixels / density
@@ -581,20 +584,6 @@ fun Context.getAddPopUpWidthDp(): Dp {
 
     val newWidth = if (width >= 600) {
         min(350f, width / 2)
-    } else {
-        400f
-    }
-    return newWidth.dp
-}
-
-fun Context.getAddPopUpHeightDp(): Dp {
-
-    val height = resources.displayMetrics.run {
-        heightPixels / density
-    }
-
-    val newWidth = if (height >= 600) {
-        350f
     } else {
         400f
     }

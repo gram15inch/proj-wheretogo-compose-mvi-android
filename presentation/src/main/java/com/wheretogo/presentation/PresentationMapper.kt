@@ -1,34 +1,27 @@
 package com.wheretogo.presentation
 
 
-import com.naver.maps.map.overlay.Marker
 import com.wheretogo.domain.AuthCompany
 import com.wheretogo.domain.CourseDetail
-import com.wheretogo.domain.OverlayType
-
 import com.wheretogo.domain.RouteDetailType
 import com.wheretogo.domain.model.map.Comment
 import com.wheretogo.domain.model.map.LatLng
-import com.wheretogo.domain.model.map.RouteWaypointItem
-import com.wheretogo.presentation.model.OverlayTag
 import com.wheretogo.presentation.state.CommentState.CommentAddState
-import com.wheretogo.presentation.state.CourseAddScreenState.RouteWaypointItemState
 import com.kakao.vectormap.LatLng as KakaoLatLng
 import com.naver.maps.geometry.LatLng as NaverLatLng
 
-fun LatLng.toMarker():Marker{
-    return Marker().apply {
-        tag = "${latitude}${longitude}"
-        position = toNaver()
-    }
-}
 
 fun List<LatLng>.toNaver(): List<NaverLatLng> {
     return this.map { NaverLatLng(it.latitude, it.longitude) }
 }
 
+@Suppress("unused")
 fun List<LatLng>.toKakao(): List<KakaoLatLng> {
     return this.map { KakaoLatLng.from(it.latitude, it.longitude) }
+}
+
+fun List<NaverLatLng>.toDomain():List<LatLng>{
+    return map{it.toDomainLatLng()}
 }
 
 fun NaverLatLng.toDomainLatLng(): LatLng {
@@ -47,16 +40,6 @@ fun CommentAddState.toComment(): Comment {
         detailedReview = if (CommentType.DETAIL == commentType) editText.text else this.detailReview,
         date = System.currentTimeMillis()
     )
-}
-
-fun RouteWaypointItem.toRouteWaypointItemState(): RouteWaypointItemState {
-    return RouteWaypointItemState(
-        data = this
-    )
-}
-
-fun RouteWaypointItemState.toRouteWaypointItem(): RouteWaypointItem {
-    return this.data
 }
 
 fun RouteDetailType.toStrRes(): Int {
@@ -119,23 +102,5 @@ fun parseLogoImgRes(company: String): Int {
         else->{
             R.drawable.lg_app
         }
-    }
-}
-
-fun OverlayTag.toStringTag() = "${this.overlayId}/${this.parentId}/${this.overlayType}/${this.iconType}/${this.latlng.latitude}:${this.latlng.longitude}"
-
-fun OverlayTag.Companion.parse(stringTag: String): OverlayTag? {
-    return try {
-        val list = stringTag.split("/")
-        val latLng= list[4].split(":")
-        OverlayTag(
-            list[0],
-            list[1],
-            OverlayType.valueOf(list[2]),
-            MarkerIconType.valueOf(list[3]),
-            LatLng(latLng[0].toDouble(),latLng[1].toDouble())
-        )
-    } catch (e: Exception) {
-        null
     }
 }
