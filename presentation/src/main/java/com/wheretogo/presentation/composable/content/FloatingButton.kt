@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +33,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
@@ -147,16 +149,16 @@ fun FloatingButtons(
                         icon = R.drawable.ic_share,
                         isBackPlate = isExportBackPlate && isExportVisible,
                         buttonEndPadding = buttonEndPadding,
-                        onNaverClick = {
-                            context.callMap(ExportMap.NAVER, course)
+                        onNaverClick = { isLongClick->
+                            context.callMap(ExportMap.NAVER, course, isLongClick)
                             onExportMapClick()
                         },
-                        onKaKaoClick = {
-                            context.callMap(ExportMap.KAKAO, course)
+                        onKaKaoClick = { isLongClick->
+                            context.callMap(ExportMap.KAKAO, course, isLongClick)
                             onExportMapClick()
                         },
-                        onTClick = {
-                            context.callMap(ExportMap.SKT, course)
+                        onTClick = { isLongClick->
+                            context.callMap(ExportMap.SKT, course, isLongClick)
                             onExportMapClick()
                         },
                     ) {
@@ -216,9 +218,9 @@ fun CirclePlateButton(
     icon: Int,
     isBackPlate: Boolean,
     buttonEndPadding: Dp,
-    onNaverClick: () -> Unit,
-    onTClick: () -> Unit,
-    onKaKaoClick: () -> Unit,
+    onNaverClick: (Boolean) -> Unit,
+    onTClick: (Boolean) -> Unit,
+    onKaKaoClick: (Boolean) -> Unit,
     onExportClick: () -> Unit,
 ) {
     var targetOffset by remember { mutableStateOf(0.dp) }
@@ -271,7 +273,7 @@ fun CirclePlateButton(
                     icon = R.drawable.lg_kakao,
                     caption = "카카오맵"
                 ) {
-                    onKaKaoClick()
+                    onKaKaoClick(it)
                 }
 
                 SquareButton(
@@ -279,7 +281,7 @@ fun CirclePlateButton(
                     icon = R.drawable.lg_naver,
                     caption = "네이버맵"
                 ) {
-                    onNaverClick()
+                    onNaverClick(it)
                 }
 
                 SquareButton(
@@ -287,7 +289,7 @@ fun CirclePlateButton(
                     icon = R.drawable.lg_tmap,
                     caption = "티맵"
                 ) {
-                    onTClick()
+                    onTClick(it)
                 }
 
             }
@@ -313,19 +315,26 @@ fun SquareButton(
     modifier: Modifier = Modifier,
     @DrawableRes icon: Int,
     caption: String,
-    color: Color = Color.White,
-    onClick: () -> Unit
+    onClick: (Boolean) -> Unit
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(1.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Button(
-            onClick = onClick,
-            modifier = modifier.shadow(elevation = 5.dp, shape = RoundedCornerShape(16.dp)),
-            shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(contentColor = color),
-            contentPadding = PaddingValues(0.dp)
+        Box(
+            modifier = modifier
+                .shadow(elevation = 5.dp, shape = RoundedCornerShape(16.dp))
+                .clip(RoundedCornerShape(16.dp))
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onTap = {
+                            onClick(false)
+                        },
+                        onLongPress = {
+                            onClick(true)
+                        }
+                    )
+                },
         ) {
             Image(
                 painter = painterResource(id = icon),
