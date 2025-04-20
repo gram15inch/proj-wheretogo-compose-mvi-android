@@ -5,27 +5,31 @@ import android.accounts.OnAccountsUpdateListener
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
+import android.location.Location
 import android.util.Log
 import androidx.browser.customtabs.CustomTabsIntent
+import androidx.core.net.toUri
 import com.skt.Tmap.TMapTapi
 import com.wheretogo.domain.model.map.Course
+import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.presentation.BuildConfig
 import com.wheretogo.presentation.ExportMap
+import com.wheretogo.presentation.feature.naver.getCurrentLocation
+import com.wheretogo.presentation.model.CallRoute
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
-fun getNaverMapUrl(course: Course): String {
-    val start = course.waypoints.first()
-    val goal = course.waypoints.last()
-    val waypoint = course.waypoints.drop(1).dropLast(1)
+fun getNaverMapUrl(course: Course, myLatlng:LatLng?=null): String {
+    val callRoute = course.createCallRoute(myLatlng)
+    val startName = if(callRoute.isMyLocaltionStart) "내위치" else "출발지"
+    val goalName = course.courseName.ifEmpty { "목적지" }
     val url =
-        "nmap://route/car?slat=${start.latitude}&slng=${start.longitude}&sname=start" +
-                "&dlat=${goal.latitude}&dlng=${goal.longitude}&dname=end" +
-                waypoint.run {
+        "nmap://route/car?slat=${callRoute.start.latitude}&slng=${callRoute.start.longitude}&sname=$startName" +
+                "&dlat=${callRoute.goal.latitude}&dlng=${callRoute.goal.longitude}&dname=$goalName" +
+                callRoute.mid.run {
                     var str = ""
                     this.forEachIndexed { idx, latlng ->
                         str += "&v${idx + 1}lat=${latlng.latitude}&v${idx + 1}lng=${latlng.longitude}&v${idx + 1}name=v${idx + 1}"
@@ -36,28 +40,29 @@ fun getNaverMapUrl(course: Course): String {
     return url
 }
 
-fun Context.callMap(map: ExportMap, course: Course) {
+fun Context.callMap(map: ExportMap, course: Course, startMyLocation:Boolean = false) {
     CoroutineScope(Dispatchers.Main).launch {
+        val myLatlng = if (startMyLocation) null else getCurrentLocation()?.toLatLng()
         when(map){
             ExportMap.NAVER, ExportMap.KAKAO ->{
                 val isNaver = map == ExportMap.NAVER
-               openMap(isNaver, course)
+               openMap(isNaver, course, myLatlng)
             }
             ExportMap.SKT->{
                 val tMap = TMapTapi(this@callMap)
-                if(tMap.init()) tMap.openMap(this@callMap,course)
+                if(tMap.init()) tMap.openMap(this@callMap,course, myLatlng)
             }
         }
     }
 }
 
-private fun getKakaoMapUrl(course: Course): String {
-    val start = course.waypoints.first()
-    val goal = course.waypoints.last()
+private fun getKakaoMapUrl(course: Course, myLatlng:LatLng?=null): String {
+    val callRoute = course.createCallRoute(myLatlng)
+    //카카오는 경유지 호출을 지원하지 않음
     val url = if (course.waypoints.size > 2)
-        "kakaomap://route?&ep=${goal.latitude},${goal.longitude}&by=CAR"
+        "kakaomap://route?&ep=${callRoute.goal.latitude},${callRoute.goal.longitude}&by=CAR"
     else
-        "kakaomap://route?sp=${start.latitude},${start.longitude}&ep=${goal.latitude},${goal.longitude}&by=CAR"
+        "kakaomap://route?sp=${callRoute.start.latitude},${callRoute.start.longitude}&ep=${callRoute.goal.latitude},${callRoute.goal.longitude}&by=CAR"
 
     return url
 }
@@ -87,28 +92,29 @@ private suspend fun TMapTapi.init(): Boolean {
 
 }
 
-private fun TMapTapi.openMap(context: Context, course: Course) {
+private fun TMapTapi.openMap(context: Context, course: Course, myLatlng:LatLng?=null) {
+    val callRoute = course.createCallRoute(myLatlng)
 
-    val start = course.waypoints.first()
-    val goal = course.waypoints.last()
-    val mid = course.waypoints.drop(1).dropLast(1)
-    val routeMap = HashMap<String, String>()
-    start.apply {
-        routeMap["rStName"] = "출발지"
-        routeMap["rStX"] = longitude.toString()
-        routeMap["rStY"] = latitude.toString()
-    }
+    val routeMap = callRoute.run {
+        val routeMap = HashMap<String, String>()
+        start.apply {
+            routeMap["rStName"] = if(callRoute.isMyLocaltionStart) "내위치" else "출발지"
+            routeMap["rStX"] = longitude.toString()
+            routeMap["rStY"] = latitude.toString()
+        }
 
-    goal.apply {
-        routeMap["rGoName"] = "목적지"
-        routeMap["rGoX"] = longitude.toString()
-        routeMap["rGoY"] = latitude.toString()
-    }
+        goal.apply {
+            routeMap["rGoName"] = course.courseName.ifEmpty { "목적지" }
+            routeMap["rGoX"] = longitude.toString()
+            routeMap["rGoY"] = latitude.toString()
+        }
 
-    mid.forEachIndexed { idx, latlng ->
-        routeMap["rV${idx + 1}Name"] = "경유지 ${idx + 1}"
-        routeMap["rV${idx + 1}X"] = latlng.longitude.toString()
-        routeMap["rV${idx + 1}Y"] = latlng.latitude.toString()
+        mid.forEachIndexed { idx, latlng ->
+            routeMap["rV${idx + 1}Name"] = "경로 ${idx + 1}"
+            routeMap["rV${idx + 1}X"] = latlng.longitude.toString()
+            routeMap["rV${idx + 1}Y"] = latlng.latitude.toString()
+        }
+        routeMap
     }
 
     if (!invokeRoute(routeMap).apply {
@@ -118,10 +124,10 @@ private fun TMapTapi.openMap(context: Context, course: Course) {
     }
 }
 
-private fun Context.openMap(isNaver:Boolean, course: Course){
+private fun Context.openMap(isNaver:Boolean, course: Course, myLatlng:LatLng?=null){
     try {
-        val url = if (isNaver) getNaverMapUrl(course) else getKakaoMapUrl(course)
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        val url = if (isNaver) getNaverMapUrl(course, myLatlng) else getKakaoMapUrl(course, myLatlng)
+        val intent = Intent(Intent.ACTION_VIEW, url.toUri())
         startActivity(intent)
     } catch (e: Exception) {
         val pkgName = if (isNaver) "com.nhn.android.nmap" else "net.daum.android.map"
@@ -131,13 +137,13 @@ private fun Context.openMap(isNaver:Boolean, course: Course){
 
 private fun Context.openPlayStore(packageName: String) {
     try {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$packageName"))
+        val intent = Intent(Intent.ACTION_VIEW, "market://details?id=$packageName".toUri())
         intent.setPackage("com.android.vending")
         startActivity(intent)
     } catch (e: ActivityNotFoundException) {
         val webIntent = Intent(
             Intent.ACTION_VIEW,
-            Uri.parse("https://play.google.com/store/apps/details?id=$packageName")
+            "https://play.google.com/store/apps/details?id=$packageName".toUri()
         )
         startActivity(webIntent)
     }
@@ -145,7 +151,7 @@ private fun Context.openPlayStore(packageName: String) {
 
 fun openWeb(context: Context, url: String) {
     val customTabsIntent = CustomTabsIntent.Builder().build()
-    customTabsIntent.launchUrl(context, Uri.parse(url))
+    customTabsIntent.launchUrl(context, url.toUri())
 }
 
 
@@ -154,4 +160,25 @@ fun openActivity(context:Context, activity: String){
         val intent = Intent(context, Class.forName(activity))
         context.startActivity(intent)
     }
+}
+
+fun Location.toLatLng():LatLng{
+    return LatLng(latitude,longitude)
+}
+
+fun Course.createCallRoute(myLatlng:LatLng?):CallRoute{
+    val isMyLocationStart = myLatlng != null
+    val callRoute = if (isMyLocationStart) {
+        val start = myLatlng!!
+        val goal = waypoints.last()
+        val mid = waypoints.dropLast(1)
+        CallRoute(start, mid, goal,true)
+    } else {
+        val start = waypoints.first()
+        val goal = waypoints.last()
+        val mid = waypoints.drop(1).dropLast(1)
+
+        CallRoute(start, mid, goal, false)
+    }
+    return callRoute
 }
