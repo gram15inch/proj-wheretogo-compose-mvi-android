@@ -28,7 +28,7 @@ android {
         applicationId = "com.dhkim139.wheretogo"
         minSdk = 24
         targetSdk = 34
-        versionCode = 13
+        versionCode = 14
         versionName = "1.2.0"
 
         testInstrumentationRunner = "com.dhkim139.wheretogo.TestRunner"
