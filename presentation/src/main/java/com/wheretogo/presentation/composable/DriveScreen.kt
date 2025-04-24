@@ -43,7 +43,7 @@ import com.wheretogo.presentation.composable.content.AnimationDirection
 import com.wheretogo.presentation.composable.content.CheckPointAddContent
 import com.wheretogo.presentation.composable.content.DelayLottieAnimation
 import com.wheretogo.presentation.composable.content.DescriptionTextField
-import com.wheretogo.presentation.composable.content.DriveBottomSheet
+import com.wheretogo.presentation.composable.content.BottomSheet
 import com.wheretogo.presentation.composable.content.DriveListContent
 import com.wheretogo.presentation.composable.content.FadeAnimation
 import com.wheretogo.presentation.composable.content.FloatingButtons
@@ -219,17 +219,17 @@ fun DriveScreen(
                 )
             }
 
-            DriveBottomSheet(
+            BottomSheet(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .zIndex(997f),
                 isVisible = state.bottomSheetState.isVisible,
-                onHeightChange = {dp->
+                onHeightChange = { dp->
                     bottomSheetHeight = dp
                     viewModel.handleIntent(DriveScreenIntent.ContentPaddingChanged(dp.value.toInt()))
                 },
-                onBottomSheetClose = {
-                    viewModel.handleIntent(DriveScreenIntent.BottomSheetClose)
+                onStateChange = {
+                    viewModel.handleIntent(DriveScreenIntent.BottomSheetChange(it))
                 }
             ) {
                 when (state.bottomSheetState.content) {
@@ -240,11 +240,7 @@ fun DriveScreen(
                                 viewModel.handleIntent(DriveScreenIntent.CheckpointSubmitClick)
                             },
                             onSliderChange = {
-                                viewModel.handleIntent(
-                                    DriveScreenIntent.CheckpointLocationSliderChange(
-                                        it
-                                    )
-                                )
+                                viewModel.handleIntent(DriveScreenIntent.CheckpointLocationSliderChange(it))
                             },
                             onImageChange = {
                                 viewModel.handleIntent(DriveScreenIntent.CheckpointImageChange(it))

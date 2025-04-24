@@ -96,7 +96,8 @@ class CourseAddMapOverlayService @Inject constructor(private val overlayStore: N
             overlayStore.getOrCreatePath(
                 PathInfo(
                     contentId = id,
-                    points = result
+                    points = result,
+                    minZoomLevel = 0.0,
                 )
             )?.let {
                 val pathContainer = MapOverlay.PathContainer(id, pathType, it)

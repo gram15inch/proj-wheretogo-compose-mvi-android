@@ -9,26 +9,33 @@ import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.dummy.getRouteDetailItemGroup
 
 data class CourseAddScreenState(
-    val courseName: String = "",
     val searchBarState: SearchBarState = SearchBarState(),
     val overlayGroup : Collection<MapOverlay> = emptyList(),
     val selectedMarkerItem: MapOverlay.MarkerContainer? = null,
-    val detailItemStateGroup: List<RouteDetailItemState> = getRouteDetailItemGroup()
-        .map { RouteDetailItemState(data = it) },
-    val routeState: RouteState = RouteState(),
     val cameraState: CameraState = CameraState(),
+    val bottomSheetState: BottomSheetState = BottomSheetState(),
     val isFloatMarker: Boolean = false,
     val isFloatingButton: Boolean = false,
-    val isNextStepButtonActive: Boolean = false,
-    val isOneStepDone: Boolean = false,
-    val isTwoStep: Boolean = false,
-    val isTwoStepDone: Boolean = false,
-    val isBottomSheetDown: Boolean = false,
-    val isLoading: Boolean = false,
     val padding: ContentPadding = ContentPadding(bottom = 350.dp),
     val error: String = "",
     val timeStamp : Long =0L
 ) {
+    data class BottomSheetState(
+        val courseAddState :CourseAddState = CourseAddState(),
+        val isBottomSheetDown: Boolean = false,
+    )
+
+    data class CourseAddState(
+        val courseName: String = "",
+        val routeState: RouteState = RouteState(),
+        val detailItemStateGroup: List<RouteDetailItemState> = getRouteDetailItemGroup()
+            .map { RouteDetailItemState(data = it) },
+        val isNextStepButtonActive: Boolean = false,
+        val isOneStepDone: Boolean = false,
+        val isTwoStep: Boolean = false,
+        val isTwoStepDone: Boolean = false,
+        val isLoading: Boolean = false,
+    )
 
     data class RouteState(
         val duration: Int = 0,

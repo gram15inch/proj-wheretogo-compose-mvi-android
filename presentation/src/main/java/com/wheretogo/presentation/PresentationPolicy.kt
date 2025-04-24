@@ -61,6 +61,10 @@ enum class PathType{
     PARTIAL, FULL
 }
 
+enum class SheetState{
+    PartiallyExpand, PartiallyExpanded, Expand, Expanded
+}
+
 
 enum class CourseMarkerIcon(@DrawableRes val res: Int) {
     DEFAULT(R.drawable.ic_mk_df),
