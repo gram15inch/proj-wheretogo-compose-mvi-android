@@ -11,6 +11,7 @@ import com.wheretogo.domain.usecase.map.AddCourseUseCase
 import com.wheretogo.domain.usecase.map.CreateRouteUseCase
 import com.wheretogo.domain.usecase.map.GetLatLngFromAddressUseCase
 import com.wheretogo.domain.usecase.map.SearchAddressUseCase
+import com.wheretogo.presentation.CLEAR_ADDRESS
 import com.wheretogo.presentation.COURSE_NAME_MAX_LENGTH
 import com.wheretogo.presentation.CameraUpdateSource
 import com.wheretogo.presentation.PathType
@@ -50,7 +51,7 @@ class CourseAddViewModel @Inject constructor(
 
                 //서치바
                 is CourseAddIntent.AddressItemClick -> addressItemClick(intent.simpleAddress)
-                is CourseAddIntent.SearchToggleClick -> searchToggleClick(intent.isBar)
+                is CourseAddIntent.SearchToggleClick -> searchToggleClick(intent.isExpend)
                 is CourseAddIntent.SubmitClick -> submitClick(intent.submit)
 
                 //지도
@@ -76,81 +77,91 @@ class CourseAddViewModel @Inject constructor(
     }
 
     //서치바
-    private suspend fun addressItemClick(simpleAddress: SimpleAddress) {
-        _courseAddScreenState.value =
-            _courseAddScreenState.value.run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
-        val latlngResponse =
-            withContext(Dispatchers.IO) { getLatLngFromAddressUseCase(simpleAddress.address) }
-        _courseAddScreenState.value = _courseAddScreenState.value.run {
+    private suspend fun addressItemClick(item: SimpleAddress) {
+        if(item.title != CLEAR_ADDRESS){
+            _courseAddScreenState.value =
+                _courseAddScreenState.value.run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
+            val latlngResponse =
+                withContext(Dispatchers.IO) { getLatLngFromAddressUseCase(item.address) }
+            _courseAddScreenState.value = _courseAddScreenState.value.run {
 
-            when (latlngResponse.status) {
-                UseCaseResponse.Status.Success -> {
-                    val newLatLng = latlngResponse.data!!
-                    copy(
-                        searchBarState = searchBarState.copy(isLoading = false),
-                        cameraState = cameraState.copy(
-                            latLng = newLatLng,
-                            updateSource = CameraUpdateSource.APP_EASING
+                when (latlngResponse.status) {
+                    UseCaseResponse.Status.Success -> {
+                        val newLatLng = latlngResponse.data!!
+                        copy(
+                            searchBarState = searchBarState.copy(isLoading = false),
+                            cameraState = cameraState.copy(
+                                latLng = newLatLng,
+                                updateSource = CameraUpdateSource.APP_EASING
+                            )
+
                         )
+                    }
 
-                    )
+                    UseCaseResponse.Status.Fail -> {
+                        copy(
+                            searchBarState = searchBarState.copy(isLoading = false)
+                        )
+                    }
                 }
 
-                UseCaseResponse.Status.Fail -> {
-                    copy(
-                        searchBarState = searchBarState.copy(isLoading = false)
-                    )
-                }
             }
-
+        } else {
+            _courseAddScreenState.value = _courseAddScreenState.value.searchBarInit()
         }
-
     }
 
-    private fun searchToggleClick(isBar: Boolean) {
-
+    private fun searchToggleClick(isExpend: Boolean) {
         _courseAddScreenState.value = _courseAddScreenState.value.run {
-            if (!isBar) {
-                copy(
-                    searchBarState = searchBarState.copy(
-                        isLoading = false,
-                        simpleAddressGroup = emptyList()
-                    )
-                )
+            if (!isExpend) {
+                searchBarInit()
             } else {
-                copy()
+                this
             }
         }
 
     }
 
-    private suspend fun submitClick(submit: String) {
-        _courseAddScreenState.value =
-            _courseAddScreenState.value.run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
-        val addressResponse = withContext(Dispatchers.IO) { searchAddressUseCase(submit) }
-        _courseAddScreenState.value = _courseAddScreenState.value.run {
-            when (addressResponse.status) {
-                UseCaseResponse.Status.Success -> {
-                    copy(
-                        searchBarState = searchBarState.copy(
-                            isLoading = false,
-                            isEmptyVisible = addressResponse.data?.isEmpty() ?: false,
-                            simpleAddressGroup = addressResponse.data ?: emptyList()
+    private fun CourseAddScreenState.searchBarInit():CourseAddScreenState{
+        return copy(
+            searchBarState = searchBarState.copy(
+                isLoading = false,
+                isEmptyVisible = false,
+                simpleAddressGroup = emptyList()
+            )
+        )
+    }
+
+    private suspend fun submitClick(address: String) {
+        if(address.trim().isNotBlank()){
+            _courseAddScreenState.value =
+                _courseAddScreenState.value.run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
+            val addressResponse = withContext(Dispatchers.IO) { searchAddressUseCase(address) }
+            _courseAddScreenState.value = _courseAddScreenState.value.run {
+                when (addressResponse.status) {
+                    UseCaseResponse.Status.Success -> {
+                        copy(
+                            searchBarState = searchBarState.copy(
+                                isLoading = false,
+                                isEmptyVisible = addressResponse.data?.isEmpty() ?: false,
+                                simpleAddressGroup = addressResponse.data ?: emptyList()
+                            )
                         )
-                    )
+                    }
+
+                    UseCaseResponse.Status.Fail -> {
+                        copy(
+                            searchBarState = searchBarState.copy(
+                                isLoading = false
+                            )
+                        )
+                    }
                 }
 
-                UseCaseResponse.Status.Fail -> {
-                    copy(
-                        searchBarState = searchBarState.copy(
-                            isLoading = false
-                        )
-                    )
-                }
             }
-
+        } else {
+            _courseAddScreenState.value = _courseAddScreenState.value.searchBarInit()
         }
-
     }
 
 

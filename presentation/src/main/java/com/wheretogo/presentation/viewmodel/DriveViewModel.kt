@@ -43,6 +43,7 @@ import com.wheretogo.presentation.DRIVE_LIST_MIN_ZOOM
 import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.MarkerType
 import com.wheretogo.presentation.CHECKPOINT_ADD_MARKER
+import com.wheretogo.presentation.CLEAR_ADDRESS
 import com.wheretogo.presentation.CameraUpdateSource
 import com.wheretogo.presentation.SEARCH_MARKER
 import com.wheretogo.presentation.SheetState
@@ -103,7 +104,7 @@ class DriveViewModel @Inject constructor(
         }
     val driveScreenState: StateFlow<DriveScreenState> = _driveScreenState
     private var isMapUpdate = true
-    private var isDelay = true
+
     fun handleIntent(intent: DriveScreenIntent) {
         viewModelScope.launch {
             when (intent) {
@@ -156,47 +157,48 @@ class DriveViewModel @Inject constructor(
     }
 
     //서치바
-    private suspend fun addressItemClick(simpleAddress: SimpleAddress) {
-        _driveScreenState.value =
-            _driveScreenState.value.run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
-        val latlngResponse =
-            withContext(Dispatchers.IO) { getLatLngFromAddressUseCase(simpleAddress.address) }
+    private suspend fun addressItemClick(item: SimpleAddress) {
+        if(item.title != CLEAR_ADDRESS){
+            _driveScreenState.value =
+                _driveScreenState.value.run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
+            val latlngResponse =
+                withContext(Dispatchers.IO) { getLatLngFromAddressUseCase(item.address) }
 
-        _driveScreenState.value = _driveScreenState.value.run {
-            when (latlngResponse.status) {
-                UseCaseResponse.Status.Success -> {
-                    val newLatLng = latlngResponse.data!!
-                    mapOverlayService.removeCheckPoint(listOf(SEARCH_MARKER))
-                    mapOverlayService.addCheckPoint(listOf(CheckPoint(SEARCH_MARKER, latLng = newLatLng)))
-                    copy(
-                        searchBarState = searchBarState.copy(isLoading = false),
-                        mapState = mapState.copy(
-                            cameraState = mapState.cameraState.copy(
-                                latLng = newLatLng,
-                                updateSource = CameraUpdateSource.APP_EASING
+            _driveScreenState.value = _driveScreenState.value.run {
+                when (latlngResponse.status) {
+                    UseCaseResponse.Status.Success -> {
+                        val newLatLng = latlngResponse.data!!
+                        mapOverlayService.removeCheckPoint(listOf(SEARCH_MARKER))
+                        mapOverlayService.addCheckPoint(listOf(CheckPoint(SEARCH_MARKER, latLng = newLatLng)))
+                        copy(
+                            searchBarState = searchBarState.copy(isLoading = false),
+                            mapState = mapState.copy(
+                                cameraState = mapState.cameraState.copy(
+                                    latLng = newLatLng,
+                                    updateSource = CameraUpdateSource.APP_EASING
+                                )
                             )
                         )
-                    )
-                }
+                    }
 
-                UseCaseResponse.Status.Fail -> {
-                    copy(searchBarState = searchBarState.copy(isLoading = false))
+                    UseCaseResponse.Status.Fail -> {
+                        copy(searchBarState = searchBarState.copy(isLoading = false))
+                    }
                 }
             }
+        } else {
+            mapOverlayService.removeCheckPoint(listOf(SEARCH_MARKER))
+            _driveScreenState.value = _driveScreenState.value.searchBarInit()
         }
+
     }
 
-    private fun searchToggleClick(isBar: Boolean) {
+    private fun searchToggleClick(isExpend: Boolean) {
         _driveScreenState.value.apply {
             mapOverlayService.removeCheckPoint(listOf(SEARCH_MARKER))
             _driveScreenState.value =
-                if (!isBar) {
-                    copy(
-                        searchBarState = searchBarState.copy(
-                            isLoading = false,
-                            simpleAddressGroup = emptyList()
-                        )
-                    )
+                if (!isExpend) {
+                    searchBarInit()
                 } else {
                     this
                 }
@@ -204,31 +206,47 @@ class DriveViewModel @Inject constructor(
     }
 
     private suspend fun searchSubmit(address: String) {
-        _driveScreenState.value =
-            _driveScreenState.value.run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
-        val addressResponse = withContext(Dispatchers.IO) { searchAddressUseCase(address) }
-        _driveScreenState.value = _driveScreenState.value.run {
-            when (addressResponse.status) {
-                UseCaseResponse.Status.Success -> {
-                    copy(
-                        searchBarState = searchBarState.copy(
-                            isLoading = false,
-                            isEmptyVisible = addressResponse.data?.isEmpty() ?: false,
-                            simpleAddressGroup = addressResponse.data ?: emptyList()
+        if(address.trim().isNotBlank()){
+            _driveScreenState.value =
+                _driveScreenState.value.run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
+            val addressResponse = withContext(Dispatchers.IO) { searchAddressUseCase(address) }
+            _driveScreenState.value = _driveScreenState.value.run {
+                when (addressResponse.status) {
+                    UseCaseResponse.Status.Success -> {
+                        copy(
+                            searchBarState = searchBarState.copy(
+                                isLoading = false,
+                                isEmptyVisible = addressResponse.data?.isEmpty() ?: false,
+                                simpleAddressGroup = addressResponse.data ?: emptyList()
+                            )
                         )
-                    )
-                }
+                    }
 
-                UseCaseResponse.Status.Fail -> {
-                    copy(
-                        searchBarState = searchBarState.copy(
-                            isLoading = false
+                    UseCaseResponse.Status.Fail -> {
+                        copy(
+                            searchBarState = searchBarState.copy(
+                                isLoading = false
+                            )
                         )
-                    )
+                    }
                 }
             }
+        } else {
+            _driveScreenState.value = _driveScreenState.value.searchBarInit()
         }
+
     }
+
+    private fun DriveScreenState.searchBarInit(): DriveScreenState {
+        return copy(
+            searchBarState = searchBarState.copy(
+                isLoading = false,
+                isEmptyVisible = false,
+                simpleAddressGroup = emptyList()
+            )
+        )
+    }
+
 
 
     //지도
@@ -344,12 +362,8 @@ class DriveViewModel @Inject constructor(
 
 
 
-    private suspend fun moveCamera(latLng: LatLng, zoom:Double? = null){
+    private fun moveCamera(latLng: LatLng, zoom:Double? = null){
         if(latLng!=LatLng())
-            if(isDelay){
-                delay(400)
-                isDelay=false
-            }
             _driveScreenState.value = _driveScreenState.value.run {
                 val oldZoom = zoom ?: mapState.cameraState.zoom
                 val newZoom = when {

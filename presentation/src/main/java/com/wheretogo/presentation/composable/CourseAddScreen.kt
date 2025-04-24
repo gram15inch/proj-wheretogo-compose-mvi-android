@@ -45,6 +45,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -197,22 +198,10 @@ fun CourseAddScreen(
                 CourseAddContent(
                     state = state.bottomSheetState.courseAddState,
                     onRouteCreateClick = { viewModel.handleIntent(CourseAddIntent.RouteCreateClick) },
-                    onRouteDetailItemClick = {
-                        viewModel.handleIntent(
-                            CourseAddIntent.RouteDetailItemClick(
-                                it
-                            )
-                        )
-                    },
+                    onRouteDetailItemClick = { viewModel.handleIntent(CourseAddIntent.RouteDetailItemClick(it)) },
                     onCommendClick = { viewModel.handleIntent(CourseAddIntent.CommendClick) },
                     onBackClick = { viewModel.handleIntent(CourseAddIntent.DetailBackClick) },
-                    onNameEditValueChange = {
-                        viewModel.handleIntent(
-                            CourseAddIntent.NameEditValueChange(
-                                it
-                            )
-                        )
-                    },
+                    onNameEditValueChange = { viewModel.handleIntent(CourseAddIntent.NameEditValueChange(it)) },
                 )
 
             }
@@ -462,9 +451,12 @@ fun RouteWaypointContent(
     onNameEditValueChange: (String) -> Unit,
 ) {
     val imeBottom = WindowInsets.ime.getBottom(LocalDensity.current)
-    val imePadding = with(LocalDensity.current) {
+    val density= LocalDensity.current
+    var isFocus by remember { mutableStateOf(false) }
+    val imePadding = if(isFocus) with(density) {
         (max(imeBottom - 100, 0)*0.2f).toDp()
-    }
+    } else 0.dp
+
     Box(modifier = modifier.padding(bottom = imePadding)) {
         Column {
             Box(modifier = Modifier.fillMaxWidth()) {
@@ -501,8 +493,12 @@ fun RouteWaypointContent(
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     val textStyle = TextStyle(fontSize = 16.sp, fontFamily = interBoldFontFamily)
                     val focusManager = LocalFocusManager.current
+
                     BasicTextField(
                         modifier = Modifier
+                            .onFocusChanged {
+                                isFocus = it.isFocused
+                            }
                             .fillMaxWidth(),
                         value = routeName,
                         onValueChange = onNameEditValueChange,

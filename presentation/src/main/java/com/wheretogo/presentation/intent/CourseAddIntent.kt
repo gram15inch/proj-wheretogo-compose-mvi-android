@@ -11,7 +11,7 @@ sealed class CourseAddIntent {
 
     //서치바
     data class AddressItemClick(val simpleAddress: SimpleAddress) : CourseAddIntent()
-    data class SearchToggleClick(val isBar:Boolean) : CourseAddIntent()
+    data class SearchToggleClick(val isExpend:Boolean) : CourseAddIntent()
     data class SubmitClick(val submit:String) : CourseAddIntent()
 
     //지도

@@ -46,6 +46,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wheretogo.domain.model.map.SimpleAddress
+import com.wheretogo.presentation.CLEAR_ADDRESS
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 import kotlinx.coroutines.CoroutineScope
@@ -115,6 +116,8 @@ fun SearchBar(
                                 onSearchSubmit(editText)
                                 keyboardController?.hide()
                                 focusManager.clearFocus()
+                                if(editText.isBlank())
+                                    isInputMode = false
                             }
                         ),
                         readOnly = fieldWidth == 0.dp,
@@ -154,30 +157,53 @@ fun SearchBar(
                 }
             }
         }
-        if(isEmptyVisible)
-            AddressItem(simpleAddress = SimpleAddress(title = stringResource(R.string.no_search_data), address = ""))
-        else
-            LazyColumn(
-                horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                items(simpleAddressGroup, key = { Math.random() }) { item ->
-                    AddressItem(modifier = Modifier.clickable {
-                        onAddressItemClick(item)
-                    }, simpleAddress = item)
-                }
+        LazyColumn(
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            items(simpleAddressGroup, key = { Math.random() }) { item ->
+                AddressItem(
+                    simpleAddress = item,
+                    onAddressItemClick = {
+                        onAddressItemClick(it)
+                    }
+                )
             }
+
+            if(isEmptyVisible)
+                item{
+                    AddressItem(
+                        simpleAddress = SimpleAddress(
+                            title = stringResource(R.string.no_search_data),
+                            address = ""
+                        ),
+                        {}
+                    )
+                }
+            if(simpleAddressGroup.isNotEmpty() || isEmptyVisible)
+                item{
+                    ClearItem(onAddressItemClick = {
+                        editText=""
+                        isInputMode = false
+                        onAddressItemClick(it)
+                    })
+                }
+        }
+
     }
 }
 
 @Composable
-fun AddressItem(modifier: Modifier = Modifier, simpleAddress: SimpleAddress) {
+fun AddressItem(simpleAddress: SimpleAddress, onAddressItemClick: (SimpleAddress) -> Unit) {
     val textStyle = TextStyle(
         fontFamily = hancomSansFontFamily,
         color = colorResource(R.color.gray_474747)
     )
     Box(
-        modifier
+        Modifier
+            .clickable {
+                onAddressItemClick(simpleAddress)
+            }
             .shadow(
                 elevation = 1.5.dp,
                 shape = RoundedCornerShape(16.dp),
@@ -188,6 +214,31 @@ fun AddressItem(modifier: Modifier = Modifier, simpleAddress: SimpleAddress) {
     ) {
         Text(
             modifier = Modifier.padding(8.dp), text = simpleAddress.title, style = textStyle
+        )
+    }
+}
+
+@Composable
+fun ClearItem(onAddressItemClick: (SimpleAddress) -> Unit){
+    Box(
+        Modifier
+            .clip(RoundedCornerShape(12.dp))
+            .shadow(
+                elevation = 1.5.dp,
+                shape = RoundedCornerShape(16.dp),
+                clip = false
+            )
+            .clickable {
+                onAddressItemClick(SimpleAddress(CLEAR_ADDRESS, ""))
+            }
+            .background(colorResource(R.color.gray_B9B9B9))
+    ) {
+        Image(
+            modifier = Modifier
+                .size(34.dp)
+                .padding(8.dp),
+            painter = painterResource(id = R.drawable.ic_close),
+            contentDescription = "delete"
         )
     }
 }
