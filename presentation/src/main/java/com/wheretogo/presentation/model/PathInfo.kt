@@ -4,5 +4,6 @@ import com.wheretogo.domain.model.map.LatLng
 
 data class PathInfo (
     val contentId :String,
-    val points : List<LatLng>
+    val points : List<LatLng>,
+    val minZoomLevel :Double
 )

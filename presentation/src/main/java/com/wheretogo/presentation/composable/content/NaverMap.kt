@@ -98,16 +98,27 @@ fun NaverMap(
 
         if(!isMoving && cameraState.updateSource != CameraUpdateSource.USER) {
             isMoving = true
+            naverMap.setGesture(false)
             naverMap.cameraMove(cameraState){
                 isMoving = false
+                naverMap.setGesture(true)
             }
+
         }
+
     }
     mapView?.apply {
         AndroidView(modifier = modifier, factory = { this })
     }
 }
 
+private fun NaverMap.setGesture(isEnable:Boolean){
+    uiSettings.isStopGesturesEnabled = isEnable
+    uiSettings.isScrollGesturesEnabled = isEnable
+    uiSettings.isZoomGesturesEnabled = isEnable
+    uiSettings.isTiltGesturesEnabled = isEnable
+    uiSettings.isRotateGesturesEnabled = isEnable
+}
 
 private fun NaverMap.setUiSetting(context: Context) {
     val naverMap = this
@@ -182,6 +193,7 @@ private fun NaverMap.cameraMove(cameraState: CameraState, moved:()->Unit) {
                     CameraUpdate.scrollAndZoomTo(latLng.toNaver(), zoom)
                         .animate(CameraAnimation.Easing)
                         .finishCallback { moved() }
+                        .cancelCallback { moved() }
                 )
             }
             CameraUpdateSource.APP_LINEAR -> {
@@ -189,6 +201,7 @@ private fun NaverMap.cameraMove(cameraState: CameraState, moved:()->Unit) {
                     CameraUpdate.scrollAndZoomTo(latLng.toNaver(), zoom)
                         .animate(CameraAnimation.Linear)
                         .finishCallback { moved() }
+                        .cancelCallback { moved() }
                 )
             }
 

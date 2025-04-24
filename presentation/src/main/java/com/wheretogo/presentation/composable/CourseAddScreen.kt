@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -24,17 +26,14 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -46,8 +45,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -59,16 +60,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.wheretogo.domain.RouteDetailType
 import com.wheretogo.presentation.BuildConfig
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.content.AnimationDirection
+import com.wheretogo.presentation.composable.content.BottomSheet
 import com.wheretogo.presentation.composable.content.DelayLottieAnimation
-import com.wheretogo.presentation.composable.content.DragHandle
 import com.wheretogo.presentation.composable.content.FadeAnimation
 import com.wheretogo.presentation.composable.content.NaverMap
 import com.wheretogo.presentation.composable.content.SearchBar
 import com.wheretogo.presentation.composable.content.SlideAnimation
-import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.feature.naver.setCurrentLocation
 import com.wheretogo.presentation.intent.CourseAddIntent
 import com.wheretogo.presentation.model.ContentPadding
@@ -79,6 +80,7 @@ import com.wheretogo.presentation.theme.interFontFamily
 import com.wheretogo.presentation.toStrRes
 import com.wheretogo.presentation.viewmodel.CourseAddViewModel
 import kotlinx.coroutines.launch
+import kotlin.math.max
 import kotlin.math.min
 
 @Composable
@@ -88,7 +90,7 @@ fun CourseAddScreen(
     val state by viewModel.courseAddScreenState.collectAsState()
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    var bottomSheetHeight by remember { mutableStateOf(400.dp) }
+    var bottomSheetHeight by remember { mutableStateOf(0.dp) }
     val mapBottomPadding by animateDpAsState(
         targetValue = bottomSheetHeight,
         animationSpec = tween(durationMillis = 300)
@@ -158,9 +160,7 @@ fun CourseAddScreen(
             onCameraUpdate = { viewModel.handleIntent(CourseAddIntent.CameraUpdated(it)) },
             onMapClickListener = { viewModel.handleIntent(CourseAddIntent.MapClick(it)) },
             onCheckPointMarkerClick = { viewModel.handleIntent(CourseAddIntent.WaypointMarkerClick(it)) },
-            contentPadding = ContentPadding(
-                bottom = mapBottomPadding
-            )
+            contentPadding = ContentPadding(bottom = mapBottomPadding)
         )
     }
     Box(
@@ -169,12 +169,12 @@ fun CourseAddScreen(
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
-        Column(
-            modifier = Modifier.align(Alignment.BottomEnd),
-            horizontalAlignment = Alignment.End
-        ) {
+        Box {
             if (state.isFloatingButton) {
                 FloatingButtonGroup(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(bottom = mapBottomPadding),
                     onMarkerMoveClick = {
                         viewModel.handleIntent(CourseAddIntent.MarkerMoveFloatingClick)
                     },
@@ -183,25 +183,28 @@ fun CourseAddScreen(
                     }
                 )
             }
-            CourseAddBottomSheet(
-                state = state,
-                onRouteCreateClick = { viewModel.handleIntent(CourseAddIntent.RouteCreateClick) },
-                onRouteDetailItemClick = {
-                    viewModel.handleIntent(
-                        CourseAddIntent.RouteDetailItemClick(
-                            it
-                        )
-                    )
-                },
-                onCommendClick = { viewModel.handleIntent(CourseAddIntent.CommendClick) },
-                onBackClick = { viewModel.handleIntent(CourseAddIntent.DetailBackClick) },
-                onDragClick = { viewModel.handleIntent(CourseAddIntent.DragClick) },
-                onNameEditValueChange = { viewModel.handleIntent(CourseAddIntent.NameEditValueChange(it)) },
-                onHeightChange = {dp->
+            BottomSheet(
+                modifier = Modifier,
+                initHeight = 80,
+                isVisible = !state.bottomSheetState.isBottomSheetDown,
+                onHeightChange = { dp ->
                     bottomSheetHeight = dp
                     viewModel.handleIntent(CourseAddIntent.ContentPaddingChanged(dp.value.toInt()))
                 },
-            )
+                onStateChange = {
+                    viewModel.handleIntent(CourseAddIntent.SheetStateChange(it))
+                }
+            ) {
+                CourseAddContent(
+                    state = state.bottomSheetState.courseAddState,
+                    onRouteCreateClick = { viewModel.handleIntent(CourseAddIntent.RouteCreateClick) },
+                    onRouteDetailItemClick = { viewModel.handleIntent(CourseAddIntent.RouteDetailItemClick(it)) },
+                    onCommendClick = { viewModel.handleIntent(CourseAddIntent.CommendClick) },
+                    onBackClick = { viewModel.handleIntent(CourseAddIntent.DetailBackClick) },
+                    onNameEditValueChange = { viewModel.handleIntent(CourseAddIntent.NameEditValueChange(it)) },
+                )
+
+            }
         }
     }
 }
@@ -210,134 +213,113 @@ fun CourseAddScreen(
 @Preview
 @Composable
 fun CourseAddScreenPreview() {
-    CourseAddBottomSheet(
+    BottomSheet(
         modifier = Modifier,
-        CourseAddScreenState(),
-        {},
-        {},
-        {},
-        {},
-        {},
+        400,
+        true,
         {},
         {}
-    )
+    ) {
+        CourseAddContent(
+            CourseAddScreenState.CourseAddState(),
+            {},
+            {},
+            {},
+            {},
+            {}
+        )
+    }
 }
 
 @Composable
 fun FloatingButtonGroup(
+    modifier: Modifier,
     onMarkerMoveClick: () -> Unit,
     onMarkerRemoveClick: () -> Unit
 ) {
-    Column(
-        modifier = Modifier.padding(12.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(50.dp)
-                .clip(CircleShape)
-                .background(color = colorResource(R.color.blue))
-                .clickable {
-                    onMarkerMoveClick()
-                }, contentAlignment = Alignment.Center
+    Box(modifier = modifier) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            Image(painter = painterResource(R.drawable.ic_location), "")
-        }
-        Box(
-            modifier = Modifier
-                .size(50.dp)
-                .clip(CircleShape)
-                .background(color = colorResource(R.color.blue))
-                .clickable {
-                    onMarkerRemoveClick()
-                }, contentAlignment = Alignment.Center
-        ) {
-            Image(painter = painterResource(R.drawable.ic_close), "")
+            Box(
+                modifier = Modifier
+                    .size(50.dp)
+                    .clip(CircleShape)
+                    .background(color = colorResource(R.color.blue))
+                    .clickable {
+                        onMarkerMoveClick()
+                    }, contentAlignment = Alignment.Center
+            ) {
+                Image(painter = painterResource(R.drawable.ic_location), "")
+            }
+            Box(
+                modifier = Modifier
+                    .size(50.dp)
+                    .clip(CircleShape)
+                    .background(color = colorResource(R.color.blue))
+                    .clickable {
+                        onMarkerRemoveClick()
+                    }, contentAlignment = Alignment.Center
+            ) {
+                Image(painter = painterResource(R.drawable.ic_close), "")
+            }
         }
     }
 }
 
 @Composable
-fun CourseAddBottomSheet(
-    modifier: Modifier = Modifier,
-    state: CourseAddScreenState,
+fun CourseAddContent(
+    state: CourseAddScreenState.CourseAddState,
     onRouteDetailItemClick: (RouteDetailItemState) -> Unit,
     onRouteCreateClick: () -> Unit,
     onCommendClick: () -> Unit,
-    onBackClick: () -> Unit,
-    onDragClick: () -> Unit,
     onNameEditValueChange: (String) -> Unit,
-    onHeightChange: (Dp)-> Unit,
+    onBackClick: () -> Unit,
 ) {
-    val context = LocalContext.current
-    val scrollState = rememberScrollState()
-    var latestDp by remember { mutableStateOf(400.dp) }
-    val height = if(state.isBottomSheetDown) 60.dp else 400.dp
-    val heightAni by animateDpAsState(targetValue = height, animationSpec = tween(300))
-    if(latestDp!=height){
-        onHeightChange(height)
-        latestDp = height
-    }
-    Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-            .widthIn(context.getAddPopUpWidthDp())
-            .height(heightAni)
-            .consumptionEvent()
-            .verticalScroll(scrollState)
-            .background(colorResource(R.color.white))
+    Box(modifier = Modifier.heightIn(min=320.dp)) {
+        SlideAnimation(
+            visible = !state.isTwoStep,
+            direction = AnimationDirection.CenterUp
+        ) {
+            RouteWaypointContent(
+                modifier = Modifier
+                    .padding(top = 15.dp, start = 15.dp, end = 15.dp, bottom = 5.dp)
+                    .fillMaxWidth(),
+                routeName = state.courseName,
+                duration = state.routeState.duration,
+                waypointItemStateGroup = state.routeState.waypointItemStateGroup,
+                onRouteCreateClick = onRouteCreateClick,
+                onNameEditValueChange = onNameEditValueChange,
+            )
+        }
 
-    ) {
-        val contentHeight = min(heightAni.value.toInt(), 340).dp
-        Column {
-            Box(modifier = Modifier.height(contentHeight)) {
-                DragHandle(Modifier.clickable { onDragClick() })
-                SlideAnimation(
-                    visible = !state.isTwoStep,
-                    direction = AnimationDirection.CenterUp
-                ) {
-                    RouteWaypointContent(
-                        modifier = Modifier
-                            .padding(top = 15.dp, start = 15.dp, end = 15.dp, bottom = 5.dp)
-                            .fillMaxWidth(),
-                        routeName = state.courseName,
-                        duration = state.routeState.duration,
-                        waypointItemStateGroup = state.routeState.waypointItemStateGroup,
-                        onRouteCreateClick = onRouteCreateClick,
-                        onNameEditValueChange = onNameEditValueChange,
-                    )
-                }
-
-                SlideAnimation(
-                    visible = state.isTwoStep,
-                    direction = AnimationDirection.CenterDown
-                ) {
-                    RouteDetailContent(
-                        modifier = Modifier
-                            .padding(15.dp)
-                            .fillMaxSize(),
-                        routeDetailItemStateGroup = state.detailItemStateGroup,
-                        onRouteDetailItemClick = onRouteDetailItemClick,
-                        onBackClick = onBackClick
-                    )
-                }
-            }
-            CommendButton(
-                modifier = Modifier.height(60.dp),
-                isDetailContent = state.isTwoStep,
-                isDone = state.isNextStepButtonActive,
-                isLoading = state.isBottomSheetDown,
-                onCommendClick = onCommendClick
+        SlideAnimation(
+            visible = state.isTwoStep,
+            direction = AnimationDirection.CenterDown
+        ) {
+            RouteDetailContent(
+                modifier = Modifier
+                    .padding(15.dp),
+                routeDetailItemStateGroup = state.detailItemStateGroup,
+                onRouteDetailItemClick = onRouteDetailItemClick,
+                onBackClick = onBackClick
             )
         }
     }
+    CommendButton(
+        modifier = Modifier.height(60.dp),
+        isDetailContent = state.isTwoStep,
+        isDone = state.isNextStepButtonActive,
+        isLoading = state.isLoading,
+        onCommendClick = onCommendClick
+    )
 }
-
 
 @Composable
 fun CommendButton(
     modifier: Modifier,
-    isLoading : Boolean,
+    isLoading: Boolean,
     isDone: Boolean,
     isDetailContent: Boolean,
     onCommendClick: () -> Unit
@@ -391,14 +373,15 @@ fun RouteDetailContent(
     onBackClick: () -> Unit
 ) {
     Column(
-        modifier = modifier
+        modifier = modifier.heightIn(max= 500.dp)
     ) {
-        Box(modifier = Modifier.clickable(
-            indication = null,
-            interactionSource = remember { MutableInteractionSource() }
-        ) {
-            onBackClick()
-        }) {
+        Box(
+            modifier = Modifier.clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) {
+                onBackClick()
+            }) {
             Image(
                 modifier = Modifier.padding(top = 5.dp, bottom = 15.dp, start = 5.dp, end = 20.dp),
                 painter = painterResource(R.drawable.ic_up),
@@ -410,44 +393,53 @@ fun RouteDetailContent(
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             val detailItemTypeGroup = routeDetailItemStateGroup.groupBy { it.data.type }.toList()
-
             items(detailItemTypeGroup) { pair ->
-                Column {
-                    Text(
-                        modifier = Modifier.padding(start = 5.dp),
-                        text = stringResource(pair.first.toStrRes()),
-                        fontSize = 16.sp,
-                        fontFamily = interBoldFontFamily
-                    )
-                    LazyRow(
-                        modifier = Modifier.padding(top = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(14.dp)
-                    ) {
-                        items(pair.second) { item ->
-                            Box(modifier = Modifier
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(
-                                    colorResource(if (item.isClick) R.color.blue else R.color.gray_C7C7C7_80)
-                                )
-                                .clickable {
-                                    onRouteDetailItemClick(item)
-                                }) {
-                                Text(
-                                    modifier = Modifier.padding(vertical = 3.dp, horizontal = 8.dp),
-                                    text = "${item.data.emogi} ${stringResource(item.data.strRes)}",
-                                    fontSize = 11.sp,
-                                    fontFamily = interBoldFontFamily
-                                )
-                            }
-                        }
-                    }
-                }
+                RouteDetailTypeItem(pair, onRouteDetailItemClick)
             }
         }
 
     }
 }
 
+@Composable
+fun RouteDetailTypeItem(item: Pair<RouteDetailType, List<RouteDetailItemState>>, onRouteDetailItemClick:(RouteDetailItemState)->Unit){
+    Column {
+        Text(
+            modifier = Modifier.padding(start = 5.dp),
+            text = stringResource(item.first.toStrRes()),
+            fontSize = 16.sp,
+            fontFamily = interBoldFontFamily
+        )
+        LazyRow(
+            modifier = Modifier.padding(top = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            items(item.second) { item ->
+                RouteDetailItem(item, onRouteDetailItemClick)
+            }
+        }
+    }
+}
+
+@Composable
+fun RouteDetailItem(item : RouteDetailItemState, onRouteDetailItemClick:(RouteDetailItemState)->Unit){
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(
+                colorResource(if (item.isClick) R.color.blue else R.color.gray_C7C7C7_80)
+            )
+            .clickable {
+                onRouteDetailItemClick(item)
+            }) {
+        Text(
+            modifier = Modifier.padding(vertical = 3.dp, horizontal = 8.dp),
+            text = "${item.data.emogi} ${stringResource(item.data.strRes)}",
+            fontSize = 11.sp,
+            fontFamily = interBoldFontFamily
+        )
+    }
+}
 
 @Composable
 fun RouteWaypointContent(
@@ -458,7 +450,14 @@ fun RouteWaypointContent(
     onRouteCreateClick: () -> Unit,
     onNameEditValueChange: (String) -> Unit,
 ) {
-    Box(modifier = modifier) {
+    val imeBottom = WindowInsets.ime.getBottom(LocalDensity.current)
+    val density= LocalDensity.current
+    var isFocus by remember { mutableStateOf(false) }
+    val imePadding = if(isFocus) with(density) {
+        (max(imeBottom - 100, 0)*0.2f).toDp()
+    } else 0.dp
+
+    Box(modifier = modifier.padding(bottom = imePadding)) {
         Column {
             Box(modifier = Modifier.fillMaxWidth()) {
                 Text(
@@ -486,7 +485,7 @@ fun RouteWaypointContent(
                     )
                 }
             }
-            Box(
+            Column (
                 modifier = Modifier
                     .padding(top = 15.dp, bottom = 10.dp, start = 10.dp)
                     .fillMaxWidth()
@@ -494,8 +493,13 @@ fun RouteWaypointContent(
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     val textStyle = TextStyle(fontSize = 16.sp, fontFamily = interBoldFontFamily)
                     val focusManager = LocalFocusManager.current
+
                     BasicTextField(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .onFocusChanged {
+                                isFocus = it.isFocused
+                            }
+                            .fillMaxWidth(),
                         value = routeName,
                         onValueChange = onNameEditValueChange,
                         singleLine = true,
@@ -526,52 +530,61 @@ fun RouteWaypointContent(
                 }
             }
 
-            FadeAnimation(visible = waypointItemStateGroup.isNotEmpty()) {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    items(waypointItemStateGroup) { item ->
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f)
-                                .border(
-                                    width = 1.dp,
-                                    color = colorResource(R.color.gray_6F6F6F),
-                                    shape = RoundedCornerShape(16.dp)
-                                )
-                                .animateItem()
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(horizontal = 15.dp, vertical = 10.dp),
-                                verticalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                Text(
-                                    text = item.data.alias, fontSize = 12.sp,
-                                    fontFamily = interBoldFontFamily
-                                )
-                                Text(
-                                    text = item.data.address, fontSize = 12.sp,
-                                    fontFamily = interFontFamily
-                                )
-                            }
+            Box(modifier.height(160.dp)) {
+                FadeAnimation(visible = waypointItemStateGroup.isNotEmpty()) {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        items(waypointItemStateGroup) { item ->
+                            AddressItem(
+                                modifier = Modifier.animateItem(),
+                                item = item
+                            )
                         }
                     }
                 }
-            }
-            FadeAnimation(visible = waypointItemStateGroup.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(colorResource(R.color.gray_)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("생성으로 새 경로를 만들어 보세요.", fontFamily = interFontFamily)
+                FadeAnimation(visible = waypointItemStateGroup.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(16.dp))
+                            .fillMaxSize()
+                            .background(colorResource(R.color.gray_)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("생성으로 새 경로를 만들어 보세요.", fontFamily = interFontFamily)
+                    }
                 }
             }
 
 
+        }
+    }
+}
+
+@Composable
+fun AddressItem(modifier: Modifier, item: CourseAddScreenState.RouteWaypointItemState) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .border(
+                width = 1.dp,
+                color = colorResource(R.color.gray_6F6F6F),
+                shape = RoundedCornerShape(16.dp)
+            )
+
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 15.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = item.data.alias, fontSize = 12.sp,
+                fontFamily = interBoldFontFamily
+            )
+            Text(
+                text = item.data.address, fontSize = 12.sp,
+                fontFamily = interFontFamily
+            )
         }
     }
 }

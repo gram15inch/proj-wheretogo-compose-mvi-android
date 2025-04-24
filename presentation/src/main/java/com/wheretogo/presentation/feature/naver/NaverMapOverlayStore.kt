@@ -98,7 +98,7 @@ class NaverMapOverlayStore @Inject constructor() {
     private fun PathInfo.toNaverPath():PathOverlay{
         return PathOverlay().apply {
             tag = this@toNaverPath.contentId
-            minZoom = OverlayType.PATH.minZoomLevel()
+            minZoom = minZoomLevel
         }
     }
 

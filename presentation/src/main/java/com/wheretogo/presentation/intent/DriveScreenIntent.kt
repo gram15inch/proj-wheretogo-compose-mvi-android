@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.compose.ui.text.input.TextFieldValue
 import com.wheretogo.domain.model.map.SimpleAddress
 import com.wheretogo.presentation.CommentType
+import com.wheretogo.presentation.SheetState
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.state.CameraState
 import com.wheretogo.presentation.state.CommentState.CommentAddState
@@ -52,7 +53,7 @@ sealed class DriveScreenIntent {
 
 
     // 바텀시트
-    data object BottomSheetClose : DriveScreenIntent()
+    data class BottomSheetChange(val state:SheetState) : DriveScreenIntent()
     data class CheckpointLocationSliderChange(val percent: Float) : DriveScreenIntent()
     data class CheckpointDescriptionChange(val text: String) : DriveScreenIntent()
     data object CheckpointDescriptionEnterClick : DriveScreenIntent()

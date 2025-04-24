@@ -14,6 +14,7 @@ const val COURSE_NAME_MAX_LENGTH = 17
 
 const val CHECKPOINT_ADD_MARKER = "CHECKPOINT_ADD_MARKER_ID"
 const val SEARCH_MARKER = "SEARCH_MARKER_ID"
+const val CLEAR_ADDRESS = "CLEAR_ADDRESS"
 
 
 enum class OverlayType {
@@ -59,6 +60,10 @@ enum class MarkerType{
 
 enum class PathType{
     PARTIAL, FULL
+}
+
+enum class SheetState{
+    PartiallyExpand, PartiallyExpanded, Expand, Expanded
 }
 
 

@@ -9,6 +9,7 @@ import com.wheretogo.presentation.PathType
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.SEARCH_MARKER
 import com.wheretogo.presentation.feature.naver.NaverMapOverlayStore
+import com.wheretogo.presentation.minZoomLevel
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.MarkerInfo
 import com.wheretogo.presentation.model.PathInfo
@@ -42,7 +43,8 @@ class DriveMapOverlayService @Inject constructor(private val overlayStore: Naver
                 overlayStore.getOrCreatePath(
                     pathInfo = PathInfo(
                         contentId = course.courseId,
-                        points = course.points
+                        points = course.points,
+                        minZoomLevel = OverlayType.PATH.minZoomLevel()
                     )
                 )?.let {
                     val pathContainer =

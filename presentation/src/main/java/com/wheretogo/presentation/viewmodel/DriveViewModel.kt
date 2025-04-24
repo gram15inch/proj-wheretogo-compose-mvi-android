@@ -1,5 +1,6 @@
 package com.wheretogo.presentation.viewmodel
 
+import android.annotation.SuppressLint
 import android.net.Uri
 import android.util.Log
 import androidx.compose.ui.text.TextRange
@@ -42,8 +43,10 @@ import com.wheretogo.presentation.DRIVE_LIST_MIN_ZOOM
 import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.MarkerType
 import com.wheretogo.presentation.CHECKPOINT_ADD_MARKER
+import com.wheretogo.presentation.CLEAR_ADDRESS
 import com.wheretogo.presentation.CameraUpdateSource
 import com.wheretogo.presentation.SEARCH_MARKER
+import com.wheretogo.presentation.SheetState
 import com.wheretogo.presentation.feature.geo.distanceTo
 import com.wheretogo.presentation.feature.map.DriveMapOverlayService
 import com.wheretogo.presentation.feature.withLogging
@@ -141,7 +144,7 @@ class DriveViewModel @Inject constructor(
                 is DriveScreenIntent.FoldFloatingButtonClick -> foldFloatingButtonClick()
 
                 //바텀시트
-                is DriveScreenIntent.BottomSheetClose -> bottomSheetClose()
+                is DriveScreenIntent.BottomSheetChange -> bottomSheetChange(intent.state)
                 is DriveScreenIntent.CheckpointLocationSliderChange -> checkpointLocationSliderChange(intent.percent)
                 is DriveScreenIntent.CheckpointDescriptionChange -> checkpointDescriptionChange(intent.text)
                 is DriveScreenIntent.CheckpointDescriptionEnterClick -> checkpointDescriptionEnterClick()
@@ -154,47 +157,48 @@ class DriveViewModel @Inject constructor(
     }
 
     //서치바
-    private suspend fun addressItemClick(simpleAddress: SimpleAddress) {
-        _driveScreenState.value =
-            _driveScreenState.value.run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
-        val latlngResponse =
-            withContext(Dispatchers.IO) { getLatLngFromAddressUseCase(simpleAddress.address) }
+    private suspend fun addressItemClick(item: SimpleAddress) {
+        if(item.title != CLEAR_ADDRESS){
+            _driveScreenState.value =
+                _driveScreenState.value.run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
+            val latlngResponse =
+                withContext(Dispatchers.IO) { getLatLngFromAddressUseCase(item.address) }
 
-        _driveScreenState.value = _driveScreenState.value.run {
-            when (latlngResponse.status) {
-                UseCaseResponse.Status.Success -> {
-                    val newLatLng = latlngResponse.data!!
-                    mapOverlayService.removeCheckPoint(listOf(SEARCH_MARKER))
-                    mapOverlayService.addCheckPoint(listOf(CheckPoint(SEARCH_MARKER, latLng = newLatLng)))
-                    copy(
-                        searchBarState = searchBarState.copy(isLoading = false),
-                        mapState = mapState.copy(
-                            cameraState = mapState.cameraState.copy(
-                                latLng = newLatLng,
-                                updateSource = CameraUpdateSource.APP_EASING
+            _driveScreenState.value = _driveScreenState.value.run {
+                when (latlngResponse.status) {
+                    UseCaseResponse.Status.Success -> {
+                        val newLatLng = latlngResponse.data!!
+                        mapOverlayService.removeCheckPoint(listOf(SEARCH_MARKER))
+                        mapOverlayService.addCheckPoint(listOf(CheckPoint(SEARCH_MARKER, latLng = newLatLng)))
+                        copy(
+                            searchBarState = searchBarState.copy(isLoading = false),
+                            mapState = mapState.copy(
+                                cameraState = mapState.cameraState.copy(
+                                    latLng = newLatLng,
+                                    updateSource = CameraUpdateSource.APP_EASING
+                                )
                             )
                         )
-                    )
-                }
+                    }
 
-                UseCaseResponse.Status.Fail -> {
-                    copy(searchBarState = searchBarState.copy(isLoading = false))
+                    UseCaseResponse.Status.Fail -> {
+                        copy(searchBarState = searchBarState.copy(isLoading = false))
+                    }
                 }
             }
+        } else {
+            mapOverlayService.removeCheckPoint(listOf(SEARCH_MARKER))
+            _driveScreenState.value = _driveScreenState.value.searchBarInit()
         }
+
     }
 
-    private fun searchToggleClick(isBar: Boolean) {
+    private fun searchToggleClick(isExpend: Boolean) {
         _driveScreenState.value.apply {
             mapOverlayService.removeCheckPoint(listOf(SEARCH_MARKER))
             _driveScreenState.value =
-                if (!isBar) {
-                    copy(
-                        searchBarState = searchBarState.copy(
-                            isLoading = false,
-                            simpleAddressGroup = emptyList()
-                        )
-                    )
+                if (!isExpend) {
+                    searchBarInit()
                 } else {
                     this
                 }
@@ -202,31 +206,47 @@ class DriveViewModel @Inject constructor(
     }
 
     private suspend fun searchSubmit(address: String) {
-        _driveScreenState.value =
-            _driveScreenState.value.run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
-        val addressResponse = withContext(Dispatchers.IO) { searchAddressUseCase(address) }
-        _driveScreenState.value = _driveScreenState.value.run {
-            when (addressResponse.status) {
-                UseCaseResponse.Status.Success -> {
-                    copy(
-                        searchBarState = searchBarState.copy(
-                            isLoading = false,
-                            isEmptyVisible = addressResponse.data?.isEmpty() ?: false,
-                            simpleAddressGroup = addressResponse.data ?: emptyList()
+        if(address.trim().isNotBlank()){
+            _driveScreenState.value =
+                _driveScreenState.value.run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
+            val addressResponse = withContext(Dispatchers.IO) { searchAddressUseCase(address) }
+            _driveScreenState.value = _driveScreenState.value.run {
+                when (addressResponse.status) {
+                    UseCaseResponse.Status.Success -> {
+                        copy(
+                            searchBarState = searchBarState.copy(
+                                isLoading = false,
+                                isEmptyVisible = addressResponse.data?.isEmpty() ?: false,
+                                simpleAddressGroup = addressResponse.data ?: emptyList()
+                            )
                         )
-                    )
-                }
+                    }
 
-                UseCaseResponse.Status.Fail -> {
-                    copy(
-                        searchBarState = searchBarState.copy(
-                            isLoading = false
+                    UseCaseResponse.Status.Fail -> {
+                        copy(
+                            searchBarState = searchBarState.copy(
+                                isLoading = false
+                            )
                         )
-                    )
+                    }
                 }
             }
+        } else {
+            _driveScreenState.value = _driveScreenState.value.searchBarInit()
         }
+
     }
+
+    private fun DriveScreenState.searchBarInit(): DriveScreenState {
+        return copy(
+            searchBarState = searchBarState.copy(
+                isLoading = false,
+                isEmptyVisible = false,
+                simpleAddressGroup = emptyList()
+            )
+        )
+    }
+
 
 
     //지도
@@ -338,15 +358,9 @@ class DriveViewModel @Inject constructor(
         }
     }
 
+    private suspend fun contentPaddingChanged(amount:Int){}
 
-    private fun contentPaddingChanged(amount:Int){
-        _driveScreenState.value.apply {
-            val latLng = listState.clickItem.course.cameraLatLng
-            if(!popUpState.isVisible && (bottomSheetState.content == DriveBottomSheetContent.CHECKPOINT_ADD)) {
-                moveCamera(latLng)
-            }
-        }
-    }
+
 
     private fun moveCamera(latLng: LatLng, zoom:Double? = null){
         if(latLng!=LatLng())
@@ -372,7 +386,6 @@ class DriveViewModel @Inject constructor(
     //목록
     private suspend fun driveListItemClick(state: DriveScreenState.ListState.ListItemState) {
         val course = state.course
-        moveCamera(course.cameraLatLng)
         _driveScreenState.value = _driveScreenState.value
             .initWithLevelState(2)
             .run {
@@ -389,6 +402,7 @@ class DriveViewModel @Inject constructor(
                     )
                 )
             }
+        moveCamera(course.cameraLatLng)
         val checkPointGroup =
             withContext(Dispatchers.IO) { getCheckPointForMarkerUseCase(course.courseId) }
         _driveScreenState.value = _driveScreenState.value.run {
@@ -659,55 +673,75 @@ class DriveViewModel @Inject constructor(
 
     private fun checkpointAddFloatingButtonClick() {
         val course = _driveScreenState.value.listState.clickItem.course
-        _driveScreenState.value = _driveScreenState.value.run {
-            val newCheckPointAddState = bottomSheetState.checkPointAddState.run {
+        mapOverlayService.addCheckPoint(
+            listOf(
+                CheckPoint(
+                    checkPointId = CHECKPOINT_ADD_MARKER,
+                    latLng = course.waypoints.first()
+                )
+            ),
+        )
+        _driveScreenState.value = _driveScreenState.value
+            .checkPointAddStateInit()
+            .run {
                 copy(
-                    latlng = course.waypoints.first(),
-                    sliderPercent = 0.0f,
-                )
-            }
-            mapOverlayService.addCheckPoint(
-                listOf(
-                    CheckPoint(
-                        checkPointId = CHECKPOINT_ADD_MARKER,
-                        latLng = course.waypoints.first()
+                    bottomSheetState = bottomSheetState.copy(
+                        isVisible = true,
+                        content = DriveBottomSheetContent.CHECKPOINT_ADD,
                     )
-                ),
-            )
-            copy(
-                bottomSheetState = bottomSheetState.copy(
-                    isVisible = !bottomSheetState.isVisible,
-                    content = DriveBottomSheetContent.CHECKPOINT_ADD,
-                    checkPointAddState = newCheckPointAddState,
                 )
-            )
         }
     }
 
-    private suspend fun infoFloatingButtonClick() {
-        _driveScreenState.value = _driveScreenState.value.run {
-            val isMine = if (bottomSheetState.infoState.isCourseInfo) {
-                bottomSheetState.infoState.course.isMine()
-            } else {
-                bottomSheetState.infoState.checkPoint.isMine()
-            }
+    private fun DriveScreenState.checkPointAddStateInit():DriveScreenState{
+        val course = _driveScreenState.value.listState.clickItem.course
+        val newCheckPointAddState = bottomSheetState.checkPointAddState.run {
             copy(
-                bottomSheetState = bottomSheetState.copy(
-                    isVisible = !bottomSheetState.isVisible,
-                    content = DriveBottomSheetContent.INFO,
-                    infoState = bottomSheetState.infoState.copy(
-                        course = listState.clickItem.course,
-                        isRemoveButton = isMine,
-                        isReportButton = true
-                    )
-                ),
-                popUpState = popUpState.copy(
-                    commentState = popUpState.commentState.copy(
-                        isCommentVisible = false
-                    )
-                )
+                latlng = course.waypoints.first(),
+                sliderPercent = 0.0f,
             )
         }
+       return copy(
+            bottomSheetState = bottomSheetState.copy(
+                checkPointAddState = newCheckPointAddState,
+            )
+        )
+    }
+
+    private suspend fun infoFloatingButtonClick() {
+        _driveScreenState.value = _driveScreenState.value
+            .infoStateInit()
+            .run {
+                copy(
+                    bottomSheetState = bottomSheetState.copy(
+                        isVisible = true,
+                        content = DriveBottomSheetContent.INFO,
+                    ),
+                    popUpState = popUpState.copy(
+                        commentState = popUpState.commentState.copy(
+                            isCommentVisible = false
+                        )
+                    )
+                )
+        }
+    }
+
+    private suspend fun DriveScreenState.infoStateInit():DriveScreenState{
+        val isMine = if (bottomSheetState.infoState.isCourseInfo) {
+            bottomSheetState.infoState.course.isMine()
+        } else {
+            bottomSheetState.infoState.checkPoint.isMine()
+        }
+        val infoState = bottomSheetState.infoState.copy(
+            course = listState.clickItem.course,
+            isRemoveButton = isMine,
+            isReportButton = true
+        )
+        return copy(
+            bottomSheetState = bottomSheetState.copy(
+                infoState = infoState
+            )
+        )
     }
 
     private fun exportMapFloatingButtonClick() {
@@ -729,12 +763,53 @@ class DriveViewModel @Inject constructor(
         }
     }
 
-
-    private fun bottomSheetClose() {
-        _driveScreenState.value = _driveScreenState.value.run {
-            mapOverlayService.removeCheckPoint(listOf(CHECKPOINT_ADD_MARKER))
-            initBottomSheet()
-        }
+    @SuppressLint("SuspiciousIndentation")
+    private suspend fun bottomSheetChange(state:SheetState) {
+        val content = _driveScreenState.value.bottomSheetState.content
+            when(content){
+                DriveBottomSheetContent.CHECKPOINT_ADD->{
+                    val course = _driveScreenState.value.listState.clickItem.course
+                    when(state){
+                        SheetState.Expand->{
+                            _driveScreenState.value = _driveScreenState.value.checkPointAddStateInit()
+                            mapOverlayService.addCheckPoint(
+                                listOf(
+                                    CheckPoint(
+                                        checkPointId = CHECKPOINT_ADD_MARKER,
+                                        latLng = course.waypoints.first()
+                                    )
+                                ),
+                            )
+                        }
+                        SheetState.Expanded->{
+                            moveCamera(course.cameraLatLng)
+                        }
+                        SheetState.PartiallyExpand->{
+                            mapOverlayService.removeCheckPoint(listOf(CHECKPOINT_ADD_MARKER))
+                            _driveScreenState.value = _driveScreenState.value.run {
+                                copy(bottomSheetState = bottomSheetState.copy(isVisible = false))
+                            }
+                        }
+                        SheetState.PartiallyExpanded->{
+                            moveCamera(course.cameraLatLng)
+                        }
+                    }
+                }
+                DriveBottomSheetContent.INFO->{
+                    when(state){
+                        SheetState.Expand->{
+                            _driveScreenState.value = _driveScreenState.value.infoStateInit()
+                        }
+                        SheetState.PartiallyExpand->{
+                            _driveScreenState.value = _driveScreenState.value.run {
+                                copy(bottomSheetState = bottomSheetState.copy(isVisible = false))
+                            }
+                        }
+                        else->{}
+                    }
+                }
+                else->{}
+            }
     }
 
     //바텀시트
@@ -745,7 +820,6 @@ class DriveViewModel @Inject constructor(
                 checkPointAddState = CheckPointAddState()
             ),
         )
-
     }
 
     private fun checkpointLocationSliderChange(percent: Float) {
