@@ -5,9 +5,10 @@ import com.wheretogo.data.BuildConfig
 import com.wheretogo.data.FireStoreCollections
 import com.wheretogo.data.datasource.RouteRemoteDatasource
 import com.wheretogo.data.datasourceimpl.service.NaverMapApiService
+import com.wheretogo.data.model.map.DataLatLng
 import com.wheretogo.data.model.route.RemoteRoute
 import com.wheretogo.data.name
-import com.wheretogo.domain.model.map.LatLng
+
 import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
 import kotlin.coroutines.resume
@@ -63,8 +64,8 @@ class RouteRemoteDatasourceImpl @Inject constructor(
         }
     }
 
-    private fun convertLatLng(latlng: LatLng): String = "${latlng.longitude}, ${latlng.latitude}"
-    private fun convertWaypoints(waypoints: List<LatLng>): String {
+    private fun convertLatLng(latlng: DataLatLng): String = "${latlng.longitude}, ${latlng.latitude}"
+    private fun convertWaypoints(waypoints: List<DataLatLng>): String {
         var str = ""
         waypoints.forEach {
             str += convertLatLng(it) + "|"
@@ -72,7 +73,7 @@ class RouteRemoteDatasourceImpl @Inject constructor(
         return str
     }
 
-    override suspend fun getRouteByNaver(waypoints: List<LatLng>): RemoteRoute {
+    override suspend fun getRouteByNaver(waypoints: List<DataLatLng>): RemoteRoute {
         return if (waypoints.size >= 2) {
             val msg = naverApiService.getRouteWayPoint(
                 BuildConfig.NAVER_APIGW_CLIENT_ID_KEY,
@@ -84,7 +85,7 @@ class RouteRemoteDatasourceImpl @Inject constructor(
 
             if (msg.body()?.currentDateTime != null) {
                 val points = msg.body()!!.route.traoptimal.map { it.path }.first()
-                    .map { LatLng(it[1], it[0]) }
+                    .map { DataLatLng(it[1], it[0]) }
                 val duration = msg.body()!!.route.traoptimal.first().summary.duration
                 val distance = msg.body()!!.route.traoptimal.first().summary.distance
                 return RemoteRoute(

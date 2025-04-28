@@ -4,9 +4,9 @@ import com.wheretogo.data.datasourceimpl.AddressRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.CourseRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.RouteRemoteDatasourceImpl
 import com.wheretogo.data.model.course.RemoteCourse
+import com.wheretogo.data.model.map.DataLatLng
 import com.wheretogo.data.model.route.RemoteRoute
 import com.wheretogo.domain.model.dummy.getCourseDummy
-import com.wheretogo.domain.model.map.LatLng
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import junit.framework.TestCase.assertEquals
@@ -43,7 +43,7 @@ class RouteTest {
         val cs = RemoteCourse(courseId = "cstr1")
         val localRt = RemoteRoute(
             courseId = cs.courseId,
-            points = listOf(LatLng(1.0, 1.0), LatLng(2.0, 2.0), LatLng(3.0, 3.0))
+            points = listOf(DataLatLng(1.0, 1.0), DataLatLng(2.0, 2.0), DataLatLng(3.0, 3.0))
         )
         courseDatasourceImpl.setCourse(cs)
 

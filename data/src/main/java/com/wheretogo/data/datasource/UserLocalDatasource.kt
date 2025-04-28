@@ -1,8 +1,8 @@
 package com.wheretogo.data.datasource
 
+import com.wheretogo.data.model.user.LocalProfile
 import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.model.map.History
-import com.wheretogo.domain.model.user.Profile
 import kotlinx.coroutines.flow.Flow
 
 interface UserLocalDatasource {
@@ -18,11 +18,11 @@ interface UserLocalDatasource {
 
     fun getHistoryFlow(type: HistoryType): Flow<HashSet<String>>
 
-    suspend fun setProfile(profile: Profile)
+    suspend fun setProfile(profile: LocalProfile)
 
     suspend fun setHistory(history: History)
 
     suspend fun clearUser()
 
-    fun getProfileFlow(): Flow<Profile>
+    fun getProfileFlow(): Flow<LocalProfile>
 }

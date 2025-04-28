@@ -3,9 +3,11 @@ package com.dhkim139.wheretogo.mock
 import com.dhkim139.wheretogo.mock.model.MockRemoteUser
 import com.wheretogo.data.datasource.UserRemoteDatasource
 import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
-import com.wheretogo.data.model.user.ProfilePublic
+import com.wheretogo.data.model.user.RemoteProfilePrivate
+import com.wheretogo.data.model.user.RemoteProfilePublic
 import com.wheretogo.data.toProfile
 import com.wheretogo.data.toProfilePublic
+import com.wheretogo.data.toRemoteProfilePrivate
 import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.get
 import com.wheretogo.domain.map
@@ -18,7 +20,7 @@ class MockUserRemoteDatasourceImpl @Inject constructor(
     private var userRemoteGroup =
         mutableMapOf<String, MockRemoteUser>(mockRemoteUser.profile.uid to mockRemoteUser) // userId
 
-    override suspend fun setProfilePublic(public: ProfilePublic) {
+    override suspend fun setProfilePublic(public: RemoteProfilePublic) {
         val uid = public.uid
         val newUser = userRemoteGroup.getOrPut(uid) {
             MockRemoteUser(
@@ -43,12 +45,12 @@ class MockUserRemoteDatasourceImpl @Inject constructor(
         userRemoteGroup.put(uid, newUser)
     }
 
-    override suspend fun getProfilePublic(uid: String): ProfilePublic? {
+    override suspend fun getProfilePublic(uid: String): RemoteProfilePublic? {
         return userRemoteGroup.get(uid)?.profile?.toProfilePublic()
     }
 
-    override suspend fun getProfilePrivate(uid: String): ProfilePrivate? {
-        return userRemoteGroup.get(uid)?.profile?.private
+    override suspend fun getProfilePrivate(uid: String): RemoteProfilePrivate? {
+        return userRemoteGroup.get(uid)?.profile?.private?.toRemoteProfilePrivate()
     }
 
     override suspend fun deleteProfile(uid: String) {
@@ -95,7 +97,7 @@ class MockUserRemoteDatasourceImpl @Inject constructor(
         }
     }
 
-    override suspend fun getProfilePublicWithMail(hashMail: String): ProfilePublic? {
+    override suspend fun getProfilePublicWithMail(hashMail: String): RemoteProfilePublic? {
         return userRemoteGroup.toList().firstOrNull{it.second.profile.hashMail == hashMail}?.second?.profile?.toProfilePublic()
     }
 }

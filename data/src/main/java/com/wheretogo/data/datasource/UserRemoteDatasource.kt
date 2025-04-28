@@ -1,16 +1,16 @@
 package com.wheretogo.data.datasource
 
 import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
-import com.wheretogo.data.model.user.ProfilePublic
+import com.wheretogo.data.model.user.RemoteProfilePrivate
+import com.wheretogo.data.model.user.RemoteProfilePublic
 import com.wheretogo.domain.HistoryType
-import com.wheretogo.domain.model.user.ProfilePrivate
 
 interface UserRemoteDatasource {
-    suspend fun setProfilePublic(public: ProfilePublic)
-    suspend fun setProfilePrivate(uid: String, privateProfile: ProfilePrivate)
-    suspend fun getProfilePublic(uid: String): ProfilePublic?
-    suspend fun getProfilePublicWithMail(hashMail: String): ProfilePublic?
-    suspend fun getProfilePrivate(uid: String): ProfilePrivate?
+    suspend fun setProfilePublic(public: RemoteProfilePublic)
+    suspend fun setProfilePrivate(uid: String, privateProfile: RemoteProfilePrivate)
+    suspend fun getProfilePublic(uid: String): RemoteProfilePublic?
+    suspend fun getProfilePublicWithMail(hashMail: String): RemoteProfilePublic?
+    suspend fun getProfilePrivate(uid: String): RemoteProfilePrivate?
     suspend fun deleteProfile(uid: String)
 
     suspend fun addHistory(uid: String, historyId: String, type: HistoryType)

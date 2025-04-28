@@ -3,8 +3,12 @@ package com.wheretogo.data.repositoryimpl
 import com.wheretogo.data.datasource.UserLocalDatasource
 import com.wheretogo.data.datasource.UserRemoteDatasource
 import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
+import com.wheretogo.data.model.user.RemoteProfilePrivate
+import com.wheretogo.data.toLocalProfile
 import com.wheretogo.data.toProfile
+import com.wheretogo.data.toProfilePrivate
 import com.wheretogo.data.toProfilePublic
+import com.wheretogo.data.toRemoteProfilePrivate
 import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.UserNotExistException
 import com.wheretogo.domain.feature.hashSha256
@@ -18,6 +22,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class UserRepositoryImpl @Inject constructor(
@@ -116,7 +121,7 @@ class UserRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getProfileStream(): Flow<Profile> {
-        return userLocalDatasource.getProfileFlow()
+        return userLocalDatasource.getProfileFlow().map { it.toProfile() }
     }
 
     override suspend fun getProfile(userId: String): Result<Profile> {
@@ -125,8 +130,8 @@ class UserRepositoryImpl @Inject constructor(
                 userId.isBlank()
                     .let { if (it) throw UserNotExistException("inValid userId: $userId") }
                 val public = async { userRemoteDatasource.getProfilePublic(userId) }
-                val private = async { userRemoteDatasource.getProfilePrivate(userId) ?: ProfilePrivate() }
-                public.await()?.toProfile()?.copy(private = private.await())
+                val private = async { userRemoteDatasource.getProfilePrivate(userId) ?: RemoteProfilePrivate() }
+                public.await()?.toProfile()?.copy(private = private.await().toProfilePrivate())
                     ?: throw UserNotExistException("inValid userId: $userId")
             }
         }
@@ -134,7 +139,7 @@ class UserRepositoryImpl @Inject constructor(
 
     override suspend fun getProfilePrivate(userId: String): Result<ProfilePrivate> {
         return runCatching {
-            userRemoteDatasource.getProfilePrivate(userId)
+            userRemoteDatasource.getProfilePrivate(userId)?.toProfilePrivate()
                 ?: throw UserNotExistException("inValid userId: $userId")
         }
     }
@@ -144,8 +149,8 @@ class UserRepositoryImpl @Inject constructor(
             val userId = profile.uid
             userId.isBlank().let { if (it) throw UserNotExistException("inValid userId: $userId") }
             userRemoteDatasource.setProfilePublic(profile.toProfilePublic())
-            userRemoteDatasource.setProfilePrivate(profile.uid, profile.private)
-            userLocalDatasource.setProfile(profile)
+            userRemoteDatasource.setProfilePrivate(profile.uid, profile.private.toRemoteProfilePrivate())
+            userLocalDatasource.setProfile(profile.toLocalProfile())
         }
     }
 
@@ -178,13 +183,13 @@ class UserRepositoryImpl @Inject constructor(
                             profile.private.copy(lastVisited = System.currentTimeMillis()).apply {
                                 userRemoteDatasource.setProfilePrivate(
                                     uid = uid,
-                                    privateProfile = this)
+                                    privateProfile = this.toRemoteProfilePrivate())
                             }
                         }
 
                     val newProfile = profile.copy(private = newPrivate.await())
                     val history = async { getRemoteHistory(uid).getOrNull() ?: History() }
-                    userLocalDatasource.setProfile(newProfile)
+                    userLocalDatasource.setProfile(newProfile.toLocalProfile())
                     setLocalHistory(history.await())
                     return@coroutineScope profile
                 }

@@ -3,7 +3,7 @@ package com.wheretogo.data.model.checkpoint
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.wheretogo.data.DATA_NULL
-import com.wheretogo.domain.model.map.LatLng
+import com.wheretogo.data.model.map.DataLatLng
 
 @Entity(
     tableName = "LocalCheckPoint"
@@ -13,7 +13,7 @@ data class LocalCheckPoint(
     val checkPointId: String = DATA_NULL,
     val userId: String = "",
     val userName :String = "",
-    val latLng: LatLng = LatLng(),
+    val latLng: DataLatLng = DataLatLng(),
     val caption: String = "",
     val imageName: String = "",
     val imageLocalPath: String = "",

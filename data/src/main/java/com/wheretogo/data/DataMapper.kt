@@ -11,7 +11,10 @@ import com.wheretogo.data.model.report.LocalReport
 import com.wheretogo.data.model.report.RemoteReport
 import com.wheretogo.data.model.route.LocalRoute
 import com.wheretogo.data.model.route.RemoteRoute
-import com.wheretogo.data.model.user.ProfilePublic
+import com.wheretogo.data.model.user.LocalProfile
+import com.wheretogo.data.model.user.LocalProfilePrivate
+import com.wheretogo.data.model.user.RemoteProfilePrivate
+import com.wheretogo.data.model.user.RemoteProfilePublic
 import com.wheretogo.domain.ReportStatus
 import com.wheretogo.domain.ReportType
 import com.wheretogo.domain.model.community.Report
@@ -22,23 +25,85 @@ import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.MetaCheckPoint
 import com.wheretogo.domain.model.map.Route
 import com.wheretogo.domain.model.user.Profile
+import com.wheretogo.domain.model.user.ProfilePrivate
 import com.wheretogo.domain.toGeoHash
 
 
+fun Profile.toLocalProfile(): LocalProfile {
+    return LocalProfile(
+        uid = uid,
+        name = name,
+        hashMail = hashMail,
+        private = private.toLocalProfilePrivate()
+    )
+}
 
-fun Profile.toProfilePublic():ProfilePublic{
-    return ProfilePublic(
+fun LocalProfile.toProfile(): Profile {
+    return Profile(
+        uid = uid,
+        name = name,
+        hashMail = hashMail,
+        private = private.toProfilePrivate()
+    )
+}
+
+fun ProfilePrivate.toLocalProfilePrivate(): LocalProfilePrivate {
+    return LocalProfilePrivate(
+        mail = mail,
+        authCompany = authCompany,
+        lastVisited = lastVisited,
+        accountCreation = accountCreation,
+        isAdRemove = isAdRemove,
+        isAdmin = isAdmin
+    )
+}
+
+fun LocalProfilePrivate.toProfilePrivate(): ProfilePrivate {
+    return ProfilePrivate(
+        mail = mail,
+        authCompany = authCompany,
+        lastVisited = lastVisited,
+        accountCreation = accountCreation,
+        isAdRemove = isAdRemove,
+        isAdmin = isAdmin
+    )
+}
+
+fun Profile.toProfilePublic():RemoteProfilePublic{
+    return RemoteProfilePublic(
         uid = uid,
         name = name,
         hashMail = hashMail,
     )
 }
 
-fun ProfilePublic.toProfile():Profile{
+fun RemoteProfilePublic.toProfile():Profile{
     return Profile(
         uid = uid,
         name = name,
         hashMail = hashMail
+    )
+}
+
+fun RemoteProfilePrivate.toProfilePrivate():ProfilePrivate{
+    return ProfilePrivate(
+        mail = mail,
+        authCompany = authCompany,
+        lastVisited = lastVisited,
+        accountCreation = accountCreation,
+        isAdRemove = isAdRemove,
+        isAdmin = isAdmin
+    )
+}
+
+fun ProfilePrivate.toRemoteProfilePrivate():RemoteProfilePrivate{
+    return RemoteProfilePrivate(
+        mail = mail,
+        authCompany = authCompany,
+        lastVisited = lastVisited,
+        accountCreation = accountCreation,
+        isAdRemove = isAdRemove,
+        isAdmin = isAdmin
     )
 }
 
@@ -74,7 +139,7 @@ fun LocalReport.toReport():Report{
 fun Route.toLocalRoute(): LocalRoute {
     return LocalRoute(
         courseId = courseId,
-        points = points,
+        points = points.toDataLatLngGroup(),
         duration = duration,
         distance = distance
     )
@@ -84,7 +149,7 @@ fun Route.toLocalRoute(): LocalRoute {
 fun LocalRoute.toRoute(): Route {
     return Route(
         courseId = courseId,
-        points = points,
+        points = points.toLatLngGroup(),
         duration = duration,
         distance = distance
     )
@@ -93,7 +158,7 @@ fun LocalRoute.toRoute(): Route {
 fun Route.toRemoteRoute(): RemoteRoute {
     return RemoteRoute(
         courseId = courseId,
-        points = points,
+        points = points.toDataLatLngGroup(),
         duration = duration,
         distance = distance
     )
@@ -102,7 +167,7 @@ fun Route.toRemoteRoute(): RemoteRoute {
 fun RemoteRoute.toRoute(): Route {
     return Route(
         courseId = courseId,
-        points = points,
+        points = points.toLatLngGroup(),
         duration = duration,
         distance = distance
     )
@@ -187,7 +252,7 @@ fun CheckPoint.toLocalCheckPoint(): LocalCheckPoint {
         checkPointId = checkPointId,
         userId = userId,
         userName = userName,
-        latLng = latLng,
+        latLng = latLng.toDataLatLng(),
         caption = caption,
         imageName = imageName,
         imageLocalPath = this.imageLocalPath,
@@ -216,7 +281,7 @@ fun RemoteCheckPoint.toLocalCheckPoint(
         checkPointId = checkPointId,
         userId= userId,
         userName= userName,
-        latLng = latLng.toLatLng(),
+        latLng = latLng,
         caption = caption,
         imageName = imageName,
         imageLocalPath = localImgUrl,
@@ -230,7 +295,7 @@ fun LocalCheckPoint.toCheckPoint(): CheckPoint {
         checkPointId = checkPointId,
         userId=userId,
         userName = userName,
-        latLng = latLng,
+        latLng = latLng.toLatLng(),
         caption = caption,
         imageName = imageName,
         imageLocalPath = imageLocalPath,
@@ -247,14 +312,14 @@ fun LocalCourse.toCourse(
         courseName = courseName,
         userId = userId,
         userName = userName,
-        waypoints = waypoints,
+        waypoints = waypoints.toLatLngGroup(),
         checkpointIdGroup = localMetaCheckPoint.checkPointIdGroup,
         points = points,
         duration = duration,
         type = type,
         level = level,
         relation = relation,
-        cameraLatLng = cameraLatLng,
+        cameraLatLng = cameraLatLng.toLatLng(),
         zoom = zoom,
         like = like
     )
@@ -271,13 +336,13 @@ fun Course.toLocalCourse(
         latitude = cameraLatLng.latitude,
         longitude = cameraLatLng.longitude,
         geoHash = cameraLatLng.toGeoHash(6),
-        waypoints = waypoints,
+        waypoints = waypoints.toDataLatLngGroup(),
         localMetaCheckPoint = checkPoint,
         duration = duration,
         type = type,
         level = level,
         relation = relation,
-        cameraLatLng = cameraLatLng,
+        cameraLatLng = cameraLatLng.toDataLatLng(),
         zoom = zoom,
         like = like
     )
@@ -295,7 +360,7 @@ fun RemoteCourse.toLocalCourse(
         userName = userName,
         latitude = cameraLatLng.latitude,
         longitude = cameraLatLng.longitude,
-        geoHash = cameraLatLng.toGeoHash(6),
+        geoHash = cameraLatLng.toLatLng().toGeoHash(6),
         waypoints = waypoints,
         localMetaCheckPoint = checkPoint,
         duration = duration,
@@ -319,13 +384,13 @@ fun Course.toRemoteCourse(
         latitude = cameraLatLng.latitude,
         longitude = cameraLatLng.longitude,
         geoHash = cameraLatLng.toGeoHash(6),
-        waypoints = waypoints,
+        waypoints = waypoints.toDataLatLngGroup(),
         dataMetaCheckPoint = checkPoint,
         duration = duration,
         type = type,
         level = level,
         relation = relation,
-        cameraLatLng = cameraLatLng,
+        cameraLatLng = cameraLatLng.toDataLatLng(),
         zoom = zoom
     )
 }
@@ -339,14 +404,14 @@ fun RemoteCourse.toCourse(
         courseName = courseName,
         userId = userId,
         userName = userName,
-        waypoints = waypoints,
+        waypoints = waypoints.toLatLngGroup(),
         checkpointIdGroup = dataMetaCheckPoint.checkPointIdGroup,
         points = points,
         duration = duration,
         type = type,
         level = level,
         relation = relation,
-        cameraLatLng = cameraLatLng,
+        cameraLatLng = cameraLatLng.toLatLng(),
         zoom = zoom,
         like = like
     )
@@ -365,4 +430,11 @@ fun DataLatLng.toLatLng(): LatLng {
 
 fun LatLng.toDataLatLng(): DataLatLng {
     return DataLatLng(this.latitude, this.longitude)
+}
+
+fun List<DataLatLng>.toLatLngGroup():List<LatLng>{
+    return map { it.toLatLng() }
+}
+fun List<LatLng>.toDataLatLngGroup():List<DataLatLng>{
+    return map { it.toDataLatLng() }
 }

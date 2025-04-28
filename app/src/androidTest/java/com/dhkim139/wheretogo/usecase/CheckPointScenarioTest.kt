@@ -5,6 +5,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.dhkim139.wheretogo.di.MockModelModule
 import com.dhkim139.wheretogo.mock.model.MockRemoteUser
 import com.wheretogo.data.toCourse
+import com.wheretogo.data.toLatLngGroup
 import com.wheretogo.domain.AuthType
 import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.auth.AuthRequest
@@ -88,7 +89,7 @@ class CheckPointScenarioTest {
         val authRequest = AuthRequest(authType = AuthType.PROFILE, authProfile = addUser)
         val addCourse = MockModelModule().provideRemoteCourseGroup()
             .first { it.courseId == "cs3" }
-            .run { toCourse(points = waypoints).toCourseAddRequest() }
+            .run { toCourse(points = waypoints.toLatLngGroup()).toCourseAddRequest() }
         val uri = getAssetFileUri(context, "photo_opt.jpg")
 
         //로그인후 코스, 체크포인트 추가

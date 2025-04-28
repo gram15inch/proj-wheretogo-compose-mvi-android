@@ -3,6 +3,7 @@ package com.wheretogo.data.repositoryimpl
 
 import com.wheretogo.data.datasource.RouteLocalDatasource
 import com.wheretogo.data.datasource.RouteRemoteDatasource
+import com.wheretogo.data.toDataLatLngGroup
 import com.wheretogo.data.toLocalRoute
 import com.wheretogo.data.toRemoteRoute
 import com.wheretogo.data.toRoute
@@ -43,7 +44,7 @@ class RouteRepositoryImpl @Inject constructor(
 
     override suspend fun createRoute(waypoints: List<LatLng>): Result<Route> {
         return runCatching {
-            routeRemoteDatasource.getRouteByNaver(waypoints).toRoute()
+            routeRemoteDatasource.getRouteByNaver(waypoints.toDataLatLngGroup()).toRoute()
         }
     }
 }

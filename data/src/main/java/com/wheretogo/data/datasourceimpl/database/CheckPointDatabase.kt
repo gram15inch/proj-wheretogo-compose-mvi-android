@@ -11,7 +11,8 @@ import androidx.room.TypeConverters
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.wheretogo.data.model.checkpoint.LocalCheckPoint
-import com.wheretogo.domain.model.map.LatLng
+import com.wheretogo.data.model.map.DataLatLng
+
 
 @TypeConverters(CheckPointJsonConverters::class)
 @Database(
@@ -46,15 +47,15 @@ class CheckPointJsonConverters {
         .add(KotlinJsonAdapterFactory())
         .build()
 
-    private val latLngAdapter = moshi.adapter(LatLng::class.java)
+    private val latLngAdapter = moshi.adapter(DataLatLng::class.java)
 
     @TypeConverter
-    fun toLatLng(jsonString: String?): LatLng? {
+    fun toLatLng(jsonString: String?): DataLatLng? {
         return jsonString?.let { latLngAdapter.fromJson(it) }
     }
 
     @TypeConverter
-    fun fromLatLng(course: LatLng?): String? {
+    fun fromLatLng(course: DataLatLng?): String? {
         return course?.let { latLngAdapter.toJson(course) }
     }
 

@@ -2,7 +2,7 @@ package com.dhkim139.wheretogo.remoteDatasource
 
 import com.wheretogo.data.datasourceimpl.UserRemoteDatasourceImpl
 import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
-import com.wheretogo.data.model.user.ProfilePublic
+import com.wheretogo.data.model.user.RemoteProfilePublic
 import com.wheretogo.data.toProfile
 import com.wheretogo.data.toProfilePublic
 import com.wheretogo.domain.HistoryType
@@ -34,7 +34,7 @@ class UserTest {
     }
 
     private fun getLocalProfile(id: String): Profile {
-        val public1 = ProfilePublic(
+        val public1 = RemoteProfilePublic(
             name = "name$id",
             hashMail = hashSha256("mail$id"),
         )

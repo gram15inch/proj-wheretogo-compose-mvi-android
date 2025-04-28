@@ -6,10 +6,10 @@ import com.google.firebase.firestore.FirebaseFirestoreException
 import com.wheretogo.data.FireStoreCollections
 import com.wheretogo.data.datasource.UserRemoteDatasource
 import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
-import com.wheretogo.data.model.user.ProfilePublic
+import com.wheretogo.data.model.user.RemoteProfilePrivate
+import com.wheretogo.data.model.user.RemoteProfilePublic
 import com.wheretogo.data.name
 import com.wheretogo.domain.HistoryType
-import com.wheretogo.domain.model.user.ProfilePrivate
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -32,7 +32,8 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
     private val private = FireStoreCollections.PRIVATE.name()
 
 
-    override suspend fun setProfilePublic(public: ProfilePublic) {
+    override suspend fun setProfilePublic(public: RemoteProfilePublic) {
+        println("tst_ ${public.toString()}")
         return suspendCancellableCoroutine { continuation ->
             firestore.collection(userTable).document(public.uid)
                 .set(public)
@@ -44,7 +45,7 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
         }
     }
 
-    override suspend fun setProfilePrivate(uid: String, privateProfile: ProfilePrivate) {
+    override suspend fun setProfilePrivate(uid: String, privateProfile: RemoteProfilePrivate) {
         return suspendCancellableCoroutine { continuation ->
             firestore.collection(userTable).document(uid).collection(private).document(private)
                 .set(privateProfile)
@@ -56,7 +57,7 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
         }
     }
 
-    override suspend fun getProfilePublic(uid: String): ProfilePublic? {
+    override suspend fun getProfilePublic(uid: String): RemoteProfilePublic? {
 
         return suspendCancellableCoroutine { continuation ->
 
@@ -64,7 +65,7 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
                 .get()
                 .addOnSuccessListener { result ->
                     if (result != null && result.exists()) {
-                        val profile = result.toObject(ProfilePublic::class.java)
+                        val profile = result.toObject(RemoteProfilePublic::class.java)
                         if (profile != null) {
                             continuation.resume(profile)
                         } else {
@@ -79,15 +80,16 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
         }
     }
 
-    override suspend fun getProfilePublicWithMail(hashMail: String): ProfilePublic? {
+    override suspend fun getProfilePublicWithMail(hashMail: String): RemoteProfilePublic? {
 
         return suspendCancellableCoroutine { continuation ->
-            firestore.collection(userTable).whereEqualTo(ProfilePublic::hashMail.name, hashMail)
+            firestore.collection(userTable)
+                .whereEqualTo(RemoteProfilePublic::hashMail.name, hashMail)
                 .limit(1)
                 .get()
                 .addOnSuccessListener { result ->
                     if (!result.isEmpty) {
-                        val profile = result.first().toObject(ProfilePublic::class.java)
+                        val profile = result.first().toObject(RemoteProfilePublic::class.java)
                         if (profile != null) {
                             continuation.resume(profile)
                         } else {
@@ -102,7 +104,7 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
         }
     }
 
-    override suspend fun getProfilePrivate(userId: String): ProfilePrivate? {
+    override suspend fun getProfilePrivate(userId: String): RemoteProfilePrivate? {
 
         return suspendCancellableCoroutine { continuation ->
 
@@ -110,7 +112,7 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
                 .get()
                 .addOnSuccessListener { result ->
                     if (result != null && result.exists()) {
-                        val profile = result.toObject(ProfilePrivate::class.java)
+                        val profile = result.toObject(RemoteProfilePrivate::class.java)
                         if (profile != null) {
                             continuation.resume(profile)
                         } else {
@@ -166,7 +168,7 @@ class UserRemoteDatasourceImpl @Inject constructor() : UserRemoteDatasource {
         }
     }
 
-    override suspend fun deleteHistory(uid: String,type:HistoryType){
+    override suspend fun deleteHistory(uid: String, type: HistoryType) {
         val typeTable = when (type) {
             HistoryType.LIKE -> likeTypeTable
             HistoryType.BOOKMARK -> bookMarkTypeTable
