@@ -20,5 +20,12 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
--keep class com.kakao.vectormap.** { *; }
--keep interface com.kakao.vectormap.**
+-keepattributes Signature, InnerClasses, EnclosingMethod
+-keepattributes RuntimeVisibleAnnotations, RuntimeVisibleParameterAnnotations
+-keepattributes AnnotationDefault
+
+-keep,allowobfuscation,allowshrinking class kotlin.coroutines.Continuation
+
+-dontwarn kotlin.Unit
+-dontwarn org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
+-dontwarn javax.annotation.**
