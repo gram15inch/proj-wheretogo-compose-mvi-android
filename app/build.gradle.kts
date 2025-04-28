@@ -28,8 +28,8 @@ android {
         applicationId = "com.dhkim139.wheretogo"
         minSdk = 24
         targetSdk = 34
-        versionCode = 14
-        versionName = "1.2.0"
+        versionCode = 15
+        versionName = "1.2.0-rc4"
 
         testInstrumentationRunner = "com.dhkim139.wheretogo.TestRunner"
         vectorDrawables {
@@ -45,14 +45,6 @@ android {
         }
     }
     buildTypes {
-        debug {
-            isMinifyEnabled = true
-            isShrinkResources = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
