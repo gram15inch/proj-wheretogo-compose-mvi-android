@@ -20,7 +20,10 @@ android {
 
     defaultConfig {
         minSdk = 24
-
+        consumerProguardFiles(
+            "consumer-default-rules.pro",
+            "consumer-retrofit-rules.pro"
+        )
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

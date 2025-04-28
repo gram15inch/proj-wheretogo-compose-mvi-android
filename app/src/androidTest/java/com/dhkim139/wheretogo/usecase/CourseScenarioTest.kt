@@ -3,6 +3,7 @@ package com.dhkim139.wheretogo.usecase
 import android.util.Log
 import com.dhkim139.wheretogo.di.MockModelModule
 import com.wheretogo.data.toCourse
+import com.wheretogo.data.toLatLngGroup
 import com.wheretogo.domain.AuthType
 import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.auth.AuthRequest
@@ -56,7 +57,7 @@ class CourseScenarioTest {
         val addUser = AuthProfile(uid = "addUser1", email = "addUse  r1@email.com", userName = "add1")
         val authRequest = AuthRequest(authType = AuthType.PROFILE, authProfile = addUser)
         val inputCourse = MockModelModule().provideRemoteCourseGroup().first().run {
-            this.toCourse(points = waypoints)
+            this.toCourse(points = waypoints.toLatLngGroup())
         }
 
         getNearByCourseUseCase(inputCourse.cameraLatLng, 8.0).empty(inputCourse.courseId)
@@ -74,7 +75,7 @@ class CourseScenarioTest {
         val addUser = AuthProfile(uid = "addUser1", email = "addUser1@email.com", userName = "add1")
         val authRequest = AuthRequest(authType = AuthType.PROFILE, authProfile = addUser)
         val inputCourse = MockModelModule().provideRemoteCourseGroup().first().run {
-            this.toCourse(points = waypoints)
+            this.toCourse(points = waypoints.toLatLngGroup())
         }
 
         signUpAndSignInUseCase(authRequest).success()

@@ -8,10 +8,10 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import com.wheretogo.data.datasource.UserLocalDatasource
+import com.wheretogo.data.model.user.LocalProfile
+import com.wheretogo.data.model.user.LocalProfilePrivate
 import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.model.map.History
-import com.wheretogo.domain.model.user.Profile
-import com.wheretogo.domain.model.user.ProfilePrivate
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -91,7 +91,7 @@ class UserLocalDatasourceImpl @Inject constructor(
         }
     }
 
-    override suspend fun setProfile(profile: Profile) {
+    override suspend fun setProfile(profile: LocalProfile) {
         userDataStore.edit { preferences ->
             preferences[uid] = profile.uid
             preferences[name] = profile.name
@@ -116,17 +116,17 @@ class UserLocalDatasourceImpl @Inject constructor(
     }
 
     override suspend fun clearUser() {
-        setProfile(Profile())
+        setProfile(LocalProfile())
         setHistory(History())
     }
 
-    override fun getProfileFlow(): Flow<Profile> {
+    override fun getProfileFlow(): Flow<LocalProfile> {
         return userDataStore.data.map { preferences ->
-            Profile(
+            LocalProfile(
                 uid = (preferences[uid] ?: ""),
                 name = (preferences[name] ?: ""),
                 hashMail = (preferences[hashMail] ?: ""),
-                private = ProfilePrivate(
+                private = LocalProfilePrivate(
                     mail = (preferences[mail] ?: ""),
                     authCompany = preferences[authCompany] ?: "",
                     lastVisited = preferences[lastVisitedDate] ?: 0L,

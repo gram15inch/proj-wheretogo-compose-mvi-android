@@ -13,8 +13,8 @@ import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.wheretogo.data.model.course.DataMetaCheckPoint
 import com.wheretogo.data.model.course.LocalCourse
+import com.wheretogo.data.model.map.DataLatLng
 import com.wheretogo.data.model.meta.LocalMetaGeoHash
-import com.wheretogo.domain.model.map.LatLng
 import java.lang.reflect.Type
 
 @TypeConverters(CourseJsonConverters::class)
@@ -66,29 +66,29 @@ class CourseJsonConverters {
         .build()
 
     private val latLngListType: Type =
-        Types.newParameterizedType(List::class.java, LatLng::class.java)
-    private val latLngGroupAdapter = moshi.adapter<List<LatLng>>(latLngListType)
-    private val latLngAdapter = moshi.adapter(LatLng::class.java)
+        Types.newParameterizedType(List::class.java, DataLatLng::class.java)
+    private val latLngGroupAdapter = moshi.adapter<List<DataLatLng>>(latLngListType)
+    private val latLngAdapter = moshi.adapter(DataLatLng::class.java)
     private val metaCheckPointAdapter = moshi.adapter(DataMetaCheckPoint::class.java)
 
     @TypeConverter
-    fun fromLatLngList(latLngList: List<LatLng>?): String? {
+    fun fromLatLngList(latLngList: List<DataLatLng>?): String? {
         return latLngList?.let { latLngGroupAdapter.toJson(it) }
     }
 
     @TypeConverter
-    fun toLatLngList(jsonString: String?): List<LatLng>? {
+    fun toLatLngList(jsonString: String?): List<DataLatLng>? {
         return jsonString?.let { latLngGroupAdapter.fromJson(it) }
     }
 
 
     @TypeConverter
-    fun toLatLng(jsonString: String?): LatLng? {
+    fun toLatLng(jsonString: String?): DataLatLng? {
         return jsonString?.let { latLngAdapter.fromJson(it) }
     }
 
     @TypeConverter
-    fun fromLatLng(latlng: LatLng?): String? {
+    fun fromLatLng(latlng: DataLatLng?): String? {
         return latlng?.let { latLngAdapter.toJson(it) }
     }
 

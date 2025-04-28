@@ -2,7 +2,6 @@ package com.wheretogo.data.datasourceimpl
 
 import android.os.Build
 import android.text.Html
-import android.util.Log
 import com.wheretogo.data.BuildConfig
 import com.wheretogo.data.datasource.AddressRemoteDatasource
 import com.wheretogo.data.datasourceimpl.service.NaverFreeApiService

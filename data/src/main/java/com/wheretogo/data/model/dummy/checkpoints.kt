@@ -2,7 +2,6 @@ package com.wheretogo.data.model.dummy
 
 import com.wheretogo.data.model.checkpoint.RemoteCheckPoint
 import com.wheretogo.data.model.map.DataLatLng
-import com.wheretogo.domain.model.map.LatLng
 
 
 val cs6 = listOf(
