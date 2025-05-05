@@ -6,6 +6,7 @@ import com.wheretogo.data.datasourceimpl.RouteRemoteDatasourceImpl
 import com.wheretogo.data.model.course.RemoteCourse
 import com.wheretogo.data.model.map.DataLatLng
 import com.wheretogo.data.model.route.RemoteRoute
+import com.wheretogo.data.toDataLatLngGroup
 import com.wheretogo.domain.model.dummy.getCourseDummy
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -60,7 +61,7 @@ class RouteTest {
     @Test
     fun createRouteTest():Unit = runBlocking{
         val course = getCourseDummy().first()
-        val rr= routeRemoteDatasourceImpl.getRouteByNaver(course.waypoints)
+        val rr= routeRemoteDatasourceImpl.getRouteByNaver(course.waypoints.toDataLatLngGroup())
         rr.points
         assertEquals(true,rr.points.isNotEmpty())
     }
