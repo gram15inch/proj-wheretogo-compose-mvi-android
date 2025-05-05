@@ -5,5 +5,4 @@ import com.wheretogo.domain.model.map.Comment
 
 interface AddCommentToCheckPointUseCase {
     suspend operator fun invoke(comment: Comment): UseCaseResponse<String>
-    suspend operator fun invoke(commentGroup: List<Comment>): UseCaseResponse<String>
 }
