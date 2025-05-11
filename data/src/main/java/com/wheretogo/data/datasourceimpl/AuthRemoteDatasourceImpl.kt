@@ -19,19 +19,33 @@ class AuthRemoteDatasourceImpl @Inject constructor() : AuthRemoteDatasource {
         return suspendCancellableCoroutine { continuation ->
             firebaseAuth.signInWithCredential(credential)
                 .addOnCompleteListener { task ->
-                    runCatching {
-                        val user = task.result.user!!
-                        AuthProfile(
-                            uid = user.uid,
-                            email = user.email ?: "",
-                            userName = user.displayName ?: "",
-                            authCompany = AuthCompany.GOOGLE
-                        )
-                    }.onSuccess {
-                        continuation.resume(it)
-                    }.onFailure {
+                    val user = task.result.user
+                    if (user == null) {
                         continuation.resume(null)
+                        return@addOnCompleteListener
                     }
+                    user.getIdToken(true)
+                        .addOnSuccessListener { result ->
+                            val token = result.token
+                            if (token == null) {
+                                continuation.resume(null)
+                                return@addOnSuccessListener
+                            }
+                            continuation.resume(
+                                AuthProfile(
+                                    uid = user.uid,
+                                    email = user.email ?: "",
+                                    userName = user.displayName ?: "",
+                                    authCompany = AuthCompany.GOOGLE,
+                                    token = token,
+                                )
+                            )
+                        }.addOnFailureListener {
+                            continuation.resume(null)
+                        }
+                }
+                .addOnFailureListener {
+                    continuation.resume(null)
                 }
         }
     }

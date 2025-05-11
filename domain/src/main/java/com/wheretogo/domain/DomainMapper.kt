@@ -55,12 +55,13 @@ fun CourseAddRequest.toCourse(
 }
 
 
-fun Profile.toAuthProfile(): AuthProfile {
+fun Profile.toAuthProfile(token:String): AuthProfile {
     return AuthProfile(
         uid = uid,
-        userName = name,
         email = private.mail,
-        authCompany = AuthCompany.PROFILE
+        userName = name,
+        authCompany = AuthCompany.PROFILE,
+        token = token
     )
 }
 

@@ -1,6 +1,7 @@
 package com.wheretogo.domain.repository
 
 import com.wheretogo.domain.HistoryType
+import com.wheretogo.domain.model.user.AuthProfile
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePrivate
 import kotlinx.coroutines.flow.Flow
@@ -46,7 +47,7 @@ interface UserRepository {
 
     suspend fun createUser(profile: Profile): Result<Unit>
 
-    suspend fun syncUser(uid: String): Result<Profile>
+    suspend fun syncUser(authProfile: AuthProfile): Result<Profile>
 
     suspend fun clearUser()
 

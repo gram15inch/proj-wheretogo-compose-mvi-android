@@ -37,6 +37,8 @@ class UserLocalDatasourceImpl @Inject constructor(
     private val checkpoint = stringSetPreferencesKey("checkpoint_profile")
     private val reportContent = stringSetPreferencesKey("report_content_profile")
 
+    private val firebaseToken = stringPreferencesKey("token_firebase")
+
     override fun isRequestLoginFlow(): Flow<Boolean> {
         return userDataStore.data.map { preferences ->
             preferences[isRequestLoginKey] ?: true
@@ -91,6 +93,12 @@ class UserLocalDatasourceImpl @Inject constructor(
         }
     }
 
+    override fun getTokenFlow(): Flow<String> {
+        return userDataStore.data.map { preferences ->
+            preferences[firebaseToken]?:""
+        }
+    }
+
     override suspend fun setProfile(profile: LocalProfile) {
         userDataStore.edit { preferences ->
             preferences[uid] = profile.uid
@@ -115,9 +123,16 @@ class UserLocalDatasourceImpl @Inject constructor(
         }
     }
 
+    override suspend fun setToken(token:String){
+        userDataStore.edit { preferences ->
+            preferences[firebaseToken] = token
+        }
+    }
+
     override suspend fun clearUser() {
         setProfile(LocalProfile())
         setHistory(History())
+        setToken("")
     }
 
     override fun getProfileFlow(): Flow<LocalProfile> {
