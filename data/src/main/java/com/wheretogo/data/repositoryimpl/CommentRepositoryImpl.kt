@@ -17,10 +17,9 @@ class CommentRepositoryImpl @Inject constructor(
         return runCatching {
             remoteDatasource.getCommentGroupInCheckPoint(groupId)
                 ?.remoteCommentGroup
-                ?.map { it.toComment() } ?: emptyList<Comment>().run {
-                _cacheCommentGroup[groupId] = this
-                this
-            }
+                ?.map { it.toComment() }?.apply {
+                    _cacheCommentGroup[groupId] = this
+                } ?: emptyList()
         }
     }
 

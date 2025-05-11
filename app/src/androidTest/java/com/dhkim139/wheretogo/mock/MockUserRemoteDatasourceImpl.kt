@@ -6,6 +6,7 @@ import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
 import com.wheretogo.data.model.user.RemoteProfilePrivate
 import com.wheretogo.data.model.user.RemoteProfilePublic
 import com.wheretogo.data.toProfile
+import com.wheretogo.data.toProfilePrivate
 import com.wheretogo.data.toProfilePublic
 import com.wheretogo.data.toRemoteProfilePrivate
 import com.wheretogo.domain.HistoryType
@@ -33,14 +34,14 @@ class MockUserRemoteDatasourceImpl @Inject constructor(
         userRemoteGroup.put(uid, newUser)
     }
 
-    override suspend fun setProfilePrivate(uid: String, privateProfile: ProfilePrivate) {
+    override suspend fun setProfilePrivate(uid: String, privateProfile: RemoteProfilePrivate) {
         val newUser = userRemoteGroup.getOrPut(uid) {
             MockRemoteUser(
                 uid,
-                getProfilePublic(uid)?.toProfile()?.copy(uid=uid,private = privateProfile)?:return
+                getProfilePublic(uid)?.toProfile()?.copy(uid=uid,private = privateProfile.toProfilePrivate())?:return
             )
         }.run {
-            copy(profile = profile.copy(private = privateProfile))
+            copy(profile = profile.copy(private = privateProfile.toProfilePrivate()))
         }
         userRemoteGroup.put(uid, newUser)
     }

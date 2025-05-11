@@ -5,6 +5,7 @@ import com.wheretogo.data.datasourceimpl.CourseRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.RouteRemoteDatasourceImpl
 import com.wheretogo.data.model.course.DataMetaCheckPoint
 import com.wheretogo.data.model.route.RemoteRoute
+import com.wheretogo.data.toDataLatLngGroup
 import com.wheretogo.data.toRemoteCheckPoint
 import com.wheretogo.data.toRemoteCourse
 import com.wheretogo.domain.model.dummy.getCheckPointDummy
@@ -64,7 +65,7 @@ class InitTest {
         val rtGroup = getCourseDummy().map {
             RemoteRoute(
                 courseId = it.courseId,
-                points = datasource.getRouteByNaver(it.waypoints).points
+                points = datasource.getRouteByNaver(it.waypoints.toDataLatLngGroup()).points
             )
         }
 
