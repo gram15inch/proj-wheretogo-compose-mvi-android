@@ -203,14 +203,18 @@ class UserRepositoryImpl @Inject constructor(
     }
 
 
-    override suspend fun clearUser() {
+    override suspend fun clearUserCache() {
         userLocalDatasource.clearUser()
     }
 
-    override suspend fun deleteUser(userId: String): Result<Unit> {
+    override suspend fun deleteUser(): Result<Unit> {
         return runCatching{
-            userRemoteDatasource.deleteProfile(userId)
-            clearUser()
+            val uid = userLocalDatasource.getProfileFlow().first().uid
+            val token= userLocalDatasource.getTokenFlow().first()
+            check(uid.isNotBlank())
+            check(token.isNotBlank())
+            userRemoteDatasource.deleteUser(uid, token)
+            clearUserCache()
         }
     }
 

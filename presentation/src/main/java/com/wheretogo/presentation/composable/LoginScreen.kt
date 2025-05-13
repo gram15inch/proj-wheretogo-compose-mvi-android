@@ -36,7 +36,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastCbrt
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.wheretogo.domain.AuthType
 import com.wheretogo.domain.model.auth.AuthRequest
@@ -68,7 +67,7 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
                     viewModel.signUpAndSignIn(
                         AuthRequest(
                             authType = AuthType.PROFILE,
-                            authProfile = getProfileDummy()[0].toAuthProfile()
+                            authProfile = getProfileDummy()[0].toAuthProfile("tempToken")
                         )
                     )
                 else

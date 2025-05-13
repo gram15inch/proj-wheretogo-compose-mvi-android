@@ -49,9 +49,9 @@ interface UserRepository {
 
     suspend fun syncUser(authProfile: AuthProfile): Result<Profile>
 
-    suspend fun clearUser()
+    suspend fun clearUserCache()
 
-    suspend fun deleteUser(userId: String): Result<Unit>
+    suspend fun deleteUser(): Result<Unit>
 
     suspend fun checkUser(mail:String): Result<Profile>
 }
