@@ -63,15 +63,7 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
         state,
         onGoogleLoginClick = {
             coroutine.launch {
-                if(BuildConfig.DEBUG)
-                    viewModel.signUpAndSignIn(
-                        AuthRequest(
-                            authType = AuthType.PROFILE,
-                            authProfile = getProfileDummy()[0].toAuthProfile("tempToken")
-                        )
-                    )
-                else
-                    viewModel.signUpAndSignIn(googleAuthOnDevice(viewModel.getGoogleIdOption, context))
+                viewModel.signUpAndSignIn(googleAuthOnDevice(viewModel.getGoogleIdOption, context))
             }
         },
         onLoginPassClick = {

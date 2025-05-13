@@ -34,6 +34,7 @@ class SettingViewModel @Inject constructor(
                 is SettingIntent.LogoutClick -> logoutClick()
                 is SettingIntent.InfoClick -> infoClick(intent.settingInfoType)
                 is SettingIntent.UsernameChangeClick -> usernameChangeClick()
+                is SettingIntent.DialogAnswer -> dialogAnswer(intent.answer)
             }
         }
     }
@@ -61,8 +62,13 @@ class SettingViewModel @Inject constructor(
         }
     }
 
-    private suspend fun userDeleteClick() {
-        withContext(Dispatchers.IO){ deleteUserUseCase()}
+    private fun userDeleteClick() {
+        _settingScreenState.value = _settingScreenState.value.run {
+            copy(
+                isLoading = false,
+                isDialog = true
+            )
+        }
     }
 
     private suspend fun logoutClick() {
@@ -76,5 +82,23 @@ class SettingViewModel @Inject constructor(
 
     private suspend fun usernameChangeClick() {
 
+    }
+
+    private suspend fun dialogAnswer(answer:Boolean) {
+        if(answer){
+            _settingScreenState.value = _settingScreenState.value.run {
+                copy(
+                    isLoading = true,
+                    isDialog = true
+                )
+            }
+            withContext(Dispatchers.IO){ deleteUserUseCase()}
+        }
+        _settingScreenState.value = _settingScreenState.value.run {
+            copy(
+                isLoading = false,
+                isDialog = false
+            )
+        }
     }
 }

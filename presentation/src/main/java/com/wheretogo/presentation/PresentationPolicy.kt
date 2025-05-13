@@ -29,6 +29,8 @@ enum class CameraUpdateSource {
     USER, APP_EASING, APP_LINEAR
 }
 
+const val BANNER_URL = "https://accurate-flight-2c4.notion.site/1f1cb3833d76805e9f51d663dc940689?pvs=4"
+
 enum class SettingInfoType(val url: String) {
     PRIVACY("https://accurate-flight-2c4.notion.site/179cb3833d76808b993dc4551d5def8c?pvs=4"),
     LICENCE("https://accurate-flight-2c4.notion.site/179cb3833d768056bfa8e97a3349e0cf?pvs=4"),

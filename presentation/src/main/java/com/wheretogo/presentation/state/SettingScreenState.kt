@@ -5,5 +5,6 @@ import com.wheretogo.domain.model.user.Profile
 data class SettingScreenState(
     val profile: Profile = Profile(),
     val isProfile: Boolean = false,
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val isDialog: Boolean =false
 )
