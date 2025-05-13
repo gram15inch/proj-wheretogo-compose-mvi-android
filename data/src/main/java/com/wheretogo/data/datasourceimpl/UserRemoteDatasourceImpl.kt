@@ -35,7 +35,6 @@ class UserRemoteDatasourceImpl @Inject constructor(
     }
 
     override suspend fun setProfilePublic(public: RemoteProfilePublic) {
-        println("tst_ ${public}")
         return suspendCancellableCoroutine { continuation ->
             firestore.collection(FireStoreCollections.USER.name())
                 .document(public.uid)

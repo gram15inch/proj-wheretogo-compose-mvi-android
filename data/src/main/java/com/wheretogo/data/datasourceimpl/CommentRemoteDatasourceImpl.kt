@@ -15,11 +15,12 @@ import kotlin.coroutines.resumeWithException
 
 class CommentRemoteDatasourceImpl @Inject constructor() : CommentRemoteDatasource {
     private val firestore by lazy { FirebaseFirestore.getInstance() }
-    private val commentTable = FireStoreCollections.COMMENT.name()
+    private val commentRootCollection = FireStoreCollections.COMMENT.name()
+    private val remoteCommentGroupAttr = RemoteCommentGroupWrapper::remoteCommentGroup.name
 
     override suspend fun getCommentGroupInCheckPoint(groupId: String): RemoteCommentGroupWrapper? {
         return suspendCancellableCoroutine { continuation ->
-            firestore.collection(commentTable).document(groupId)
+            firestore.collection(commentRootCollection).document(groupId)
                 .get()
                 .addOnSuccessListener {
                     val data = it.toObject(RemoteCommentGroupWrapper::class.java)
@@ -32,7 +33,7 @@ class CommentRemoteDatasourceImpl @Inject constructor() : CommentRemoteDatasourc
 
     override suspend fun setCommentGroupInCheckPoint(wrapper: RemoteCommentGroupWrapper): Boolean {
         return suspendCancellableCoroutine { continuation ->
-            firestore.collection(commentTable).document(wrapper.groupId)
+            firestore.collection(commentRootCollection).document(wrapper.groupId)
                 .set(wrapper)
                 .addOnSuccessListener {
                     continuation.resume(true)
@@ -44,13 +45,13 @@ class CommentRemoteDatasourceImpl @Inject constructor() : CommentRemoteDatasourc
 
     override suspend fun setCommentInCheckPoint(comment: RemoteComment, isInit: Boolean): Boolean {
         return suspendCancellableCoroutine { continuation ->
-            firestore.collection(commentTable).document(comment.commentGroupId).run {
+            firestore.collection(commentRootCollection).document(comment.commentGroupId).run {
                 if (isInit) {
                     set(RemoteCommentGroupWrapper(comment.commentGroupId, listOf(comment)))
                 }
                 else {
                     update(
-                        RemoteCommentGroupWrapper::remoteCommentGroup.name,
+                        remoteCommentGroupAttr,
                         FieldValue.arrayUnion(comment)
                     )
                 }.addOnSuccessListener {
@@ -65,9 +66,9 @@ class CommentRemoteDatasourceImpl @Inject constructor() : CommentRemoteDatasourc
 
     override suspend fun updateCommentInCheckPoint(comment: RemoteComment): Boolean {
         return suspendCancellableCoroutine { continuation ->
-            firestore.collection(commentTable).document(comment.commentGroupId)
+            firestore.collection(commentRootCollection).document(comment.commentGroupId)
                 .update(
-                    RemoteCommentGroupWrapper::remoteCommentGroup.name,
+                    remoteCommentGroupAttr,
                     FieldValue.arrayRemove(comment)
                 )
                 .addOnSuccessListener {
@@ -80,7 +81,7 @@ class CommentRemoteDatasourceImpl @Inject constructor() : CommentRemoteDatasourc
 
     override suspend fun removeCommentGroupInCheckPoint(commentGroupId:String):Boolean {
         return suspendCancellableCoroutine { continuation ->
-            firestore.collection(commentTable).document(commentGroupId)
+            firestore.collection(commentRootCollection).document(commentGroupId)
                 .delete()
                 .addOnSuccessListener {
                     continuation.resume(true)

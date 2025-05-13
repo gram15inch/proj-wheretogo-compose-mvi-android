@@ -12,10 +12,10 @@ import kotlin.coroutines.resumeWithException
 
 class ReportRemoteDatasourceImpl @Inject constructor() : ReportRemoteDatasource {
     private val firestore by lazy { FirebaseFirestore.getInstance() }
-    private val reportTable = FireStoreCollections.REPORT.name()
+    private val reportRootCollection = FireStoreCollections.REPORT.name()
     override suspend fun addReport(report: RemoteReport): Boolean {
         return suspendCancellableCoroutine { continuation ->
-            firestore.collection(reportTable).document(report.reportId)
+            firestore.collection(reportRootCollection).document(report.reportId)
                 .set(report).addOnSuccessListener {
                     continuation.resume(true)
                 }.addOnFailureListener {
@@ -26,7 +26,7 @@ class ReportRemoteDatasourceImpl @Inject constructor() : ReportRemoteDatasource 
 
     override suspend fun getReport(reportId: String): RemoteReport? {
         return suspendCancellableCoroutine { continuation ->
-            firestore.collection(reportTable).document(reportId).get()
+            firestore.collection(reportRootCollection).document(reportId).get()
                 .addOnSuccessListener {
                     continuation.resume(it.toObject(RemoteReport::class.java))
                 }.addOnFailureListener {
@@ -37,7 +37,7 @@ class ReportRemoteDatasourceImpl @Inject constructor() : ReportRemoteDatasource 
 
     override suspend fun removeReport(reportId: String): Boolean {
         return suspendCancellableCoroutine { continuation ->
-            firestore.collection(reportTable).document(reportId).delete()
+            firestore.collection(reportRootCollection).document(reportId).delete()
                 .addOnSuccessListener {
                     continuation.resume(true)
                 }.addOnFailureListener {
@@ -48,7 +48,7 @@ class ReportRemoteDatasourceImpl @Inject constructor() : ReportRemoteDatasource 
 
     override suspend fun getReportByType(reportType: String): List<RemoteReport> {
         return suspendCancellableCoroutine { continuation ->
-            firestore.collection(reportTable).whereEqualTo(RemoteReport::type.name, reportType)
+            firestore.collection(reportRootCollection).whereEqualTo(RemoteReport::type.name, reportType)
                 .limit(10).get()
                 .addOnSuccessListener {
                     continuation.resume(it.map { it.toObject(RemoteReport::class.java) })
@@ -60,7 +60,7 @@ class ReportRemoteDatasourceImpl @Inject constructor() : ReportRemoteDatasource 
 
     override suspend fun getReportByStatus(reportStatus: String): List<RemoteReport> {
         return suspendCancellableCoroutine { continuation ->
-            firestore.collection(reportTable).whereEqualTo(RemoteReport::status.name, reportStatus)
+            firestore.collection(reportRootCollection).whereEqualTo(RemoteReport::status.name, reportStatus)
                 .limit(10).get()
                 .addOnSuccessListener {
                     continuation.resume(it.map { it.toObject(RemoteReport::class.java) })
@@ -72,7 +72,7 @@ class ReportRemoteDatasourceImpl @Inject constructor() : ReportRemoteDatasource 
 
     override suspend fun getReportByUid(userId: String): List<RemoteReport> {
         return suspendCancellableCoroutine { continuation ->
-            firestore.collection(reportTable).whereEqualTo(RemoteReport::userId.name, userId)
+            firestore.collection(reportRootCollection).whereEqualTo(RemoteReport::userId.name, userId)
                 .limit(10).get()
                 .addOnSuccessListener {
                     continuation.resume(it.map { it.toObject(RemoteReport::class.java) })
