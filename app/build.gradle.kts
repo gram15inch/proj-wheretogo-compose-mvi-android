@@ -28,8 +28,8 @@ android {
         applicationId = "com.dhkim139.wheretogo"
         minSdk = 24
         targetSdk = 34
-        versionCode = 16
-        versionName = "1.2.0-rc5"
+        versionCode = 17
+        versionName = "1.2.0-rc6"
 
         testInstrumentationRunner = "com.dhkim139.wheretogo.TestRunner"
         vectorDrawables {
