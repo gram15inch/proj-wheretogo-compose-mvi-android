@@ -59,12 +59,14 @@ class UserScenarioTest {
         val resistUser = AuthProfile(
             uid = "uid1",
             email = "email1",
-            userName = "userName1"
+            userName = "userName1",
+            token = ""
         )
         val unknownUser = AuthProfile(
             uid = "uid2",
             email = "email2",
-            userName = "userName2"
+            userName = "userName2",
+            token = ""
         )
         val authRequest = AuthRequest(authType = AuthType.PROFILE, authProfile = resistUser)
         getUserProfileStreamUseCase().first().assertEmpty()

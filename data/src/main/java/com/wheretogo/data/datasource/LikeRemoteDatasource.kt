@@ -7,7 +7,7 @@ interface LikeRemoteDatasource {
 
     suspend fun getLikeInObject(type: LikeObject, objectId: String): RemoteLike
 
-    suspend fun setLikeInObject(type: LikeObject, objectId: String, emoteLike: RemoteLike): Boolean
+    suspend fun setLikeInObject(type: LikeObject, objectId: String, remoteLike: RemoteLike): Boolean
 
     suspend fun removeLikeInCourse(type: LikeObject, objectId: String): Boolean
 

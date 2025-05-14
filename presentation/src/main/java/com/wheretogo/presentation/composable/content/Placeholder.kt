@@ -52,7 +52,7 @@ fun ShimmeringPlaceholderPrivet() {
 }
 
 @Composable
-fun DelayLottieAnimation(modifier: Modifier, ltRes: Int, isVisible: Boolean, delay: Long) {
+fun DelayLottieAnimation(modifier: Modifier, ltRes: Int, isVisible: Boolean, delay: Long=0) {
     var shouldShowAnimation by remember { mutableStateOf(true) }
     var animation by remember { mutableStateOf<Job?>(null) }
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(ltRes))

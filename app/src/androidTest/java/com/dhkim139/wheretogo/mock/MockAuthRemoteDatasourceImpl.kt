@@ -13,11 +13,12 @@ class MockAuthRemoteDatasourceImpl @Inject constructor(
     override suspend fun authGoogleWithFirebase(authToken: AuthToken): AuthProfile? {
         return if (mockRemoteUser.token.isNotBlank()) {
             AuthProfile(
-                    uid = mockRemoteUser.profile.uid,
-                    email = mockRemoteUser.profile.private.mail,
-                    userName = mockRemoteUser.profile.name,
-                    authCompany = AuthCompany.GOOGLE
-                )
+                uid = mockRemoteUser.profile.uid,
+                email = mockRemoteUser.profile.private.mail,
+                userName = mockRemoteUser.profile.name,
+                authCompany = AuthCompany.GOOGLE,
+                token = ""
+            )
 
         } else {
             null

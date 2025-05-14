@@ -54,7 +54,12 @@ class CourseScenarioTest {
 
     @Test // 누구나 위치기반 코스 불러오기
     fun scenario1(): Unit = runBlocking {
-        val addUser = AuthProfile(uid = "addUser1", email = "addUse  r1@email.com", userName = "add1")
+        val addUser = AuthProfile(
+            uid = "addUser1",
+            email = "addUse  r1@email.com",
+            userName = "add1",
+            token = ""
+        )
         val authRequest = AuthRequest(authType = AuthType.PROFILE, authProfile = addUser)
         val inputCourse = MockModelModule().provideRemoteCourseGroup().first().run {
             this.toCourse(points = waypoints.toLatLngGroup())
@@ -72,7 +77,12 @@ class CourseScenarioTest {
 
     @Test // 인증된 사용자가 코스를 추가하거나 삭제하기
     fun scenario2(): Unit = runBlocking {
-        val addUser = AuthProfile(uid = "addUser1", email = "addUser1@email.com", userName = "add1")
+        val addUser = AuthProfile(
+            uid = "addUser1",
+            email = "addUser1@email.com",
+            userName = "add1",
+            token = ""
+        )
         val authRequest = AuthRequest(authType = AuthType.PROFILE, authProfile = addUser)
         val inputCourse = MockModelModule().provideRemoteCourseGroup().first().run {
             this.toCourse(points = waypoints.toLatLngGroup())
@@ -104,8 +114,18 @@ class CourseScenarioTest {
     @Test // 인증된 사용자가 코스를 신고하기
     fun scenario3(): Unit = runBlocking {
         val baseCourse = getCourseDummy().first().run { copy(points = waypoints) }
-        val reportUser = AuthProfile(uid = "report1", email = "report1@email.com", userName = "report1")
-        val unknownUser = AuthProfile(uid = "unkonwn1", email = "unkonwn1@email.com", userName = "unkonwn1")
+        val reportUser = AuthProfile(
+            uid = "report1",
+            email = "report1@email.com",
+            userName = "report1",
+            token = ""
+        )
+        val unknownUser = AuthProfile(
+            uid = "unkonwn1",
+            email = "unkonwn1@email.com",
+            userName = "unkonwn1",
+            token = ""
+        )
         val reportAuthRequest = AuthRequest(authType = AuthType.PROFILE, authProfile = reportUser)
         val unknownAuthRequest = AuthRequest(authType = AuthType.PROFILE, authProfile = unknownUser)
 

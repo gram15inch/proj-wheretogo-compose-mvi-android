@@ -18,8 +18,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -37,8 +39,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.wheretogo.domain.model.user.Profile
+import com.wheretogo.domain.model.user.ProfilePrivate
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.SettingInfoType
+import com.wheretogo.presentation.composable.content.DelayLottieAnimation
 import com.wheretogo.presentation.feature.openActivity
 import com.wheretogo.presentation.feature.openWeb
 import com.wheretogo.presentation.intent.SettingIntent
@@ -64,7 +68,8 @@ fun SettingScreen(navController: NavController, viewModel: SettingViewModel = hi
             onUserNameChangeButtonClick = { viewModel.handleIntent(SettingIntent.UsernameChangeClick) },
             onUserDeleteButtonClick = { viewModel.handleIntent(SettingIntent.UserDeleteClick) },
             onWebInfoButtonClick = { viewModel.handleIntent(SettingIntent.InfoClick(it)) },
-            onLogoutButtonClick = { viewModel.handleIntent(SettingIntent.LogoutClick) }
+            onLogoutButtonClick = { viewModel.handleIntent(SettingIntent.LogoutClick) },
+            onDialogAnswer ={ viewModel.handleIntent(SettingIntent.DialogAnswer(it))},
         )
     }
 }
@@ -82,7 +87,14 @@ fun SettingContentPreview() {
             navController = null,
             settingState = SettingScreenState().copy(
                 isProfile = true,
-                profile = Profile()
+                profile = Profile(
+                    name = "어디갈까",
+                    private = ProfilePrivate(
+                        mail = "wheretogohelp@gmail.com"
+                    )
+                ),
+                isLoading = false,
+                isDialog = false
             )
         )
     }
@@ -96,6 +108,8 @@ fun SettingContent(
     onLogoutButtonClick: () -> Unit = {},
     onWebInfoButtonClick: (SettingInfoType) -> Unit = {},
     onUserDeleteButtonClick: () -> Unit = {},
+    onDialogAnswer: (Boolean) -> Unit = {},
+
 ) {
     Column(
         modifier = Modifier
@@ -135,6 +149,7 @@ fun SettingContent(
                 ProfileSection(
                     name = profile.name,
                     authCompany = profile.private.authCompany,
+                    mail = profile.private.mail,
                     onUserNameChangeButtonClick = onUserNameChangeButtonClick,
                     onLogoutButtonClick = onLogoutButtonClick
                 )
@@ -221,6 +236,47 @@ fun SettingContent(
             thickness = 2.dp,
             color = colorResource(R.color.gray_C7C7C7_80)
         )
+
+        if (settingState.isDialog)
+            AlertDialog(
+                onDismissRequest = {
+                    onDialogAnswer(false)
+                },
+                title = { Text(stringResource(R.string.user_delete_request)) },
+                text = {
+                    if (settingState.isLoading) {
+                        DelayLottieAnimation(
+                            Modifier
+                                .fillMaxWidth()
+                                .height(50.dp),
+                            ltRes = R.raw.lt_loading,
+                            isVisible = true
+                        )
+                    } else
+                        Text(stringResource(R.string.user_delete_confirm))
+                },
+                containerColor = Color.White,
+                confirmButton = {
+                    if (!settingState.isLoading)
+                        TextButton(onClick = {
+                            onDialogAnswer(false)
+                        }) {
+                            Text(
+                                color = colorResource(R.color.blue),
+                                text = stringResource(R.string.turn_around)
+                            )
+                        }
+                },
+                dismissButton = {
+                    if (!settingState.isLoading)
+                        TextButton(onClick = {
+                            onDialogAnswer(true)
+                        }) {
+                            Text(color = Color.Gray, text = stringResource(R.string.keep_going))
+                        }
+                }
+            )
+
         if (settingState.isProfile)
             Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                 Box(modifier = Modifier
@@ -245,6 +301,7 @@ fun SettingContent(
 fun ProfileSection(
     name: String,
     authCompany: String,
+    mail:String,
     onUserNameChangeButtonClick: () -> Unit,
     onLogoutButtonClick: () -> Unit
 ) {
@@ -267,7 +324,7 @@ fun ProfileSection(
                     )
                     Image(
                         modifier = Modifier
-                            .size(20.dp)
+                            .size(0.dp) //todo 추후 수정 추가시 복원
                             .padding(start = 3.dp),
                         painter = painterResource(R.drawable.ic_edit),
                         contentDescription = ""
@@ -278,15 +335,17 @@ fun ProfileSection(
             Box(modifier = Modifier.padding(start = 3.dp, top = 6.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Image(
-                        modifier = Modifier.size(17.dp).clip(CircleShape),
+                        modifier = Modifier
+                            .size(17.dp)
+                            .clip(CircleShape),
                         painter = painterResource(parseLogoImgRes(authCompany)),
                         contentDescription = ""
                     )
                     Text(
-                        modifier = Modifier.padding(start = 3.dp),
+                        modifier = Modifier.padding(start = 5.dp),
                         fontFamily = hancomSansFontFamily,
                         fontSize = 15.sp,
-                        text = "칭호"
+                        text = mail
                     )
                 }
             }
@@ -320,13 +379,15 @@ fun InfoButton(
             .height(40.dp)
             .clickable {
                 onInfoButtonClick(type)
-                when(type) {
+                when (type) {
                     SettingInfoType.LegalNotice -> {
                         openActivity(context, type.url)
                     }
+
                     SettingInfoType.OpenSourceLicense -> {
                         openActivity(context, type.url)
                     }
+
                     else -> {
                         openWeb(context, type.url)
                     }

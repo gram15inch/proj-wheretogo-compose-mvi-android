@@ -55,12 +55,13 @@ fun CourseAddRequest.toCourse(
 }
 
 
-fun Profile.toAuthProfile(): AuthProfile {
+fun Profile.toAuthProfile(token:String): AuthProfile {
     return AuthProfile(
         uid = uid,
-        userName = name,
         email = private.mail,
-        authCompany = AuthCompany.PROFILE
+        userName = name,
+        authCompany = AuthCompany.PROFILE,
+        token = token
     )
 }
 
@@ -161,12 +162,14 @@ fun List<CheckPoint>.toMetaCheckPoint(
 
 fun CheckPointAddRequest.toCheckpoint(
     userId: String,
+    userName: String,
     checkPointId: String,
     imageName: String,
 ): CheckPoint {
     return CheckPoint(
         checkPointId = checkPointId,
         userId = userId,
+        userName = userName,
         imageName = imageName,
         latLng = latLng,
         description = description

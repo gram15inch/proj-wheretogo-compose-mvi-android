@@ -5,6 +5,7 @@ import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
 import com.wheretogo.data.model.user.RemoteProfilePublic
 import com.wheretogo.data.toProfile
 import com.wheretogo.data.toProfilePublic
+import com.wheretogo.data.toRemoteProfilePrivate
 import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.feature.hashSha256
 import com.wheretogo.domain.model.user.Profile
@@ -55,7 +56,7 @@ class UserTest {
         remoteDatasource.setProfilePublic(p1.toProfilePublic())
         assertEquals(p1.toProfilePublic(), remoteDatasource.getProfilePublic(p1.uid))
 
-        remoteDatasource.setProfilePrivate(p1.uid, p1.private)
+        remoteDatasource.setProfilePrivate(p1.uid, p1.private.toRemoteProfilePrivate())
         assertEquals(p1.private, remoteDatasource.getProfilePrivate(p1.uid))
 
         remoteDatasource.deleteProfile(p1.uid)

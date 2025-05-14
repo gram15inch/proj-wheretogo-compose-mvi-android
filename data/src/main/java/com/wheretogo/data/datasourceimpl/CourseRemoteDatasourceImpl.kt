@@ -13,12 +13,12 @@ import kotlin.coroutines.resumeWithException
 
 class CourseRemoteDatasourceImpl @Inject constructor() : CourseRemoteDatasource {
     private val firestore by lazy { FirebaseFirestore.getInstance() }
-    private val courseTable = FireStoreCollections.COURSE.name()
-    private val geoHashAttr = "geoHash" // RemoteCourse
+    private val courseRootCollection = FireStoreCollections.COURSE.name()
+    private val geoHashAttr = RemoteCourse::geoHash.name
 
     override suspend fun getCourse(courseId: String): RemoteCourse? {
         return suspendCancellableCoroutine { continuation ->
-            firestore.collection(courseTable).document(courseId)
+            firestore.collection(courseRootCollection).document(courseId)
                 .get()
                 .addOnSuccessListener {
                     val course = it.toObject(RemoteCourse::class.java)
@@ -32,7 +32,7 @@ class CourseRemoteDatasourceImpl @Inject constructor() : CourseRemoteDatasource 
     override suspend fun getCourseGroupByGeoHash(start: String, end: String): List<RemoteCourse> {
 
         return suspendCancellableCoroutine { continuation ->
-            firestore.collection(courseTable)
+            firestore.collection(courseRootCollection)
                 .whereGreaterThanOrEqualTo(geoHashAttr, start)
                 .whereLessThan(geoHashAttr, end)
                 .get()
@@ -47,7 +47,7 @@ class CourseRemoteDatasourceImpl @Inject constructor() : CourseRemoteDatasource 
 
     override suspend fun setCourse(course: RemoteCourse): Boolean {
         return suspendCancellableCoroutine { continuation ->
-            firestore.collection(courseTable).document(course.courseId)
+            firestore.collection(courseRootCollection).document(course.courseId)
                 .set(course)
                 .addOnSuccessListener {
                     continuation.resume(true)
@@ -59,7 +59,7 @@ class CourseRemoteDatasourceImpl @Inject constructor() : CourseRemoteDatasource 
 
     override suspend fun removeCourse(courseId: String): Boolean {
         return suspendCancellableCoroutine { continuation ->
-            firestore.collection(courseTable).document(courseId)
+            firestore.collection(courseRootCollection).document(courseId)
                 .delete()
                 .addOnSuccessListener {
                     continuation.resume(true)
@@ -74,7 +74,7 @@ class CourseRemoteDatasourceImpl @Inject constructor() : CourseRemoteDatasource 
         metaCheckPoint: DataMetaCheckPoint
     ): Boolean {
         return suspendCancellableCoroutine { continuation ->
-            firestore.collection(courseTable).document(courseId)
+            firestore.collection(courseRootCollection).document(courseId)
                 .update(RemoteCourse::dataMetaCheckPoint.name, metaCheckPoint)
                 .addOnSuccessListener {
                     continuation.resume(true)

@@ -85,7 +85,12 @@ class CheckPointScenarioTest {
     @Test // 인증된 사용자가 체크포인트를 추가하거나 삭제하기
     fun scenario1(): Unit = runBlocking {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val addUser = AuthProfile(uid = "addUser1", email = "addUser1@email.com", userName = "add1")
+        val addUser = AuthProfile(
+            uid = "addUser1",
+            email = "addUser1@email.com",
+            userName = "add1",
+            token = ""
+        )
         val authRequest = AuthRequest(authType = AuthType.PROFILE, authProfile = addUser)
         val addCourse = MockModelModule().provideRemoteCourseGroup()
             .first { it.courseId == "cs3" }
@@ -123,7 +128,12 @@ class CheckPointScenarioTest {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val uri = getAssetFileUri(context, "photo_opt.jpg")
         val reportUser =
-            AuthProfile(uid = "report1", email = "report1@email.com", userName = "report1")
+            AuthProfile(
+                uid = "report1",
+                email = "report1@email.com",
+                userName = "report1",
+                token = ""
+            )
         val authRequest = AuthRequest(authType = AuthType.PROFILE, authProfile = reportUser)
         val baseCourse = getCourseDummy().first().toCourseAddRequest()
 

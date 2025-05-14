@@ -42,6 +42,7 @@ import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
+import com.wheretogo.presentation.BANNER_URL
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.SettingInfoType
 import com.wheretogo.presentation.feature.openWeb
@@ -180,7 +181,9 @@ fun Body(navigate: (String) -> Unit) {
                     stringResource(R.string.banner_sub)
                 )
             },
-            click = {})
+            click = {
+                openWeb(context, BANNER_URL)
+            })
     }
 }
 

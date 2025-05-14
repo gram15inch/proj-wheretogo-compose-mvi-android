@@ -13,15 +13,15 @@ import kotlin.coroutines.resumeWithException
 
 class LikeRemoteDatasourceImpl @Inject constructor() : LikeRemoteDatasource {
     private val firestore by lazy { FirebaseFirestore.getInstance() }
-    private val courseTable = FireStoreCollections.CHECKPOINT.name()
+    private val courseCollection = FireStoreCollections.CHECKPOINT.name()
     private val likeTable = FireStoreCollections.LIKE.name()
 
     override suspend fun getLikeInObject(type: LikeObject, objectId: String): RemoteLike {
 
         return suspendCancellableCoroutine { continuation ->
-            val objectTable = getObjectTable(type)
+            val objectCollection = getObjectCollection(type)
             val likeId = getLikeId(objectId)
-            firestore.collection(objectTable).document(objectId)
+            firestore.collection(objectCollection).document(objectId)
                 .collection(likeTable).document(likeId)
                 .get()
                 .addOnSuccessListener {
@@ -39,9 +39,9 @@ class LikeRemoteDatasourceImpl @Inject constructor() : LikeRemoteDatasource {
         remoteLike: RemoteLike
     ): Boolean {
         return suspendCancellableCoroutine { continuation ->
-            val objectTable = getObjectTable(type)
+            val objectCollection = getObjectCollection(type)
             val likeId = getLikeId(objectId)
-            firestore.collection(objectTable).document(objectId)
+            firestore.collection(objectCollection).document(objectId)
                 .collection(likeTable).document(likeId)
                 .set(remoteLike)
                 .addOnSuccessListener {
@@ -55,9 +55,9 @@ class LikeRemoteDatasourceImpl @Inject constructor() : LikeRemoteDatasource {
 
     override suspend fun removeLikeInCourse(type: LikeObject, objectId: String): Boolean {
         return suspendCancellableCoroutine { continuation ->
-            val objectTable = getObjectTable(type)
+            val objectCollection = getObjectCollection(type)
             val likeId = getLikeId(objectId)
-            firestore.collection(objectTable).document(objectId)
+            firestore.collection(objectCollection).document(objectId)
                 .collection(likeTable).document(likeId)
                 .delete()
                 .addOnSuccessListener {
@@ -72,10 +72,10 @@ class LikeRemoteDatasourceImpl @Inject constructor() : LikeRemoteDatasource {
         return "${objectId}_like"
     }
 
-    private fun getObjectTable(likeObject: LikeObject): String {
+    private fun getObjectCollection(likeObject: LikeObject): String {
         return when (likeObject) {
             LikeObject.COURSE_LIKE -> {
-                courseTable
+                courseCollection
             }
         }
     }

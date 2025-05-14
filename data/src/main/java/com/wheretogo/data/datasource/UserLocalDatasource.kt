@@ -18,9 +18,13 @@ interface UserLocalDatasource {
 
     fun getHistoryFlow(type: HistoryType): Flow<HashSet<String>>
 
+    fun getTokenFlow(): Flow<String>
+
     suspend fun setProfile(profile: LocalProfile)
 
     suspend fun setHistory(history: History)
+
+    suspend fun setToken(token:String)
 
     suspend fun clearUser()
 

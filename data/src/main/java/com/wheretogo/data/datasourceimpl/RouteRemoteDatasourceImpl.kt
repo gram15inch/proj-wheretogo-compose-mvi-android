@@ -18,14 +18,14 @@ class RouteRemoteDatasourceImpl @Inject constructor(
     private val naverApiService: NaverMapApiService,
 ) : RouteRemoteDatasource {
     private val firestore by lazy { FirebaseFirestore.getInstance() }
-    private val courseTable = FireStoreCollections.COURSE.name()
-    private val routeTable = FireStoreCollections.ROUTE.name()
-    private val routeDocument = FireStoreCollections.ROUTE.name()+"_DOC"
+    private val courseRootCollection = FireStoreCollections.COURSE.name()
+    private val routeCollection = FireStoreCollections.ROUTE.name
+    private val routeDocument = FireStoreCollections.ROUTE.name
 
     override suspend fun getRouteInCourse(courseId: String): RemoteRoute {
         return suspendCancellableCoroutine { continuation ->
-            firestore.collection(courseTable).document(courseId)
-                .collection(routeTable).document(routeDocument)
+            firestore.collection(courseRootCollection).document(courseId)
+                .collection(routeCollection).document(routeDocument)
                 .get()
                 .addOnSuccessListener {
                     val route =
@@ -39,8 +39,8 @@ class RouteRemoteDatasourceImpl @Inject constructor(
 
     override suspend fun setRouteInCourse(remoteRoute: RemoteRoute): Boolean {
         return suspendCancellableCoroutine { continuation ->
-            firestore.collection(courseTable).document(remoteRoute.courseId)
-                .collection(routeTable).document(routeDocument)
+            firestore.collection(courseRootCollection).document(remoteRoute.courseId)
+                .collection(routeCollection).document(routeDocument)
                 .set(remoteRoute)
                 .addOnSuccessListener {
                     continuation.resume(true)
@@ -53,8 +53,8 @@ class RouteRemoteDatasourceImpl @Inject constructor(
 
     override suspend fun removeRouteInCourse(courseId: String): Boolean {
         return suspendCancellableCoroutine { continuation ->
-            firestore.collection(courseTable).document(courseId)
-                .collection(routeTable).document(routeDocument)
+            firestore.collection(courseRootCollection).document(courseId)
+                .collection(routeCollection).document(routeDocument)
                 .delete()
                 .addOnSuccessListener {
                     continuation.resume(true)

@@ -13,6 +13,7 @@ import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.UserNotExistException
 import com.wheretogo.domain.feature.hashSha256
 import com.wheretogo.domain.model.map.History
+import com.wheretogo.domain.model.user.AuthProfile
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePrivate
 import com.wheretogo.domain.repository.UserRepository
@@ -174,41 +175,46 @@ class UserRepositoryImpl @Inject constructor(
         return setProfile(profile)
     }
 
-    override suspend fun syncUser(uid: String): Result<Profile> {
+    override suspend fun syncUser(authProfile: AuthProfile): Result<Profile> {
         return runCatching {
-            getProfile(uid).onSuccess {profile->
+            getProfile(authProfile.uid).onSuccess { profile->
               return@runCatching  coroutineScope {
                     val newPrivate =
                         async {
                             profile.private.copy(lastVisited = System.currentTimeMillis()).apply {
                                 userRemoteDatasource.setProfilePrivate(
-                                    uid = uid,
+                                    uid = authProfile.uid,
                                     privateProfile = this.toRemoteProfilePrivate())
                             }
                         }
 
                     val newProfile = profile.copy(private = newPrivate.await())
-                    val history = async { getRemoteHistory(uid).getOrNull() ?: History() }
+                    val history = async { getRemoteHistory(authProfile.uid).getOrNull() ?: History() }
                     userLocalDatasource.setProfile(newProfile.toLocalProfile())
+                    userLocalDatasource.setToken(authProfile.token)
                     setLocalHistory(history.await())
                     return@coroutineScope profile
                 }
             }.onFailure {
                 throw it
             }
-            throw UserNotExistException("profile not found uid:$uid")
+            throw UserNotExistException("profile not found uid:${authProfile.uid}")
         }
     }
 
 
-    override suspend fun clearUser() {
+    override suspend fun clearUserCache() {
         userLocalDatasource.clearUser()
     }
 
-    override suspend fun deleteUser(userId: String): Result<Unit> {
+    override suspend fun deleteUser(): Result<Unit> {
         return runCatching{
-            userRemoteDatasource.deleteProfile(userId)
-            clearUser()
+            val uid = userLocalDatasource.getProfileFlow().first().uid
+            val token= userLocalDatasource.getTokenFlow().first()
+            check(uid.isNotBlank())
+            check(token.isNotBlank())
+            userRemoteDatasource.deleteUser(uid, token)
+            clearUserCache()
         }
     }
 

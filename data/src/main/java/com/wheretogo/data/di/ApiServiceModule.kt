@@ -1,5 +1,6 @@
 package com.wheretogo.data.di
 
+import com.wheretogo.data.datasourceimpl.service.FirebaseApiService
 import com.wheretogo.data.datasourceimpl.service.NaverFreeApiService
 import com.wheretogo.data.datasourceimpl.service.NaverMapApiService
 import dagger.Module
@@ -24,6 +25,12 @@ object ApiServiceModule {
     @Provides
     fun provideNaverFreeApiService(@Named("naver") retrofit: Retrofit): NaverFreeApiService {
         return retrofit.create(NaverFreeApiService::class.java)
+    }
+
+    @Singleton
+    @Provides
+     fun provideFirebaseApiService(@Named("firebase") retrofit: Retrofit): FirebaseApiService {
+        return retrofit.create(FirebaseApiService::class.java)
     }
 
 }
