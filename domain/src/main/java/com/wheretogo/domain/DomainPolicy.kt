@@ -1,7 +1,7 @@
 package com.wheretogo.domain
 
 import com.wheretogo.domain.model.map.Comment
-
+import com.wheretogo.domain.model.map.RouteCategory
 
 const val SECOND = 1000L
 const val MIN = 60*SECOND
@@ -24,32 +24,52 @@ enum class ReportType {
     USER, COURSE, COMMENT, CHECKPOINT
 }
 
-enum class RouteDetailType(val code: Int) {
-    UNKNOWN(100), TYPE(101), LEVEL(102), RECOMMEND(104)
-}
+enum class RouteAttr {
+     TYPE, LEVEL, RELATION;
 
-enum class CourseDetail(val code: String, val type: RouteDetailType) {
-    NONE("none", RouteDetailType.UNKNOWN),
-
-    DRIVE("${RouteDetailType.TYPE}-0001", RouteDetailType.TYPE),
-    SPORT("${RouteDetailType.TYPE}-0002", RouteDetailType.TYPE),
-    TRAINING("${RouteDetailType.TYPE}-0003", RouteDetailType.TYPE),
-
-    BEGINNER("${RouteDetailType.LEVEL}-0001", RouteDetailType.LEVEL),
-    LOVER("${RouteDetailType.LEVEL}-0002", RouteDetailType.LEVEL),
-    EXPERT("${RouteDetailType.LEVEL}-0003", RouteDetailType.LEVEL),
-    PRO("${RouteDetailType.LEVEL}-0004", RouteDetailType.LEVEL),
-
-    SOLO("${RouteDetailType.RECOMMEND}-0001", RouteDetailType.RECOMMEND),
-    FRIEND("${RouteDetailType.RECOMMEND}-0002", RouteDetailType.RECOMMEND),
-    FAMILY("${RouteDetailType.RECOMMEND}-0003", RouteDetailType.RECOMMEND),
-    COUPLE("${RouteDetailType.RECOMMEND}-0004", RouteDetailType.RECOMMEND);
-
-    companion object {
-        fun fromCode(code: String): CourseDetail {
-            return entries.find { it.code == code } ?: NONE
+    fun getItems(): List<RouteCategory> {
+       return when(this){
+            TYPE-> typeCategoryGroup
+            LEVEL-> levelCategoryGroup
+            RELATION-> relationCategoryGroup
         }
     }
+}
+
+val typeCategoryGroup = listOf(
+    RouteCategory(1001, RouteAttr.TYPE, RouteAttrItem.DRIVE),
+    RouteCategory(1002, RouteAttr.TYPE, RouteAttrItem.SPORT),
+    RouteCategory(1003, RouteAttr.TYPE, RouteAttrItem.TRAINING),
+)
+
+val levelCategoryGroup = listOf(
+    RouteCategory(2001, RouteAttr.LEVEL, RouteAttrItem.BEGINNER),
+    RouteCategory(2002, RouteAttr.LEVEL, RouteAttrItem.LOVER),
+    RouteCategory(2003, RouteAttr.LEVEL, RouteAttrItem.EXPERT),
+    RouteCategory(2004, RouteAttr.LEVEL, RouteAttrItem.PRO),
+)
+
+val relationCategoryGroup = listOf(
+    RouteCategory(3001, RouteAttr.RELATION, RouteAttrItem.SOLO),
+    RouteCategory(3002, RouteAttr.RELATION, RouteAttrItem.FRIEND),
+    RouteCategory(3003, RouteAttr.RELATION, RouteAttrItem.FAMILY),
+    RouteCategory(3004,  RouteAttr.RELATION,RouteAttrItem.COUPLE),
+)
+
+enum class RouteAttrItem{
+    DRIVE,
+    SPORT,
+    TRAINING,
+
+    BEGINNER,
+    LOVER,
+    EXPERT,
+    PRO,
+
+    SOLO,
+    FRIEND,
+    FAMILY,
+    COUPLE;
 }
 
 

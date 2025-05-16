@@ -2,6 +2,7 @@ package com.wheretogo.presentation.feature.map
 
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.Course
+import com.wheretogo.domain.model.map.RouteCategory
 import com.wheretogo.presentation.CHECKPOINT_ADD_MARKER
 import com.wheretogo.presentation.MarkerType
 import com.wheretogo.presentation.OverlayType
@@ -13,7 +14,7 @@ import com.wheretogo.presentation.minZoomLevel
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.MarkerInfo
 import com.wheretogo.presentation.model.PathInfo
-import com.wheretogo.presentation.parseCourseMarkerIcon
+import com.wheretogo.presentation.toIcRes
 import com.wheretogo.presentation.toNaver
 import javax.inject.Inject
 
@@ -30,7 +31,7 @@ class DriveMapOverlayService @Inject constructor(private val overlayStore: Naver
                         markerInfo = MarkerInfo(
                             contentId = course.courseId,
                             position = course.waypoints.first(),
-                            iconRes = parseCourseMarkerIcon(course.type).res
+                            iconRes = RouteCategory.fromCode(course.type)?.item.toIcRes()
                         )
                     )
                 )

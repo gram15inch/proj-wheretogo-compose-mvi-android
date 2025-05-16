@@ -2,8 +2,7 @@ package com.wheretogo.presentation
 
 
 import com.wheretogo.domain.AuthCompany
-import com.wheretogo.domain.CourseDetail
-import com.wheretogo.domain.RouteDetailType
+import com.wheretogo.domain.RouteAttr
 import com.wheretogo.domain.model.map.Comment
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.presentation.state.CommentState.CommentAddState
@@ -42,51 +41,15 @@ fun CommentAddState.toComment(): Comment {
     )
 }
 
-fun RouteDetailType.toStrRes(): Int {
+fun RouteAttr.toStrRes(): Int {
     return when (this) {
-        RouteDetailType.TYPE -> R.string.category
-        RouteDetailType.LEVEL -> R.string.level
-        RouteDetailType.RECOMMEND -> R.string.recommend
+        RouteAttr.TYPE -> R.string.category
+        RouteAttr.LEVEL -> R.string.level
+        RouteAttr.RELATION -> R.string.recommend
         else -> R.string.unknown
     }
 }
 
-fun CourseDetail.toStrRes(): Int {
-    return when (this.type) {
-        RouteDetailType.TYPE -> {
-            when (this) {
-                CourseDetail.DRIVE -> R.string.drive
-                CourseDetail.SPORT -> R.string.sports
-                CourseDetail.TRAINING -> R.string.training
-                else -> R.string.drive
-            }
-        }
-
-        RouteDetailType.LEVEL -> {
-            when (this) {
-                CourseDetail.BEGINNER -> R.string.beginner
-                CourseDetail.LOVER -> R.string.lover
-                CourseDetail.EXPERT -> R.string.expert
-                CourseDetail.PRO -> R.string.pro
-                else -> R.string.beginner
-            }
-        }
-
-        RouteDetailType.RECOMMEND -> {
-            when (this) {
-                CourseDetail.SOLO -> R.string.solo
-                CourseDetail.FRIEND -> R.string.friend
-                CourseDetail.FAMILY -> R.string.family
-                CourseDetail.COUPLE -> R.string.couple
-                else -> R.string.solo
-            }
-        }
-
-        else -> {
-            R.string.unknown
-        }
-    }
-}
 
 fun parseLogoImgRes(company: String): Int {
     val auth = try {
