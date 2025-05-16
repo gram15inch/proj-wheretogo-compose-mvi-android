@@ -1,11 +1,11 @@
 package com.wheretogo.presentation.intent
 
 import com.wheretogo.domain.model.map.LatLng
+import com.wheretogo.domain.model.map.RouteCategory
 import com.wheretogo.domain.model.map.SimpleAddress
 import com.wheretogo.presentation.SheetState
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.state.CameraState
-import com.wheretogo.presentation.state.CourseAddScreenState
 
 sealed class CourseAddIntent {
 
@@ -28,7 +28,7 @@ sealed class CourseAddIntent {
     data object RouteCreateClick : CourseAddIntent()
     data class NameEditValueChange(val text: String) : CourseAddIntent()
     data class SheetStateChange(val state: SheetState) : CourseAddIntent()
-    data class RouteDetailItemClick(val item: CourseAddScreenState.RouteDetailItemState) : CourseAddIntent()
+    data class RouteCategorySelect(val item: RouteCategory) : CourseAddIntent()
     data object CommendClick : CourseAddIntent()
     data object DetailBackClick : CourseAddIntent()
 }

@@ -1,12 +1,11 @@
 package com.wheretogo.presentation.state
 
 import androidx.compose.ui.unit.dp
+import com.wheretogo.domain.RouteAttr
 import com.wheretogo.domain.model.map.LatLng
-import com.wheretogo.domain.model.map.RouteDetailItem
 import com.wheretogo.domain.model.map.RouteWaypointItem
 import com.wheretogo.presentation.model.ContentPadding
 import com.wheretogo.presentation.model.MapOverlay
-import com.wheretogo.presentation.model.dummy.getRouteDetailItemGroup
 
 data class CourseAddScreenState(
     val searchBarState: SearchBarState = SearchBarState(),
@@ -28,8 +27,7 @@ data class CourseAddScreenState(
     data class CourseAddState(
         val courseName: String = "",
         val routeState: RouteState = RouteState(),
-        val detailItemStateGroup: List<RouteDetailItemState> = getRouteDetailItemGroup()
-            .map { RouteDetailItemState(data = it) },
+        val selectedCategoryCodeGroup : Map<RouteAttr,Int> = emptyMap(), //카테고리 (속성, 코드)
         val isNextStepButtonActive: Boolean = false,
         val isOneStepDone: Boolean = false,
         val isTwoStep: Boolean = false,
@@ -42,11 +40,6 @@ data class CourseAddScreenState(
         val distance: Int = 0,
         val points: List<LatLng> = emptyList(),
         val waypointItemStateGroup: List<RouteWaypointItemState> = emptyList(),
-    )
-
-    data class RouteDetailItemState(
-        val data: RouteDetailItem = RouteDetailItem(),
-        val isClick: Boolean = false
     )
 
     data class RouteWaypointItemState(

@@ -11,6 +11,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,7 +29,6 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -60,7 +60,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.wheretogo.domain.RouteDetailType
+import com.wheretogo.domain.RouteAttr
+import com.wheretogo.domain.model.map.RouteCategory
 import com.wheretogo.presentation.BuildConfig
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.content.AnimationDirection
@@ -74,7 +75,6 @@ import com.wheretogo.presentation.feature.naver.setCurrentLocation
 import com.wheretogo.presentation.intent.CourseAddIntent
 import com.wheretogo.presentation.model.ContentPadding
 import com.wheretogo.presentation.state.CourseAddScreenState
-import com.wheretogo.presentation.state.CourseAddScreenState.RouteDetailItemState
 import com.wheretogo.presentation.theme.interBoldFontFamily
 import com.wheretogo.presentation.theme.interFontFamily
 import com.wheretogo.presentation.toStrRes
@@ -198,7 +198,8 @@ fun CourseAddScreen(
                 CourseAddContent(
                     state = state.bottomSheetState.courseAddState,
                     onRouteCreateClick = { viewModel.handleIntent(CourseAddIntent.RouteCreateClick) },
-                    onRouteDetailItemClick = { viewModel.handleIntent(CourseAddIntent.RouteDetailItemClick(it)) },
+                    onCategorySelect = { viewModel.handleIntent(CourseAddIntent.RouteCategorySelect(it)) },
+
                     onCommendClick = { viewModel.handleIntent(CourseAddIntent.CommendClick) },
                     onBackClick = { viewModel.handleIntent(CourseAddIntent.DetailBackClick) },
                     onNameEditValueChange = { viewModel.handleIntent(CourseAddIntent.NameEditValueChange(it)) },
@@ -214,19 +215,26 @@ fun CourseAddScreen(
 @Composable
 fun CourseAddScreenPreview() {
     BottomSheet(
-        modifier = Modifier,
+        modifier = Modifier.height(400.dp),
         400,
         true,
         {},
         {}
     ) {
         CourseAddContent(
-            CourseAddScreenState.CourseAddState(),
+            CourseAddScreenState.CourseAddState(
+                isTwoStep = true,
+                selectedCategoryCodeGroup = mapOf(
+                    RouteAttr.TYPE to 1,
+                    RouteAttr.LEVEL to 4,
+                    RouteAttr.RELATION to 9,
+                )
+            ),
             {},
             {},
             {},
             {},
-            {}
+            {},
         )
     }
 }
@@ -271,7 +279,7 @@ fun FloatingButtonGroup(
 @Composable
 fun CourseAddContent(
     state: CourseAddScreenState.CourseAddState,
-    onRouteDetailItemClick: (RouteDetailItemState) -> Unit,
+    onCategorySelect: (RouteCategory) -> Unit,
     onRouteCreateClick: () -> Unit,
     onCommendClick: () -> Unit,
     onNameEditValueChange: (String) -> Unit,
@@ -301,8 +309,8 @@ fun CourseAddContent(
             RouteDetailContent(
                 modifier = Modifier
                     .padding(15.dp),
-                routeDetailItemStateGroup = state.detailItemStateGroup,
-                onRouteDetailItemClick = onRouteDetailItemClick,
+                selectedItemGroup = state.selectedCategoryCodeGroup,
+                onCategorySelect = onCategorySelect,
                 onBackClick = onBackClick
             )
         }
@@ -364,12 +372,11 @@ fun CommendButton(
     }
 }
 
-
 @Composable
 fun RouteDetailContent(
     modifier: Modifier,
-    routeDetailItemStateGroup: List<RouteDetailItemState>,
-    onRouteDetailItemClick: (RouteDetailItemState) -> Unit,
+    selectedItemGroup:Map<RouteAttr,Int>,
+    onCategorySelect: (RouteCategory) -> Unit,
     onBackClick: () -> Unit
 ) {
     Column(
@@ -388,53 +395,78 @@ fun RouteDetailContent(
                 contentDescription = "",
             )
         }
-        LazyColumn(
+        Column(
             modifier = Modifier.padding(top = 5.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            val detailItemTypeGroup = routeDetailItemStateGroup.groupBy { it.data.type }.toList()
-            items(detailItemTypeGroup) { pair ->
-                RouteDetailTypeItem(pair, onRouteDetailItemClick)
-            }
+
+            RouteCategory(
+                type = RouteAttr.TYPE,
+                selectedItem = selectedItemGroup.getOrDefault(RouteAttr.TYPE,-1),
+                onCategorySelect = onCategorySelect
+            )
+            RouteCategory(
+                type = RouteAttr.LEVEL,
+                selectedItem = selectedItemGroup.getOrDefault(RouteAttr.LEVEL,-1),
+                onCategorySelect = onCategorySelect
+            )
+            RouteCategory(
+                type = RouteAttr.RELATION,
+                selectedItem = selectedItemGroup.getOrDefault(RouteAttr.RELATION,-1),
+                onCategorySelect = onCategorySelect
+            )
         }
 
     }
 }
 
 @Composable
-fun RouteDetailTypeItem(item: Pair<RouteDetailType, List<RouteDetailItemState>>, onRouteDetailItemClick:(RouteDetailItemState)->Unit){
+fun RouteCategory(
+    type: RouteAttr,
+    selectedItem:Int,
+    onCategorySelect: (RouteCategory) -> Unit,
+) {
     Column {
         Text(
             modifier = Modifier.padding(start = 5.dp),
-            text = stringResource(item.first.toStrRes()),
+            text = stringResource(type.toStrRes()),
             fontSize = 16.sp,
             fontFamily = interBoldFontFamily
         )
-        LazyRow(
+        Row(
             modifier = Modifier.padding(top = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            items(item.second) { item ->
-                RouteDetailItem(item, onRouteDetailItemClick)
+            type.getItems().forEach {
+                val isClick = it.code!=-1 && it.code == selectedItem
+                RouteDetailItem(it,isClick, onCategorySelect)
             }
         }
     }
 }
 
 @Composable
-fun RouteDetailItem(item : RouteDetailItemState, onRouteDetailItemClick:(RouteDetailItemState)->Unit){
+fun RouteDetailItem(
+    item: RouteCategory,
+    isClick:Boolean,
+    onRouteDetailItemClick:(RouteCategory)->Unit,
+) {
+    val res = item.item.toStrRes()
+    val emogi = res.first
+    val strRes = res.second
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(16.dp))
             .background(
-                colorResource(if (item.isClick) R.color.blue else R.color.gray_C7C7C7_80)
+                colorResource(if (isClick) R.color.blue else R.color.gray_C7C7C7_80)
             )
             .clickable {
                 onRouteDetailItemClick(item)
             }) {
         Text(
             modifier = Modifier.padding(vertical = 3.dp, horizontal = 8.dp),
-            text = "${item.data.emogi} ${stringResource(item.data.strRes)}",
+            text = "$emogi ${stringResource(strRes)}",
+            color = if (isClick) Color.White else Color.Black,
             fontSize = 11.sp,
             fontFamily = interBoldFontFamily
         )

@@ -2,10 +2,12 @@ package com.wheretogo.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.wheretogo.domain.RouteDetailType
+import com.wheretogo.domain.RouteAttr
+
 import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.map.CourseAddRequest
 import com.wheretogo.domain.model.map.LatLng
+import com.wheretogo.domain.model.map.RouteCategory
 import com.wheretogo.domain.model.map.SimpleAddress
 import com.wheretogo.domain.usecase.map.AddCourseUseCase
 import com.wheretogo.domain.usecase.map.CreateRouteUseCase
@@ -68,7 +70,7 @@ class CourseAddViewModel @Inject constructor(
                 is CourseAddIntent.RouteCreateClick -> routeCreateClick()
                 is CourseAddIntent.NameEditValueChange -> nameEditValueChange(intent.text)
                 is CourseAddIntent.SheetStateChange -> bottomSheetChange(intent.state)
-                is CourseAddIntent.RouteDetailItemClick -> routeDetailItemClick(intent.item)
+                is CourseAddIntent.RouteCategorySelect -> routeCategorySelect(intent.item)
                 is CourseAddIntent.CommendClick -> commendClick()
                 is CourseAddIntent.DetailBackClick -> detailBackClick()
 
@@ -341,22 +343,16 @@ class CourseAddViewModel @Inject constructor(
         }
     }
 
-    private fun routeDetailItemClick(item: CourseAddScreenState.RouteDetailItemState) {
+    private fun routeCategorySelect(item: RouteCategory) {
         _courseAddScreenState.value = _courseAddScreenState.value.run {
-            val newDetailItemGroup =  bottomSheetState.courseAddState.detailItemStateGroup.map {
-                if (it.data.type == item.data.type) {
-                    if (it.data.code == item.data.code) {
-                        it.copy(isClick = true)
-                    } else
-                        it.copy(isClick = false)
-                } else {
-                    it
-                }
+            val newSelectedItemGroup = bottomSheetState.courseAddState.selectedCategoryCodeGroup.toMutableMap().apply {
+                put(item.attr,item.code)
             }
+
             copy(
                 bottomSheetState = bottomSheetState.copy(
                     courseAddState = bottomSheetState.courseAddState.copy(
-                        detailItemStateGroup = newDetailItemGroup,
+                        selectedCategoryCodeGroup = newSelectedItemGroup,
                     )
                 ),
             )
@@ -400,12 +396,9 @@ class CourseAddViewModel @Inject constructor(
                     waypoints = waypoints,
                     points = routeState.points,
                     duration = (routeState.duration / 60000).toString(),
-                    type = courseAddState.detailItemStateGroup.filter { it.data.type == RouteDetailType.TYPE }
-                        .firstOrNull { it.isClick }?.data!!.code,
-                    level = courseAddState.detailItemStateGroup.filter { it.data.type == RouteDetailType.LEVEL }
-                        .firstOrNull { it.isClick }?.data!!.code,
-                    relation = courseAddState.detailItemStateGroup.filter { it.data.type == RouteDetailType.RECOMMEND }
-                        .firstOrNull { it.isClick }?.data!!.code,
+                    type = courseAddState.selectedCategoryCodeGroup.get(RouteAttr.TYPE).toString(),
+                    level = courseAddState.selectedCategoryCodeGroup.get(RouteAttr.LEVEL).toString(),
+                    relation = courseAddState.selectedCategoryCodeGroup.get(RouteAttr.RELATION).toString(),
                     cameraLatLng = waypoints.first(),
                     zoom = ""
                 )
@@ -470,13 +463,16 @@ class CourseAddViewModel @Inject constructor(
     }
 
     private fun validateTwoStep(state: CourseAddScreenState):Boolean{
-        return state.run {
-            bottomSheetState.courseAddState.detailItemStateGroup.filter { it.isClick }.map { it.data.type }.run {
-                this.contains(RouteDetailType.TYPE) &&
-                        this.contains(RouteDetailType.LEVEL) &&
-                        this.contains(RouteDetailType.RECOMMEND)
-            }
+        val selectedGroup =state.bottomSheetState.courseAddState.selectedCategoryCodeGroup
+
+        if(selectedGroup.size != RouteAttr.entries.size)
+            return false
+
+        selectedGroup.forEach {
+            if(it.value<0)
+                return false
         }
+        return  true
     }
 
     private fun CourseAddScreenState.setContentLoading(isLoading:Boolean):CourseAddScreenState{

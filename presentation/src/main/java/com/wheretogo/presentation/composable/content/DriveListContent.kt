@@ -40,8 +40,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wheretogo.domain.CourseDetail
 import com.wheretogo.domain.model.map.Course
+import com.wheretogo.domain.model.map.RouteCategory
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.state.DriveScreenState.ListState.ListItemState
 import com.wheretogo.presentation.theme.White100
@@ -151,35 +151,37 @@ fun DriveListItem(
                 Row(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    driveItemAttribute(
+                    DriveItemAttribute(
                         modifier = Modifier.weight(1f),
                         content = stringResource(
-                            CourseDetail.fromCode(listItem.course.type).toStrRes()
+                            RouteCategory.fromCode(listItem.course.type)?.item.toStrRes().second
                         ),
                         type = "태그"
                     )
-                    driveItemAttribute(
-                        modifier = Modifier.weight(1f),
-                        content = listItem.course.like.toString(),
-                        type = "평점"
-                    )
+
+                    if(false) // todo 평점 추가
+                        DriveItemAttribute(
+                            modifier = Modifier.weight(1f),
+                            content = listItem.course.like.toString(),
+                            type = "평점"
+                        )
                     if (listItem.course.level == "")
-                        driveItemAttribute(
+                        DriveItemAttribute(
                             modifier = Modifier.weight(1f),
                             content = stringResource(
-                                CourseDetail.fromCode(listItem.course.relation).toStrRes()
+                                RouteCategory.fromCode(listItem.course.relation)?.item.toStrRes().second
                             ),
                             type = "인원"
                         )
                     else
-                        driveItemAttribute(
+                        DriveItemAttribute(
                             modifier = Modifier.weight(1f),
                             content = stringResource(
-                                CourseDetail.fromCode(listItem.course.level).toStrRes()
+                                RouteCategory.fromCode(listItem.course.level)?.item.toStrRes().second
                             ),
                             type = "난이도"
                         )
-                    driveItemAttribute(
+                    DriveItemAttribute(
                         modifier = Modifier.weight(1f),
                         content = listItem.course.duration + "분",
                         type = "소요시간"
@@ -191,7 +193,7 @@ fun DriveListItem(
 }
 
 @Composable
-fun driveItemAttribute(modifier: Modifier, content: String, type: String) {
+fun DriveItemAttribute(modifier: Modifier, content: String, type: String) {
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         Column {
             Text(

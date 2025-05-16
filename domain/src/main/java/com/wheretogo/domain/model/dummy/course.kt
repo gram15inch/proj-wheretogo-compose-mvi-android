@@ -1,10 +1,11 @@
 package com.wheretogo.domain.model.dummy
 
-import com.wheretogo.domain.CourseDetail
+import com.wheretogo.domain.RouteAttrItem
 import com.wheretogo.domain.feature.hashSha256
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.Course
 import com.wheretogo.domain.model.map.LatLng
+import com.wheretogo.domain.model.map.RouteCategory
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePrivate
 
@@ -79,9 +80,9 @@ fun getCourseDummy(): List<Course> {
             points = getWaypointDummy("cs1"),
             checkpointIdGroup = getCheckPointDummy("cs1").map { it.checkPointId },
             duration = "20",
-            type = CourseDetail.DRIVE.code,
-            level = CourseDetail.BEGINNER.code,
-            relation = CourseDetail.FAMILY.code,
+            type = RouteCategory.fromItem(RouteAttrItem.DRIVE)?.code.toString(),
+            level = RouteCategory.fromItem(RouteAttrItem.BEGINNER)?.code.toString(),
+            relation = RouteCategory.fromItem(RouteAttrItem.FAMILY)?.code.toString(),
             cameraLatLng = getWaypointDummy("cs1").first(),
             zoom = ""
         ),
@@ -93,9 +94,9 @@ fun getCourseDummy(): List<Course> {
             points = getWaypointDummy("cs2"),
             checkpointIdGroup = getCheckPointDummy("cs2").map { it.checkPointId },
             duration = "25",
-            type = CourseDetail.DRIVE.code,
-            level = CourseDetail.BEGINNER.code,
-            relation = CourseDetail.FRIEND.code,
+            type = RouteCategory.fromItem(RouteAttrItem.DRIVE)?.code.toString(),
+            level = RouteCategory.fromItem(RouteAttrItem.BEGINNER)?.code.toString(),
+            relation = RouteCategory.fromItem(RouteAttrItem.FRIEND)?.code.toString(),
             cameraLatLng = getWaypointDummy("cs2").first(),
             zoom = ""
         ),
@@ -107,9 +108,9 @@ fun getCourseDummy(): List<Course> {
             points = getWaypointDummy("cs3"),
             checkpointIdGroup = getCheckPointDummy().map { it.checkPointId },
             duration = "13",
-            type = CourseDetail.SPORT.code,
-            level = CourseDetail.EXPERT.code,
-            relation = CourseDetail.SOLO.code,
+            type = RouteCategory.fromItem(RouteAttrItem.SPORT)?.code.toString(),
+            level = RouteCategory.fromItem(RouteAttrItem.EXPERT)?.code.toString(),
+            relation = RouteCategory.fromItem(RouteAttrItem.SOLO)?.code.toString(),
             cameraLatLng = getWaypointDummy("cs3").first(),
             zoom = ""
         ),
@@ -121,9 +122,9 @@ fun getCourseDummy(): List<Course> {
             points = getWaypointDummy("cs4"),
             checkpointIdGroup = getCheckPointDummy().map { it.checkPointId },
             duration = "4",
-            type = CourseDetail.SPORT.code,
-            level = CourseDetail.LOVER.code,
-            relation = CourseDetail.SOLO.code,
+            type = RouteCategory.fromItem(RouteAttrItem.SPORT)?.code.toString(),
+            level = RouteCategory.fromItem(RouteAttrItem.LOVER)?.code.toString(),
+            relation = RouteCategory.fromItem(RouteAttrItem.SOLO)?.code.toString(),
             cameraLatLng = getWaypointDummy("cs4").first(),
             zoom = ""
         ),
@@ -135,9 +136,9 @@ fun getCourseDummy(): List<Course> {
             points = getWaypointDummy("cs5"),
             checkpointIdGroup = getCheckPointDummy().map { it.checkPointId },
             duration = "7",
-            type = CourseDetail.TRAINING.code,
-            level = CourseDetail.BEGINNER.code,
-            relation = CourseDetail.SOLO.code,
+            type = RouteCategory.fromItem(RouteAttrItem.TRAINING)?.code.toString(),
+            level = RouteCategory.fromItem(RouteAttrItem.BEGINNER)?.code.toString(),
+            relation = RouteCategory.fromItem(RouteAttrItem.SOLO)?.code.toString(),
             cameraLatLng = getWaypointDummy("cs5").first(),
             zoom = ""
         ),
@@ -150,9 +151,9 @@ fun getCourseDummy(): List<Course> {
             points = getWaypointDummy("cs6"),
             checkpointIdGroup = getCheckPointDummy("cs6").map { it.checkPointId },
             duration = "5",
-            type = CourseDetail.TRAINING.code,
-            level = CourseDetail.BEGINNER.code,
-            relation = CourseDetail.SOLO.code,
+            type = RouteCategory.fromItem(RouteAttrItem.TRAINING)?.code.toString(),
+            level = RouteCategory.fromItem(RouteAttrItem.BEGINNER)?.code.toString(),
+            relation = RouteCategory.fromItem(RouteAttrItem.SOLO)?.code.toString(),
             cameraLatLng = getWaypointDummy("cs6").first(),
             zoom = ""
         ),
@@ -165,9 +166,9 @@ fun getCourseDummy(): List<Course> {
             points = getWaypointDummy("cs7"),
             checkpointIdGroup = getCheckPointDummy().map { it.checkPointId },
             duration = "12",
-            type = CourseDetail.SPORT.code,
-            level = CourseDetail.PRO.code,
-            relation = CourseDetail.SOLO.code,
+            type = RouteCategory.fromItem(RouteAttrItem.SPORT)?.code.toString(),
+            level = RouteCategory.fromItem(RouteAttrItem.PRO)?.code.toString(),
+            relation = RouteCategory.fromItem(RouteAttrItem.SOLO)?.code.toString(),
             cameraLatLng = getWaypointDummy("cs7").first(),
             zoom = ""
         ),
