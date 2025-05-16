@@ -145,4 +145,16 @@ class DriveMapOverlayService @Inject constructor(private val overlayStore: Naver
             overlayStore.remove(it)
         }
     }
+
+    fun clearCheckPoint(){
+        val checkPointIdGroup  = _overlays.mapNotNull {
+            val mapOverlay = it.value
+            if(mapOverlay is MapOverlay.MarkerContainer){
+                if(mapOverlay.type == MarkerType.CHECKPOINT)
+                   return@mapNotNull it.value.id
+            }
+            null
+        }
+        removeCheckPoint(checkPointIdGroup)
+    }
 }
