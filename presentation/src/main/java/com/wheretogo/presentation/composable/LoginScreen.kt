@@ -37,11 +37,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.wheretogo.domain.AuthType
-import com.wheretogo.domain.model.auth.AuthRequest
-import com.wheretogo.domain.model.dummy.getProfileDummy
-import com.wheretogo.domain.toAuthProfile
-import com.wheretogo.presentation.BuildConfig
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.content.DelayLottieAnimation
 import com.wheretogo.presentation.feature.consumptionEvent

@@ -225,6 +225,7 @@ fun CommentFocusItem(
                     modifier = Modifier.padding(top = 10.dp, end = 10.dp),
                     text = comment.data.emoji,
                     textAlign = TextAlign.Center,
+                    fontFamily = hancomSansFontFamily,
                     fontSize = 34.sp
                 )
 
@@ -232,7 +233,7 @@ fun CommentFocusItem(
                     Text(
                         text = comment.data.oneLineReview,
                         fontSize = 14.sp,
-                        fontFamily = hancomSansFontFamily,
+                        fontFamily = hancomMalangFontFamily,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -240,7 +241,7 @@ fun CommentFocusItem(
                         modifier = Modifier.padding(top = 4.dp),
                         text = comment.data.detailedReview,
                         fontSize = 10.sp,
-                        fontFamily = hancomSansFontFamily,
+                        fontFamily = hancomMalangFontFamily,
                         maxLines = 5,
                         overflow = TextOverflow.Ellipsis,
                         style = TextStyle(

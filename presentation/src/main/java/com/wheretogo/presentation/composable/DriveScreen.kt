@@ -266,7 +266,9 @@ fun DriveScreen(
 
             val isNotOtherVisible = !state.popUpState.commentState.isCommentVisible && !state.bottomSheetState.isVisible
             FloatingButtons(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .padding(vertical = 12.dp)
+                    .fillMaxSize(),
                 course = state.listState.clickItem.course,
                 isCommentVisible = state.floatingButtonState.isCommentVisible && isNotOtherVisible,
                 isCheckpointAddVisible = state.floatingButtonState.isCheckpointAddVisible && isNotOtherVisible,
