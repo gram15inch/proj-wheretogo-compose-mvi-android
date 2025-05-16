@@ -86,7 +86,6 @@ fun FloatingButtons(
             horizontalAlignment = Alignment.End,
             verticalArrangement = Arrangement.spacedBy(if (isExportBackPlate) 0.dp else 10.dp),
             modifier = Modifier
-                .padding(vertical = 12.dp)
                 .fillMaxWidth()
         ) {
             SlideAnimation(

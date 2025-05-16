@@ -132,22 +132,14 @@ fun MapPopup(
             isExtend = isWideSize,
             holdContent = {
                 PopUpImage( // 고정
-                    modifier = modifier.clickable {
-                        onPopupImageClick()
-                    },
-                    uri = imageUri
+                    modifier = modifier.padding(start = 12.dp, bottom = 12.dp),
+                    uri = imageUri,
+                    isBlur =  commentState.isCommentVisible && !isWideSize,
+                    onPopupImageClick = onPopupImageClick,
+                    onPopupBlurClick = onPopupBlurClick
                 )
             },
             moveContent = { // 이동
-                FadeAnimation(visible = commentState.isCommentVisible && !isWideSize) {
-                    BlurEffect(
-                        modifier = Modifier
-                            .sizeIn(maxWidth = 260.dp, maxHeight = 500.dp)
-                            .clip(RoundedCornerShape(16.dp)),
-                        onClick = {
-                            onPopupBlurClick()
-                        })
-                }
                 SlideAnimation(
                     modifier = modifier
                         .graphicsLayer(clip = true),
@@ -435,7 +427,7 @@ fun CommentEmojiGroupAndOneLinePreview(
 
 
 @Composable
-fun PopUpImage(modifier: Modifier, uri: Uri?) {
+fun PopUpImage(modifier: Modifier, uri: Uri?, isBlur:Boolean, onPopupImageClick: () -> Unit, onPopupBlurClick: () -> Unit) {
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
@@ -444,7 +436,9 @@ fun PopUpImage(modifier: Modifier, uri: Uri?) {
     ) {
         FadeAnimation(visible= uri != null) {
             GlideImage(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.clickable {
+                    onPopupImageClick()
+                }.fillMaxSize(),
                 imageModel = { uri },
                 imageOptions = ImageOptions(contentScale = ContentScale.FillHeight)
             )
@@ -452,9 +446,17 @@ fun PopUpImage(modifier: Modifier, uri: Uri?) {
         FadeAnimation(visible = uri == null) {
             Box(modifier = Modifier
                 .fillMaxSize()
+                .consumptionEvent()
                 .background(color = Color.White), contentAlignment = Alignment.Center) {
                 DelayLottieAnimation(Modifier.size(50.dp),R.raw.lt_loading,true,0)
             }
+        }
+
+        FadeAnimation(visible = isBlur) {
+            BlurEffect(
+                onClick = {
+                    onPopupBlurClick()
+                })
         }
     }
 
