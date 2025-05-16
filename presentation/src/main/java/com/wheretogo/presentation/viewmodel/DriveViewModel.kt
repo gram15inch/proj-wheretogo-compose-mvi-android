@@ -37,14 +37,14 @@ import com.wheretogo.domain.usecase.map.SearchAddressUseCase
 import com.wheretogo.domain.usecase.user.GetHistoryStreamUseCase
 import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
 import com.wheretogo.presentation.BuildConfig
+import com.wheretogo.presentation.CHECKPOINT_ADD_MARKER
+import com.wheretogo.presentation.CLEAR_ADDRESS
+import com.wheretogo.presentation.CameraUpdateSource
 import com.wheretogo.presentation.CheckPointAddError
 import com.wheretogo.presentation.CommentType
 import com.wheretogo.presentation.DRIVE_LIST_MIN_ZOOM
 import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.MarkerType
-import com.wheretogo.presentation.CHECKPOINT_ADD_MARKER
-import com.wheretogo.presentation.CLEAR_ADDRESS
-import com.wheretogo.presentation.CameraUpdateSource
 import com.wheretogo.presentation.SEARCH_MARKER
 import com.wheretogo.presentation.SheetState
 import com.wheretogo.presentation.feature.geo.distanceTo
@@ -99,7 +99,7 @@ class DriveViewModel @Inject constructor(
         MutableStateFlow(DriveScreenState(mapState = DriveScreenState.MapState(mapOverlayService.overlays))).withLogging { caller, value ->
             if (BuildConfig.DEBUG)
                 caller?.let {
-                    //Log.d("tst_state", "${caller.shortPath()} --> ${value.bottomSheetState.isVisible}")
+                    //Log.d("tst_state", "${caller.shortPath()} --> ${value.popUpState}")
                 }
         }
     val driveScreenState: StateFlow<DriveScreenState> = _driveScreenState
@@ -306,6 +306,12 @@ class DriveViewModel @Inject constructor(
     }
 
     private suspend fun checkPointMarkerClick(overlay: MapOverlay.MarkerContainer) {
+        val course = _driveScreenState.value.listState.clickItem.course
+        if(course.courseId.isBlank()){
+            mapOverlayService.clearCheckPoint()
+            return
+        }
+
         _driveScreenState.value = _driveScreenState.value
             .initWithLevelState(3)
             .run {
@@ -406,8 +412,11 @@ class DriveViewModel @Inject constructor(
         val checkPointGroup =
             withContext(Dispatchers.IO) { getCheckPointForMarkerUseCase(course.courseId) }
         _driveScreenState.value = _driveScreenState.value.run {
-            mapOverlayService.focusCourse(course)
-            mapOverlayService.addCheckPoint(checkPointGroup)
+            val currentCourse = listState.clickItem.course
+            if(state.course.courseId == currentCourse.courseId) {
+                mapOverlayService.focusCourse(course)
+                mapOverlayService.addCheckPoint(checkPointGroup)
+            }
             copy(isLoading = false)
         }
     }

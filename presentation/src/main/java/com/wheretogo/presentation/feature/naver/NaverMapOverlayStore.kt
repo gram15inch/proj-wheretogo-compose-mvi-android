@@ -36,11 +36,14 @@ class NaverMapOverlayStore @Inject constructor() {
 
     fun getOrCreatePath(pathInfo: PathInfo): PathOverlay? {
         return runCatching {
+            if (pathInfo.points.size < 2)
+                return null
+
             paths.getOrPut(pathInfo.contentId) {
                 pathInfo.toNaverPath()
             }.apply { coords = pathInfo.points.toNaver() }
         }.onFailure {
-            Log.d("tst_","fail ${pathInfo.contentId}-${it.message}")
+            Log.d("tst_", "fail ${pathInfo.contentId}-${it.message}")
         }.getOrNull()
     }
 
@@ -58,9 +61,12 @@ class NaverMapOverlayStore @Inject constructor() {
         return Marker().apply {
             markerInfo.position?.let { position = it.toNaver() }
             markerInfo.caption?.let { captionText= it}
+            //마커가 아이콘
             markerInfo.iconRes?.let { res->
                 icon = OverlayImage.fromResource(res)
             }
+
+            //마커가 사진
             markerInfo.iconPath?.let { path ->
                 val bitmap = BitmapFactory.decodeFile(path)
                 val overlayImage = OverlayImage.fromBitmap(

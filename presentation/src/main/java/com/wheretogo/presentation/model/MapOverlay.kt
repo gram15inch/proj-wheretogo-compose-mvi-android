@@ -6,7 +6,7 @@ import com.wheretogo.presentation.MarkerType
 import com.wheretogo.presentation.PathType
 
 sealed class MapOverlay(
-    open val id: String
+    open val id: String // 컨텐츠 ID
 ) {
     data class MarkerContainer(
         override val id: String,
