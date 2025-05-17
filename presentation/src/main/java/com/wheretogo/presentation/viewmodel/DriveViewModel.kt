@@ -438,7 +438,7 @@ class DriveViewModel @Inject constructor(
             copy(
                 popUpState = popUpState.copy(
                     commentState = popUpState.commentState.copy(commentItemGroup = popUpState.commentState.commentItemGroup.map {
-                        if (it.data.commentId == itemState.data.commentId)
+                        if (it.data.commentId == itemState.data.commentId && itemState.data.detailedReview.length>10)
                             it.copy(isFold = !it.isFold)
                         else
                             it
