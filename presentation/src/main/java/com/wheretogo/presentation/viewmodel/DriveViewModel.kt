@@ -914,7 +914,17 @@ class DriveViewModel @Inject constructor(
                             )
                         }.initBottomSheet()
                 }
-
+                UseCaseResponse.Status.Fail ->{
+                    _driveScreenState.value = _driveScreenState.value.run {
+                        copy(
+                            bottomSheetState = bottomSheetState.copy(
+                                checkPointAddState = bottomSheetState.checkPointAddState.copy(
+                                    isLoading = false
+                                )
+                            )
+                        )
+                    }
+                }
                 else -> {}
             }
         }
