@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.Composable
@@ -36,8 +37,9 @@ fun ImeStickyBox(
     content: @Composable (Dp) -> Unit
 ) {
     val dencity = LocalDensity.current
+    val navBarBottom = WindowInsets.navigationBars.getBottom(dencity) / dencity.density
     val imeInsets = WindowInsets.ime
-    val imeHeight = max(0f, (imeInsets.getBottom(dencity) / dencity.density) - 55).dp
+    val imeHeight = max(0f, (imeInsets.getBottom(dencity) / dencity.density)- navBarBottom).dp
     Box(modifier = modifier
         .wrapContentHeight()
         .offset(y = -imeHeight)
