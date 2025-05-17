@@ -497,6 +497,9 @@ class DriveViewModel @Inject constructor(
 
     private suspend fun commentAddClick(itemState: CommentAddState) {
         val comment = itemState.toComment()
+        if(comment.detailedReview.isBlank())
+            return
+
         val response = withContext(Dispatchers.IO) { addCommentToCheckPointUseCase(comment) }
         when (response.status) {
             UseCaseResponse.Status.Success -> {
