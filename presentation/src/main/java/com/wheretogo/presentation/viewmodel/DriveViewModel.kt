@@ -649,6 +649,11 @@ class DriveViewModel @Inject constructor(
 
     //플로팅
     private suspend fun commentFloatingButtonClick() {
+        if(_driveScreenState.value.popUpState.commentState.isCommentVisible){
+            dismissPopupComment()
+            return
+        }
+
         val checkPointId = _driveScreenState.value.popUpState.checkPointId
         val emogiGroup = getEmogiDummy()
         _driveScreenState.value = _driveScreenState.value.run {
