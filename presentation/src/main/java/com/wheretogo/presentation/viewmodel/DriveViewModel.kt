@@ -306,10 +306,13 @@ class DriveViewModel @Inject constructor(
     }
 
     private suspend fun checkPointMarkerClick(overlay: MapOverlay.MarkerContainer) {
-        val course = _driveScreenState.value.listState.clickItem.course
-        if(course.courseId.isBlank()){
-            mapOverlayService.clearCheckPoint()
-            return
+        _driveScreenState.value.apply {
+            if(listState.clickItem.course.courseId.isBlank()){
+                mapOverlayService.clearCheckPoint()
+                return
+            }
+            if(bottomSheetState.isVisible)
+                return
         }
 
         _driveScreenState.value = _driveScreenState.value
@@ -435,7 +438,7 @@ class DriveViewModel @Inject constructor(
             copy(
                 popUpState = popUpState.copy(
                     commentState = popUpState.commentState.copy(commentItemGroup = popUpState.commentState.commentItemGroup.map {
-                        if (it.data.commentId == itemState.data.commentId)
+                        if (it.data.commentId == itemState.data.commentId && itemState.data.detailedReview.length>10)
                             it.copy(isFold = !it.isFold)
                         else
                             it
@@ -494,6 +497,9 @@ class DriveViewModel @Inject constructor(
 
     private suspend fun commentAddClick(itemState: CommentAddState) {
         val comment = itemState.toComment()
+        if(comment.detailedReview.isBlank())
+            return
+
         val response = withContext(Dispatchers.IO) { addCommentToCheckPointUseCase(comment) }
         when (response.status) {
             UseCaseResponse.Status.Success -> {
@@ -643,6 +649,11 @@ class DriveViewModel @Inject constructor(
 
     //플로팅
     private suspend fun commentFloatingButtonClick() {
+        if(_driveScreenState.value.popUpState.commentState.isCommentVisible){
+            dismissPopupComment()
+            return
+        }
+
         val checkPointId = _driveScreenState.value.popUpState.checkPointId
         val emogiGroup = getCommentEmogiGroup()
         _driveScreenState.value = _driveScreenState.value.run {
@@ -914,7 +925,17 @@ class DriveViewModel @Inject constructor(
                             )
                         }.initBottomSheet()
                 }
-
+                UseCaseResponse.Status.Fail ->{
+                    _driveScreenState.value = _driveScreenState.value.run {
+                        copy(
+                            bottomSheetState = bottomSheetState.copy(
+                                checkPointAddState = bottomSheetState.checkPointAddState.copy(
+                                    isLoading = false
+                                )
+                            )
+                        )
+                    }
+                }
                 else -> {}
             }
         }
