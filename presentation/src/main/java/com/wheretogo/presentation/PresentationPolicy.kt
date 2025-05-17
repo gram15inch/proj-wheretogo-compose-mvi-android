@@ -118,3 +118,7 @@ fun RouteAttrItem?.toIcRes():Int{
         else-> R.drawable.ic_mk_df
     }
 }
+
+fun getCommentEmogiGroup(): List<String> {
+    return listOf("😊", "😍", "🔥", "👏", "👍", "😂", "🙌", "😮", "🤔", "🤭", "🥹", "😭", "😢", "😡", "😞")
+}

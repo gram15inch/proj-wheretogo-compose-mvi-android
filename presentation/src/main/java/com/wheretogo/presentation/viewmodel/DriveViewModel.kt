@@ -11,7 +11,6 @@ import com.wheretogo.domain.LIST_ITEM_ZOOM
 import com.wheretogo.domain.UseCaseFailType
 import com.wheretogo.domain.getFocusComment
 import com.wheretogo.domain.model.UseCaseResponse
-import com.wheretogo.domain.model.dummy.getEmogiDummy
 import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.CheckPointAddRequest
 import com.wheretogo.domain.model.map.Comment
@@ -50,6 +49,7 @@ import com.wheretogo.presentation.SheetState
 import com.wheretogo.presentation.feature.geo.distanceTo
 import com.wheretogo.presentation.feature.map.DriveMapOverlayService
 import com.wheretogo.presentation.feature.withLogging
+import com.wheretogo.presentation.getCommentEmogiGroup
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.MarkerInfo
@@ -503,7 +503,7 @@ class DriveViewModel @Inject constructor(
                         popUpState = popUpState.copy(
                             commentState = popUpState.commentState.copy(
                                 commentAddState = CommentAddState(
-                                    groupId = comment.groupId, emogiGroup = getEmogiDummy()
+                                    groupId = comment.groupId, emogiGroup = getCommentEmogiGroup()
                                 ),
                                 commentItemGroup = commentItemGroup
                             )
@@ -644,7 +644,7 @@ class DriveViewModel @Inject constructor(
     //플로팅
     private suspend fun commentFloatingButtonClick() {
         val checkPointId = _driveScreenState.value.popUpState.checkPointId
-        val emogiGroup = getEmogiDummy()
+        val emogiGroup = getCommentEmogiGroup()
         _driveScreenState.value = _driveScreenState.value.run {
             copy(
                 isLoading = true,

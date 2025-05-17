@@ -72,8 +72,3 @@ fun getCommentDummy(groupId: String = "cp1"): List<Comment> {
         ),
     )
 }
-
-
-fun getEmogiDummy(): List<String> {
-    return listOf("😊", "😂", "❤️", "👍", "😢", "😂", "❤️", "👍", "😢", "😂", "❤️", "👍", "😢")
-}

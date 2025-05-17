@@ -42,7 +42,6 @@ import com.wheretogo.presentation.theme.hancomSansFontFamily
 @Composable
 fun CommentList(
     modifier: Modifier,
-    isCompact: Boolean,
     commentItemGroup: List<CommentItemState>,
     onItemClick: (CommentItemState) -> Unit,
     onItemLongClick: (CommentItemState) -> Unit,

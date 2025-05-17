@@ -52,7 +52,6 @@ import androidx.compose.ui.unit.sp
 import com.skydoves.landscapist.ImageOptions
 import com.skydoves.landscapist.glide.GlideImage
 import com.wheretogo.domain.model.dummy.getCommentDummy
-import com.wheretogo.domain.model.dummy.getEmogiDummy
 import com.wheretogo.presentation.CommentType
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.ExtendArea
@@ -60,6 +59,7 @@ import com.wheretogo.presentation.feature.BlurEffect
 import com.wheretogo.presentation.feature.ImeStickyBox
 import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.feature.topShadow
+import com.wheretogo.presentation.getCommentEmogiGroup
 import com.wheretogo.presentation.state.CommentState
 import com.wheretogo.presentation.state.CommentState.CommentAddState
 import com.wheretogo.presentation.state.CommentState.CommentItemState
@@ -85,7 +85,7 @@ fun PopupPreview() {
                 },
                 commentAddState = CommentAddState(
                     isEmogiGroup = true,
-                    emogiGroup = getEmogiDummy()
+                    emogiGroup = getCommentEmogiGroup()
                 )
             ),
             imageUri = Uri.parse(""),
@@ -159,7 +159,6 @@ fun MapPopup(
                                 CommentList(
                                     modifier = Modifier
                                         .sizeIn(maxHeight = maxHeight),
-                                    isCompact = !isWideSize,
                                     commentItemGroup = commentState.commentItemGroup,
                                     onItemClick = { item ->
                                         onCommentListItemClick(item)
