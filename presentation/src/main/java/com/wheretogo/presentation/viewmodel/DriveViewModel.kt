@@ -306,10 +306,13 @@ class DriveViewModel @Inject constructor(
     }
 
     private suspend fun checkPointMarkerClick(overlay: MapOverlay.MarkerContainer) {
-        val course = _driveScreenState.value.listState.clickItem.course
-        if(course.courseId.isBlank()){
-            mapOverlayService.clearCheckPoint()
-            return
+        _driveScreenState.value.apply {
+            if(listState.clickItem.course.courseId.isBlank()){
+                mapOverlayService.clearCheckPoint()
+                return
+            }
+            if(bottomSheetState.isVisible)
+                return
         }
 
         _driveScreenState.value = _driveScreenState.value
