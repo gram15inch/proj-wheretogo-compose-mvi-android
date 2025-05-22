@@ -45,6 +45,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.SimpleAddress
 import com.wheretogo.presentation.CLEAR_ADDRESS
 import com.wheretogo.presentation.R
@@ -175,7 +176,8 @@ fun SearchBar(
                     AddressItem(
                         simpleAddress = SimpleAddress(
                             title = stringResource(R.string.no_search_data),
-                            address = ""
+                            address = "",
+                            LatLng()
                         ),
                         {}
                     )
@@ -229,7 +231,7 @@ fun ClearItem(onAddressItemClick: (SimpleAddress) -> Unit){
                 clip = false
             )
             .clickable {
-                onAddressItemClick(SimpleAddress(CLEAR_ADDRESS, ""))
+                onAddressItemClick(SimpleAddress(CLEAR_ADDRESS, "", LatLng()))
             }
             .background(colorResource(R.color.gray_B9B9B9))
     ) {
@@ -251,7 +253,8 @@ fun SearchBarPreview() {
             listOf(
                 SimpleAddress(
                     "기흥역 ak플라자",
-                    "경기도 용인시 기흥구 120"
+                    "경기도 용인시 기흥구 120",
+                    LatLng()
                 )
             )
         )
@@ -281,7 +284,7 @@ fun SearchBarPreview() {
                     simpleAddressGroups = emptyList()
             },
             onSearchSubmit = {
-                simpleAddressGroups += SimpleAddress(it, "경기도 용인시 기흥구 120")
+                simpleAddressGroups += SimpleAddress(it, "경기도 용인시 기흥구 120", LatLng())
             }
         )
     }
