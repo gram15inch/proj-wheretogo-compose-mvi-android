@@ -5,6 +5,8 @@ import com.wheretogo.domain.AuthCompany
 import com.wheretogo.domain.RouteAttr
 import com.wheretogo.domain.model.map.Comment
 import com.wheretogo.domain.model.map.LatLng
+import com.wheretogo.domain.model.map.SimpleAddress
+import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.CommentState.CommentAddState
 import com.kakao.vectormap.LatLng as KakaoLatLng
 import com.naver.maps.geometry.LatLng as NaverLatLng
@@ -29,6 +31,10 @@ fun NaverLatLng.toDomainLatLng(): LatLng {
 
 fun LatLng.toNaver(): NaverLatLng {
     return NaverLatLng(latitude, longitude)
+}
+
+fun SimpleAddress.toSearchBarItem():SearchBarItem{
+    return SearchBarItem(label = title, address = address, latlng = latlng)
 }
 
 fun CommentAddState.toComment(): Comment {

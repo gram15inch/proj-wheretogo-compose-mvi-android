@@ -16,7 +16,6 @@ import com.wheretogo.domain.model.map.CheckPointAddRequest
 import com.wheretogo.domain.model.map.Comment
 import com.wheretogo.domain.model.map.Course
 import com.wheretogo.domain.model.map.LatLng
-import com.wheretogo.domain.model.map.SimpleAddress
 import com.wheretogo.domain.usecase.community.AddCommentToCheckPointUseCase
 import com.wheretogo.domain.usecase.community.GetCommentForCheckPointUseCase
 import com.wheretogo.domain.usecase.community.GetImageInfoUseCase
@@ -53,6 +52,7 @@ import com.wheretogo.presentation.getCommentEmogiGroup
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.MarkerInfo
+import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.CameraState
 import com.wheretogo.presentation.state.CheckPointAddState
 import com.wheretogo.presentation.state.CommentState
@@ -62,6 +62,7 @@ import com.wheretogo.presentation.state.DriveScreenState
 import com.wheretogo.presentation.state.InfoState
 import com.wheretogo.presentation.toComment
 import com.wheretogo.presentation.toDomainLatLng
+import com.wheretogo.presentation.toSearchBarItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -109,7 +110,7 @@ class DriveViewModel @Inject constructor(
         viewModelScope.launch {
             when (intent) {
                 //서치바
-                is DriveScreenIntent.AddressItemClick -> addressItemClick(intent.simpleAddress)
+                is DriveScreenIntent.AddressItemClick -> searchBarItemClick(intent.searchBarItem)
                 is DriveScreenIntent.SearchToggleClick -> searchToggleClick(intent.isBar)
                 is DriveScreenIntent.SearchSubmit -> searchSubmit(intent.submit)
 
@@ -157,34 +158,21 @@ class DriveViewModel @Inject constructor(
     }
 
     //서치바
-    private suspend fun addressItemClick(item: SimpleAddress) {
-        if(item.title != CLEAR_ADDRESS){
-            _driveScreenState.value =
-                _driveScreenState.value.run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
-            val latlngResponse =
-                withContext(Dispatchers.IO) { getLatLngFromAddressUseCase(item.address) }
+    private fun searchBarItemClick(item: SearchBarItem) {
+        if(item.label != CLEAR_ADDRESS && item.latlng!=null){
 
             _driveScreenState.value = _driveScreenState.value.run {
-                when (latlngResponse.status) {
-                    UseCaseResponse.Status.Success -> {
-                        val newLatLng = latlngResponse.data!!
-                        mapOverlayService.removeCheckPoint(listOf(SEARCH_MARKER))
-                        mapOverlayService.addCheckPoint(listOf(CheckPoint(SEARCH_MARKER, latLng = newLatLng)))
-                        copy(
-                            searchBarState = searchBarState.copy(isLoading = false),
-                            mapState = mapState.copy(
-                                cameraState = mapState.cameraState.copy(
-                                    latLng = newLatLng,
-                                    updateSource = CameraUpdateSource.APP_EASING
-                                )
-                            )
+                mapOverlayService.removeCheckPoint(listOf(SEARCH_MARKER))
+                mapOverlayService.addCheckPoint(listOf(CheckPoint(SEARCH_MARKER, latLng = item.latlng)))
+                copy(
+                    searchBarState = searchBarState.copy(isLoading = false),
+                    mapState = mapState.copy(
+                        cameraState = mapState.cameraState.copy(
+                            latLng = item.latlng,
+                            updateSource = CameraUpdateSource.APP_EASING
                         )
-                    }
-
-                    UseCaseResponse.Status.Fail -> {
-                        copy(searchBarState = searchBarState.copy(isLoading = false))
-                    }
-                }
+                    )
+                )
             }
         } else {
             mapOverlayService.removeCheckPoint(listOf(SEARCH_MARKER))
@@ -217,7 +205,7 @@ class DriveViewModel @Inject constructor(
                             searchBarState = searchBarState.copy(
                                 isLoading = false,
                                 isEmptyVisible = addressResponse.data?.isEmpty() ?: false,
-                                simpleAddressGroup = addressResponse.data ?: emptyList()
+                                searchBarItemGroup = addressResponse.data?.map { it.toSearchBarItem() } ?: emptyList()
                             )
                         )
                     }
@@ -242,7 +230,7 @@ class DriveViewModel @Inject constructor(
             searchBarState = searchBarState.copy(
                 isLoading = false,
                 isEmptyVisible = false,
-                simpleAddressGroup = emptyList()
+                searchBarItemGroup = emptyList()
             )
         )
     }

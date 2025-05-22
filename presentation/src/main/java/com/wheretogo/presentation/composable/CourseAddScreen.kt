@@ -140,10 +140,10 @@ fun CourseAddScreen(
                 .align(alignment = Alignment.TopEnd),
             isLoading = state.searchBarState.isLoading,
             isEmptyVisible = state.searchBarState.isEmptyVisible,
-            simpleAddressGroup = state.searchBarState.simpleAddressGroup,
+            searchBarItemGroup = state.searchBarState.searchBarItemGroup ,
             onSearchSubmit = { viewModel.handleIntent(CourseAddIntent.SubmitClick(it)) },
-            onSearchToggleClick = { viewModel.handleIntent(CourseAddIntent.SearchToggleClick(it)) },
-            onAddressItemClick = { viewModel.handleIntent(CourseAddIntent.AddressItemClick(it)) }
+            onSearchBarToggleClick = { viewModel.handleIntent(CourseAddIntent.SearchBarToggleClick(it)) },
+            onSearchBarItemClick = { viewModel.handleIntent(CourseAddIntent.SearchBarItemClick(it)) }
         )
         NaverMap(
             modifier = Modifier
