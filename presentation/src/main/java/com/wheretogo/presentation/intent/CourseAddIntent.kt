@@ -2,17 +2,17 @@ package com.wheretogo.presentation.intent
 
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.RouteCategory
-import com.wheretogo.domain.model.map.SimpleAddress
 import com.wheretogo.presentation.SheetState
 import com.wheretogo.presentation.model.MapOverlay
+import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.CameraState
 
 sealed class CourseAddIntent {
 
     //서치바
-    data class AddressItemClick(val simpleAddress: SimpleAddress) : CourseAddIntent()
-    data class SearchToggleClick(val isExpend:Boolean) : CourseAddIntent()
-    data class SubmitClick(val submit:String) : CourseAddIntent()
+    data class SearchBarItemClick(val searchBarItem: SearchBarItem) : CourseAddIntent()
+    data class SearchBarToggleClick(val isExpend:Boolean) : CourseAddIntent()
+    data class SubmitClick(val submitVaule:String) : CourseAddIntent()
 
     //지도
     data class MapClick(val latLng: LatLng) : CourseAddIntent()

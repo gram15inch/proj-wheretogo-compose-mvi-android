@@ -45,9 +45,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wheretogo.domain.model.map.SimpleAddress
 import com.wheretogo.presentation.CLEAR_ADDRESS
 import com.wheretogo.presentation.R
+import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -59,9 +59,9 @@ fun SearchBar(
     modifier: Modifier = Modifier,
     isLoading: Boolean = false,
     isEmptyVisible:Boolean = false,
-    simpleAddressGroup: List<SimpleAddress> = emptyList(),
-    onAddressItemClick: (SimpleAddress) -> Unit = {},
-    onSearchToggleClick: (Boolean) -> Unit = {},
+    searchBarItemGroup: List<SearchBarItem> = emptyList(),
+    onSearchBarItemClick: (SearchBarItem) -> Unit = {},
+    onSearchBarToggleClick: (Boolean) -> Unit = {},
     onSearchSubmit: (String) -> Unit = {}
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -137,7 +137,7 @@ fun SearchBar(
                             focusRequester.requestFocus()
                             isInputMode = true
                         }
-                        onSearchToggleClick(isInputMode)
+                        onSearchBarToggleClick(isInputMode)
                     }
                     .size(40.dp)
                     .padding(10.dp)
@@ -161,11 +161,11 @@ fun SearchBar(
             horizontalAlignment = Alignment.End,
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            items(simpleAddressGroup, key = { Math.random() }) { item ->
+            items(searchBarItemGroup, key = { Math.random() }) { item ->
                 AddressItem(
-                    simpleAddress = item,
-                    onAddressItemClick = {
-                        onAddressItemClick(it)
+                    searchBarItem = item,
+                    onSearchBarItemClick = {
+                        onSearchBarItemClick(it)
                     }
                 )
             }
@@ -173,19 +173,18 @@ fun SearchBar(
             if(isEmptyVisible)
                 item{
                     AddressItem(
-                        simpleAddress = SimpleAddress(
-                            title = stringResource(R.string.no_search_data),
-                            address = ""
-                        ),
-                        {}
-                    )
+                        searchBarItem = SearchBarItem(
+                            label = stringResource(R.string.no_search_data),
+                            address = "",
+                        )
+                    ) {}
                 }
-            if(simpleAddressGroup.isNotEmpty() || isEmptyVisible)
+            if(searchBarItemGroup.isNotEmpty() || isEmptyVisible)
                 item{
-                    ClearItem(onAddressItemClick = {
+                    ClearItem(onSearchBarItemClick = {
                         editText=""
                         isInputMode = false
-                        onAddressItemClick(it)
+                        onSearchBarItemClick(it)
                     })
                 }
         }
@@ -194,7 +193,7 @@ fun SearchBar(
 }
 
 @Composable
-fun AddressItem(simpleAddress: SimpleAddress, onAddressItemClick: (SimpleAddress) -> Unit) {
+fun AddressItem(searchBarItem: SearchBarItem, onSearchBarItemClick: (SearchBarItem) -> Unit) {
     val textStyle = TextStyle(
         fontFamily = hancomSansFontFamily,
         color = colorResource(R.color.gray_474747)
@@ -202,7 +201,7 @@ fun AddressItem(simpleAddress: SimpleAddress, onAddressItemClick: (SimpleAddress
     Box(
         Modifier
             .clickable {
-                onAddressItemClick(simpleAddress)
+                onSearchBarItemClick(searchBarItem)
             }
             .shadow(
                 elevation = 1.5.dp,
@@ -213,13 +212,13 @@ fun AddressItem(simpleAddress: SimpleAddress, onAddressItemClick: (SimpleAddress
             .background(Color.White)
     ) {
         Text(
-            modifier = Modifier.padding(8.dp), text = simpleAddress.title, style = textStyle
+            modifier = Modifier.padding(8.dp), text = searchBarItem.label, style = textStyle
         )
     }
 }
 
 @Composable
-fun ClearItem(onAddressItemClick: (SimpleAddress) -> Unit){
+fun ClearItem(onSearchBarItemClick: (SearchBarItem) -> Unit){
     Box(
         Modifier
             .clip(RoundedCornerShape(12.dp))
@@ -229,7 +228,7 @@ fun ClearItem(onAddressItemClick: (SimpleAddress) -> Unit){
                 clip = false
             )
             .clickable {
-                onAddressItemClick(SimpleAddress(CLEAR_ADDRESS, ""))
+                onSearchBarItemClick(SearchBarItem(CLEAR_ADDRESS, ""))
             }
             .background(colorResource(R.color.gray_B9B9B9))
     ) {
@@ -247,11 +246,11 @@ fun ClearItem(onAddressItemClick: (SimpleAddress) -> Unit){
 @Composable
 fun SearchBarPreview() {
     var simpleAddressGroups by remember {
-        mutableStateOf<List<SimpleAddress>>(
+        mutableStateOf<List<SearchBarItem>>(
             listOf(
-                SimpleAddress(
+                SearchBarItem(
                     "기흥역 ak플라자",
-                    "경기도 용인시 기흥구 120"
+                    "경기도 용인시 기흥구 120",
                 )
             )
         )
@@ -267,8 +266,8 @@ fun SearchBarPreview() {
             modifier = Modifier.padding(top = 15.dp, bottom = 20.dp, end = 15.dp),
             isLoading = isLoading,
             isEmptyVisible = false,
-            simpleAddressGroup = simpleAddressGroups,
-            onAddressItemClick = {
+            searchBarItemGroup = simpleAddressGroups,
+            onSearchBarItemClick = {
                 CoroutineScope(Dispatchers.Main).launch {
                     isLoading = true
                     delay(2000)
@@ -276,12 +275,12 @@ fun SearchBarPreview() {
                     simpleAddressGroups = emptyList()
                 }
             },
-            onSearchToggleClick = {
+            onSearchBarToggleClick = {
                 if (!it)
                     simpleAddressGroups = emptyList()
             },
             onSearchSubmit = {
-                simpleAddressGroups += SimpleAddress(it, "경기도 용인시 기흥구 120")
+                simpleAddressGroups += SearchBarItem(it, "경기도 용인시 기흥구 120",)
             }
         )
     }

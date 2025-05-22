@@ -8,7 +8,6 @@ import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.map.CourseAddRequest
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.RouteCategory
-import com.wheretogo.domain.model.map.SimpleAddress
 import com.wheretogo.domain.usecase.map.AddCourseUseCase
 import com.wheretogo.domain.usecase.map.CreateRouteUseCase
 import com.wheretogo.domain.usecase.map.GetLatLngFromAddressUseCase
@@ -24,9 +23,11 @@ import com.wheretogo.presentation.feature.map.CourseAddMapOverlayService
 import com.wheretogo.presentation.intent.CourseAddIntent
 import com.wheretogo.presentation.model.EventMsg
 import com.wheretogo.presentation.model.MapOverlay
+import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.CameraState
 import com.wheretogo.presentation.state.CourseAddScreenState
 import com.wheretogo.presentation.toDomainLatLng
+import com.wheretogo.presentation.toSearchBarItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,9 +53,9 @@ class CourseAddViewModel @Inject constructor(
             when (intent) {
 
                 //서치바
-                is CourseAddIntent.AddressItemClick -> addressItemClick(intent.simpleAddress)
-                is CourseAddIntent.SearchToggleClick -> searchToggleClick(intent.isExpend)
-                is CourseAddIntent.SubmitClick -> submitClick(intent.submit)
+                is CourseAddIntent.SearchBarItemClick -> searchBarItemClick(intent.searchBarItem)
+                is CourseAddIntent.SearchBarToggleClick -> searchBarToggleClick(intent.isExpend)
+                is CourseAddIntent.SubmitClick -> submitClick(intent.submitVaule)
 
                 //지도
                 is CourseAddIntent.MapClick -> mapClick(intent.latLng)
@@ -79,41 +80,24 @@ class CourseAddViewModel @Inject constructor(
     }
 
     //서치바
-    private suspend fun addressItemClick(item: SimpleAddress) {
-        if(item.title != CLEAR_ADDRESS){
-            _courseAddScreenState.value =
-                _courseAddScreenState.value.run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
-            val latlngResponse =
-                withContext(Dispatchers.IO) { getLatLngFromAddressUseCase(item.address) }
+    private fun searchBarItemClick(item: SearchBarItem) {
+        if(item.label != CLEAR_ADDRESS && item.latlng!=null){
             _courseAddScreenState.value = _courseAddScreenState.value.run {
+                copy(
+                    searchBarState = searchBarState.copy(isLoading = false),
+                    cameraState = cameraState.copy(
+                        latLng = item.latlng,
+                        updateSource = CameraUpdateSource.APP_EASING
+                    )
 
-                when (latlngResponse.status) {
-                    UseCaseResponse.Status.Success -> {
-                        val newLatLng = latlngResponse.data!!
-                        copy(
-                            searchBarState = searchBarState.copy(isLoading = false),
-                            cameraState = cameraState.copy(
-                                latLng = newLatLng,
-                                updateSource = CameraUpdateSource.APP_EASING
-                            )
-
-                        )
-                    }
-
-                    UseCaseResponse.Status.Fail -> {
-                        copy(
-                            searchBarState = searchBarState.copy(isLoading = false)
-                        )
-                    }
-                }
-
+                )
             }
         } else {
             _courseAddScreenState.value = _courseAddScreenState.value.searchBarInit()
         }
     }
 
-    private fun searchToggleClick(isExpend: Boolean) {
+    private fun searchBarToggleClick(isExpend: Boolean) {
         _courseAddScreenState.value = _courseAddScreenState.value.run {
             if (!isExpend) {
                 searchBarInit()
@@ -129,16 +113,17 @@ class CourseAddViewModel @Inject constructor(
             searchBarState = searchBarState.copy(
                 isLoading = false,
                 isEmptyVisible = false,
-                simpleAddressGroup = emptyList()
+                searchBarItemGroup = emptyList()
             )
         )
     }
 
-    private suspend fun submitClick(address: String) {
-        if(address.trim().isNotBlank()){
+    private suspend fun submitClick(submitValue: String) {
+        if(submitValue.trim().isNotBlank()){
             _courseAddScreenState.value =
                 _courseAddScreenState.value.run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
-            val addressResponse = withContext(Dispatchers.IO) { searchAddressUseCase(address) }
+
+            val addressResponse = withContext(Dispatchers.IO) { searchAddressUseCase(submitValue) }
             _courseAddScreenState.value = _courseAddScreenState.value.run {
                 when (addressResponse.status) {
                     UseCaseResponse.Status.Success -> {
@@ -146,7 +131,7 @@ class CourseAddViewModel @Inject constructor(
                             searchBarState = searchBarState.copy(
                                 isLoading = false,
                                 isEmptyVisible = addressResponse.data?.isEmpty() ?: false,
-                                simpleAddressGroup = addressResponse.data ?: emptyList()
+                                searchBarItemGroup = addressResponse.data?.map{ it.toSearchBarItem()} ?: emptyList()
                             )
                         )
                     }

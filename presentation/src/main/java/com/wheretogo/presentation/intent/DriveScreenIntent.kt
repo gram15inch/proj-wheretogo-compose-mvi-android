@@ -2,10 +2,10 @@ package com.wheretogo.presentation.intent
 
 import android.net.Uri
 import androidx.compose.ui.text.input.TextFieldValue
-import com.wheretogo.domain.model.map.SimpleAddress
 import com.wheretogo.presentation.CommentType
 import com.wheretogo.presentation.SheetState
 import com.wheretogo.presentation.model.MapOverlay
+import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.CameraState
 import com.wheretogo.presentation.state.CommentState.CommentAddState
 import com.wheretogo.presentation.state.CommentState.CommentItemState
@@ -15,7 +15,7 @@ import com.wheretogo.presentation.state.InfoState
 sealed class DriveScreenIntent {
 
     //서치바
-    data class AddressItemClick(val simpleAddress:SimpleAddress) : DriveScreenIntent()
+    data class AddressItemClick(val searchBarItem: SearchBarItem) : DriveScreenIntent()
     data class SearchToggleClick(val isBar:Boolean) : DriveScreenIntent()
     data class SearchSubmit(val submit:String) : DriveScreenIntent()
 

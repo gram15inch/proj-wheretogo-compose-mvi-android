@@ -1,10 +1,10 @@
 package com.wheretogo.presentation.state
 
-import com.wheretogo.domain.model.map.SimpleAddress
+import com.wheretogo.presentation.model.SearchBarItem
 
 data class SearchBarState(
-    val isVisible :Boolean = true,
+    val isVisible:Boolean = true,
     val isLoading: Boolean = false,
     val isEmptyVisible: Boolean = false,
-    val simpleAddressGroup: List<SimpleAddress> = emptyList()
+    val searchBarItemGroup: List<SearchBarItem> = emptyList()
 )

@@ -72,7 +72,8 @@ class AddressRemoteDatasourceImpl @Inject constructor(
 
         return if (response.code() == 200) {
             response.body()?.items?.map {
-                SimpleAddress(removeHtmlTags(it.title), it.address)
+                val latlng = convertMapXY(it.mapx, it.mapy)
+                SimpleAddress(removeHtmlTags(it.title), it.address, latlng)
             } ?: emptyList()
         } else {
             emptyList()
@@ -85,5 +86,9 @@ class AddressRemoteDatasourceImpl @Inject constructor(
         } else {
             Html.fromHtml(htmlText).toString()
         }
+    }
+
+    private fun convertMapXY(x:String, y:String): LatLng {
+        return LatLng(y.toDouble()/10_000_000 , x.toDouble()/10_000_000)
     }
 }
