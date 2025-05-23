@@ -58,6 +58,11 @@ class MockUserRemoteDatasourceImpl @Inject constructor(
         userRemoteGroup.remove(uid)
     }
 
+    override suspend fun deleteUser(userId: String, token: String): String {
+        userRemoteGroup.remove(userId)
+        return ""
+    }
+
     override suspend fun addHistory(uid: String, historyId: String, type: HistoryType) {
         val user = userRemoteGroup.get(uid)
         if (user != null) {

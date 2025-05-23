@@ -9,6 +9,8 @@ interface CourseRemoteDatasource {
 
     suspend fun getCourseGroupByGeoHash(start: String, end: String): List<RemoteCourse>
 
+    suspend fun getCourseGroupByKeyword(keyword: String): List<RemoteCourse>
+
     suspend fun setCourse(course: RemoteCourse): Boolean
 
     suspend fun removeCourse(courseId: String): Boolean

@@ -15,6 +15,7 @@ class CourseRemoteDatasourceImpl @Inject constructor() : CourseRemoteDatasource 
     private val firestore by lazy { FirebaseFirestore.getInstance() }
     private val courseRootCollection = FireStoreCollections.COURSE.name()
     private val geoHashAttr = RemoteCourse::geoHash.name
+    private val keywordAttr = RemoteCourse::keyword.name
 
     override suspend fun getCourse(courseId: String): RemoteCourse? {
         return suspendCancellableCoroutine { continuation ->
@@ -37,8 +38,23 @@ class CourseRemoteDatasourceImpl @Inject constructor() : CourseRemoteDatasource 
                 .whereLessThan(geoHashAttr, end)
                 .get()
                 .addOnSuccessListener {
-                    val data = it.toObjects(RemoteCourse::class.java)
-                    continuation.resume(data)
+                    val group = it.toObjects(RemoteCourse::class.java)
+                    continuation.resume(group)
+                }.addOnFailureListener {
+                    continuation.resumeWithException(it)
+                }
+        }
+    }
+
+    override suspend fun getCourseGroupByKeyword(keyword: String): List<RemoteCourse> {
+        return suspendCancellableCoroutine { continuation ->
+            firestore.collection(courseRootCollection)
+                .whereArrayContains(keywordAttr, keyword)
+                .limit(5)
+                .get()
+                .addOnSuccessListener {
+                    val group = it.toObjects(RemoteCourse::class.java)
+                    continuation.resume(group)
                 }.addOnFailureListener {
                     continuation.resumeWithException(it)
                 }
