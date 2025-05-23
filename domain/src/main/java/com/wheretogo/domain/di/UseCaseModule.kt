@@ -15,11 +15,11 @@ import com.wheretogo.domain.usecase.community.ReportCourseUseCase
 import com.wheretogo.domain.usecase.map.AddCheckpointToCourseUseCase
 import com.wheretogo.domain.usecase.map.AddCourseUseCase
 import com.wheretogo.domain.usecase.map.CreateRouteUseCase
-import com.wheretogo.domain.usecase.map.SearchAddressUseCase
 import com.wheretogo.domain.usecase.map.GetCheckpointForMarkerUseCase
 import com.wheretogo.domain.usecase.map.GetImageForPopupUseCase
 import com.wheretogo.domain.usecase.map.GetLatLngFromAddressUseCase
 import com.wheretogo.domain.usecase.map.GetNearByCourseUseCase
+import com.wheretogo.domain.usecase.map.SearchKeywordUseCase
 import com.wheretogo.domain.usecase.user.DeleteUserUseCase
 import com.wheretogo.domain.usecase.user.GetHistoryStreamUseCase
 import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
@@ -44,7 +44,7 @@ import com.wheretogo.domain.usecaseimpl.community.ReportCourseUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.map.AddCheckpointToCourseUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.map.AddCourseUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.map.CreateRouteUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.map.SearchAddressUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.map.SearchKeywordUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.map.GetCheckpointForMarkerUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.map.GetImageForPopupUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.map.GetLatLngFromAddressUseCaseImpl
@@ -150,7 +150,7 @@ abstract class UseCaseModule {
     abstract fun bindReportCancelUseCase(useCaseImpl: ReportCancelUseCaseImpl): ReportCancelUseCase
 
     @Binds
-    abstract fun bindSearchAddressUseCase(useCaseImpl: SearchAddressUseCaseImpl): SearchAddressUseCase
+    abstract fun bindSearchAddressUseCase(useCaseImpl: SearchKeywordUseCaseImpl): SearchKeywordUseCase
 
     @Binds
     abstract fun bindGetLatLngFromAddressUseCase(useCaseImpl: GetLatLngFromAddressUseCaseImpl): GetLatLngFromAddressUseCase

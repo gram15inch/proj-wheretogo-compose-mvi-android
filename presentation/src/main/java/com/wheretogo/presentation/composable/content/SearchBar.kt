@@ -162,7 +162,7 @@ fun SearchBar(
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             items(searchBarItemGroup, key = { Math.random() }) { item ->
-                AddressItem(
+                SearchBarListItem(
                     searchBarItem = item,
                     onSearchBarItemClick = {
                         onSearchBarItemClick(it)
@@ -172,7 +172,7 @@ fun SearchBar(
 
             if(isEmptyVisible)
                 item{
-                    AddressItem(
+                    SearchBarListItem(
                         searchBarItem = SearchBarItem(
                             label = stringResource(R.string.no_search_data),
                             address = "",
@@ -193,10 +193,13 @@ fun SearchBar(
 }
 
 @Composable
-fun AddressItem(searchBarItem: SearchBarItem, onSearchBarItemClick: (SearchBarItem) -> Unit) {
+fun SearchBarListItem(searchBarItem: SearchBarItem, onSearchBarItemClick: (SearchBarItem) -> Unit) {
+    val isCourse = searchBarItem.address.isBlank()
+    val textColor = if(isCourse) R.color.white else R.color.gray_474747
+    val backgroundColor = if(isCourse) R.color.blue else R.color.white
     val textStyle = TextStyle(
         fontFamily = hancomSansFontFamily,
-        color = colorResource(R.color.gray_474747)
+        color = colorResource(textColor)
     )
     Box(
         Modifier
@@ -209,7 +212,7 @@ fun AddressItem(searchBarItem: SearchBarItem, onSearchBarItemClick: (SearchBarIt
                 clip = false
             )
             .clip(RoundedCornerShape(16.dp))
-            .background(Color.White)
+            .background(colorResource(backgroundColor))
     ) {
         Text(
             modifier = Modifier.padding(8.dp), text = searchBarItem.label, style = textStyle
@@ -248,6 +251,10 @@ fun SearchBarPreview() {
     var simpleAddressGroups by remember {
         mutableStateOf<List<SearchBarItem>>(
             listOf(
+                SearchBarItem(
+                    "기흥호수공원 순환",
+                    "",
+                ),
                 SearchBarItem(
                     "기흥역 ak플라자",
                     "경기도 용인시 기흥구 120",

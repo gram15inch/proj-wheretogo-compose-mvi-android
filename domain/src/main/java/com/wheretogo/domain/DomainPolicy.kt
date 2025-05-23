@@ -24,6 +24,10 @@ enum class ReportType {
     USER, COURSE, COMMENT, CHECKPOINT
 }
 
+enum class SearchType {
+    ADRESS, COURSE, ALL
+}
+
 enum class RouteAttr {
      TYPE, LEVEL, RELATION;
 
