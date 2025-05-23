@@ -124,6 +124,7 @@ object Libraries {
     const val LIBRARIES_IDENTITY_GOOGLEID = "com.google.android.libraries.identity.googleid:googleid:1.1.1"
     const val KAKAO_MAPS = "com.kakao.maps.open:android:2.11.9"
     const val NAVER_MAPS = "com.naver.maps:map-sdk:3.19.1"
+    const val KOMORAN = "com.github.shin285:KOMORAN:3.3.9"
 
     const val SHIMMER_COMPOSE = "com.valentinilk.shimmer:compose-shimmer:1.3.1"
     const val LANDSCAPIST_GLIDE = "com.github.skydoves:landscapist-glide:2.4.0"

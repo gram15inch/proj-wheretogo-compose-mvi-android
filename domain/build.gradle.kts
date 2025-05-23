@@ -58,4 +58,5 @@ dependencies {
     implementation(Libraries.FIREBASE_GEOFIRE)
     implementation(Libraries.FIREBASE_GEOFIRE_COMMON)
     implementation(Libraries.HUXHORN_SULKY_ULID)
+    implementation(Libraries.KOMORAN)
 }

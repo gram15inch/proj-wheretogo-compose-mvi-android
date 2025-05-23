@@ -29,9 +29,8 @@ import com.wheretogo.domain.usecase.community.UpdateLikeUseCase
 import com.wheretogo.domain.usecase.map.AddCheckpointToCourseUseCase
 import com.wheretogo.domain.usecase.map.GetCheckpointForMarkerUseCase
 import com.wheretogo.domain.usecase.map.GetImageForPopupUseCase
-import com.wheretogo.domain.usecase.map.GetLatLngFromAddressUseCase
 import com.wheretogo.domain.usecase.map.GetNearByCourseUseCase
-import com.wheretogo.domain.usecase.map.SearchAddressUseCase
+import com.wheretogo.domain.usecase.map.SearchKeywordUseCase
 import com.wheretogo.domain.usecase.user.GetHistoryStreamUseCase
 import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
 import com.wheretogo.presentation.BuildConfig
@@ -83,7 +82,6 @@ class DriveViewModel @Inject constructor(
     private val getUserProfileStreamUseCase: GetUserProfileStreamUseCase,
     private val getImageForPopupUseCase: GetImageForPopupUseCase,
     private val getImageInfoUseCase: GetImageInfoUseCase,
-    private val getLatLngFromAddressUseCase: GetLatLngFromAddressUseCase,
     private val addCheckpointToCourseUseCase: AddCheckpointToCourseUseCase,
     private val addCommentToCheckPointUseCase: AddCommentToCheckPointUseCase,
     private val updateLikeUseCase: UpdateLikeUseCase,
@@ -93,7 +91,7 @@ class DriveViewModel @Inject constructor(
     private val reportCourseUseCase: ReportCourseUseCase,
     private val reportCheckPointUseCase: ReportCheckPointUseCase,
     private val reportCommentUseCase: ReportCommentUseCase,
-    private val searchAddressUseCase: SearchAddressUseCase,
+    private val searchKeywordUseCase: SearchKeywordUseCase,
     private val mapOverlayService: DriveMapOverlayService
 ) : ViewModel() {
     private val _driveScreenState =
@@ -197,15 +195,15 @@ class DriveViewModel @Inject constructor(
         if(address.trim().isNotBlank()){
             _driveScreenState.value =
                 _driveScreenState.value.run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
-            val addressResponse = withContext(Dispatchers.IO) { searchAddressUseCase(address) }
+            val keywordResponse = withContext(Dispatchers.IO) { searchKeywordUseCase(address) }
             _driveScreenState.value = _driveScreenState.value.run {
-                when (addressResponse.status) {
+                when (keywordResponse.status) {
                     UseCaseResponse.Status.Success -> {
                         copy(
                             searchBarState = searchBarState.copy(
                                 isLoading = false,
-                                isEmptyVisible = addressResponse.data?.isEmpty() ?: false,
-                                searchBarItemGroup = addressResponse.data?.map { it.toSearchBarItem() } ?: emptyList()
+                                isEmptyVisible = keywordResponse.data?.isEmpty() ?: false,
+                                searchBarItemGroup = keywordResponse.data?.map { it.toSearchBarItem() } ?: emptyList()
                             )
                         )
                     }

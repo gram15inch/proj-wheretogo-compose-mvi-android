@@ -3,15 +3,14 @@ package com.wheretogo.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wheretogo.domain.RouteAttr
-
+import com.wheretogo.domain.SearchType
 import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.map.CourseAddRequest
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.RouteCategory
 import com.wheretogo.domain.usecase.map.AddCourseUseCase
 import com.wheretogo.domain.usecase.map.CreateRouteUseCase
-import com.wheretogo.domain.usecase.map.GetLatLngFromAddressUseCase
-import com.wheretogo.domain.usecase.map.SearchAddressUseCase
+import com.wheretogo.domain.usecase.map.SearchKeywordUseCase
 import com.wheretogo.presentation.CLEAR_ADDRESS
 import com.wheretogo.presentation.COURSE_NAME_MAX_LENGTH
 import com.wheretogo.presentation.CameraUpdateSource
@@ -39,10 +38,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CourseAddViewModel @Inject constructor(
-    private val getLatLngFromAddressUseCase: GetLatLngFromAddressUseCase,
     private val createRouteUseCase: CreateRouteUseCase,
     private val addCourseUseCase: AddCourseUseCase,
-    private val searchAddressUseCase: SearchAddressUseCase,
+    private val searchKeywordUseCase: SearchKeywordUseCase,
     private val mapOverlayService: CourseAddMapOverlayService
 ) : ViewModel() {
     private val _courseAddScreenState = MutableStateFlow(CourseAddScreenState(overlayGroup = mapOverlayService.overlays))
@@ -123,15 +121,15 @@ class CourseAddViewModel @Inject constructor(
             _courseAddScreenState.value =
                 _courseAddScreenState.value.run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
 
-            val addressResponse = withContext(Dispatchers.IO) { searchAddressUseCase(submitValue) }
+            val keywordResponse = withContext(Dispatchers.IO) { searchKeywordUseCase(submitValue, SearchType.ADRESS) }
             _courseAddScreenState.value = _courseAddScreenState.value.run {
-                when (addressResponse.status) {
+                when (keywordResponse.status) {
                     UseCaseResponse.Status.Success -> {
                         copy(
                             searchBarState = searchBarState.copy(
                                 isLoading = false,
-                                isEmptyVisible = addressResponse.data?.isEmpty() ?: false,
-                                searchBarItemGroup = addressResponse.data?.map{ it.toSearchBarItem()} ?: emptyList()
+                                isEmptyVisible = keywordResponse.data?.isEmpty() ?: false,
+                                searchBarItemGroup = keywordResponse.data?.map{ it.toSearchBarItem()} ?: emptyList()
                             )
                         )
                     }

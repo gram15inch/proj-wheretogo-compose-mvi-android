@@ -15,6 +15,10 @@ class MockCourseRemoteDatasourceImpl @Inject constructor() : CourseRemoteDatasou
         return newCourseGroup.toList()
     }
 
+    override suspend fun getCourseGroupByKeyword(keyword: String): List<RemoteCourse> {
+        return newCourseGroup.toList()
+    }
+
     override suspend fun setCourse(course: RemoteCourse): Boolean {
         return newCourseGroup.add(course)
     }

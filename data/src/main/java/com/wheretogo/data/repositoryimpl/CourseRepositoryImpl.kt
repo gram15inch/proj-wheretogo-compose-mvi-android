@@ -7,7 +7,6 @@ import com.wheretogo.data.toCourse
 import com.wheretogo.data.toDataMetaCheckPoint
 import com.wheretogo.data.toLocalCourse
 import com.wheretogo.data.toRemoteCourse
-import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.Course
 import com.wheretogo.domain.model.map.MetaCheckPoint
 import com.wheretogo.domain.repository.CourseRepository
@@ -20,7 +19,7 @@ class CourseRepositoryImpl @Inject constructor(
     private val courseRemoteDatasource: CourseRemoteDatasource,
     private val courseLocalDatasource: CourseLocalDatasource,
 ) : CourseRepository {
-
+    private val cacheCourseGroupByKeyword = mutableMapOf<String, List<Course>>()
     override suspend fun getCourse(courseId: String): Result<Course> {
         return runCatching {
             courseLocalDatasource.getCourse(courseId)?.toCourse() ?: run {
@@ -58,12 +57,21 @@ class CourseRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getCourseGroupByKeyword(keyword: String): Result<List<Course>> {
+        return runCatching {
+            cacheCourseGroupByKeyword.getOrPut(keyword){
+                courseRemoteDatasource.getCourseGroupByKeyword(keyword)
+                    .map { it.toCourse() }
+            }
+        }
+    }
+
     override suspend fun setCourse(
         course: Course,
-        checkPoints: List<CheckPoint>
+        keyword: List<String>
     ): Result<Unit> {
         return runCatching {
-            courseRemoteDatasource.setCourse(course.toRemoteCourse())
+            courseRemoteDatasource.setCourse(course.toRemoteCourse(keyword = keyword))
             courseLocalDatasource.setCourse(course.toLocalCourse())
         }
     }

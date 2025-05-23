@@ -13,6 +13,7 @@ data class RemoteCourse(
     val geoHash: String = "",
     val waypoints: List<DataLatLng> = emptyList(),
     val dataMetaCheckPoint: DataMetaCheckPoint = DataMetaCheckPoint(),
+    val keyword:List<String> = emptyList(),
     val duration: String = "",
     val type: String = "",
     val level: String = "",

@@ -375,6 +375,7 @@ fun RemoteCourse.toLocalCourse(
 
 fun Course.toRemoteCourse(
     checkPoint: DataMetaCheckPoint = DataMetaCheckPoint(),
+    keyword:List<String> = emptyList()
 ): RemoteCourse {
     return RemoteCourse(
         courseId = courseId,
@@ -386,6 +387,7 @@ fun Course.toRemoteCourse(
         geoHash = cameraLatLng.toGeoHash(6),
         waypoints = waypoints.toDataLatLngGroup(),
         dataMetaCheckPoint = checkPoint,
+        keyword = keyword,
         duration = duration,
         type = type,
         level = level,
