@@ -29,3 +29,6 @@
 -dontwarn kotlin.Unit
 -dontwarn org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 -dontwarn javax.annotation.**
+
+
+-keep class kr.co.shineware.** { *; }

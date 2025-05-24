@@ -387,7 +387,6 @@ class CourseAddViewModel @Inject constructor(
                 )
                 withContext(Dispatchers.IO) { addCourseUseCase(newCourse) }
             }
-
             when (addCourseResponse.status) {
                 UseCaseResponse.Status.Success -> {
                     EventBus.sendMsg(EventMsg(R.string.course_add_done))
@@ -395,7 +394,7 @@ class CourseAddViewModel @Inject constructor(
                 }
 
                 else -> {
-                    EventBus.sendMsg(EventMsg(R.string.course_add_error))
+                    EventBus.sendMsg(EventMsg(R.string.course_add_error,": ${addCourseResponse.data}"))
                     _courseAddScreenState.value = _courseAddScreenState.value.run {
                         copy(error = "코스 등록 오류")
                     }
