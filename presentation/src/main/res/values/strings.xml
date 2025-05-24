@@ -57,7 +57,7 @@
     <string name="next_step">다음단계</string>
 
     <string name="course_add_done">코스 등록 완료</string>
-    <string name="course_add_error">"코스 등록 오류"</string>
+    <string name="course_add_error">"코스 등록 오류: %s"</string>
 
 
     <string name="checkpoint">체크포인트</string>

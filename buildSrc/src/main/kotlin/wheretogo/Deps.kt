@@ -134,6 +134,7 @@ object Libraries {
 
 object UnitTest {
     const val JUNIT_VINTAGE_ENGINE      = "org.junit.vintage:junit-vintage-engine:${Versions.JUPITER}"
+    const val JUNIT_JUPITER             = "org.junit.jupiter:junit-jupiter:${Versions.JUPITER}"
     const val JUNIT_JUPITER_API         = "org.junit.jupiter:junit-jupiter-api:${Versions.JUPITER}"
     const val JUNIT_JUPITER_ENGINE      = "org.junit.jupiter:junit-jupiter-engine:${Versions.JUPITER}"
     const val JUNIT_JUPITER_PARAMS      = "org.junit.jupiter:junit-jupiter-params:${Versions.JUPITER}"

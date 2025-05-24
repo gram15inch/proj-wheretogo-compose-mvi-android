@@ -3,6 +3,7 @@ import wheretogo.Dagger
 import wheretogo.Kotlin
 import wheretogo.Libraries
 import wheretogo.Squareup
+import wheretogo.UnitTest
 
 plugins {
     id("com.android.library")
@@ -59,4 +60,11 @@ dependencies {
     implementation(Libraries.FIREBASE_GEOFIRE_COMMON)
     implementation(Libraries.HUXHORN_SULKY_ULID)
     implementation(Libraries.KOMORAN)
+
+    //Test
+    testImplementation(UnitTest.JUNIT_JUPITER)
+    testImplementation(UnitTest.JUNIT_JUPITER_API)
+    testImplementation(UnitTest.JUNIT_JUPITER_PARAMS)
+    testImplementation(UnitTest.JUNIT_JUPITER_ENGINE)
+    testImplementation(UnitTest.JUNIT_VINTAGE_ENGINE)
 }
