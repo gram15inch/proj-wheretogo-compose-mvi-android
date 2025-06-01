@@ -124,42 +124,40 @@ fun CheckPointAddContent(
                 fontFamily = interFontFamily
             )
         }
+        val textColor = if (state.isSubmitActive) R.color.white else R.color.gray_848484
+        val backColor = if (state.isSubmitActive) R.color.blue else R.color.white
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .border(
+                    color = colorResource(R.color.gray_C7C7C7_80),
+                    shape = RoundedCornerShape(16.dp),
+                    width = 1.dp
+                )
+                .height(60.dp)
+                .background(colorResource(backColor))
+                .clickable { onSubmitClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            if (state.isLoading)
+                DelayLottieAnimation(
+                    modifier = Modifier
+                        .size(50.dp),
+                    ltRes = R.raw.lt_loading,
+                    isVisible = true,
+                    delay = 0
+                )
+            else
+                Text(
+                    text = stringResource(R.string.submit),
+                    color = colorResource(textColor),
+                    fontFamily = interBoldFontFamily
+                )
+        }
     }
-
-    val textColor = if (state.isSubmitActive) R.color.white else R.color.gray_848484
-    val backColor = if (state.isSubmitActive) R.color.blue else R.color.white
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(10.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .border(
-                color = colorResource(R.color.gray_C7C7C7_80),
-                shape = RoundedCornerShape(16.dp),
-                width = 1.dp
-            )
-            .height(60.dp)
-            .background(colorResource(backColor))
-            .clickable { onSubmitClick() },
-        contentAlignment = Alignment.Center
-    ) {
-        if (state.isLoading)
-            DelayLottieAnimation(
-                modifier = Modifier
-                    .size(50.dp),
-                ltRes = R.raw.lt_loading,
-                isVisible = true,
-                delay = 0
-            )
-        else
-            Text(
-                text = stringResource(R.string.submit),
-                color = colorResource(textColor),
-                fontFamily = interBoldFontFamily
-            )
-    }
-
 }
 
 @Composable

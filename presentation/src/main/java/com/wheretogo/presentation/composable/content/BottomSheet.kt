@@ -3,8 +3,11 @@ package com.wheretogo.presentation.composable.content
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
@@ -93,19 +96,17 @@ fun BottomSheet(
         modifier = modifier
             .statusBarsPadding()
     ) {
+        val naviBar = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
         BottomSheetScaffold(
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier,
             scaffoldState = scaffoldState,
             sheetContainerColor = Color.White,
             sheetContent = {
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth()
                         .onGloballyPositioned { coordinates ->
                             val heightPx = coordinates.size.height
-                            val dp =
-                                if (isVisible) with(density) { heightPx.toDp() + 20.dp } else initHeight.dp
+                            val dp = if (isVisible) with(density) { heightPx.toDp() - naviBar + 20.dp } else (initHeight.dp - naviBar).run { if(this<0.dp) 0.dp else this }
                             if (dp != latestDp) {
                                 onHeightChange(dp)
                                 latestDp = dp
@@ -124,8 +125,9 @@ fun BottomSheet(
             sheetDragHandle = {
                 DragHandle()
             },
-            sheetPeekHeight = initHeight.dp
-        ) {}
+            sheetPeekHeight = initHeight.dp,
+            content = {}
+        )
     }
 }
 
