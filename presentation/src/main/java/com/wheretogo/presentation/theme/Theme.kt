@@ -41,7 +41,6 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun WhereTogoTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
@@ -58,6 +57,7 @@ fun WhereTogoTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
+            WindowCompat.setDecorFitsSystemWindows(window, false)
             window.statusBarColor = Color.Transparent.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
         }

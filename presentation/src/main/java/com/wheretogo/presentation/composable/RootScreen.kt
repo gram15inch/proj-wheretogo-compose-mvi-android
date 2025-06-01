@@ -4,9 +4,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.Snackbar
@@ -30,10 +28,9 @@ import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.content.AnimationDirection
 import com.wheretogo.presentation.composable.content.SlideAnimation
 import com.wheretogo.presentation.feature.EventBus
-import com.wheretogo.presentation.feature.shortShow
 import com.wheretogo.presentation.feature.getString
+import com.wheretogo.presentation.feature.shortShow
 import com.wheretogo.presentation.theme.WhereTogoTheme
-import com.wheretogo.presentation.theme.White100
 import com.wheretogo.presentation.viewmodel.RootViewModel
 
 @Composable
@@ -62,7 +59,6 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
 
         Box(
             modifier = Modifier
-                .background(Color.Gray)
                 .fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
@@ -91,8 +87,7 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
 
             Box(
                 modifier = Modifier
-                    .fillMaxHeight()
-                    .background(White100)
+                    .fillMaxSize()
             ) {
                 val home = stringResource(R.string.navi_home)
                 val drive = stringResource(R.string.navi_drive)
@@ -100,19 +95,27 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                 val setting = stringResource(R.string.navi_setting)
 
                 NavHost(navController = navController, startDestination = home) {
-                    composable(home) { HomeScreen(navController) }
+                    composable(home) {
+                        HomeScreen(navController)
+                    }
                     composable(drive,
                         enterTransition = { slideInHorizontally(initialOffsetX = { it }) },
                         exitTransition = { slideOutHorizontally(targetOffsetX = { it }) }
-                    ) { DriveScreen(navController) }
+                    ) {
+                        DriveScreen(navController)
+                    }
                      composable(courseAdd,
                         enterTransition = { slideInVertically(initialOffsetY = { it }) },
                         exitTransition = { slideOutVertically(targetOffsetY = { it }) }
-                    ) { CourseAddScreen() }
+                    ) {
+                         CourseAddScreen()
+                     }
                     composable(setting,
                         enterTransition = { slideInHorizontally(initialOffsetX = { it }) },
                         exitTransition = { slideOutHorizontally(targetOffsetX = { it }) }
-                    ) { SettingScreen(navController) }
+                    ) {
+                        SettingScreen(navController)
+                    }
                 }
             }
         }

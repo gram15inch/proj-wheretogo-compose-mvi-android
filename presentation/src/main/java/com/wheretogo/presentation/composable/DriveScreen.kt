@@ -11,11 +11,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -40,10 +40,10 @@ import com.wheretogo.presentation.BuildConfig
 import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.content.AnimationDirection
+import com.wheretogo.presentation.composable.content.BottomSheet
 import com.wheretogo.presentation.composable.content.CheckPointAddContent
 import com.wheretogo.presentation.composable.content.DelayLottieAnimation
 import com.wheretogo.presentation.composable.content.DescriptionTextField
-import com.wheretogo.presentation.composable.content.BottomSheet
 import com.wheretogo.presentation.composable.content.DriveListContent
 import com.wheretogo.presentation.composable.content.FadeAnimation
 import com.wheretogo.presentation.composable.content.FloatingButtons
@@ -76,162 +76,74 @@ fun DriveScreen(
     BackHandler {
         navController.navigateUp()
     }
-    Box(
-        modifier = Modifier
-            .systemBarsPadding()
-            .fillMaxWidth()
-            .zIndex(1f)
-    ) {
-        if(BuildConfig.DEBUG)
-            Text(
-                modifier = Modifier.align(alignment = Alignment.TopStart),
-                text = "${state.mapState.overlayGroup.size}",
-                fontSize = 50.sp
-            )
-        DelayLottieAnimation(
+
+    Scaffold(content = { naviBar->
+        Box(
             modifier = Modifier
-                .padding(top = 40.dp, end = 10.dp)
-                .size(50.dp)
-                .align(alignment = Alignment.TopEnd),
-            ltRes = R.raw.lt_loading,
-            isVisible = state.isLoading,
-            delay = 300
-        )
-    }
-
-    NaverMap(
-        modifier = Modifier
-            .zIndex(0f)
-            .fillMaxSize()
-            .navigationBarsPadding(),
-        mapOverlayGroup = state.mapState.overlayGroup,
-        cameraState = state.mapState.cameraState,
-        onMapAsync = { map ->
-            viewModel.handleIntent(DriveScreenIntent.MapIsReady)
-            coroutineScope.launch { map.setCurrentLocation(context) }
-        },
-        onCameraUpdate = { camera ->
-            viewModel.handleIntent(DriveScreenIntent.CameraUpdated(camera))
-        },
-        onCourseMarkerClick = { overlay ->
-            viewModel.handleIntent(DriveScreenIntent.CourseMarkerClick(overlay))
-        },
-        onCheckPointMarkerClick = { overlay ->
-            viewModel.handleIntent(DriveScreenIntent.CheckPointMarkerClick(overlay))
-        },
-        onOverlayRenderComplete = {},
-        contentPadding = ContentPadding(bottom = mapBottomPadding)
-    )
-
-    FadeAnimation(visible = state.popUpState.isVisible) {
-        BlurEffect(onClick = {
-            viewModel.handleIntent(DriveScreenIntent.DismissPopup)
-        })
-    }
-
-
-    Box(
-        modifier = Modifier
-            .systemBarsPadding()
-            .fillMaxSize(),
-        contentAlignment = Alignment.BottomCenter
-    ) {
-        OneHandArea {
-            Box(modifier = Modifier
+                .systemBarsPadding()
                 .fillMaxWidth()
-                .padding(top = 10.dp, end = 10.dp), contentAlignment = Alignment.CenterEnd
-            ) {
-                state.searchBarState.run {
-                    SlideAnimation (visible = isVisible, direction = AnimationDirection.CenterRight) {
-                        SearchBar(
-                            isLoading = isLoading,
-                            isEmptyVisible = isEmptyVisible,
-                            searchBarItemGroup = searchBarItemGroup,
-                            onSearchSubmit = { viewModel.handleIntent(DriveScreenIntent.SearchSubmit(it)) },
-                            onSearchBarToggleClick = { viewModel.handleIntent(DriveScreenIntent.SearchToggleClick(it)) },
-                            onSearchBarItemClick = { viewModel.handleIntent(DriveScreenIntent.AddressItemClick(it)) }
-                        )
-                    }
-                }
-            }
-            FadeAnimation(
-                modifier = Modifier
-                    .align(alignment = Alignment.BottomEnd),
-                visible = state.listState.isVisible
-            ) {
-                DriveListContent(
-                    modifier = Modifier
-                        .align(alignment = Alignment.BottomCenter)
-                        .padding(horizontal = 12.dp),
-                    listItemGroup = state.listState.listItemGroup,
-                    onItemClick = { selectedItem ->
-                        viewModel.handleIntent(DriveScreenIntent.DriveListItemClick(selectedItem))
-                    },
-                    onBookmarkClick = {},
-                    onHeightPxChange = {}
+                .zIndex(1f)
+        ) {
+            if(BuildConfig.DEBUG)
+                Text(
+                    modifier = Modifier.align(alignment = Alignment.TopStart),
+                    text = "${state.mapState.overlayGroup.size}",
+                    fontSize = 50.sp
                 )
-            }
-
-            FadeAnimation(
+            DelayLottieAnimation(
                 modifier = Modifier
-                    .align(alignment = Alignment.BottomStart),
-                visible = state.popUpState.isVisible
-            ) {
-                MapPopup(
-                    modifier = Modifier.align(Alignment.BottomStart),
-                    commentState = state.popUpState.commentState,
-                    imageUri = state.popUpState.imageUri,
-                    isWideSize = isWideSize,
-                    isLoading = state.isLoading,
-                    onPopupImageClick = {
-                        viewModel.handleIntent(DriveScreenIntent.CommentFloatingButtonClick)
-                    },
-                    onPopupBlurClick = {
-                        viewModel.handleIntent(DriveScreenIntent.DismissPopupComment)
-                    },
-                    onCommentListItemClick = { item ->
-                        viewModel.handleIntent(DriveScreenIntent.CommentListItemClick(item))
-                    },
-                    onCommentListItemLongClick = { item ->
-                        viewModel.handleIntent(DriveScreenIntent.CommentListItemLongClick(item))
-                    },
-                    onCommentLikeClick = { item ->
-                        viewModel.handleIntent(DriveScreenIntent.CommentLikeClick(item))
-                    },
-                    onCommentAddClick = { item ->
-                        viewModel.handleIntent(DriveScreenIntent.CommentAddClick(item))
-                    },
-                    onCommentRemoveClick = { item ->
-                        viewModel.handleIntent(DriveScreenIntent.CommentRemoveClick(item))
-                    },
-                    onCommentReportClick = { item ->
-                        viewModel.handleIntent(DriveScreenIntent.CommentReportClick(item))
-                    },
-                    onCommentEditValueChange = { textFiled ->
-                        viewModel.handleIntent(DriveScreenIntent.CommentEditValueChange(textFiled))
-                    },
-                    onCommentEmogiPress = { emogi ->
-                        viewModel.handleIntent(DriveScreenIntent.CommentEmogiPress(emogi))
-                    },
-                    onCommentTypePress = { type ->
-                        viewModel.handleIntent(DriveScreenIntent.CommentTypePress(type))
-                    }
-                )
-            }
+                    .padding(top = 40.dp, end = 10.dp)
+                    .size(50.dp)
+                    .align(alignment = Alignment.TopEnd),
+                ltRes = R.raw.lt_loading,
+                isVisible = state.isLoading,
+                delay = 300
+            )
+        }
 
-            BottomSheet(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .zIndex(997f),
-                isVisible = state.bottomSheetState.isVisible,
-                onHeightChange = { dp->
-                    bottomSheetHeight = dp
-                    viewModel.handleIntent(DriveScreenIntent.ContentPaddingChanged(dp.value.toInt()))
-                },
-                onStateChange = {
-                    viewModel.handleIntent(DriveScreenIntent.BottomSheetChange(it))
-                }
-            ) {
+        NaverMap(
+            modifier = Modifier
+                .zIndex(0f)
+                .fillMaxSize(),
+            mapOverlayGroup = state.mapState.overlayGroup,
+            cameraState = state.mapState.cameraState,
+            onMapAsync = { map ->
+                viewModel.handleIntent(DriveScreenIntent.MapIsReady)
+                coroutineScope.launch { map.setCurrentLocation(context) }
+            },
+            onCameraUpdate = { camera ->
+                viewModel.handleIntent(DriveScreenIntent.CameraUpdated(camera))
+            },
+            onCourseMarkerClick = { overlay ->
+                viewModel.handleIntent(DriveScreenIntent.CourseMarkerClick(overlay))
+            },
+            onCheckPointMarkerClick = { overlay ->
+                viewModel.handleIntent(DriveScreenIntent.CheckPointMarkerClick(overlay))
+            },
+            onOverlayRenderComplete = {},
+            contentPadding = ContentPadding(bottom = mapBottomPadding + naviBar.calculateBottomPadding())
+        )
+
+        FadeAnimation(visible = state.popUpState.isVisible) {
+            BlurEffect(onClick = {
+                viewModel.handleIntent(DriveScreenIntent.DismissPopup)
+            })
+        }
+
+        BottomSheet(
+            modifier = Modifier
+                .zIndex(997f),
+            isVisible = state.bottomSheetState.isVisible,
+            onHeightChange = { dp->
+                bottomSheetHeight = dp
+                viewModel.handleIntent(DriveScreenIntent.ContentPaddingChanged(dp.value.toInt()))
+            },
+            onStateChange = {
+                viewModel.handleIntent(DriveScreenIntent.BottomSheetChange(it))
+            }
+        ) {
+            Box(modifier = Modifier.padding(bottom = naviBar.calculateBottomPadding()),
+            ){
                 when (state.bottomSheetState.content) {
                     DriveBottomSheetContent.CHECKPOINT_ADD -> {
                         CheckPointAddContent(
@@ -264,53 +176,147 @@ fun DriveScreen(
                 }
             }
 
-            val isNotOtherVisible = !state.popUpState.commentState.isCommentVisible && !state.bottomSheetState.isVisible
-            FloatingButtons(
-                modifier = Modifier
-                    .padding(vertical = 12.dp)
-                    .fillMaxSize(),
-                course = state.listState.clickItem.course,
-                isCommentVisible = state.floatingButtonState.isCommentVisible && isNotOtherVisible,
-                isCheckpointAddVisible = state.floatingButtonState.isCheckpointAddVisible && isNotOtherVisible,
-                isInfoVisible = state.floatingButtonState.isInfoVisible && isNotOtherVisible,
-                isExportVisible = state.floatingButtonState.isExportVisible && isNotOtherVisible,
-                isExportBackPlate = state.floatingButtonState.isBackPlateVisible,
-                isFoldVisible = state.floatingButtonState.isFoldVisible && isNotOtherVisible,
-                onCommentClick = {
-                    viewModel.handleIntent(DriveScreenIntent.CommentFloatingButtonClick)
-                },
-                onCheckpointAddClick = {
-                    viewModel.handleIntent(DriveScreenIntent.CheckpointAddFloatingButtonClick)
-                },
-                onInfoClick = {
-                    viewModel.handleIntent(DriveScreenIntent.InfoFloatingButtonClick)
-                },
-                onExportMapClick = {
-                    viewModel.handleIntent(DriveScreenIntent.ExportMapFloatingButtonClick)
-                },
-                onFoldClick = {
-                    viewModel.handleIntent(DriveScreenIntent.FoldFloatingButtonClick)
-                }
-            )
+        }
 
-            ImeStickyBox(modifier = Modifier
-                .align(alignment = Alignment.BottomCenter)
-                .zIndex(999f)) {
-                DescriptionTextField(
-                    modifier = Modifier.heightIn(min = 60.dp),
-                    isVisible = state.bottomSheetState.isVisible && it > 30.dp,
-                    focusRequester = state.bottomSheetState.checkPointAddState.focusRequester,
-                    text = state.bottomSheetState.checkPointAddState.description,
-                    onTextChange = {
-                        viewModel.handleIntent(DriveScreenIntent.CheckpointDescriptionChange(it))
+        Box(
+            modifier = Modifier
+                .systemBarsPadding()
+                .fillMaxSize(),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            OneHandArea {
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 10.dp, end = 10.dp), contentAlignment = Alignment.CenterEnd
+                ) {
+                    state.searchBarState.run {
+                        SlideAnimation (visible = isVisible, direction = AnimationDirection.CenterRight) {
+                            SearchBar(
+                                isLoading = isLoading,
+                                isEmptyVisible = isEmptyVisible,
+                                searchBarItemGroup = searchBarItemGroup,
+                                onSearchSubmit = { viewModel.handleIntent(DriveScreenIntent.SearchSubmit(it)) },
+                                onSearchBarToggleClick = { viewModel.handleIntent(DriveScreenIntent.SearchToggleClick(it)) },
+                                onSearchBarItemClick = { viewModel.handleIntent(DriveScreenIntent.AddressItemClick(it)) }
+                            )
+                        }
+                    }
+                }
+                FadeAnimation(
+                    modifier = Modifier
+                        .align(alignment = Alignment.BottomEnd),
+                    visible = state.listState.isVisible
+                ) {
+                    DriveListContent(
+                        modifier = Modifier
+                            .align(alignment = Alignment.BottomCenter)
+                            .padding(horizontal = 12.dp),
+                        listItemGroup = state.listState.listItemGroup,
+                        onItemClick = { selectedItem ->
+                            viewModel.handleIntent(DriveScreenIntent.DriveListItemClick(selectedItem))
+                        },
+                        onBookmarkClick = {},
+                        onHeightPxChange = {}
+                    )
+                }
+
+                FadeAnimation(
+                    modifier = Modifier
+                        .align(alignment = Alignment.BottomStart),
+                    visible = state.popUpState.isVisible
+                ) {
+                    MapPopup(
+                        modifier = Modifier.align(Alignment.BottomStart),
+                        commentState = state.popUpState.commentState,
+                        imageUri = state.popUpState.imageUri,
+                        isWideSize = isWideSize,
+                        isLoading = state.isLoading,
+                        onPopupImageClick = {
+                            viewModel.handleIntent(DriveScreenIntent.CommentFloatingButtonClick)
+                        },
+                        onPopupBlurClick = {
+                            viewModel.handleIntent(DriveScreenIntent.DismissPopupComment)
+                        },
+                        onCommentListItemClick = { item ->
+                            viewModel.handleIntent(DriveScreenIntent.CommentListItemClick(item))
+                        },
+                        onCommentListItemLongClick = { item ->
+                            viewModel.handleIntent(DriveScreenIntent.CommentListItemLongClick(item))
+                        },
+                        onCommentLikeClick = { item ->
+                            viewModel.handleIntent(DriveScreenIntent.CommentLikeClick(item))
+                        },
+                        onCommentAddClick = { item ->
+                            viewModel.handleIntent(DriveScreenIntent.CommentAddClick(item))
+                        },
+                        onCommentRemoveClick = { item ->
+                            viewModel.handleIntent(DriveScreenIntent.CommentRemoveClick(item))
+                        },
+                        onCommentReportClick = { item ->
+                            viewModel.handleIntent(DriveScreenIntent.CommentReportClick(item))
+                        },
+                        onCommentEditValueChange = { textFiled ->
+                            viewModel.handleIntent(DriveScreenIntent.CommentEditValueChange(textFiled))
+                        },
+                        onCommentEmogiPress = { emogi ->
+                            viewModel.handleIntent(DriveScreenIntent.CommentEmogiPress(emogi))
+                        },
+                        onCommentTypePress = { type ->
+                            viewModel.handleIntent(DriveScreenIntent.CommentTypePress(type))
+                        }
+                    )
+                }
+
+
+                val isNotOtherVisible = !state.popUpState.commentState.isCommentVisible && !state.bottomSheetState.isVisible
+                FloatingButtons(
+                    modifier = Modifier
+                        .padding(vertical = 12.dp)
+                        .fillMaxSize(),
+                    course = state.listState.clickItem.course,
+                    isCommentVisible = state.floatingButtonState.isCommentVisible && isNotOtherVisible,
+                    isCheckpointAddVisible = state.floatingButtonState.isCheckpointAddVisible && isNotOtherVisible,
+                    isInfoVisible = state.floatingButtonState.isInfoVisible && isNotOtherVisible,
+                    isExportVisible = state.floatingButtonState.isExportVisible && isNotOtherVisible,
+                    isExportBackPlate = state.floatingButtonState.isBackPlateVisible,
+                    isFoldVisible = state.floatingButtonState.isFoldVisible && isNotOtherVisible,
+                    onCommentClick = {
+                        viewModel.handleIntent(DriveScreenIntent.CommentFloatingButtonClick)
                     },
-                    onEnterClick = {
-                        viewModel.handleIntent(DriveScreenIntent.CheckpointDescriptionEnterClick)
+                    onCheckpointAddClick = {
+                        viewModel.handleIntent(DriveScreenIntent.CheckpointAddFloatingButtonClick)
+                    },
+                    onInfoClick = {
+                        viewModel.handleIntent(DriveScreenIntent.InfoFloatingButtonClick)
+                    },
+                    onExportMapClick = {
+                        viewModel.handleIntent(DriveScreenIntent.ExportMapFloatingButtonClick)
+                    },
+                    onFoldClick = {
+                        viewModel.handleIntent(DriveScreenIntent.FoldFloatingButtonClick)
                     }
                 )
+
+                ImeStickyBox(modifier = Modifier
+                    .align(alignment = Alignment.BottomCenter)
+                    .zIndex(999f)) {
+                    DescriptionTextField(
+                        modifier = Modifier.heightIn(min = 60.dp),
+                        isVisible = state.bottomSheetState.isVisible && it > 30.dp,
+                        focusRequester = state.bottomSheetState.checkPointAddState.focusRequester,
+                        text = state.bottomSheetState.checkPointAddState.description,
+                        onTextChange = {
+                            viewModel.handleIntent(DriveScreenIntent.CheckpointDescriptionChange(it))
+                        },
+                        onEnterClick = {
+                            viewModel.handleIntent(DriveScreenIntent.CheckpointDescriptionEnterClick)
+                        }
+                    )
+                }
             }
         }
-    }
+    })
+
 }
 
 

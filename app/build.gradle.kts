@@ -22,12 +22,12 @@ plugins {
 
 android {
     namespace = "com.dhkim139.wheretogo"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.dhkim139.wheretogo"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 21
         versionName = "1.2.0-rc10"
 

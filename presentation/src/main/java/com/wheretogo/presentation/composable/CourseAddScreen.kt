@@ -13,27 +13,24 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -95,119 +92,124 @@ fun CourseAddScreen(
         targetValue = bottomSheetHeight,
         animationSpec = tween(durationMillis = 300)
     )
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .navigationBarsPadding()
-    ) {
-        if (BuildConfig.DEBUG) {
+
+    Scaffold(
+        content = { naviBar->
             Box(
                 modifier = Modifier
-                    .systemBarsPadding()
-                    .fillMaxWidth()
-                    .zIndex(1f)
+                    .fillMaxSize()
+                    .navigationBarsPadding()
             ) {
-                Text(
-                    modifier = Modifier.align(alignment = Alignment.TopStart),
-                    text = "${state.overlayGroup.size}",
-                    fontSize = 50.sp
+                if (BuildConfig.DEBUG) {
+                    Box(
+                        modifier = Modifier
+                            .systemBarsPadding()
+                            .fillMaxWidth()
+                            .zIndex(1f)
+                    ) {
+                        Text(
+                            modifier = Modifier.align(alignment = Alignment.TopStart),
+                            text = "${state.overlayGroup.size}",
+                            fontSize = 50.sp
+                        )
+                    }
+                }
+
+                if (state.isFloatMarker)
+                    Box(// 중앙 마커
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .zIndex(1f)
+                            .padding(bottom = mapBottomPadding + naviBar.calculateBottomPadding()),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            modifier = Modifier
+                                .width(30.dp)
+                                .padding(bottom = 30.dp),
+                            painter = painterResource(R.drawable.ic_marker),
+                            contentDescription = ""
+                        )
+                    }
+
+                SearchBar(
+                    modifier = Modifier
+                        .zIndex(1f)
+                        .statusBarsPadding()
+                        .padding(top = 10.dp, end = 10.dp)
+                        .align(alignment = Alignment.TopEnd),
+                    isLoading = state.searchBarState.isLoading,
+                    isEmptyVisible = state.searchBarState.isEmptyVisible,
+                    searchBarItemGroup = state.searchBarState.searchBarItemGroup ,
+                    onSearchSubmit = { viewModel.handleIntent(CourseAddIntent.SubmitClick(it)) },
+                    onSearchBarToggleClick = { viewModel.handleIntent(CourseAddIntent.SearchBarToggleClick(it)) },
+                    onSearchBarItemClick = { viewModel.handleIntent(CourseAddIntent.SearchBarItemClick(it)) }
+                )
+                NaverMap(
+                    modifier = Modifier
+                        .zIndex(0f)
+                        .fillMaxSize()
+                        .height(300.dp)
+                        .background(color = Color.Green),
+                    mapOverlayGroup = state.overlayGroup,
+                    onMapAsync = { map ->
+                        coroutineScope.launch { map.setCurrentLocation(context) }
+                    },
+                    cameraState = state.cameraState,
+                    onCameraUpdate = { viewModel.handleIntent(CourseAddIntent.CameraUpdated(it)) },
+                    onMapClickListener = { viewModel.handleIntent(CourseAddIntent.MapClick(it)) },
+                    onCheckPointMarkerClick = { viewModel.handleIntent(CourseAddIntent.WaypointMarkerClick(it)) },
+                    contentPadding = ContentPadding(bottom = mapBottomPadding + naviBar.calculateBottomPadding())
                 )
             }
-        }
-
-        if (state.isFloatMarker)
-            Box(// 중앙 마커
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .zIndex(1f)
-                    .padding(bottom = mapBottomPadding),
-                contentAlignment = Alignment.Center
+                    .statusBarsPadding()
+                    .navigationBarsPadding()
             ) {
-                Image(
-                    modifier = Modifier
-                        .width(30.dp)
-                        .padding(bottom = 30.dp),
-                    painter = painterResource(R.drawable.ic_marker),
-                    contentDescription = ""
-                )
-            }
-
-        SearchBar(
-            modifier = Modifier
-                .zIndex(1f)
-                .statusBarsPadding()
-                .padding(top = 10.dp, end = 10.dp)
-                .align(alignment = Alignment.TopEnd),
-            isLoading = state.searchBarState.isLoading,
-            isEmptyVisible = state.searchBarState.isEmptyVisible,
-            searchBarItemGroup = state.searchBarState.searchBarItemGroup ,
-            onSearchSubmit = { viewModel.handleIntent(CourseAddIntent.SubmitClick(it)) },
-            onSearchBarToggleClick = { viewModel.handleIntent(CourseAddIntent.SearchBarToggleClick(it)) },
-            onSearchBarItemClick = { viewModel.handleIntent(CourseAddIntent.SearchBarItemClick(it)) }
-        )
-        NaverMap(
-            modifier = Modifier
-                .zIndex(0f)
-                .fillMaxSize()
-                .height(300.dp)
-                .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Bottom))
-                .background(color = Color.Green),
-            mapOverlayGroup = state.overlayGroup,
-            onMapAsync = { map ->
-                coroutineScope.launch { map.setCurrentLocation(context) }
-            },
-            cameraState = state.cameraState,
-            onCameraUpdate = { viewModel.handleIntent(CourseAddIntent.CameraUpdated(it)) },
-            onMapClickListener = { viewModel.handleIntent(CourseAddIntent.MapClick(it)) },
-            onCheckPointMarkerClick = { viewModel.handleIntent(CourseAddIntent.WaypointMarkerClick(it)) },
-            contentPadding = ContentPadding(bottom = mapBottomPadding)
-        )
-    }
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .statusBarsPadding()
-            .navigationBarsPadding()
-    ) {
-        Box {
-            if (state.isFloatingButton) {
-                FloatingButtonGroup(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(bottom = mapBottomPadding),
-                    onMarkerMoveClick = {
-                        viewModel.handleIntent(CourseAddIntent.MarkerMoveFloatingClick)
-                    },
-                    onMarkerRemoveClick = {
-                        viewModel.handleIntent(CourseAddIntent.MarkerRemoveFloatingClick)
+                Box {
+                    if (state.isFloatingButton) {
+                        FloatingButtonGroup(
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .padding(bottom = mapBottomPadding + naviBar.calculateBottomPadding()),
+                            onMarkerMoveClick = {
+                                viewModel.handleIntent(CourseAddIntent.MarkerMoveFloatingClick)
+                            },
+                            onMarkerRemoveClick = {
+                                viewModel.handleIntent(CourseAddIntent.MarkerRemoveFloatingClick)
+                            }
+                        )
                     }
-                )
-            }
-            BottomSheet(
-                modifier = Modifier,
-                initHeight = 80,
-                isVisible = !state.bottomSheetState.isBottomSheetDown,
-                onHeightChange = { dp ->
-                    bottomSheetHeight = dp
-                    viewModel.handleIntent(CourseAddIntent.ContentPaddingChanged(dp.value.toInt()))
-                },
-                onStateChange = {
-                    viewModel.handleIntent(CourseAddIntent.SheetStateChange(it))
+                    BottomSheet(
+                        modifier = Modifier,
+                        initHeight = 80,
+                        isVisible = !state.bottomSheetState.isBottomSheetDown,
+                        onHeightChange = { dp ->
+                            bottomSheetHeight = dp
+                            viewModel.handleIntent(CourseAddIntent.ContentPaddingChanged(dp.value.toInt()))
+                        },
+                        onStateChange = {
+                            viewModel.handleIntent(CourseAddIntent.SheetStateChange(it))
+                        }
+                    ) {
+                        CourseAddContent(
+                            state = state.bottomSheetState.courseAddState,
+                            onRouteCreateClick = { viewModel.handleIntent(CourseAddIntent.RouteCreateClick) },
+                            onCategorySelect = { viewModel.handleIntent(CourseAddIntent.RouteCategorySelect(it)) },
+
+                            onCommendClick = { viewModel.handleIntent(CourseAddIntent.CommendClick) },
+                            onBackClick = { viewModel.handleIntent(CourseAddIntent.DetailBackClick) },
+                            onNameEditValueChange = { viewModel.handleIntent(CourseAddIntent.NameEditValueChange(it)) },
+                        )
+
+                    }
                 }
-            ) {
-                CourseAddContent(
-                    state = state.bottomSheetState.courseAddState,
-                    onRouteCreateClick = { viewModel.handleIntent(CourseAddIntent.RouteCreateClick) },
-                    onCategorySelect = { viewModel.handleIntent(CourseAddIntent.RouteCategorySelect(it)) },
-
-                    onCommendClick = { viewModel.handleIntent(CourseAddIntent.CommendClick) },
-                    onBackClick = { viewModel.handleIntent(CourseAddIntent.DetailBackClick) },
-                    onNameEditValueChange = { viewModel.handleIntent(CourseAddIntent.NameEditValueChange(it)) },
-                )
-
             }
         }
-    }
+    )
+
 }
 
 
