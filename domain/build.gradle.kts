@@ -1,3 +1,4 @@
+import wheretogo.AndroidConfig
 import wheretogo.AndroidX
 import wheretogo.Dagger
 import wheretogo.Kotlin
@@ -14,21 +15,12 @@ plugins {
 
 android {
     namespace = "com.wheretogo.domain"
-    compileSdk = 34
+    compileSdk = AndroidConfig.COMPILE_SDK
 
     defaultConfig {
-        minSdk = 24
+        minSdk = AndroidConfig.MIN_SDK
     }
 
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-        }
-    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8

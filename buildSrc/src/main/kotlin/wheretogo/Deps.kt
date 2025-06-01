@@ -1,6 +1,12 @@
 package wheretogo
 
 
+object AndroidConfig {
+    const val COMPILE_SDK = 35
+    const val MIN_SDK = 24
+    const val TARGET_SDK = 35
+}
+
 object Versions {
 
     const val KOTLIN_COMPILER_EXTENSION_VERSION = "1.5.15"

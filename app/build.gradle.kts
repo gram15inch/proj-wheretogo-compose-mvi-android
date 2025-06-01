@@ -1,4 +1,5 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import wheretogo.AndroidConfig
 import wheretogo.AndroidX
 import wheretogo.Firebase
 import wheretogo.Dagger
@@ -22,12 +23,12 @@ plugins {
 
 android {
     namespace = "com.dhkim139.wheretogo"
-    compileSdk = 35
+    compileSdk = AndroidConfig.COMPILE_SDK
 
     defaultConfig {
         applicationId = "com.dhkim139.wheretogo"
-        minSdk = 24
-        targetSdk = 35
+        minSdk = AndroidConfig.MIN_SDK
+        targetSdk = AndroidConfig.TARGET_SDK
         versionCode = 21
         versionName = "1.2.0-rc10"
 
