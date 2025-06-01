@@ -1,3 +1,4 @@
+import wheretogo.AndroidConfig
 import wheretogo.AndroidX
 import wheretogo.Firebase
 import wheretogo.Dagger
@@ -16,25 +17,15 @@ plugins {
 
 android {
     namespace = "com.wheretogo.data"
-    compileSdk = 34
+    compileSdk = AndroidConfig.COMPILE_SDK
 
     defaultConfig {
-        minSdk = 24
+        minSdk = AndroidConfig.MIN_SDK
         consumerProguardFiles(
             "consumer-default-rules.pro",
             "consumer-retrofit-rules.pro"
         )
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-        }
     }
 
     defaultConfig {
