@@ -15,7 +15,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -34,6 +36,7 @@ import com.wheretogo.presentation.feature.formatFileSizeToMB
 import com.wheretogo.presentation.state.CheckPointAddState
 import com.wheretogo.presentation.state.DriveScreenState
 import com.wheretogo.presentation.state.InfoState
+import com.wheretogo.presentation.theme.WhereTogoTheme
 import com.wheretogo.presentation.theme.interBoldFontFamily
 import com.wheretogo.presentation.theme.interFontFamily
 
@@ -172,6 +175,11 @@ fun LocationSlider(
             .height(30.dp),
         value = percentage,
         onValueChange = { onSliderChange(it) },
+        colors = SliderDefaults.colors().copy(
+            thumbColor = MaterialTheme.colorScheme.primary,
+            activeTrackColor = MaterialTheme.colorScheme.primary,
+            inactiveTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.24f)
+        ),
         valueRange = 0f..1f,
     )
 }
@@ -187,27 +195,28 @@ fun CheckpointAddBottomSheetPreview() {
             imgInfo = ImageInfo("".toUri(), "새로운 사진.jpg", 30L)
         )
     )
-    Box(modifier = Modifier.width(400.dp)) {
-        BottomSheet(
-            modifier = Modifier.height(400.dp),
-            400,
-            isVisible = true,
-            {},
-            {},
-        ) {
-            if (state.isVisible) {
-                CheckPointAddContent(
-                    state = state.checkPointAddState,
-                    {}, {}, {}
-                )
-            } else {
-                InfoContent(
-                    state = state.infoState,
-                    {}, {}
-                )
+    WhereTogoTheme {
+        Box(modifier = Modifier.width(400.dp)) {
+            BottomSheet(
+                modifier = Modifier.height(400.dp),
+                400,
+                isVisible = true,
+                {},
+                {},
+            ) {
+                if (state.isVisible) {
+                    CheckPointAddContent(
+                        state = state.checkPointAddState,
+                        {}, {}, {}
+                    )
+                } else {
+                    InfoContent(
+                        state = state.infoState,
+                        {}, {}
+                    )
+                }
             }
         }
     }
-
 }
 
