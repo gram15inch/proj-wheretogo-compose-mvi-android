@@ -7,14 +7,19 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.union
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -77,33 +83,11 @@ fun DriveScreen(
         navController.navigateUp()
     }
 
-    Scaffold(content = { naviBar->
-        Box(
-            modifier = Modifier
-                .systemBarsPadding()
-                .fillMaxWidth()
-                .zIndex(1f)
-        ) {
-            if(BuildConfig.DEBUG)
-                Text(
-                    modifier = Modifier.align(alignment = Alignment.TopStart),
-                    text = "${state.mapState.overlayGroup.size}",
-                    fontSize = 50.sp
-                )
-            DelayLottieAnimation(
-                modifier = Modifier
-                    .padding(top = 40.dp, end = 10.dp)
-                    .size(50.dp)
-                    .align(alignment = Alignment.TopEnd),
-                ltRes = R.raw.lt_loading,
-                isVisible = state.isLoading,
-                delay = 300
-            )
-        }
-
+    Scaffold(
+        contentWindowInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout),
+        content = { systemBars->
         NaverMap(
             modifier = Modifier
-                .zIndex(0f)
                 .fillMaxSize(),
             mapOverlayGroup = state.mapState.overlayGroup,
             cameraState = state.mapState.cameraState,
@@ -121,69 +105,40 @@ fun DriveScreen(
                 viewModel.handleIntent(DriveScreenIntent.CheckPointMarkerClick(overlay))
             },
             onOverlayRenderComplete = {},
-            contentPadding = ContentPadding(bottom = mapBottomPadding + naviBar.calculateBottomPadding())
+            contentPadding = ContentPadding(bottom = mapBottomPadding + systemBars.calculateBottomPadding())
         )
 
-        FadeAnimation(visible = state.popUpState.isVisible) {
+        FadeAnimation(modifier = Modifier.zIndex(1f), visible = state.popUpState.isVisible) {
             BlurEffect(onClick = {
                 viewModel.handleIntent(DriveScreenIntent.DismissPopup)
             })
         }
 
-        BottomSheet(
-            modifier = Modifier
-                .zIndex(997f),
-            isVisible = state.bottomSheetState.isVisible,
-            onHeightChange = { dp->
-                bottomSheetHeight = dp
-                viewModel.handleIntent(DriveScreenIntent.ContentPaddingChanged(dp.value.toInt()))
-            },
-            onStateChange = {
-                viewModel.handleIntent(DriveScreenIntent.BottomSheetChange(it))
-            }
-        ) {
-            Box(modifier = Modifier.padding(bottom = naviBar.calculateBottomPadding()),
-            ){
-                when (state.bottomSheetState.content) {
-                    DriveBottomSheetContent.CHECKPOINT_ADD -> {
-                        CheckPointAddContent(
-                            state = state.bottomSheetState.checkPointAddState,
-                            onSubmitClick = {
-                                viewModel.handleIntent(DriveScreenIntent.CheckpointSubmitClick)
-                            },
-                            onSliderChange = {
-                                viewModel.handleIntent(DriveScreenIntent.CheckpointLocationSliderChange(it))
-                            },
-                            onImageChange = {
-                                viewModel.handleIntent(DriveScreenIntent.CheckpointImageChange(it))
-                            }
-                        )
-                    }
-
-                    DriveBottomSheetContent.INFO -> {
-                        InfoContent(
-                            state = state.bottomSheetState.infoState,
-                            onRemoveClick = {
-                                viewModel.handleIntent(DriveScreenIntent.InfoRemoveClick(it))
-                            },
-                            onReportClick = {
-                                viewModel.handleIntent(DriveScreenIntent.InfoReportClick(it))
-                            }
-                        )
-                    }
-
-                    else -> {}
-                }
-            }
-
-        }
-
         Box(
             modifier = Modifier
-                .systemBarsPadding()
+                .zIndex(2f)
+                .padding(top= systemBars.calculateTopPadding(),
+                    start = systemBars.calculateStartPadding(LocalLayoutDirection.current))
                 .fillMaxSize(),
             contentAlignment = Alignment.BottomCenter
         ) {
+
+            if(BuildConfig.DEBUG)
+                Text(
+                    modifier = Modifier.align(alignment = Alignment.TopStart),
+                    text = "${state.mapState.overlayGroup.size}",
+                    fontSize = 50.sp
+                )
+            DelayLottieAnimation(
+                modifier = Modifier
+                    .padding(top = 40.dp, end = 10.dp)
+                    .size(50.dp)
+                    .align(alignment = Alignment.TopEnd),
+                ltRes = R.raw.lt_loading,
+                isVisible = state.isLoading,
+                delay = 300
+            )
+
             OneHandArea {
                 Box(modifier = Modifier
                     .fillMaxWidth()
@@ -202,8 +157,10 @@ fun DriveScreen(
                         }
                     }
                 }
+
                 FadeAnimation(
                     modifier = Modifier
+                        .padding(bottom = systemBars.calculateBottomPadding())
                         .align(alignment = Alignment.BottomEnd),
                     visible = state.listState.isVisible
                 ) {
@@ -222,6 +179,7 @@ fun DriveScreen(
 
                 FadeAnimation(
                     modifier = Modifier
+                        .padding(bottom = systemBars.calculateBottomPadding())
                         .align(alignment = Alignment.BottomStart),
                     visible = state.popUpState.isVisible
                 ) {
@@ -267,10 +225,58 @@ fun DriveScreen(
                     )
                 }
 
+                BottomSheet(
+                    modifier = Modifier
+                        .zIndex(3f),
+                    isVisible = state.bottomSheetState.isVisible,
+                    onHeightChange = { dp->
+                        bottomSheetHeight = dp
+                        viewModel.handleIntent(DriveScreenIntent.ContentPaddingChanged(dp.value.toInt()))
+                    },
+                    onStateChange = {
+                        viewModel.handleIntent(DriveScreenIntent.BottomSheetChange(it))
+                    }
+                ) {
+                    Box(modifier = Modifier.padding(bottom = systemBars.calculateBottomPadding()),
+                    ){
+                        when (state.bottomSheetState.content) {
+                            DriveBottomSheetContent.CHECKPOINT_ADD -> {
+                                CheckPointAddContent(
+                                    state = state.bottomSheetState.checkPointAddState,
+                                    onSubmitClick = {
+                                        viewModel.handleIntent(DriveScreenIntent.CheckpointSubmitClick)
+                                    },
+                                    onSliderChange = {
+                                        viewModel.handleIntent(DriveScreenIntent.CheckpointLocationSliderChange(it))
+                                    },
+                                    onImageChange = {
+                                        viewModel.handleIntent(DriveScreenIntent.CheckpointImageChange(it))
+                                    }
+                                )
+                            }
+
+                            DriveBottomSheetContent.INFO -> {
+                                InfoContent(
+                                    state = state.bottomSheetState.infoState,
+                                    onRemoveClick = {
+                                        viewModel.handleIntent(DriveScreenIntent.InfoRemoveClick(it))
+                                    },
+                                    onReportClick = {
+                                        viewModel.handleIntent(DriveScreenIntent.InfoReportClick(it))
+                                    }
+                                )
+                            }
+
+                            else -> {}
+                        }
+                    }
+
+                }
 
                 val isNotOtherVisible = !state.popUpState.commentState.isCommentVisible && !state.bottomSheetState.isVisible
                 FloatingButtons(
                     modifier = Modifier
+                        .padding(bottom = systemBars.calculateBottomPadding())
                         .padding(vertical = 12.dp)
                         .fillMaxSize(),
                     course = state.listState.clickItem.course,
@@ -296,32 +302,31 @@ fun DriveScreen(
                         viewModel.handleIntent(DriveScreenIntent.FoldFloatingButtonClick)
                     }
                 )
+            }
 
-                ImeStickyBox(modifier = Modifier
-                    .align(alignment = Alignment.BottomCenter)
-                    .zIndex(999f)) {
-                    DescriptionTextField(
-                        modifier = Modifier.heightIn(min = 60.dp),
-                        isVisible = state.bottomSheetState.isVisible && it > 30.dp,
-                        focusRequester = state.bottomSheetState.checkPointAddState.focusRequester,
-                        text = state.bottomSheetState.checkPointAddState.description,
-                        onTextChange = {
-                            viewModel.handleIntent(DriveScreenIntent.CheckpointDescriptionChange(it))
-                        },
-                        onEnterClick = {
-                            viewModel.handleIntent(DriveScreenIntent.CheckpointDescriptionEnterClick)
-                        }
-                    )
-                }
+            ImeStickyBox(modifier = Modifier
+                .padding(systemBars)
+                .align(alignment = Alignment.BottomCenter)) {
+                DescriptionTextField(
+                    modifier = Modifier.heightIn(min = 60.dp),
+                    isVisible = state.bottomSheetState.isVisible && it > 30.dp,
+                    focusRequester = state.bottomSheetState.checkPointAddState.focusRequester,
+                    text = state.bottomSheetState.checkPointAddState.description,
+                    onTextChange = {
+                        viewModel.handleIntent(DriveScreenIntent.CheckpointDescriptionChange(it))
+                    },
+                    onEnterClick = {
+                        viewModel.handleIntent(DriveScreenIntent.CheckpointDescriptionEnterClick)
+                    }
+                )
             }
         }
     })
-
 }
 
 
 @Composable
-fun OneHandArea(content: @Composable () -> Unit) {
+fun OneHandArea(content: @Composable BoxScope.() -> Unit) {
     Box(
         modifier = Modifier
             .sizeIn(maxWidth = 650.dp)
