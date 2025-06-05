@@ -76,8 +76,8 @@ class RouteRemoteDatasourceImpl @Inject constructor(
     override suspend fun getRouteByNaver(waypoints: List<DataLatLng>): RemoteRoute {
         return if (waypoints.size >= 2) {
             val msg = naverApiService.getRouteWayPoint(
-                BuildConfig.NAVER_APIGW_CLIENT_ID_KEY,
-                BuildConfig.NAVER_APIGW_CLIENT_SECRET_KEY,
+                BuildConfig.NAVER_MAPS_APIGW_CLIENT_ID_KEY,
+                BuildConfig.NAVER_MAPS_APIGW_CLIENT_SECRET_KEY,
                 start = convertLatLng(waypoints.first()),
                 goal = convertLatLng(waypoints.last()),
                 waypoints = convertWaypoints(waypoints.drop(1).dropLast(1))
