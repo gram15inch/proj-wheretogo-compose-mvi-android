@@ -1,6 +1,7 @@
 package com.wheretogo.data
 
 const val NAVER_OPEN_API_APIGW_URL = "https://naveropenapi.apigw.ntruss.com"
+const val NAVER_MAPS_NTRUSS_APIGW_URL = "https://maps.apigw.ntruss.com/"
 const val NAVER_OPEN_API_URL = "https://openapi.naver.com/"
 const val FIREBASE_CLOUD_API_URL = "https://asia-northeast3-where-to-go-35813.cloudfunctions.net/"
 

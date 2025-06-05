@@ -20,8 +20,8 @@ class AddressRemoteDatasourceImpl @Inject constructor(
 
     override suspend fun geocode(address: String): List<Address> {
         val msg = naverApiService.geocode(
-            clientId = BuildConfig.NAVER_APIGW_CLIENT_ID_KEY,
-            clientSecret = BuildConfig.NAVER_APIGW_CLIENT_SECRET_KEY,
+            clientId = BuildConfig.NAVER_MAPS_APIGW_CLIENT_ID_KEY,
+            clientSecret = BuildConfig.NAVER_MAPS_APIGW_CLIENT_SECRET_KEY,
             accept = "application/json",
             query = address,
             count = "1"
@@ -44,8 +44,8 @@ class AddressRemoteDatasourceImpl @Inject constructor(
 
     override suspend fun reverseGeocode(latlng: LatLng): String {
         val msg = naverApiService.reverseGeocode(
-            clientId = BuildConfig.NAVER_APIGW_CLIENT_ID_KEY,
-            clientSecret = BuildConfig.NAVER_APIGW_CLIENT_SECRET_KEY,
+            clientId = BuildConfig.NAVER_MAPS_APIGW_CLIENT_ID_KEY,
+            clientSecret = BuildConfig.NAVER_MAPS_APIGW_CLIENT_SECRET_KEY,
             coords = convertLatLng(latlng),
             output = "json"
         )

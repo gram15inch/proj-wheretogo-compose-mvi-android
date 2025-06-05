@@ -29,8 +29,8 @@ android {
     }
 
     defaultConfig {
-        buildConfigField( "String", "NAVER_APIGW_CLIENT_ID_KEY", getAppKey("naverApigwClientId"))
-        buildConfigField( "String", "NAVER_APIGW_CLIENT_SECRET_KEY", getAppKey("naverApigwClientSecret"))
+        buildConfigField( "String", "NAVER_MAPS_APIGW_CLIENT_ID_KEY", getAppKey("naverMapsApigwClientId"))
+        buildConfigField( "String", "NAVER_MAPS_APIGW_CLIENT_SECRET_KEY", getAppKey("naverMapsApigwClientSecret"))
         buildConfigField( "String", "NAVER_CLIENT_ID_KEY", getAppKey("naverClientId"))
         buildConfigField( "String", "NAVER_CLIENT_SECRET_KEY", getAppKey("naverClientSecret"))
 

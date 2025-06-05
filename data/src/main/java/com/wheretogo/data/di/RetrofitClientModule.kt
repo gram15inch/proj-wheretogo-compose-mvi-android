@@ -3,7 +3,7 @@ package com.wheretogo.data.di
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.wheretogo.data.FIREBASE_CLOUD_API_URL
-import com.wheretogo.data.NAVER_OPEN_API_APIGW_URL
+import com.wheretogo.data.NAVER_MAPS_NTRUSS_APIGW_URL
 import com.wheretogo.data.NAVER_OPEN_API_URL
 import dagger.Module
 import dagger.Provides
@@ -48,7 +48,7 @@ object RetrofitClientModule {
                 MoshiConverterFactory.create(moshi)
             )
             .client(client)
-            .baseUrl(NAVER_OPEN_API_APIGW_URL)
+            .baseUrl(NAVER_MAPS_NTRUSS_APIGW_URL)
             .build()
     }
 
