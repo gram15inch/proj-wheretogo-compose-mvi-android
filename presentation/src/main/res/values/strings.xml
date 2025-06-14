@@ -50,6 +50,10 @@
     <string name="couple">연인</string>
     <string name="unknown_driver">익명의 드라이버</string>
 
+    <string name="k_way">K way</string>
+    <string name="n_way">N way</string>
+    <string name="t_way">T way</string>
+
     <string name="minute">~%d분</string>
     <string name="hour">%d시간+</string>
 

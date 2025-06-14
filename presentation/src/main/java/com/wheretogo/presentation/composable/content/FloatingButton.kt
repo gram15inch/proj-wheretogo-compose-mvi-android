@@ -38,6 +38,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -269,24 +270,24 @@ fun CirclePlateButton(
             ) {
                 SquareButton(
                     modifier = Modifier.size(squareSize),
-                    icon = R.drawable.lg_kakao,
-                    caption = "카카오맵"
+                    icon = R.drawable.lg_k,
+                    caption = stringResource(R.string.k_way)
                 ) {
                     onKaKaoClick(it)
                 }
 
                 SquareButton(
                     modifier = Modifier.size(squareSize),
-                    icon = R.drawable.lg_naver,
-                    caption = "네이버맵"
+                    icon = R.drawable.lg_n,
+                    caption = stringResource(R.string.n_way)
                 ) {
                     onNaverClick(it)
                 }
 
                 SquareButton(
                     modifier = Modifier.size(squareSize),
-                    icon = R.drawable.lg_tmap,
-                    caption = "티맵"
+                    icon = R.drawable.lg_t,
+                    caption = stringResource(R.string.t_way)
                 ) {
                     onTClick(it)
                 }
