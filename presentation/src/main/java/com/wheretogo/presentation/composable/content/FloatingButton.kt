@@ -193,7 +193,7 @@ fun FloatingButtons(
 fun CircleButton(
     modifier: Modifier = Modifier,
     @DrawableRes icon: Int,
-    color: Color = colorResource(R.color.blue),
+    color: Color = colorResource(R.color.white_85),
     onClick: () -> Unit
 ) {
     Button(

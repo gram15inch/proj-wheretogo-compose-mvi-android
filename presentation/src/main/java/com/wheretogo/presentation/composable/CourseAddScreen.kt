@@ -260,7 +260,7 @@ fun FloatingButtonGroup(
                 modifier = Modifier
                     .size(50.dp)
                     .clip(CircleShape)
-                    .background(color = colorResource(R.color.blue))
+                    .background(color = colorResource(R.color.white_85))
                     .clickable {
                         onMarkerMoveClick()
                     }, contentAlignment = Alignment.Center
@@ -271,7 +271,7 @@ fun FloatingButtonGroup(
                 modifier = Modifier
                     .size(50.dp)
                     .clip(CircleShape)
-                    .background(color = colorResource(R.color.blue))
+                    .background(color = colorResource(R.color.white_85))
                     .clickable {
                         onMarkerRemoveClick()
                     }, contentAlignment = Alignment.Center
