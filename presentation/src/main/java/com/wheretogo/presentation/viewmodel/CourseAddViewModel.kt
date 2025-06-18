@@ -11,11 +11,14 @@ import com.wheretogo.domain.model.map.RouteCategory
 import com.wheretogo.domain.usecase.map.AddCourseUseCase
 import com.wheretogo.domain.usecase.map.CreateRouteUseCase
 import com.wheretogo.domain.usecase.map.SearchKeywordUseCase
+import com.wheretogo.presentation.AppEvent
+import com.wheretogo.presentation.AppPermission
 import com.wheretogo.presentation.CLEAR_ADDRESS
 import com.wheretogo.presentation.COURSE_NAME_MAX_LENGTH
 import com.wheretogo.presentation.CameraUpdateSource
 import com.wheretogo.presentation.PathType
 import com.wheretogo.presentation.R
+import com.wheretogo.presentation.AppScreen
 import com.wheretogo.presentation.SheetState
 import com.wheretogo.presentation.feature.EventBus
 import com.wheretogo.presentation.feature.map.CourseAddMapOverlayService
@@ -45,6 +48,12 @@ class CourseAddViewModel @Inject constructor(
 ) : ViewModel() {
     private val _courseAddScreenState = MutableStateFlow(CourseAddScreenState(overlayGroup = mapOverlayService.overlays))
     val courseAddScreenState: StateFlow<CourseAddScreenState> = _courseAddScreenState
+
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            EventBus.send(AppEvent.Permission(AppPermission.LOCATION))
+        }
+    }
 
     fun handleIntent(intent: CourseAddIntent) {
         viewModelScope.launch {
@@ -269,10 +278,10 @@ class CourseAddViewModel @Inject constructor(
                     )
                 }
             } else {
-                EventBus.sendMsg(EventMsg(R.string.add_marker_by_click_map))
+                EventBus.send(AppEvent.SnackBar(EventMsg(R.string.add_marker_by_click_map)))
             }
         }else{
-            EventBus.sendMsg(EventMsg(R.string.route_create_error))
+            EventBus.send(AppEvent.SnackBar(EventMsg(R.string.route_create_error)))
         }
     }
 
@@ -389,12 +398,12 @@ class CourseAddViewModel @Inject constructor(
             }
             when (addCourseResponse.status) {
                 UseCaseResponse.Status.Success -> {
-                    EventBus.sendMsg(EventMsg(R.string.course_add_done))
-                    EventBus.navigation(R.string.navi_home)
+                    EventBus.send(AppEvent.SnackBar(EventMsg(R.string.course_add_done)))
+                    EventBus.send(AppEvent.Navigation(AppScreen.Home))
                 }
 
                 else -> {
-                    EventBus.sendMsg(EventMsg(R.string.course_add_error,": ${addCourseResponse.data}"))
+                    EventBus.send(AppEvent.SnackBar(EventMsg(R.string.course_add_error,": ${addCourseResponse.data}")))
                     _courseAddScreenState.value = _courseAddScreenState.value.run {
                         copy(error = "코스 등록 오류")
                     }

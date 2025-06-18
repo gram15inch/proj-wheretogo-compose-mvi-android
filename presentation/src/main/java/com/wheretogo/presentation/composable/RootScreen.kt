@@ -1,5 +1,8 @@
 package com.wheretogo.presentation.composable
 
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
@@ -13,18 +16,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.zIndex
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.wheretogo.presentation.AppEvent
-import com.wheretogo.presentation.R
+import com.wheretogo.presentation.AppScreen
 import com.wheretogo.presentation.composable.content.AnimationDirection
 import com.wheretogo.presentation.composable.content.SlideAnimation
 import com.wheretogo.presentation.feature.EventBus
@@ -32,6 +36,7 @@ import com.wheretogo.presentation.feature.getString
 import com.wheretogo.presentation.feature.shortShow
 import com.wheretogo.presentation.theme.WhereTogoTheme
 import com.wheretogo.presentation.viewmodel.RootViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
@@ -39,19 +44,34 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
         val navController = rememberNavController()
         val state by viewModel.rootScreenState.collectAsState()
         val context = LocalContext.current
+        val coroutine = rememberCoroutineScope()
+        val multiplePermissionsLauncher = rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissions ->
+            coroutine.launch {
+                permissions.forEach { (permission, bool) ->
+                    EventBus.permissionResult(permission, bool)
+                }
+            }
+        }
 
         LaunchedEffect(Unit) {
-            EventBus.eventFlow.collect{
-                val eventMsg = it.second
-                when (it.first) {
-                    AppEvent.SNACKBAR -> {
-                        val msg = eventMsg.getString(context)
+            EventBus.eventFlow.collect {
+                when (it) {
+                    is AppEvent.SnackBar -> {
+                        val msg = it.msg.getString(context)
                         viewModel.snackbarHostState.shortShow(msg)
                     }
 
-                    AppEvent.NAVIGATION -> {
-                        val navigation = eventMsg.getString(context)
-                        navController.navigate(navigation)
+                    is AppEvent.Navigation -> {
+                        navController.navigate(it.destination)
+                    }
+
+                    is AppEvent.Permission -> {
+                        val isDenied = ContextCompat
+                            .checkSelfPermission(context, it.permission.name) == PackageManager.PERMISSION_DENIED
+                        if(isDenied)
+                            multiplePermissionsLauncher.launch(arrayOf(it.permission.name))
                     }
                 }
             }
@@ -89,10 +109,10 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                 modifier = Modifier
                     .fillMaxSize()
             ) {
-                val home = stringResource(R.string.navi_home)
-                val drive = stringResource(R.string.navi_drive)
-                val courseAdd = stringResource(R.string.navi_courseAdd)
-                val setting = stringResource(R.string.navi_setting)
+                val home = AppScreen.Home.toString()
+                val drive = AppScreen.Drive.toString()
+                val courseAdd = AppScreen.CourseAdd.toString()
+                val setting = AppScreen.Setting.toString()
 
                 NavHost(navController = navController, startDestination = home) {
                     composable(home) {
