@@ -33,6 +33,8 @@ import com.wheretogo.domain.usecase.map.GetNearByCourseUseCase
 import com.wheretogo.domain.usecase.map.SearchKeywordUseCase
 import com.wheretogo.domain.usecase.user.GetHistoryStreamUseCase
 import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
+import com.wheretogo.presentation.AppEvent
+import com.wheretogo.presentation.AppPermission
 import com.wheretogo.presentation.BuildConfig
 import com.wheretogo.presentation.CHECKPOINT_ADD_MARKER
 import com.wheretogo.presentation.CLEAR_ADDRESS
@@ -44,6 +46,7 @@ import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.MarkerType
 import com.wheretogo.presentation.SEARCH_MARKER
 import com.wheretogo.presentation.SheetState
+import com.wheretogo.presentation.feature.EventBus
 import com.wheretogo.presentation.feature.geo.distanceTo
 import com.wheretogo.presentation.feature.map.DriveMapOverlayService
 import com.wheretogo.presentation.feature.withLogging
@@ -103,7 +106,11 @@ class DriveViewModel @Inject constructor(
         }
     val driveScreenState: StateFlow<DriveScreenState> = _driveScreenState
     private var isMapUpdate = true
-
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            EventBus.send(AppEvent.Permission(AppPermission.LOCATION))
+        }
+    }
     fun handleIntent(intent: DriveScreenIntent) {
         viewModelScope.launch {
             when (intent) {

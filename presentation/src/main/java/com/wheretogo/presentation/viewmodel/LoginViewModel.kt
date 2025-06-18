@@ -6,6 +6,7 @@ import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.auth.AuthRequest
 import com.wheretogo.domain.usecase.user.UserSignUpAndSignInUseCase
+import com.wheretogo.presentation.AppEvent
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.EventBus
 import com.wheretogo.presentation.model.EventMsg
@@ -41,7 +42,7 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch(exceptionHandler) {
             _loginScreenState.value = _loginScreenState.value.copy(isLoading = true)
             if(authRequest==null) {
-                EventBus.sendMsg(EventMsg(R.string.login_cancel))
+                EventBus.send(AppEvent.SnackBar(EventMsg(R.string.login_cancel)))
                 _loginScreenState.value = _loginScreenState.value.run {
                     copy(
                         isLoading = false
@@ -58,7 +59,7 @@ class LoginViewModel @Inject constructor(
                             isLoading = false
                         )
                     }
-                    EventBus.sendMsg(EventMsg(R.string.welcome_user, result.data?:"unknown"))
+                    EventBus.send(AppEvent.SnackBar(EventMsg(R.string.welcome_user, result.data?:"unknown")))
                 }
 
                 UseCaseResponse.Status.Fail -> {
@@ -67,7 +68,7 @@ class LoginViewModel @Inject constructor(
                             isLoading = false
                         )
                     }
-                    EventBus.sendMsg(EventMsg(R.string.login_fail))
+                    EventBus.send(AppEvent.SnackBar(EventMsg(R.string.login_fail)))
                 }
             }
         }

@@ -1,11 +1,13 @@
 package com.wheretogo.presentation
 
+import android.Manifest
 import androidx.annotation.StringRes
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.app.LegalNoticeActivity
 import com.naver.maps.map.app.OpenSourceLicenseActivity
 import com.wheretogo.domain.RouteAttrItem
 import com.wheretogo.domain.model.map.Viewport
+import com.wheretogo.presentation.model.EventMsg
 import com.wheretogo.presentation.state.CameraState
 
 const val DRIVE_LIST_MIN_ZOOM = 9.5
@@ -43,8 +45,21 @@ enum class CheckPointAddError{
     EMPTY_IMG, EMPTY_DESCRIPTION
 }
 
-enum class AppEvent{
-    NAVIGATION, SNACKBAR
+sealed class AppEvent {
+    data class Navigation(val destination: AppScreen) : AppEvent()
+    data class SnackBar(val msg: EventMsg) : AppEvent()
+    data class Permission(val permission: AppPermission) : AppEvent()
+}
+
+sealed class AppScreen {
+    data object Home : AppScreen()
+    data object Drive : AppScreen()
+    data object CourseAdd : AppScreen()
+    data object Setting : AppScreen()
+}
+
+sealed class AppPermission(val name: String) {
+    data object LOCATION : AppPermission(Manifest.permission.ACCESS_FINE_LOCATION)
 }
 
 enum class ExportMap{

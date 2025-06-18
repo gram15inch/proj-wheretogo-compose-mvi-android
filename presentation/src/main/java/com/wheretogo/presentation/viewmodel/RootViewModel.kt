@@ -15,14 +15,14 @@ import javax.inject.Inject
 @HiltViewModel
 class RootViewModel @Inject constructor(private val userRepository: UserRepository) :
     ViewModel() {
-    private val _mainScreenState = MutableStateFlow(RootScreenState())
-    val rootScreenState: StateFlow<RootScreenState> = _mainScreenState
+    private val _rootScreenState = MutableStateFlow(RootScreenState())
+    val rootScreenState: StateFlow<RootScreenState> = _rootScreenState
     val snackbarHostState = SnackbarHostState()
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
             userRepository.isRequestLoginStream().collect {
-                _mainScreenState.value = _mainScreenState.value.run {
+                _rootScreenState.value = _rootScreenState.value.run {
                     copy(isRequestLogin = it)
                 }
             }
