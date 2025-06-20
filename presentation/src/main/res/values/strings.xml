@@ -53,6 +53,8 @@
     <string name="k_way">K way</string>
     <string name="n_way">N way</string>
     <string name="t_way">T way</string>
+    <string name="no_supprot_app_exclude_my_loction">내위치 제외를 지원하지 않는 앱 입니다.</string>
+    <string name="exclude_my_location_on_long_press">길게 누르면 경로에서 내위치를 제외</string>
 
     <string name="minute">~%d분</string>
     <string name="hour">%d시간+</string>
@@ -62,6 +64,9 @@
 
     <string name="course_add_done">코스 등록 완료</string>
     <string name="course_add_error">"코스 등록 오류: %s"</string>
+
+    <string name="setting_open">설정열기</string>
+    <string name="grant_location_permission">내 위치 권한 수락 하러 가기</string>
 
 
     <string name="checkpoint">체크포인트</string>

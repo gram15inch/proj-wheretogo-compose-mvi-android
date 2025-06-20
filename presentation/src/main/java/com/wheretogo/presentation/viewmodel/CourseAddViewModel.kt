@@ -49,12 +49,6 @@ class CourseAddViewModel @Inject constructor(
     private val _courseAddScreenState = MutableStateFlow(CourseAddScreenState(overlayGroup = mapOverlayService.overlays))
     val courseAddScreenState: StateFlow<CourseAddScreenState> = _courseAddScreenState
 
-    init {
-        viewModelScope.launch(Dispatchers.IO) {
-            EventBus.send(AppEvent.Permission(AppPermission.LOCATION))
-        }
-    }
-
     fun handleIntent(intent: CourseAddIntent) {
         viewModelScope.launch {
             when (intent) {
