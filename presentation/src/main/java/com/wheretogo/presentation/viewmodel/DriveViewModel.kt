@@ -3,6 +3,7 @@ package com.wheretogo.presentation.viewmodel
 import android.annotation.SuppressLint
 import android.net.Uri
 import android.util.Log
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
@@ -33,17 +34,18 @@ import com.wheretogo.domain.usecase.map.GetNearByCourseUseCase
 import com.wheretogo.domain.usecase.map.SearchKeywordUseCase
 import com.wheretogo.domain.usecase.user.GetHistoryStreamUseCase
 import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
+import com.wheretogo.presentation.AppError
 import com.wheretogo.presentation.AppEvent
 import com.wheretogo.presentation.AppPermission
 import com.wheretogo.presentation.BuildConfig
 import com.wheretogo.presentation.CHECKPOINT_ADD_MARKER
 import com.wheretogo.presentation.CLEAR_ADDRESS
 import com.wheretogo.presentation.CameraUpdateSource
-import com.wheretogo.presentation.CheckPointAddError
 import com.wheretogo.presentation.CommentType
 import com.wheretogo.presentation.DRIVE_LIST_MIN_ZOOM
 import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.MarkerType
+import com.wheretogo.presentation.R
 import com.wheretogo.presentation.SEARCH_MARKER
 import com.wheretogo.presentation.SheetState
 import com.wheretogo.presentation.feature.EventBus
@@ -52,6 +54,7 @@ import com.wheretogo.presentation.feature.map.DriveMapOverlayService
 import com.wheretogo.presentation.feature.withLogging
 import com.wheretogo.presentation.getCommentEmogiGroup
 import com.wheretogo.presentation.intent.DriveScreenIntent
+import com.wheretogo.presentation.model.EventMsg
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.MarkerInfo
 import com.wheretogo.presentation.model.SearchBarItem
@@ -106,11 +109,7 @@ class DriveViewModel @Inject constructor(
         }
     val driveScreenState: StateFlow<DriveScreenState> = _driveScreenState
     private var isMapUpdate = true
-    init {
-        viewModelScope.launch(Dispatchers.IO) {
-            EventBus.send(AppEvent.Permission(AppPermission.LOCATION))
-        }
-    }
+
     fun handleIntent(intent: DriveScreenIntent) {
         viewModelScope.launch {
             when (intent) {
@@ -147,6 +146,7 @@ class DriveViewModel @Inject constructor(
                 is DriveScreenIntent.CheckpointAddFloatingButtonClick -> checkpointAddFloatingButtonClick()
                 is DriveScreenIntent.InfoFloatingButtonClick -> infoFloatingButtonClick()
                 is DriveScreenIntent.ExportMapFloatingButtonClick -> exportMapFloatingButtonClick()
+                is DriveScreenIntent.ExportMapAppButtonClick -> exportMapAppButtonClick(intent.result)
                 is DriveScreenIntent.FoldFloatingButtonClick -> foldFloatingButtonClick()
 
                 //바텀시트
@@ -767,6 +767,23 @@ class DriveViewModel @Inject constructor(
         }
     }
 
+    private suspend fun exportMapAppButtonClick(result: Result<Unit>) {
+        result.onSuccess {
+            _driveScreenState.value = _driveScreenState.value.run {
+                copy(
+                    floatingButtonState = floatingButtonState.copy(
+                        isBackPlateVisible = !floatingButtonState.isBackPlateVisible
+                    )
+                )
+            }
+        }.onFailure {
+            when(it){
+                is AppError.MapNotSupportExcludeLocation->
+                    EventBus.send(AppEvent.SnackBar(EventMsg(R.string.no_supprot_app_exclude_my_loction)))
+            }
+        }
+    }
+
     private fun foldFloatingButtonClick() {
         val course = _driveScreenState.value.listState.clickItem.course
         _driveScreenState.value = _driveScreenState.value.run {
@@ -1040,8 +1057,8 @@ class DriveViewModel @Inject constructor(
 
     private fun CheckPointAddState.isValidateAddCheckPoint(): Result<Unit> {
         return runCatching {
-            require(this.imgUri != null) { CheckPointAddError.EMPTY_IMG }
-            require(this.description.isNotEmpty()) { CheckPointAddError.EMPTY_DESCRIPTION }
+            require(this.imgUri != null) { AppError.ImgEmpty() }
+            require(this.description.isNotEmpty()) { AppError.DescriptionEmpty() }
         }
     }
 

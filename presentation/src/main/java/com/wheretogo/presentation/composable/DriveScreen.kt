@@ -298,6 +298,9 @@ fun DriveScreen(
                     onExportMapClick = {
                         viewModel.handleIntent(DriveScreenIntent.ExportMapFloatingButtonClick)
                     },
+                    onMapAppClick = {
+                        viewModel.handleIntent(DriveScreenIntent.ExportMapAppButtonClick(it))
+                    },
                     onFoldClick = {
                         viewModel.handleIntent(DriveScreenIntent.FoldFloatingButtonClick)
                     }

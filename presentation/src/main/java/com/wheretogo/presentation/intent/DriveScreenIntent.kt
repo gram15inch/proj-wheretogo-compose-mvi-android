@@ -49,6 +49,7 @@ sealed class DriveScreenIntent {
     data object CheckpointAddFloatingButtonClick : DriveScreenIntent()
     data object InfoFloatingButtonClick : DriveScreenIntent()
     data object ExportMapFloatingButtonClick : DriveScreenIntent()
+    data class ExportMapAppButtonClick(val result:Result<Unit>) : DriveScreenIntent()
     data object FoldFloatingButtonClick : DriveScreenIntent()
 
 

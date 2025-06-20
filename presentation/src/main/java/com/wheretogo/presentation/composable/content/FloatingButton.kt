@@ -2,6 +2,8 @@ package com.wheretogo.presentation.composable.content
 
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -26,10 +28,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -39,6 +43,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -49,6 +54,8 @@ import com.wheretogo.presentation.ExportMap
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.callMap
 import com.wheretogo.presentation.theme.hancomSansFontFamily
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Preview
 @Composable
@@ -57,7 +64,7 @@ fun FloatingButtonPreview() {
         .width(300.dp)
         .background(colorResource(R.color.gray_C7C7C7_80)),
         Course(), true, true, true, true, true, true,
-        {}, {}, {}, {}, {})
+        {}, {}, {}, {}, {}, {})
 }
 
 
@@ -75,8 +82,10 @@ fun FloatingButtons(
     onCheckpointAddClick: () -> Unit,
     onInfoClick: () -> Unit,
     onExportMapClick: () -> Unit,
+    onMapAppClick: (Result<Unit>) -> Unit,
     onFoldClick: () -> Unit
 ) {
+    val scope = rememberCoroutineScope()
     Box(
         modifier = modifier,
         contentAlignment = Alignment.BottomEnd
@@ -150,16 +159,19 @@ fun FloatingButtons(
                         isBackPlate = isExportBackPlate && isExportVisible,
                         buttonEndPadding = buttonEndPadding,
                         onNaverClick = { isLongClick->
-                            context.callMap(ExportMap.NAVER, course, isLongClick)
-                            onExportMapClick()
+                            scope.launch {
+                                onMapAppClick(context.callMap(ExportMap.NAVER, course, !isLongClick))
+                            }
                         },
                         onKaKaoClick = { isLongClick->
-                            context.callMap(ExportMap.KAKAO, course, isLongClick)
-                            onExportMapClick()
+                            scope.launch {
+                                onMapAppClick(context.callMap(ExportMap.KAKAO, course, !isLongClick))
+                            }
                         },
                         onTClick = { isLongClick->
-                            context.callMap(ExportMap.SKT, course, isLongClick)
-                            onExportMapClick()
+                            scope.launch {
+                                onMapAppClick(context.callMap(ExportMap.SKT, course, !isLongClick))
+                            }
                         },
                     ) {
                         onExportMapClick()
@@ -231,7 +243,7 @@ fun CirclePlateButton(
 
 
     if (isBackPlate)
-        targetOffset = -12.dp
+        targetOffset = -13.dp
     else
         targetOffset = 0.dp
 
@@ -254,6 +266,22 @@ fun CirclePlateButton(
                 }
                 Spacer(modifier = Modifier.size(circleSize))
             }
+            Row(modifier = Modifier.padding(start = 30.dp).align(alignment = Alignment.BottomStart),
+                verticalAlignment = Alignment.CenterVertically) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_info),
+                    contentDescription = "Icon Description",
+                    modifier = Modifier.size(12.dp),
+                    alignment = Alignment.Center
+                )
+                Spacer(modifier = Modifier.width(2.dp))
+                Text(
+                    modifier=Modifier,
+                    text= stringResource(R.string.exclude_my_location_on_long_press),
+                    fontSize = 12.sp,
+                    color = Color.Gray
+                )
+            }
         }
 
         Row( // 사각형
@@ -268,7 +296,7 @@ fun CirclePlateButton(
                     .padding(horizontal = 15.dp),
                 horizontalArrangement = Arrangement.spacedBy(15.dp)
             ) {
-                SquareButton(
+                SquareScaleButton(
                     modifier = Modifier.size(squareSize),
                     icon = R.drawable.lg_k,
                     caption = stringResource(R.string.k_way)
@@ -276,7 +304,7 @@ fun CirclePlateButton(
                     onKaKaoClick(it)
                 }
 
-                SquareButton(
+                SquareScaleButton(
                     modifier = Modifier.size(squareSize),
                     icon = R.drawable.lg_n,
                     caption = stringResource(R.string.n_way)
@@ -284,7 +312,7 @@ fun CirclePlateButton(
                     onNaverClick(it)
                 }
 
-                SquareButton(
+                SquareScaleButton(
                     modifier = Modifier.size(squareSize),
                     icon = R.drawable.lg_t,
                     caption = stringResource(R.string.t_way)
@@ -311,22 +339,37 @@ fun CirclePlateButton(
 }
 
 @Composable
-fun SquareButton(
+fun SquareScaleButton(
     modifier: Modifier = Modifier,
     @DrawableRes icon: Int,
     caption: String,
     onClick: (Boolean) -> Unit
 ) {
+    var pressed by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val scale by animateFloatAsState(
+        targetValue = if (pressed) 1.1f else 1.0f,
+        animationSpec = tween(durationMillis = 500),
+        label = "scaleAnimation"
+    )
     Column(
         verticalArrangement = Arrangement.spacedBy(1.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
             modifier = modifier
+                .scale(scale)
                 .shadow(elevation = 5.dp, shape = RoundedCornerShape(16.dp))
                 .clip(RoundedCornerShape(16.dp))
                 .pointerInput(Unit) {
                     detectTapGestures(
+                        onPress = {
+                            pressed = true
+                            scope.launch {
+                                delay(500)
+                                pressed = false
+                            }
+                        },
                         onTap = {
                             onClick(false)
                         },

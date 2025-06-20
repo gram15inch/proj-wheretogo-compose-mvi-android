@@ -32,7 +32,7 @@ import com.wheretogo.presentation.AppScreen
 import com.wheretogo.presentation.composable.content.AnimationDirection
 import com.wheretogo.presentation.composable.content.SlideAnimation
 import com.wheretogo.presentation.feature.EventBus
-import com.wheretogo.presentation.feature.getString
+import com.wheretogo.presentation.feature.openUri
 import com.wheretogo.presentation.feature.shortShow
 import com.wheretogo.presentation.theme.WhereTogoTheme
 import com.wheretogo.presentation.viewmodel.RootViewModel
@@ -57,21 +57,27 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
 
         LaunchedEffect(Unit) {
             EventBus.eventFlow.collect {
-                when (it) {
-                    is AppEvent.SnackBar -> {
-                        val msg = it.msg.getString(context)
-                        viewModel.snackbarHostState.shortShow(msg)
-                    }
+                coroutine.launch {
+                    when (it) {
+                        is AppEvent.SnackBar -> {
+                            viewModel.snackbarHostState.shortShow(context, it.msg) { uri ->
+                                openUri(context, uri)
+                            }
+                        }
 
-                    is AppEvent.Navigation -> {
-                        navController.navigate(it.destination)
-                    }
+                        is AppEvent.Navigation -> {
+                            navController.navigate(it.destination)
+                        }
 
-                    is AppEvent.Permission -> {
-                        val isDenied = ContextCompat
-                            .checkSelfPermission(context, it.permission.name) == PackageManager.PERMISSION_DENIED
-                        if(isDenied)
-                            multiplePermissionsLauncher.launch(arrayOf(it.permission.name))
+                        is AppEvent.Permission -> {
+                            val isDenied = ContextCompat
+                                .checkSelfPermission(
+                                    context,
+                                    it.permission.name
+                                ) == PackageManager.PERMISSION_DENIED
+                            if (isDenied)
+                                multiplePermissionsLauncher.launch(arrayOf(it.permission.name))
+                        }
                     }
                 }
             }

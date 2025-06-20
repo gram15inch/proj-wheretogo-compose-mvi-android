@@ -41,8 +41,12 @@ enum class SettingInfoType(val url: String) {
     OpenSourceLicense(OpenSourceLicenseActivity::class.java.name)
 }
 
-enum class CheckPointAddError{
-    EMPTY_IMG, EMPTY_DESCRIPTION
+sealed class AppError : Exception() {
+    data class ImgEmpty(val msg: String = "") : AppError()
+    data class DescriptionEmpty(val msg: String = "") : AppError()
+    data class LocationPermissionRequire(val msg: String = "") : AppError()
+    data class MapNotSupportExcludeLocation(val msg: String = "") : AppError()
+    data class UnexpectedException(val throwable: Throwable): AppError()
 }
 
 sealed class AppEvent {

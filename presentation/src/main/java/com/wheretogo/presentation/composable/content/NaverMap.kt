@@ -2,8 +2,6 @@ package com.wheretogo.presentation.composable.content
 
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
-import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -24,17 +22,19 @@ import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapView
 import com.naver.maps.map.NaverMap
-import com.naver.maps.map.util.FusedLocationSource
 import com.wheretogo.domain.model.map.LatLng
+import com.wheretogo.presentation.BuildConfig
 import com.wheretogo.presentation.CameraUpdateSource
 import com.wheretogo.presentation.MarkerType
 import com.wheretogo.presentation.SEARCH_MARKER
+import com.wheretogo.presentation.feature.geo.FollowLocationSource
 import com.wheretogo.presentation.model.ContentPadding
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.state.CameraState
 import com.wheretogo.presentation.toCameraState
 import com.wheretogo.presentation.toDomainLatLng
 import com.wheretogo.presentation.toNaver
+import java.lang.ref.WeakReference
 
 @Composable
 fun NaverMap(
@@ -54,13 +54,15 @@ fun NaverMap(
     val lifecycleOwner = LocalLifecycleOwner.current
     var mapView: MapView? by remember { mutableStateOf(null) }
     var isMoving by remember { mutableStateOf(false) }
+
     //맵 초기화
     LaunchedEffect(Unit) {
         mapView = MapView(context).apply {
             getMapAsync { naverMap ->
                 naverMap.apply {
                     onMapAsync(this)
-                    naverMap.setUiSetting(context)
+                    naverMap.setUiSetting()
+                    naverMap.locationSetting(context)
                  addOnCameraIdleListener {
                      if(cameraState.updateSource==CameraUpdateSource.USER)
                         onCameraUpdate(naverMap.toCameraState())
@@ -112,6 +114,14 @@ fun NaverMap(
     }
 }
 
+private fun NaverMap.locationSetting(context:Context) {
+    locationTrackingMode = LocationTrackingMode.NoFollow
+    val map = WeakReference(this)
+    locationSource = FollowLocationSource(context, {
+        map.get()?.locationTrackingMode?:LocationTrackingMode.NoFollow
+    })
+}
+
 private fun NaverMap.setGesture(isEnable:Boolean){
     uiSettings.isStopGesturesEnabled = isEnable
     uiSettings.isScrollGesturesEnabled = isEnable
@@ -120,16 +130,14 @@ private fun NaverMap.setGesture(isEnable:Boolean){
     uiSettings.isRotateGesturesEnabled = isEnable
 }
 
-private fun NaverMap.setUiSetting(context: Context) {
-    val naverMap = this
-    naverMap.locationTrackingMode = LocationTrackingMode.NoFollow
-    naverMap.locationSource = context.getMyLocationSource()
+private fun NaverMap.setUiSetting() {
     uiSettings.apply {
         isLogoClickEnabled = false
         isLocationButtonEnabled = true
-        isZoomControlEnabled = false
-        naverMap.minZoom = 8.0
+        if(!BuildConfig.DEBUG)
+            isZoomControlEnabled = false
     }
+    minZoom = 8.0
 }
 
 private fun NaverMap.contentPaddingUpdate(density: Density, contentPadding: ContentPadding) {
@@ -210,10 +218,6 @@ private fun NaverMap.cameraMove(cameraState: CameraState, moved:()->Unit) {
     }
 }
 
-private fun Context.getMyLocationSource(): FusedLocationSource {
-    return FusedLocationSource(this as ComponentActivity, 1000)
-}
-
 private fun MapView.syncLifecycle(event: Lifecycle.Event): () -> Unit {
     return {
         when (event) {
@@ -227,4 +231,3 @@ private fun MapView.syncLifecycle(event: Lifecycle.Event): () -> Unit {
         }
     }
 }
-

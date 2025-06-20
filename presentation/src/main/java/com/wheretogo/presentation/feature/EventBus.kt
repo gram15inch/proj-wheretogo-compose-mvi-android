@@ -2,6 +2,7 @@ package com.wheretogo.presentation.feature
 
 import android.content.Context
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import com.wheretogo.presentation.AppEvent
 import com.wheretogo.presentation.model.EventMsg
 import kotlinx.coroutines.CoroutineScope
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 
 object EventBus {
@@ -38,12 +40,22 @@ object EventBus {
     }
 }
 
-fun SnackbarHostState.shortShow(msg:String){
-    CoroutineScope(Dispatchers.IO).launch {
-        val job = launch { showSnackbar(msg) }
-        delay(1500)
-        job.cancel()
-    }
+suspend fun SnackbarHostState.shortShow(context: Context, eventMsg:EventMsg, onActionPerformed:(String)->Unit){
+   withContext(Dispatchers.IO){
+       val message = eventMsg.getString(context)
+       val actionLabel = eventMsg.labelRes?.run{context.getString(this)}
+       val job = launch {
+           val result= showSnackbar(
+               message = message,
+               actionLabel = actionLabel
+           )
+           if(result == SnackbarResult.ActionPerformed&& eventMsg.uri!=null)
+               onActionPerformed(eventMsg.uri)
+       }
+
+       delay(1500)
+       job.cancel()
+   }
 }
 
 fun EventMsg.getString(context: Context):String{
