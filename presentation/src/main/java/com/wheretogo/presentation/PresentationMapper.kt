@@ -8,7 +8,6 @@ import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.SimpleAddress
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.CommentState.CommentAddState
-import com.kakao.vectormap.LatLng as KakaoLatLng
 import com.naver.maps.geometry.LatLng as NaverLatLng
 
 
@@ -16,10 +15,6 @@ fun List<LatLng>.toNaver(): List<NaverLatLng> {
     return this.map { NaverLatLng(it.latitude, it.longitude) }
 }
 
-@Suppress("unused")
-fun List<LatLng>.toKakao(): List<KakaoLatLng> {
-    return this.map { KakaoLatLng.from(it.latitude, it.longitude) }
-}
 
 fun List<NaverLatLng>.toDomain():List<LatLng>{
     return map{it.toDomainLatLng()}

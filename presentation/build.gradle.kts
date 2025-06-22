@@ -83,27 +83,20 @@ dependencies {
 
     // Retrofit
     implementation(Squareup.RETROFIT)
-    implementation(Squareup.RETROFIT_CONVERTER_MOSHI)
-    implementation(Squareup.MOSHI_KOTLIN)
 
     // Goggle
     implementation(Google.IDENTITY_GOOGLEID)
     implementation(Google.PLAY_SERVICES_LOCATION)
-    implementation(Google.ACCOMPANIST_NAVIGATION_ANIMATION)
 
     // Firebase
     implementation(platform(Firebase.FIREBASE_BOM))
     implementation(Firebase.FIREBASE_CRASHLYTICS)
 
     // Libraries
-    implementation(Libraries.KAKAO_MAPS)
     implementation(Libraries.NAVER_MAPS)
     implementation(files("libs/com.skt.Tmap_1.76.jar"))
     implementation(Libraries.LOTTIE_COMPOSE)
-    implementation(Libraries.SHIMMER_COMPOSE)
     implementation(Libraries.LANDSCAPIST_GLIDE)
-    implementation(Libraries.FIREBASE_GEOFIRE)
-    implementation(Libraries.FIREBASE_GEOFIRE_COMMON)
 }
 
 fun getAppKey(propertyKey: String): String {

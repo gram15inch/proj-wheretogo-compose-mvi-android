@@ -42,11 +42,6 @@ dependencies {
     implementation(Dagger.HILT_ANDROID)
     ksp(Dagger.HILT_COMPILER)
 
-    // Retrofit
-    implementation(Squareup.RETROFIT)
-    implementation(Squareup.RETROFIT_CONVERTER_MOSHI)
-    implementation(Squareup.MOSHI_KOTLIN)
-
     // Libraries
     implementation(Libraries.FIREBASE_GEOFIRE)
     implementation(Libraries.FIREBASE_GEOFIRE_COMMON)
