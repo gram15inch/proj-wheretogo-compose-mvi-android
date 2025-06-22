@@ -3,9 +3,10 @@ package com.wheretogo.presentation.feature
 import android.content.Context
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
+import com.wheretogo.domain.UseCaseFailType
 import com.wheretogo.presentation.AppEvent
 import com.wheretogo.presentation.model.EventMsg
-import kotlinx.coroutines.CoroutineScope
+import com.wheretogo.presentation.toStringRes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -59,8 +60,16 @@ suspend fun SnackbarHostState.shortShow(context: Context, eventMsg:EventMsg, onA
 }
 
 fun EventMsg.getString(context: Context):String{
-    return if (arg != null) {
-        context.getString(strRes, arg)
+    return if (!arg.isNullOrBlank()) {
+        runCatching {
+            UseCaseFailType.valueOf(arg!!)
+        }.fold(
+            onSuccess = {
+                val argStr = it.toStringRes()?.run { context.getString(this) }?:""
+                context.getString(strRes, argStr)
+            },
+            onFailure ={context.getString(strRes, arg)}
+        )
     } else {
         context.getString(strRes)
     }

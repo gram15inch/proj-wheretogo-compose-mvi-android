@@ -11,8 +11,8 @@ import com.wheretogo.domain.model.auth.AuthRequest
 import com.wheretogo.domain.model.auth.AuthToken
 
 
-suspend fun googleAuthOnDevice(idOption: GetGoogleIdOption, context: Context): AuthRequest? {
-    return try {
+suspend fun googleAuthOnDevice(idOption: GetGoogleIdOption, context: Context): Result<AuthRequest> {
+    return runCatching {
         val credentialManager = CredentialManager.create(context)
         val request: GetCredentialRequest = GetCredentialRequest.Builder()
             .addCredentialOption(idOption)
@@ -26,8 +26,6 @@ suspend fun googleAuthOnDevice(idOption: GetGoogleIdOption, context: Context): A
             authType = AuthType.TOKEN,
             authToken = getGoogleIdTokenCredential(result.credential)?.toAuthToken()
         )
-    } catch (e: Exception) {
-        null
     }
 }
 

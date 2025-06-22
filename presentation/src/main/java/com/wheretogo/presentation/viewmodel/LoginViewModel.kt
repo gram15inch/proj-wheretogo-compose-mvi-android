@@ -1,5 +1,6 @@
 package com.wheretogo.presentation.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
@@ -11,6 +12,8 @@ import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.EventBus
 import com.wheretogo.presentation.model.EventMsg
 import com.wheretogo.presentation.state.LoginScreenState
+import com.wheretogo.presentation.toAppError
+import com.wheretogo.presentation.toStringRes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -38,37 +41,41 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    fun signUpAndSignIn(authRequest: AuthRequest?) {
+    fun signUpAndSignIn(authRequest: Result<AuthRequest>) {
         viewModelScope.launch(exceptionHandler) {
             _loginScreenState.value = _loginScreenState.value.copy(isLoading = true)
-            if(authRequest==null) {
-                EventBus.send(AppEvent.SnackBar(EventMsg(R.string.login_cancel)))
+
+            authRequest.onFailure {
+                it.toAppError().toStringRes()?.let {
+                    EventBus.send(AppEvent.SnackBar(EventMsg(it)))
+                }
                 _loginScreenState.value = _loginScreenState.value.run {
                     copy(
                         isLoading = false
                     )
                 }
-                return@launch
-            }
-            val result = withContext(Dispatchers.IO){ userSignUpAndSignInUseCase(authRequest) }
-            when (result.status) {
-                UseCaseResponse.Status.Success -> {
-                    _loginScreenState.value = _loginScreenState.value.run {
-                        copy(
-                            isExit = true,
-                            isLoading = false
-                        )
+            }.onSuccess {
+                val result = withContext(Dispatchers.IO) { userSignUpAndSignInUseCase(it) }
+                when (result.status) {
+                    UseCaseResponse.Status.Success -> {
+                        _loginScreenState.value = _loginScreenState.value.run {
+                            copy(
+                                isExit = true,
+                                isLoading = false
+                            )
+                        }
+                        EventBus.send(AppEvent.SnackBar(EventMsg(R.string.welcome_user, result.data ?: "unknown")))
                     }
-                    EventBus.send(AppEvent.SnackBar(EventMsg(R.string.welcome_user, result.data?:"unknown")))
-                }
 
-                UseCaseResponse.Status.Fail -> {
-                    _loginScreenState.value = _loginScreenState.value.run {
-                        copy(
-                            isLoading = false
-                        )
+                    UseCaseResponse.Status.Fail -> {
+                        _loginScreenState.value = _loginScreenState.value.run {
+                            copy(isLoading = false)
+                        }
+                        if (result.failType != null)
+                            EventBus.send(AppEvent.SnackBar(EventMsg(result.failType!!.toStringRes())))
+                        else
+                            EventBus.send(AppEvent.SnackBar(EventMsg(R.string.login_fail)))
                     }
-                    EventBus.send(AppEvent.SnackBar(EventMsg(R.string.login_fail)))
                 }
             }
         }

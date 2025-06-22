@@ -1,5 +1,6 @@
 package com.wheretogo.domain
 
+import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.map.Comment
 import com.wheretogo.domain.model.map.RouteCategory
 
@@ -13,6 +14,36 @@ const val USER_DATE_FORMAT = "yyyy-MM-dd"
 const val DOMAIN_EMPTY = ""
 
 const val LIST_ITEM_ZOOM = 12.0
+
+sealed class DomainError : Exception() {
+    data class NetworkError(val msg: String = "") : DomainError()
+    data class UserInvalid(val msg: String = "") : DomainError()
+    data class UnexpectedException(val throwable: Throwable) : DomainError()
+}
+
+fun <T> DomainError.toUseCaseResponse(): UseCaseResponse<T> {
+    return when (this) {
+        is DomainError.NetworkError -> {
+            UseCaseResponse(
+                UseCaseResponse.Status.Fail,
+                failType = UseCaseFailType.NETWORK_ERROR
+            )
+        }
+
+        is DomainError.UserInvalid -> {
+            UseCaseResponse(
+                UseCaseResponse.Status.Fail,
+                failType = UseCaseFailType.GOOGLE_AUTH
+            )
+        }
+
+        else -> {
+            UseCaseResponse(
+                UseCaseResponse.Status.Fail
+            )
+        }
+    }
+}
 
 enum class AuthCompany { GOOGLE, PROFILE }
 
@@ -86,7 +117,11 @@ enum class ImageSize(val pathName: String, val width: Int, val height: Int) {
 }
 
 enum class UseCaseFailType {
-    INVALID_USER, INVALID_DATA,
+    INVALID_USER,
+    INVALID_DATA,
+    GOOGLE_AUTH,
+    NETWORK_ERROR,
+    USER_CREATE_ERROR,
 }
 
 enum class AuthType{

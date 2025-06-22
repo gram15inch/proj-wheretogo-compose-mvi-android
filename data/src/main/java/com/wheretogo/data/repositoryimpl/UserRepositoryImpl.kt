@@ -3,7 +3,6 @@ package com.wheretogo.data.repositoryimpl
 import com.wheretogo.data.datasource.UserLocalDatasource
 import com.wheretogo.data.datasource.UserRemoteDatasource
 import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
-import com.wheretogo.data.model.user.RemoteProfilePrivate
 import com.wheretogo.data.toLocalProfile
 import com.wheretogo.data.toProfile
 import com.wheretogo.data.toProfilePrivate
@@ -131,9 +130,13 @@ class UserRepositoryImpl @Inject constructor(
                 userId.isBlank()
                     .let { if (it) throw UserNotExistException("inValid userId: $userId") }
                 val public = async { userRemoteDatasource.getProfilePublic(userId) }
-                val private = async { userRemoteDatasource.getProfilePrivate(userId) ?: RemoteProfilePrivate() }
-                public.await()?.toProfile()?.copy(private = private.await().toProfilePrivate())
-                    ?: throw UserNotExistException("inValid userId: $userId")
+                val private = async { userRemoteDatasource.getProfilePrivate(userId)}
+                public.await()?.toProfile()?.copy(
+                    private =
+                        private.await()?.toProfilePrivate()
+                            ?: throw UserNotExistException("inValid private userId: $userId")
+                )
+                    ?: throw UserNotExistException("inValid public userId: $userId")
             }
         }
     }
@@ -222,6 +225,7 @@ class UserRepositoryImpl @Inject constructor(
         return runCatching {
             val hashMail = hashSha256(mail)
             val public = userRemoteDatasource.getProfilePublicWithMail(hashMail)
+
             public?.toProfile()?:throw UserNotExistException("profile not found mail:$mail")
         }
     }
