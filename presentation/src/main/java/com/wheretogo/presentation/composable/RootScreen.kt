@@ -66,7 +66,7 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                         }
 
                         is AppEvent.Navigation -> {
-                            navController.navigate(it.destination)
+                            navController.navigate(it.destination.toString())
                         }
 
                         is AppEvent.Permission -> {
