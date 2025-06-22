@@ -121,7 +121,6 @@ object Firebase{
 object Google{
     const val IDENTITY_GOOGLEID = "com.google.android.libraries.identity.googleid:googleid:1.1.1"
     const val PLAY_SERVICES_LOCATION = "com.google.android.gms:play-services-location:21.3.0"
-    const val ACCOMPANIST_NAVIGATION_ANIMATION = "com.google.accompanist:accompanist-navigation-animation:0.31.1-alpha"
 }
 
 object Libraries {

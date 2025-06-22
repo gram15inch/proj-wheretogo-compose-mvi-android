@@ -108,13 +108,11 @@ dependencies {
     debugImplementation(Compose.COMPOSE_UI_TOOL)
     debugImplementation(Compose.COMPOSE_UI_TEST_MANIFEST)
 
-    // Libraries
-    implementation(Libraries.LOTTIE_COMPOSE)
-
-
     // Dagger
     implementation(Dagger.HILT_ANDROID)
     ksp(Dagger.HILT_COMPILER)
+    kspTest(Dagger.HILT_ANDROID_COMPILER)
+    kspAndroidTest(Dagger.HILT_ANDROID_COMPILER)
 
     // Firebase
     implementation(platform(Firebase.FIREBASE_BOM))
@@ -130,7 +128,6 @@ dependencies {
     androidTestImplementation(UnitTest.JUNIT_JUPITER_PARAMS)
     androidTestImplementation(UnitTest.JUNIT_JUPITER_ENGINE)
     androidTestImplementation(UnitTest.JUNIT_VINTAGE_ENGINE)
-    androidTestImplementation(Libraries.HUXHORN_SULKY_ULID)
     androidTestImplementation(Libraries.LIBRARIES_IDENTITY_GOOGLEID)
     androidTestImplementation(Libraries.LOTTIE_COMPOSE)
     androidTestImplementation(Compose.COMPOSE_UI_TEST_JUNIT4)
@@ -144,9 +141,6 @@ dependencies {
     testImplementation(UnitTest.JUNIT_VINTAGE_ENGINE)
     testImplementation(Dagger.HILT_ANDROID_TESTING)
     testImplementation(Libraries.MOCKK)
-
-    kspTest(Dagger.HILT_ANDROID_COMPILER)
-    kspAndroidTest(Dagger.HILT_ANDROID_COMPILER)
 }
 
 tasks.withType(Test::class) {
