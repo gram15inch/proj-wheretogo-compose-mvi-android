@@ -42,6 +42,7 @@ import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
+import com.wheretogo.presentation.AppScreen
 import com.wheretogo.presentation.BANNER_URL
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.SettingInfoType
@@ -75,7 +76,7 @@ fun HomeScreen(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         TopBar(onSettingClick = {
-            navController.navigate("setting")
+            navController.navigate(AppScreen.Setting.toString())
         })
         Body { screen ->
             navController.navigate(screen)
@@ -131,7 +132,7 @@ fun Body(navigate: (String) -> Unit) {
                     R.raw.lt_togeter
                 )
             },
-            click = { navigate("drive") }
+            click = { navigate(AppScreen.Drive.toString()) }
         )
 
         Row(horizontalArrangement = Arrangement.spacedBy(gridGap)) {
@@ -146,7 +147,7 @@ fun Body(navigate: (String) -> Unit) {
                     )
                 },
                 click = {
-                    navigate("courseAdd")
+                    navigate(AppScreen.CourseAdd.toString())
                 })
             /*   GridButton(
                    3, 1,
