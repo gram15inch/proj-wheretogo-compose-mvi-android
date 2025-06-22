@@ -112,4 +112,12 @@
     <string name="google_logo">google logo</string>
 
 
+    //오류
+    <string name="google_auth">구글 인증 오류</string>
+    <string name="user_create_error">계정 생성 오류</string>
+    <string name="invalid_user">유효하지 않은 계정</string>
+    <string name="invalid_data">잘못된 데이터</string>
+    <string name="network_error">네트워크가 원활하지 않아요. 연결 상태를 확인해 주세요.</string>
+    <string name="unexpect_error">요청을 완료할 수 없습니다. 앱을 다시 시작하거나 캐시를 지우고 시도해 주세요.</string>
+
 </resources>

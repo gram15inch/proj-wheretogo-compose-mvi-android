@@ -41,7 +41,7 @@ class AuthTest {
     fun deviceAuthTest(): Unit = runBlocking {
         val context = getContext()
         launch { pickAccount("navi") }
-        val authRequest = googleAuthOnDevice(getGoogleIdOption, context)
+        val authRequest = googleAuthOnDevice(getGoogleIdOption, context).getOrNull()
 
         assertTrue(authRequest?.authToken != null)
         Log.d(tag, "${authRequest!!.authToken}")
@@ -53,12 +53,12 @@ class AuthTest {
         val context = getContext()
         val firebase = FirebaseAuth.getInstance()
         launch { pickAccount("navi") }
-        val authRequest = googleAuthOnDevice(getGoogleIdOption, context)
+        val authRequest = googleAuthOnDevice(getGoogleIdOption, context).getOrNull()
 
         assertTrue(firebase.currentUser == null)
         val authResponse =
-            authRemoteDatasourceImpl.authGoogleWithFirebase(authRequest!!.authToken!!)
-        assertTrue(authResponse != null)
+        authRemoteDatasourceImpl.authGoogleWithFirebase(authRequest!!.authToken!!)
+
         Log.d(tag, "${authResponse}")
 
         assertTrue(firebase.currentUser?.email != null)

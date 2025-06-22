@@ -215,9 +215,9 @@ class AccessTest {
         CoroutineScope(Dispatchers.IO).launch {
             pickAccount(name)
         }
-        val authRequest = googleAuthOnDevice(getGoogleIdOption, context)
+        val authRequest = googleAuthOnDevice(getGoogleIdOption, context).getOrNull()
         val authResponse =
-            authRemoteDatasourceImpl.authGoogleWithFirebase(authRequest!!.authToken!!)
+            authRemoteDatasourceImpl.authGoogleWithFirebase(authRequest!!.authToken!!).getOrNull()
         return authResponse!!
     }
 

@@ -3,6 +3,7 @@ import wheretogo.AndroidX
 import wheretogo.Dagger
 import wheretogo.Kotlin
 import wheretogo.Compose
+import wheretogo.Firebase
 import wheretogo.Google
 import wheretogo.Libraries
 import wheretogo.Squareup
@@ -89,6 +90,10 @@ dependencies {
     implementation(Google.IDENTITY_GOOGLEID)
     implementation(Google.PLAY_SERVICES_LOCATION)
     implementation(Google.ACCOMPANIST_NAVIGATION_ANIMATION)
+
+    // Firebase
+    implementation(platform(Firebase.FIREBASE_BOM))
+    implementation(Firebase.FIREBASE_CRASHLYTICS)
 
     // Libraries
     implementation(Libraries.KAKAO_MAPS)

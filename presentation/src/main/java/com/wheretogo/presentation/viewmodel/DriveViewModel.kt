@@ -2,8 +2,6 @@ package com.wheretogo.presentation.viewmodel
 
 import android.annotation.SuppressLint
 import android.net.Uri
-import android.util.Log
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
@@ -36,7 +34,6 @@ import com.wheretogo.domain.usecase.user.GetHistoryStreamUseCase
 import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
 import com.wheretogo.presentation.AppError
 import com.wheretogo.presentation.AppEvent
-import com.wheretogo.presentation.AppPermission
 import com.wheretogo.presentation.BuildConfig
 import com.wheretogo.presentation.CHECKPOINT_ADD_MARKER
 import com.wheretogo.presentation.CLEAR_ADDRESS
@@ -514,11 +511,9 @@ class DriveViewModel @Inject constructor(
             else -> {
                 when (response.failType) {
                     UseCaseFailType.INVALID_USER -> {
-                        Log.e("tst_vm", "msg: ${response.msg}")
                     }
 
                     else -> {
-                        Log.e("tst_vm", "msg: ${response.msg}")
                         _driveScreenState.value = _driveScreenState.value.initBottomSheet()
                     }
                 }

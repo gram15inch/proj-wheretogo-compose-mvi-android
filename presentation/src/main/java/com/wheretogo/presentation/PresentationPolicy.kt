@@ -2,10 +2,15 @@ package com.wheretogo.presentation
 
 import android.Manifest
 import androidx.annotation.StringRes
+import androidx.credentials.exceptions.GetCredentialCancellationException
+import androidx.credentials.exceptions.GetCredentialCustomException
+import androidx.credentials.exceptions.NoCredentialException
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.app.LegalNoticeActivity
 import com.naver.maps.map.app.OpenSourceLicenseActivity
 import com.wheretogo.domain.RouteAttrItem
+import com.wheretogo.domain.UseCaseFailType
 import com.wheretogo.domain.model.map.Viewport
 import com.wheretogo.presentation.model.EventMsg
 import com.wheretogo.presentation.state.CameraState
@@ -46,6 +51,8 @@ sealed class AppError : Exception() {
     data class DescriptionEmpty(val msg: String = "") : AppError()
     data class LocationPermissionRequire(val msg: String = "") : AppError()
     data class MapNotSupportExcludeLocation(val msg: String = "") : AppError()
+    data class CredentialError(val msg:String = "") : AppError()
+    data class Ignore(val msg:String = "") : AppError()
     data class UnexpectedException(val throwable: Throwable): AppError()
 }
 
@@ -140,4 +147,36 @@ fun RouteAttrItem?.toIcRes():Int{
 
 fun getCommentEmogiGroup(): List<String> {
     return listOf("😊", "😍", "🔥", "👏", "👍", "😂", "🙌", "😮", "🤔", "🤭", "🥹", "😭", "😢", "😡", "😞")
+}
+
+fun UseCaseFailType.toStringRes():Int{
+    return when(this){
+        UseCaseFailType.USER_CREATE_ERROR ->{ R.string.user_create_error }
+        UseCaseFailType.INVALID_USER ->{  R.string.invalid_user }
+        UseCaseFailType.GOOGLE_AUTH ->{  R.string.google_auth }
+        UseCaseFailType.NETWORK_ERROR ->{  R.string.network_error }
+        UseCaseFailType.INVALID_DATA ->{  R.string.invalid_data }
+    }
+}
+
+fun Throwable.toAppError():AppError{
+    return when(this){
+        is AppError -> this
+        is GetCredentialCancellationException -> AppError.Ignore()
+        is GetCredentialCustomException -> AppError.CredentialError()
+        is NoCredentialException -> AppError.CredentialError()
+        else -> {
+            if(!BuildConfig.DEBUG)
+                FirebaseCrashlytics.getInstance().recordException(this)
+            AppError.UnexpectedException(this)
+        }
+    }
+}
+
+fun AppError.toStringRes():Int?{
+    return when(this){
+        is AppError.CredentialError -> R.string.network_error
+        is AppError.Ignore -> null
+        else-> R.string.unexpect_error
+    }
 }

@@ -77,10 +77,12 @@ dependencies {
 
     // Firebase
     implementation(platform(Firebase.FIREBASE_BOM))
+    implementation(Firebase.FIREBASE_CRASHLYTICS)
     implementation(Firebase.FIREBASE_DATABASE)
     implementation(Firebase.FIREBASE_FIRESTORE_KTX)
     implementation(Firebase.FIREBASE_STORAGE_KTX)
     implementation(Firebase.FIREBASE_AUTH_KTX)
+
 
     // Libraries
     implementation(Google.IDENTITY_GOOGLEID)

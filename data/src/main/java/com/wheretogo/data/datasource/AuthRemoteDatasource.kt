@@ -5,7 +5,7 @@ import com.wheretogo.domain.model.user.AuthProfile
 
 interface AuthRemoteDatasource {
 
-    suspend fun authGoogleWithFirebase(authToken: AuthToken): AuthProfile?
+    suspend fun authGoogleWithFirebase(authToken: AuthToken): Result<AuthProfile>
 
     suspend fun signOutOnFirebase()
 
