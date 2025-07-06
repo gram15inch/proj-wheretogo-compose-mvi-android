@@ -1,11 +1,9 @@
 package com.wheretogo.presentation.composable.content
 
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,11 +28,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
@@ -66,14 +66,33 @@ fun SearchBar(
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
-    val interactionSource by remember { mutableStateOf(MutableInteractionSource()) }
     val focusRequester = remember { FocusRequester() }
     var isInputMode by remember { mutableStateOf(false) }
     var editText by remember { mutableStateOf("") }
-    val fieldWidth by animateDpAsState(
-        targetValue = if (isInputMode) 240.dp else 0.dp,
-        animationSpec = tween(durationMillis = 300)
-    )
+    var alpha by remember { mutableStateOf(0.75f) }
+
+    fun closeKeyboard() {
+        focusManager.clearFocus()
+        keyboardController?.hide()
+    }
+
+    fun clearBar() {
+        isInputMode = false
+        alpha = 0.75f
+        editText = ""
+    }
+
+    fun toggleInputMode(): Boolean {
+        if (isInputMode) {
+            clearBar()
+            closeKeyboard()
+        } else {
+            isInputMode = true
+            alpha = 1f
+        }
+        return isInputMode
+    }
+
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.End,
@@ -81,88 +100,115 @@ fun SearchBar(
     ) {
         Box(
             modifier = Modifier
+                .width(250.dp)
+                .alpha(alpha)
                 .shadow(
-                    elevation = 1.5.dp,
-                    shape = RoundedCornerShape(16.dp),
-                    clip = false
+                    elevation = 1.5.dp, shape = RoundedCornerShape(16.dp), clip = false
                 )
                 .clip(RoundedCornerShape(16.dp))
                 .height(40.dp)
                 .background(Color.White)
+
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                val textStyle = TextStyle(
-                    fontSize = 15.sp,
-                    fontFamily = hancomSansFontFamily,
-                    color = colorResource(R.color.gray_474747)
-                )
-                Box(
-                    modifier = Modifier
-                        .width(fieldWidth)
-                        .padding(start = 14.dp, end = 5.dp)
-                ) {
-                    BasicTextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .focusRequester(focusRequester),
-                        textStyle = textStyle,
-                        value = editText,
-                        maxLines = 1,
-                        keyboardOptions = KeyboardOptions.Default.copy(
-                            imeAction = ImeAction.Done
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onDone = {
-                                onSearchSubmit(editText)
-                                keyboardController?.hide()
-                                focusManager.clearFocus()
-                                if(editText.isBlank())
-                                    isInputMode = false
-                            }
-                        ),
-                        readOnly = fieldWidth == 0.dp,
-                        onValueChange = { editText = it })
-                }
-                Box(modifier = Modifier
-                    .clickable(
-                        interactionSource = interactionSource,
-                        indication = null
-                    ) {
-                        if (isInputMode) {
-                            focusManager.clearFocus()
-                            keyboardController?.hide()
-                            editText = ""
-                            isInputMode = false
-                        } else {
-                            focusRequester.requestFocus()
-                            isInputMode = true
-                        }
-                        onSearchBarToggleClick(isInputMode)
-                    }
-                    .size(40.dp)
-                    .padding(10.dp)
-                ) {
-                    if (isLoading)
-                        DelayLottieAnimation(
-                            Modifier,
-                            ltRes = R.raw.lt_loading,
-                            isVisible = true,
-                            0
-                        )
-                    else
-                        Image(
-                            painter = painterResource(R.drawable.ic_search),
-                            contentDescription = ""
-                        )
-                }
+                BarTextField(Modifier.weight(1f) ,editText, isInputMode, focusRequester, onTextValueChange = { editText = it },
+                    onSearchSubmit = {
+                        if(editText=="")
+                            toggleInputMode()
+                        else
+                            closeKeyboard()
+                        onSearchSubmit(it)
+                    })
+                BarIcon(isLoading)
             }
+            Box(Modifier
+                .fillMaxSize()
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onTap = {
+                            if (editText.isNotBlank() || toggleInputMode()) {
+                                focusRequester.requestFocus()
+                            }
+                            onSearchBarToggleClick(isInputMode)
+                        },
+                    )
+                }) {  }
         }
+        BarDropList(isEmptyVisible, searchBarItemGroup, onSearchBarItemClick = {
+            if(it.label== CLEAR_ADDRESS)
+                toggleInputMode()
+            else
+                closeKeyboard()
+            onSearchBarItemClick(it)
+        })
+
+    }
+}
+
+
+@Composable
+fun BarTextField(modifier: Modifier ,textValue:String, isInputMode:Boolean,focusRequester: FocusRequester, onTextValueChange:(String)->Unit, onSearchSubmit: (String) -> Unit = {}){
+    val textStyle = TextStyle(
+        fontSize = 15.sp,
+        fontFamily = hancomSansFontFamily,
+        color = colorResource(R.color.gray_474747)
+    )
+    Box(
+        modifier = modifier
+            .padding(start = 16.dp, end = 5.dp)
+    ) {
+        BasicTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(focusRequester),
+            textStyle = textStyle,
+            value = textValue,
+            maxLines = 1,
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    onSearchSubmit(textValue)
+                }
+            ),
+            readOnly = !isInputMode,
+            onValueChange = { onTextValueChange(it)})
+    }
+}
+
+@Composable
+fun BarIcon(isLoading: Boolean){
+    Box(modifier = Modifier
+        .size(40.dp)
+        .padding(10.dp)) {
+        if (isLoading)
+            DelayLottieAnimation(
+                Modifier,
+                ltRes = R.raw.lt_loading,
+                isVisible = true,
+                0
+            )
+        else
+            Image(
+                painter = painterResource(R.drawable.ic_search),
+                contentDescription = ""
+            )
+    }
+}
+
+@Composable
+fun BarDropList(isEmptyVisible:Boolean,
+                  searchBarItemGroup: List<SearchBarItem>,
+                  onSearchBarItemClick: (SearchBarItem) -> Unit){
+    Column(horizontalAlignment = Alignment.End) {
         LazyColumn(
+            modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.End,
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             items(searchBarItemGroup, key = { Math.random() }) { item ->
-                SearchBarListItem(
+                BarListItem(
                     searchBarItem = item,
                     onSearchBarItemClick = {
                         onSearchBarItemClick(it)
@@ -172,7 +218,7 @@ fun SearchBar(
 
             if(isEmptyVisible)
                 item{
-                    SearchBarListItem(
+                    BarListItem(
                         searchBarItem = SearchBarItem(
                             label = stringResource(R.string.no_search_data),
                             address = "",
@@ -181,19 +227,16 @@ fun SearchBar(
                 }
             if(searchBarItemGroup.isNotEmpty() || isEmptyVisible)
                 item{
-                    ClearItem(onSearchBarItemClick = {
-                        editText=""
-                        isInputMode = false
+                    BarClearItem(onSearchBarItemClick = {
                         onSearchBarItemClick(it)
                     })
                 }
         }
-
     }
-}
 
+}
 @Composable
-fun SearchBarListItem(searchBarItem: SearchBarItem, onSearchBarItemClick: (SearchBarItem) -> Unit) {
+fun BarListItem(searchBarItem: SearchBarItem, onSearchBarItemClick: (SearchBarItem) -> Unit) {
     val isCourse = searchBarItem.address.isBlank()
     val textColor = if(isCourse) R.color.white else R.color.gray_474747
     val backgroundColor = if(isCourse) R.color.blue else R.color.white
@@ -207,9 +250,7 @@ fun SearchBarListItem(searchBarItem: SearchBarItem, onSearchBarItemClick: (Searc
                 onSearchBarItemClick(searchBarItem)
             }
             .shadow(
-                elevation = 1.5.dp,
-                shape = RoundedCornerShape(16.dp),
-                clip = false
+                elevation = 1.5.dp, shape = RoundedCornerShape(16.dp), clip = false
             )
             .clip(RoundedCornerShape(16.dp))
             .background(colorResource(backgroundColor))
@@ -221,14 +262,12 @@ fun SearchBarListItem(searchBarItem: SearchBarItem, onSearchBarItemClick: (Searc
 }
 
 @Composable
-fun ClearItem(onSearchBarItemClick: (SearchBarItem) -> Unit){
+fun BarClearItem(onSearchBarItemClick: (SearchBarItem) -> Unit){
     Box(
         Modifier
             .clip(RoundedCornerShape(12.dp))
             .shadow(
-                elevation = 1.5.dp,
-                shape = RoundedCornerShape(16.dp),
-                clip = false
+                elevation = 1.5.dp, shape = RoundedCornerShape(16.dp), clip = false
             )
             .clickable {
                 onSearchBarItemClick(SearchBarItem(CLEAR_ADDRESS, ""))

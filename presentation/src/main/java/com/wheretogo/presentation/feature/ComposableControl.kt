@@ -3,6 +3,8 @@ package com.wheretogo.presentation.feature
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
@@ -72,11 +74,7 @@ fun BlurEffect(modifier: Modifier = Modifier, onClick: () -> Unit) {
 @Composable
 fun Modifier.consumptionEvent(): Modifier {
     return this.pointerInput(Unit) {
-        awaitPointerEventScope {
-            while (true) {
-                awaitPointerEvent()
-            }
-        }
+        awaitEachGesture { awaitFirstDown().consume() }
     }
 }
 

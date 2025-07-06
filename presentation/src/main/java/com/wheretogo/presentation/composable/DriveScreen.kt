@@ -145,7 +145,7 @@ fun DriveScreen(
                     .padding(top = 10.dp, end = 10.dp), contentAlignment = Alignment.CenterEnd
                 ) {
                     state.searchBarState.run {
-                        SlideAnimation (visible = isVisible, direction = AnimationDirection.CenterRight) {
+                        SlideAnimation (visible = isVisible, direction = AnimationDirection.CenterUp) {
                             SearchBar(
                                 isLoading = isLoading,
                                 isEmptyVisible = isEmptyVisible,
