@@ -134,7 +134,7 @@ private fun NaverMap.setUiSetting() {
     uiSettings.apply {
         isLogoClickEnabled = false
         isLocationButtonEnabled = true
-        if(!BuildConfig.DEBUG)
+        if(!BuildConfig.TEST_UI)
             isZoomControlEnabled = false
     }
     minZoom = 8.0

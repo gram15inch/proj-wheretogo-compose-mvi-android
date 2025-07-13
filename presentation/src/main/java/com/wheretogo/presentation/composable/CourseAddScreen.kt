@@ -104,7 +104,7 @@ fun CourseAddScreen(
                     .fillMaxSize()
                     .navigationBarsPadding()
             ) {
-                if (BuildConfig.DEBUG) {
+                if (BuildConfig.TEST_UI) {
                     Box(
                         modifier = Modifier
                             .systemBarsPadding()
