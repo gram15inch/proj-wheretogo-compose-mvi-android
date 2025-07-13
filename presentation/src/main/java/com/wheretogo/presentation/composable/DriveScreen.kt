@@ -123,7 +123,7 @@ fun DriveScreen(
             contentAlignment = Alignment.BottomCenter
         ) {
 
-            if(BuildConfig.DEBUG)
+            if(BuildConfig.TEST_UI)
                 Text(
                     modifier = Modifier.align(alignment = Alignment.TopStart),
                     text = "${state.mapState.overlayGroup.size}",

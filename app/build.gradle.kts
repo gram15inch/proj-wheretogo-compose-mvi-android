@@ -36,6 +36,7 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+        manifestPlaceholders["naverMapClientId"] = getLocalProperties("naverMapClientId")
     }
     signingConfigs {
         create("release") {
@@ -46,6 +47,23 @@ android {
         }
     }
     buildTypes {
+        debug {
+            buildConfigField( "Boolean", "CRASHLYTICS", "false")
+        }
+        create("qa") {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            versionNameSuffix = "-qa"
+            signingConfig = signingConfigs.getByName("debug")
+            isDebuggable = true
+
+            buildConfigField( "Boolean", "CRASHLYTICS", "false")
+        }
+
         release {
             isMinifyEnabled = true
             isShrinkResources = true
@@ -54,6 +72,8 @@ android {
                 "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("release")
+
+            buildConfigField( "Boolean", "CRASHLYTICS", "true")
         }
     }
     compileOptions {
@@ -167,5 +187,16 @@ fun getUploadKey(propertyKey: String): String {
         propertiesFile.outputStream().use { properties.store(it, null) }
     }
     return properties[propertyKey].toString()
+}
+
+fun getLocalProperties(key: String): String {
+    val localPropertiesFile = rootProject.file("local.properties")
+    val properties = Properties()
+
+    if (localPropertiesFile.exists()) {
+        localPropertiesFile.inputStream().use { properties.load(it) }
+    }
+
+    return properties[key].toString()
 }
 

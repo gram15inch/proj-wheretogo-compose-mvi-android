@@ -29,15 +29,29 @@ android {
     }
 
     defaultConfig {
-        buildConfigField( "String", "NAVER_MAPS_APIGW_CLIENT_ID_KEY", getAppKey("naverMapsApigwClientId"))
-        buildConfigField( "String", "NAVER_MAPS_APIGW_CLIENT_SECRET_KEY", getAppKey("naverMapsApigwClientSecret"))
-        buildConfigField( "String", "NAVER_CLIENT_ID_KEY", getAppKey("naverClientId"))
-        buildConfigField( "String", "NAVER_CLIENT_SECRET_KEY", getAppKey("naverClientSecret"))
+        buildConfigField( "String", "NAVER_MAPS_APIGW_CLIENT_ID_KEY", getLocalProperties("naverMapsApigwClientId"))
+        buildConfigField( "String", "NAVER_MAPS_APIGW_CLIENT_SECRET_KEY", getLocalProperties("naverMapsApigwClientSecret"))
+        buildConfigField( "String", "NAVER_CLIENT_ID_KEY", getLocalProperties("naverClientId"))
+        buildConfigField( "String", "NAVER_CLIENT_SECRET_KEY", getLocalProperties("naverClientSecret"))
 
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments["room.schemaLocation"] = "$projectDir/schemas"
             }
+        }
+    }
+    buildTypes {
+        val test = "\"TEST\""
+        val release = "\"RELEASE\""
+
+        debug {
+            buildConfigField( "String", "FIREBASE", test)
+        }
+        create("qa") {
+            buildConfigField( "String", "FIREBASE", test)
+        }
+        release {
+            buildConfigField( "String", "FIREBASE", release)
         }
     }
 
@@ -89,7 +103,7 @@ dependencies {
     implementation(Libraries.HUXHORN_SULKY_ULID)
 }
 
-fun getAppKey(propertyKey: String): String {
+fun getLocalProperties(key: String): String {
     val propertiesFile = File(rootProject.projectDir, "local.properties")
     val properties = Properties()
 
@@ -101,9 +115,9 @@ fun getAppKey(propertyKey: String): String {
 
     val defaultValue = "\"yourAppKey\""
 
-    if (!properties.containsKey(propertyKey)) {
-        properties[propertyKey] = defaultValue
+    if (!properties.containsKey(key)) {
+        properties[key] = defaultValue
         propertiesFile.outputStream().use { properties.store(it, null) }
     }
-    return properties[propertyKey].toString()
+    return properties[key].toString()
 }

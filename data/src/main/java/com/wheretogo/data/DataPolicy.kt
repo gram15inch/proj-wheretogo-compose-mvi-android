@@ -35,8 +35,7 @@ fun DataError.toDomainError():DomainError{
         is DataError.ServerError->{ DomainError.NetworkError("Server Error") }
         is DataError.UserInvalid->{ DomainError.UserInvalid() }
         else -> {
-            if(!BuildConfig.DEBUG)
-                FirebaseCrashlytics.getInstance().recordException(this)
+            FirebaseCrashlytics.getInstance().recordException(this)
             DomainError.UnexpectedException(this)
         }
     }
@@ -70,14 +69,17 @@ enum class FireStoreCollections {
 }
 
 fun FireStoreCollections.name(): String {
-    return if (BuildConfig.DEBUG)
-        "TEST_" + this.name
-    else
-        "RELEASE_" + this.name
+    return when(BuildConfig.FIREBASE){
+        "RELEASE" ->  "RELEASE_" + this.name
+        else -> "TEST_" + this.name
+    }
 }
 
 fun getDbOption():Int{
-    return if(BuildConfig.DEBUG) 0 else 1
+    return when(BuildConfig.FIREBASE){
+        "RELEASE" ->  1
+        else -> 0
+    }
 }
 
 enum class LikeObject {

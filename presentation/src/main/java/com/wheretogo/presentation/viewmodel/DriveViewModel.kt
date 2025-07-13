@@ -99,7 +99,7 @@ class DriveViewModel @Inject constructor(
 ) : ViewModel() {
     private val _driveScreenState =
         MutableStateFlow(DriveScreenState(mapState = DriveScreenState.MapState(mapOverlayService.overlays))).withLogging { caller, value ->
-            if (BuildConfig.DEBUG)
+            if (BuildConfig.TEST_UI)
                 caller?.let {
                     //Log.d("tst_state", "${caller.shortPath()} --> ${value.popUpState}")
                 }

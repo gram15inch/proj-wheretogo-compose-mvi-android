@@ -36,7 +36,7 @@ class BaseApplication : Application(), Configuration.Provider {
     private fun firebaseInit() {
         CoroutineScope(Dispatchers.IO).launch {
             FirebaseApp.initializeApp(this@BaseApplication)
-            FirebaseCrashlytics.getInstance().isCrashlyticsCollectionEnabled = !BuildConfig.DEBUG
+            FirebaseCrashlytics.getInstance().isCrashlyticsCollectionEnabled = BuildConfig.CRASHLYTICS
             FirebaseStorage.getInstance()
             FirebaseAuth.getInstance()
             FirebaseFirestore.getInstance()

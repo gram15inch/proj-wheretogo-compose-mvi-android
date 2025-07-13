@@ -25,14 +25,30 @@ android {
         minSdk = AndroidConfig.MIN_SDK
     }
 
+    buildTypes{
+        debug {
+            buildConfigField( "Boolean", "TEST_UI", "true")
+        }
+        create("qa") {
+            buildConfigField( "Boolean", "TEST_UI", "false")
+        }
+        release {
+            buildConfigField( "Boolean", "TEST_UI", "false")
+        }
+    }
+
+    buildFeatures{
+        buildConfig = true
+    }
+
     defaultConfig {
-        buildConfigField( "String", "KAKAO_NATIVE_APP_KEY", getAppKey("kakaoNativeApp"))
-        buildConfigField( "String", "KAKAO_REST_API_KEY", getAppKey("kakaoNativeApp"))
-        buildConfigField( "String", "KAKAO_ADMIN_KEY", getAppKey("kakaoNativeApp"))
+        buildConfigField( "String", "KAKAO_NATIVE_APP_KEY", getLocalProperties("kakaoNativeApp"))
+        buildConfigField( "String", "KAKAO_REST_API_KEY", getLocalProperties("kakaoNativeApp"))
+        buildConfigField( "String", "KAKAO_ADMIN_KEY", getLocalProperties("kakaoNativeApp"))
 
-        buildConfigField( "String", "TMAP_APP_KEY", getAppKey("tmapApp"))
+        buildConfigField( "String", "TMAP_APP_KEY", getLocalProperties("tmapApp"))
 
-        buildConfigField( "String", "GOOGLE_WEB_CLIENT_ID_KEY", getAppKey("googleWebClientId"))
+        buildConfigField( "String", "GOOGLE_WEB_CLIENT_ID_KEY", getLocalProperties("googleWebClientId"))
 
     }
     compileOptions {
@@ -99,21 +115,13 @@ dependencies {
     implementation(Libraries.LANDSCAPIST_GLIDE)
 }
 
-fun getAppKey(propertyKey: String): String {
+fun getLocalProperties(key: String): String{
     val localPropertiesFile = File(rootProject.projectDir, "local.properties")
     val properties = Properties()
 
     if (localPropertiesFile.exists()) {
         localPropertiesFile.inputStream().use { properties.load(it) }
-    } else {
-        localPropertiesFile.createNewFile()
     }
 
-    val defaultValue = "\"yourAppKey\""
-
-    if (!properties.containsKey(propertyKey)) {
-        properties[propertyKey] = defaultValue
-        localPropertiesFile.outputStream().use { properties.store(it, null) }
-    }
-    return properties[propertyKey].toString()
+    return properties[key].toString()
 }

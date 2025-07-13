@@ -3,7 +3,6 @@ import wheretogo.AndroidX
 import wheretogo.Dagger
 import wheretogo.Kotlin
 import wheretogo.Libraries
-import wheretogo.Squareup
 import wheretogo.UnitTest
 
 plugins {
@@ -19,6 +18,10 @@ android {
 
     defaultConfig {
         minSdk = AndroidConfig.MIN_SDK
+    }
+
+    buildTypes{
+        create("qa") {}
     }
 
     compileOptions {
