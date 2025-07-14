@@ -146,7 +146,7 @@ fun CourseAddScreen(
                     isEmptyVisible = state.searchBarState.isEmptyVisible,
                     searchBarItemGroup = state.searchBarState.searchBarItemGroup ,
                     onSearchSubmit = { viewModel.handleIntent(CourseAddIntent.SubmitClick(it)) },
-                    onSearchBarToggleClick = { viewModel.handleIntent(CourseAddIntent.SearchBarToggleClick(it)) },
+                    onSearchBarClick = { viewModel.handleIntent(CourseAddIntent.SearchBarClick(it)) },
                     onSearchBarItemClick = { viewModel.handleIntent(CourseAddIntent.SearchBarItemClick(it)) }
                 )
                 NaverMap(

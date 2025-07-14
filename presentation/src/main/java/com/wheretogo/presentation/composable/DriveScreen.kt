@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
@@ -45,6 +46,7 @@ import androidx.navigation.NavController
 import com.wheretogo.presentation.BuildConfig
 import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.R
+import com.wheretogo.presentation.WIDE_WIDTH
 import com.wheretogo.presentation.composable.content.AnimationDirection
 import com.wheretogo.presentation.composable.content.BottomSheet
 import com.wheretogo.presentation.composable.content.CheckPointAddContent
@@ -58,6 +60,7 @@ import com.wheretogo.presentation.composable.content.MapPopup
 import com.wheretogo.presentation.composable.content.NaverMap
 import com.wheretogo.presentation.composable.content.SearchBar
 import com.wheretogo.presentation.composable.content.SlideAnimation
+import com.wheretogo.presentation.composable.content.screenSize
 import com.wheretogo.presentation.feature.ImeStickyBox
 import com.wheretogo.presentation.feature.naver.setCurrentLocation
 import com.wheretogo.presentation.intent.DriveScreenIntent
@@ -72,7 +75,6 @@ fun DriveScreen(
 ) {
     val state by viewModel.driveScreenState.collectAsState()
     val context = LocalContext.current
-    val isWideSize = screenSize(true) > 650.dp
     var bottomSheetHeight by remember { mutableStateOf(0.dp) }
     val mapBottomPadding by animateDpAsState(
         targetValue = bottomSheetHeight,
@@ -118,9 +120,10 @@ fun DriveScreen(
             modifier = Modifier
                 .zIndex(2f)
                 .padding(top= systemBars.calculateTopPadding(),
-                    start = systemBars.calculateStartPadding(LocalLayoutDirection.current))
+                    start = systemBars.calculateStartPadding(LocalLayoutDirection.current),
+                    end= systemBars.calculateEndPadding(LocalLayoutDirection.current))
                 .fillMaxSize(),
-            contentAlignment = Alignment.BottomCenter
+            contentAlignment = Alignment.BottomEnd
         ) {
 
             if(BuildConfig.TEST_UI)
@@ -129,6 +132,7 @@ fun DriveScreen(
                     text = "${state.mapState.overlayGroup.size}",
                     fontSize = 50.sp
                 )
+
             DelayLottieAnimation(
                 modifier = Modifier
                     .padding(top = 40.dp, end = 10.dp)
@@ -141,17 +145,18 @@ fun DriveScreen(
 
             OneHandArea {
                 Box(modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 10.dp, end = 10.dp), contentAlignment = Alignment.CenterEnd
+                    .sizeIn(WIDE_WIDTH.dp)
+                    .fillMaxWidth(), contentAlignment = Alignment.CenterEnd
                 ) {
                     state.searchBarState.run {
                         SlideAnimation (visible = isVisible, direction = AnimationDirection.CenterUp) {
                             SearchBar(
+                                modifier = Modifier.padding(horizontal = 12.dp),
                                 isLoading = isLoading,
                                 isEmptyVisible = isEmptyVisible,
                                 searchBarItemGroup = searchBarItemGroup,
                                 onSearchSubmit = { viewModel.handleIntent(DriveScreenIntent.SearchSubmit(it)) },
-                                onSearchBarToggleClick = { viewModel.handleIntent(DriveScreenIntent.SearchToggleClick(it)) },
+                                onSearchBarClick = { viewModel.handleIntent(DriveScreenIntent.SearchBarClick(it)) },
                                 onSearchBarItemClick = { viewModel.handleIntent(DriveScreenIntent.AddressItemClick(it)) }
                             )
                         }
@@ -166,8 +171,8 @@ fun DriveScreen(
                 ) {
                     DriveListContent(
                         modifier = Modifier
-                            .align(alignment = Alignment.BottomCenter)
-                            .padding(horizontal = 12.dp),
+                            .padding(horizontal = 4.dp)
+                            .align(alignment = Alignment.BottomCenter),
                         listItemGroup = state.listState.listItemGroup,
                         onItemClick = { selectedItem ->
                             viewModel.handleIntent(DriveScreenIntent.DriveListItemClick(selectedItem))
@@ -187,7 +192,6 @@ fun DriveScreen(
                         modifier = Modifier.align(Alignment.BottomStart),
                         commentState = state.popUpState.commentState,
                         imageUri = state.popUpState.imageUri,
-                        isWideSize = isWideSize,
                         isLoading = state.isLoading,
                         onPopupImageClick = {
                             viewModel.handleIntent(DriveScreenIntent.CommentFloatingButtonClick)
@@ -270,7 +274,6 @@ fun DriveScreen(
                             else -> {}
                         }
                     }
-
                 }
 
                 val isNotOtherVisible = !state.popUpState.commentState.isCommentVisible && !state.bottomSheetState.isVisible
@@ -330,9 +333,10 @@ fun DriveScreen(
 
 @Composable
 fun OneHandArea(content: @Composable BoxScope.() -> Unit) {
+    val min = minOf(screenSize(true), 800.dp)
     Box(
         modifier = Modifier
-            .sizeIn(maxWidth = 650.dp)
+            .sizeIn(maxWidth = min)
     ) {
         content()
     }
@@ -366,22 +370,12 @@ fun ExtendArea(
             moveContent()
         }
     } else {
-        Box(modifier = Modifier.graphicsLayer(clip = true)) {
+        Box(modifier = Modifier.graphicsLayer(clip = true), contentAlignment = Alignment.BottomCenter) {
             holdContent()
             moveContent()
         }
     }
 
 }
-
-@Composable
-fun screenSize(isWidth: Boolean): Dp {
-    val configuration = LocalConfiguration.current
-    val screenWidthDp = configuration.screenWidthDp
-    val screenHeightDp = configuration.screenHeightDp
-    return if (isWidth) screenWidthDp.dp else screenHeightDp.dp
-}
-
-
 
 

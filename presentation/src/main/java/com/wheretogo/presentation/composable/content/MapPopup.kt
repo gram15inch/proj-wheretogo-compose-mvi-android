@@ -13,14 +13,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -54,6 +52,7 @@ import com.skydoves.landscapist.glide.GlideImage
 import com.wheretogo.domain.model.dummy.getCommentDummy
 import com.wheretogo.presentation.CommentType
 import com.wheretogo.presentation.R
+import com.wheretogo.presentation.WIDE_WIDTH
 import com.wheretogo.presentation.composable.ExtendArea
 import com.wheretogo.presentation.feature.BlurEffect
 import com.wheretogo.presentation.feature.ImeStickyBox
@@ -75,7 +74,7 @@ fun PopupPreview() {
             CommentState(
                 isCommentVisible = true,
                 isCommentSettingVisible = false,
-                commentItemGroup = getCommentDummy().mapIndexed {idx,item->
+                commentItemGroup = getCommentDummy().mapIndexed { idx, item ->
                     CommentItemState(
                         data = item,
                         isLike = if (item.like % 2 == 0) false else true,
@@ -89,7 +88,6 @@ fun PopupPreview() {
                 )
             ),
             imageUri = Uri.parse(""),
-            isWideSize = false,
             isLoading = false,
             onPopupImageClick = {},
             onPopupBlurClick = {},
@@ -112,10 +110,9 @@ fun MapPopup(
     modifier: Modifier,
     commentState: CommentState,
     imageUri: Uri?,
-    isWideSize: Boolean,
-    isLoading:Boolean,
-    onPopupImageClick: () -> Unit ,
-    onPopupBlurClick:() -> Unit ,
+    isLoading: Boolean,
+    onPopupImageClick: () -> Unit,
+    onPopupBlurClick: () -> Unit,
     onCommentListItemClick: (CommentItemState) -> Unit,
     onCommentListItemLongClick: (CommentItemState) -> Unit,
     onCommentLikeClick: (CommentItemState) -> Unit,
@@ -127,76 +124,49 @@ fun MapPopup(
     onCommentTypePress: (CommentType) -> Unit,
 ) {
     var imeContainerHeight by remember { mutableStateOf(0.dp) }
-    Box {
+    val isWideSize = screenSize(true) >= WIDE_WIDTH.dp
+    Box(modifier = modifier, contentAlignment = Alignment.BottomCenter) {
         ExtendArea( // 넓은 화면에서 확장
             isExtend = isWideSize,
             holdContent = {
                 PopUpImage( // 고정
                     modifier = modifier.padding(start = 12.dp, bottom = 12.dp),
                     uri = imageUri,
-                    isBlur =  commentState.isCommentVisible && !isWideSize,
+                    isBlur = commentState.isCommentVisible && !isWideSize,
                     onPopupImageClick = onPopupImageClick,
                     onPopupBlurClick = onPopupBlurClick
                 )
             },
             moveContent = { // 이동
                 SlideAnimation(
-                    modifier = modifier
+                    modifier = Modifier
                         .graphicsLayer(clip = true),
                     visible = commentState.isCommentVisible,
                     direction = if (isWideSize) AnimationDirection.CenterRight else AnimationDirection.CenterDown
                 ) {
+                    val maxHeight = (if (!isWideSize) 480.dp else 500.dp)
                     Box(
                         modifier = Modifier
+                            .sizeIn(maxHeight = maxHeight)
                             .consumptionEvent()
                             .clip(RoundedCornerShape(16.dp))
                             .background(colorResource(R.color.white))
                     ) {
-                        Column {
-                            val maxHeight =
-                                (if (!isWideSize) 480.dp else 500.dp) - imeContainerHeight
-                            if (commentState.commentItemGroup.isNotEmpty()) {
-                                CommentList(
-                                    modifier = Modifier
-                                        .sizeIn(maxHeight = maxHeight),
-                                    commentItemGroup = commentState.commentItemGroup,
-                                    onItemClick = { item ->
-                                        onCommentListItemClick(item)
-                                    },
-                                    onItemLongClick = { item ->
-                                        onCommentListItemLongClick(item)
-                                    },
-                                    onLikeClick = { item ->
-                                        onCommentLikeClick(item)
-                                    }
-                                )
-                            } else {
-                                Box(
-                                    modifier = Modifier.sizeIn(maxHeight = maxHeight),
-                                ) {
-                                    Box(
-                                        modifier = Modifier.fillMaxSize(),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        if(isLoading)
-                                            DelayLottieAnimation(Modifier.width(50.dp),R.raw.lt_loading, true,0)
-                                        else
-                                            Text(
-                                                text = "첫 발자국을 남겨보세요.",
-                                                fontFamily = hancomMalangFontFamily,
-                                                fontSize = 14.sp
-                                            )
-                                    }
-                                }
+                        CommentList(
+                            isLoading = isLoading,
+                            commentItemGroup = commentState.commentItemGroup,
+                            onItemClick = { item ->
+                                onCommentListItemClick(item)
+                            },
+                            onItemLongClick = { item ->
+                                onCommentListItemLongClick(item)
+                            },
+                            onLikeClick = { item ->
+                                onCommentLikeClick(item)
                             }
-                            Spacer(modifier.height(imeContainerHeight))
-                        }
+                        )
                         FadeAnimation(visible = commentState.isCommentSettingVisible) {
                             CommentSetting(
-                                modifier = Modifier
-                                    .sizeIn(
-                                        maxHeight = (if (!isWideSize) 480.dp else 500.dp)
-                                    ),
                                 selectedItem = commentState.selectedCommentSettingItem,
                                 onCommentRemoveClick = onCommentRemoveClick,
                                 onCommentReportClick = onCommentReportClick,
@@ -209,7 +179,6 @@ fun MapPopup(
             }
         )
         SlideAnimation(
-            modifier = modifier,
             visible = commentState.isCommentVisible && !commentState.isCommentSettingVisible,
             direction = AnimationDirection.CenterDown
         ) {
@@ -226,7 +195,8 @@ fun MapPopup(
                     modifier = Modifier
                         .topShadow()
                         .background(Color.White)
-                ) {// 리뷰버튼
+                ) {
+                    // 리뷰버튼
                     ReviewButtonGroup(
                         modifier = Modifier.run {
                             if (imeHeight > 100.dp) this
@@ -426,28 +396,38 @@ fun CommentEmojiGroupAndOneLinePreview(
 
 
 @Composable
-fun PopUpImage(modifier: Modifier, uri: Uri?, isBlur:Boolean, onPopupImageClick: () -> Unit, onPopupBlurClick: () -> Unit) {
+fun PopUpImage(
+    modifier: Modifier,
+    uri: Uri?,
+    isBlur: Boolean,
+    onPopupImageClick: () -> Unit,
+    onPopupBlurClick: () -> Unit
+) {
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
             .sizeIn(maxWidth = 260.dp, maxHeight = 500.dp),
         contentAlignment = Alignment.Center
     ) {
-        FadeAnimation(visible= uri != null) {
+        FadeAnimation(visible = uri != null) {
             GlideImage(
-                modifier = Modifier.clickable {
-                    onPopupImageClick()
-                }.fillMaxSize(),
+                modifier = Modifier
+                    .clickable {
+                        onPopupImageClick()
+                    }
+                    .fillMaxSize(),
                 imageModel = { uri },
-                imageOptions = ImageOptions(contentScale = ContentScale.FillHeight)
+                imageOptions = ImageOptions(contentScale = ContentScale.Crop)
             )
         }
         FadeAnimation(visible = uri == null) {
-            Box(modifier = Modifier
-                .fillMaxSize()
-                .consumptionEvent()
-                .background(color = Color.White), contentAlignment = Alignment.Center) {
-                DelayLottieAnimation(Modifier.size(50.dp),R.raw.lt_loading,true,0)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .consumptionEvent()
+                    .background(color = Color.White), contentAlignment = Alignment.Center
+            ) {
+                DelayLottieAnimation(Modifier.size(50.dp), R.raw.lt_loading, true, 0)
             }
         }
 
