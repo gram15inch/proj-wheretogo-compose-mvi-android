@@ -112,7 +112,7 @@ class DriveViewModel @Inject constructor(
             when (intent) {
                 //서치바
                 is DriveScreenIntent.AddressItemClick -> searchBarItemClick(intent.searchBarItem)
-                is DriveScreenIntent.SearchToggleClick -> searchToggleClick(intent.isBar)
+                is DriveScreenIntent.SearchBarClick -> searchBarClick(intent.isBar)
                 is DriveScreenIntent.SearchSubmit -> searchSubmit(intent.submit)
 
                 //지도
@@ -183,7 +183,7 @@ class DriveViewModel @Inject constructor(
 
     }
 
-    private fun searchToggleClick(isExpend: Boolean) {
+    private fun searchBarClick(isExpend: Boolean) {
         _driveScreenState.value.apply {
             mapOverlayService.removeCheckPoint(listOf(SEARCH_MARKER))
             _driveScreenState.value =

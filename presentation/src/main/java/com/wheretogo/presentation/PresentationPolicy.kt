@@ -17,6 +17,7 @@ import com.wheretogo.presentation.state.CameraState
 
 const val DRIVE_LIST_MIN_ZOOM = 9.5
 const val COURSE_NAME_MAX_LENGTH = 17
+const val WIDE_WIDTH = 600
 
 const val CHECKPOINT_ADD_MARKER = "CHECKPOINT_ADD_MARKER_ID"
 const val SEARCH_MARKER = "SEARCH_MARKER_ID"

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -41,7 +42,8 @@ import com.wheretogo.presentation.theme.hancomSansFontFamily
 
 @Composable
 fun CommentList(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
+    isLoading: Boolean,
     commentItemGroup: List<CommentItemState>,
     onItemClick: (CommentItemState) -> Unit,
     onItemLongClick: (CommentItemState) -> Unit,
@@ -51,37 +53,53 @@ fun CommentList(
         modifier = modifier
             .fillMaxSize(),
     ) {
-        LazyColumn(
-            Modifier
-                .fillMaxSize()
-                .padding(2.dp)
-        ) {
-            val focusItem = commentItemGroup.firstOrNull { it.isFocus }
-            if(focusItem!=null) {
-                item {
-                    CommentFocusItem(
-                        comment = focusItem,
-                        onItemLongClick = { item ->
-                            onItemLongClick(item)
-                        },
-                        onLikeClick = { item ->
-                            onLikeClick(item)
-                        }
+        if (commentItemGroup.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                if (isLoading)
+                    DelayLottieAnimation(Modifier.width(50.dp), R.raw.lt_loading, true, 0)
+                else
+                    Text(
+                        text = "첫 발자국을 남겨보세요.",
+                        fontFamily = hancomMalangFontFamily,
+                        fontSize = 14.sp
                     )
-                }
-                items(commentItemGroup.filter { it.data.commentId != focusItem.data.commentId }) { item ->
-                    CommentListItem(
-                        comment = item,
-                        onItemClick = {
-                            onItemClick(it)
-                        },
-                        onItemLongClick = {
-                            onItemLongClick(it)
-                        },
-                        onLikeClick = {
-                            onLikeClick(it)
-                        }
-                    )
+            }
+        } else {
+            LazyColumn(
+                Modifier
+                    .fillMaxSize()
+                    .padding(2.dp)
+            ) {
+                val focusItem = commentItemGroup.firstOrNull { it.isFocus }
+                if (focusItem != null) {
+                    item {
+                        CommentFocusItem(
+                            comment = focusItem,
+                            onItemLongClick = { item ->
+                                onItemLongClick(item)
+                            },
+                            onLikeClick = { item ->
+                                onLikeClick(item)
+                            }
+                        )
+                    }
+                    items(commentItemGroup.filter { it.data.commentId != focusItem.data.commentId }) { item ->
+                        CommentListItem(
+                            comment = item,
+                            onItemClick = {
+                                onItemClick(it)
+                            },
+                            onItemLongClick = {
+                                onItemLongClick(it)
+                            },
+                            onLikeClick = {
+                                onLikeClick(it)
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -313,7 +331,7 @@ fun CommentSetting(
                 .background(Color.White),
         ) {
 
-            if(selectedItem.isUserCreated) {
+            if (selectedItem.isUserCreated) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()

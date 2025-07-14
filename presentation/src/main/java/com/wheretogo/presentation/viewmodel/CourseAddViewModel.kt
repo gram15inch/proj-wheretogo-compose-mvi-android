@@ -12,7 +12,6 @@ import com.wheretogo.domain.usecase.map.AddCourseUseCase
 import com.wheretogo.domain.usecase.map.CreateRouteUseCase
 import com.wheretogo.domain.usecase.map.SearchKeywordUseCase
 import com.wheretogo.presentation.AppEvent
-import com.wheretogo.presentation.AppPermission
 import com.wheretogo.presentation.CLEAR_ADDRESS
 import com.wheretogo.presentation.COURSE_NAME_MAX_LENGTH
 import com.wheretogo.presentation.CameraUpdateSource
@@ -55,7 +54,7 @@ class CourseAddViewModel @Inject constructor(
 
                 //서치바
                 is CourseAddIntent.SearchBarItemClick -> searchBarItemClick(intent.searchBarItem)
-                is CourseAddIntent.SearchBarToggleClick -> searchBarToggleClick(intent.isExpend)
+                is CourseAddIntent.SearchBarClick -> searchBarClick(intent.isExpend)
                 is CourseAddIntent.SubmitClick -> submitClick(intent.submitVaule)
 
                 //지도
@@ -98,7 +97,7 @@ class CourseAddViewModel @Inject constructor(
         }
     }
 
-    private fun searchBarToggleClick(isExpend: Boolean) {
+    private fun searchBarClick(isExpend: Boolean) {
         _courseAddScreenState.value = _courseAddScreenState.value.run {
             if (!isExpend) {
                 searchBarInit()

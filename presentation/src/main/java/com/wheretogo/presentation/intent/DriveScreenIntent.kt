@@ -16,7 +16,7 @@ sealed class DriveScreenIntent {
 
     //서치바
     data class AddressItemClick(val searchBarItem: SearchBarItem) : DriveScreenIntent()
-    data class SearchToggleClick(val isBar:Boolean) : DriveScreenIntent()
+    data class SearchBarClick(val isBar:Boolean) : DriveScreenIntent()
     data class SearchSubmit(val submit:String) : DriveScreenIntent()
 
     //지도
