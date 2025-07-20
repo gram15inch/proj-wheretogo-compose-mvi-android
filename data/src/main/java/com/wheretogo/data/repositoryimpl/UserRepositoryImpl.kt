@@ -31,7 +31,7 @@ class UserRepositoryImpl @Inject constructor(
 ) : UserRepository {
 
 
-    override suspend fun isRequestLoginStream(): Flow<Boolean> {
+    override fun isRequestLoginStream(): Flow<Boolean> {
         return userLocalDatasource.isRequestLoginFlow()
     }
 

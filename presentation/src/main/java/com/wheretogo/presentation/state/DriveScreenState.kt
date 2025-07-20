@@ -3,6 +3,7 @@ package com.wheretogo.presentation.state
 import android.net.Uri
 import com.wheretogo.domain.model.map.Course
 import com.wheretogo.presentation.DriveBottomSheetContent
+import com.wheretogo.presentation.model.AdItem
 import com.wheretogo.presentation.model.MapOverlay
 
 
@@ -50,6 +51,7 @@ data class DriveScreenState(
     )
 
     data class FloatingButtonState(
+        val adItemGroup: List<AdItem> = emptyList(),
         val isCommentVisible: Boolean = false,
         val isCheckpointAddVisible: Boolean = false,
         val isInfoVisible: Boolean = false,

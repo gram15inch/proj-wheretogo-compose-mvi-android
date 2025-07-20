@@ -1,15 +1,22 @@
 package com.wheretogo.presentation
 
 
+import com.google.android.gms.ads.nativead.NativeAd
 import com.wheretogo.domain.AuthCompany
 import com.wheretogo.domain.RouteAttr
 import com.wheretogo.domain.model.map.Comment
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.SimpleAddress
+import com.wheretogo.presentation.model.AdItem
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.CommentState.CommentAddState
 import com.naver.maps.geometry.LatLng as NaverLatLng
 
+fun List<NativeAd>.toItem():List<AdItem>{
+    return this.map {
+        AdItem(it)
+    }
+}
 
 fun List<LatLng>.toNaver(): List<NaverLatLng> {
     return this.map { NaverLatLng(it.latitude, it.longitude) }

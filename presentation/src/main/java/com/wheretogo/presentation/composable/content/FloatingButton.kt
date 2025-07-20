@@ -1,7 +1,6 @@
 package com.wheretogo.presentation.composable.content
 
 import androidx.annotation.DrawableRes
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -26,6 +25,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -52,19 +52,44 @@ import com.wheretogo.domain.model.map.Course
 import com.wheretogo.presentation.ExportMap
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.callMap
+import com.wheretogo.presentation.model.AdItem
+import com.wheretogo.presentation.theme.Gray100
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-@Preview
+@Preview(name="portrait", widthDp = 400, heightDp = 600)
 @Composable
-fun FloatingButtonPreview() {
+fun FloatingPortraitButtonPreview() {
     FloatingButtons(
-        modifier = Modifier
-            .width(300.dp)
-            .background(colorResource(R.color.gray_C7C7C7_80)),
-        Course(), true, true, true, true, true, true,
-        {}, {}, {}, {}, {}, {})
+        modifier = Modifier.background(Gray100),
+        Course(),
+        emptyList(),
+        isCommentVisible = true,
+        isCheckpointAddVisible = true,
+        isExportVisible = true,
+        isFoldVisible = true,
+        isInfoVisible = true,
+        isExportBackPlate = true,
+        {}, {}, {}, {}, {}, {}
+    )
+}
+
+@Preview(name="landscape", widthDp = 700, heightDp = 400)
+@Composable
+fun FloatingLandscapeButtonPreview() {
+    FloatingButtons(
+        modifier = Modifier.background(Gray100),
+        Course(),
+        emptyList(),
+        isCommentVisible = true,
+        isCheckpointAddVisible = true,
+        isExportVisible = true,
+        isFoldVisible = true,
+        isInfoVisible = true,
+        isExportBackPlate = true,
+        {}, {}, {}, {}, {}, {}
+    )
 }
 
 
@@ -72,6 +97,7 @@ fun FloatingButtonPreview() {
 fun FloatingButtons(
     modifier: Modifier = Modifier,
     course: Course,
+    adItemGroup:List<AdItem>,
     isCommentVisible: Boolean,
     isCheckpointAddVisible: Boolean,
     isExportVisible: Boolean,
@@ -92,15 +118,31 @@ fun FloatingButtons(
     ) {
         val context = LocalContext.current
         val buttonEndPadding = 12.dp
+        SlideAnimation(
+            modifier = Modifier
+                .fillMaxSize(),
+            visible = isExportBackPlate,
+            direction = AnimationDirection.CenterRight  
+        ) {
+            AdaptiveAd(modifier=Modifier.padding(
+                start = buttonEndPadding,
+                end = buttonEndPadding,
+                top = 10.dp,
+                bottom = buttonEndPadding + 10.dp
+
+            ), nativeAd = adItemGroup.firstOrNull()?.nativeAd)
+        }
+
         Column(
             horizontalAlignment = Alignment.End,
             verticalArrangement = Arrangement.spacedBy(if (isExportBackPlate) 0.dp else 10.dp),
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(bottom = buttonEndPadding)
         ) {
             SlideAnimation(
                 modifier = Modifier,
-                visible = isCommentVisible,
+                visible = isCommentVisible && !isExportBackPlate,
                 direction = AnimationDirection.RightCenter
             ) {
                 CircleButton(
@@ -113,7 +155,7 @@ fun FloatingButtons(
 
             SlideAnimation(
                 modifier = Modifier,
-                visible = isCheckpointAddVisible,
+                visible = isCheckpointAddVisible && !isExportBackPlate,
                 direction = AnimationDirection.RightCenter
             ) {
                 CircleButton(
@@ -128,7 +170,7 @@ fun FloatingButtons(
 
             SlideAnimation(
                 modifier = Modifier,
-                visible = isInfoVisible,
+                visible = isInfoVisible && !isExportBackPlate,
                 direction = AnimationDirection.RightCenter
             ) {
                 CircleButton(
@@ -147,7 +189,6 @@ fun FloatingButtons(
                 direction = AnimationDirection.RightCenter
             ) {
                 CirclePlateButton(
-                    modifier = Modifier.graphicsLayer(clip = false),
                     icon = R.drawable.ic_share,
                     isBackPlate = isExportBackPlate && isExportVisible,
                     buttonEndPadding = buttonEndPadding,
@@ -224,76 +265,95 @@ fun CirclePlateButton(
     onExportClick: () -> Unit,
 ) {
     var targetOffset by remember { mutableStateOf(0.dp) }
-    val animatedOffset by animateDpAsState(targetValue = targetOffset)
     val circleSize = 60.dp
     val squareSize = 52.dp
     val backPlateHeight = 80.dp
 
+    targetOffset = if (isBackPlate) (-13).dp else 0.dp
 
-    if (isBackPlate)
-        targetOffset = (-13).dp
-    else
-        targetOffset = 0.dp
+    var lastClickTime by remember { mutableLongStateOf(0L) }
+    val onIntervalClick: ()->Unit = {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastClickTime >= 300L) {
+            lastClickTime = currentTime
+            onExportClick()
+        }
+    }
 
-
-    Box {
+    Box(modifier = modifier) {
         if (isBackPlate) {
             //백플레이트
-            Backplate(backPlateHeight, buttonEndPadding, squareSize, circleSize)
+            Backplate(backPlateHeight, buttonEndPadding, squareSize, circleSize,
+                onButtonClick = onIntervalClick)
 
-            Row( // 사각형
-                modifier = Modifier
-                    .graphicsLayer(
-                        translationY = with(LocalDensity.current) { animatedOffset.toPx() },
-                        clip = false
-                    )
-            ) {
-                Row(
+            Column(modifier=Modifier) {
+                Row( // 사각형
                     modifier = Modifier
-                        .padding(horizontal = 15.dp),
-                    horizontalArrangement = Arrangement.spacedBy(15.dp)
+                        .graphicsLayer(
+                            translationY = with(LocalDensity.current) { (-15).dp.toPx() },
+                            clip = false
+                        )
                 ) {
-                    SquareScaleButton(
-                        modifier = Modifier.size(squareSize),
-                        icon = R.drawable.lg_k,
-                        caption = stringResource(R.string.k_way)
+                    Row(
+                        modifier = Modifier
+                            .padding(horizontal = 15.dp),
+                        horizontalArrangement = Arrangement.spacedBy(15.dp)
                     ) {
-                        onKaKaoClick(it)
-                    }
+                        SquareScaleButton(
+                            modifier = Modifier.size(squareSize),
+                            icon = R.drawable.lg_k,
+                            caption = stringResource(R.string.k_way)
+                        ) {
+                            onKaKaoClick(it)
+                        }
 
-                    SquareScaleButton(
-                        modifier = Modifier.size(squareSize),
-                        icon = R.drawable.lg_n,
-                        caption = stringResource(R.string.n_way)
-                    ) {
-                        onNaverClick(it)
-                    }
+                        SquareScaleButton(
+                            modifier = Modifier.size(squareSize),
+                            icon = R.drawable.lg_n,
+                            caption = stringResource(R.string.n_way)
+                        ) {
+                            onNaverClick(it)
+                        }
 
-                    SquareScaleButton(
-                        modifier = Modifier.size(squareSize),
-                        icon = R.drawable.lg_t,
-                        caption = stringResource(R.string.t_way)
-                    ) {
-                        onTClick(it)
-                    }
+                        SquareScaleButton(
+                            modifier = Modifier.size(squareSize),
+                            icon = R.drawable.lg_t,
+                            caption = stringResource(R.string.t_way)
+                        ) {
+                            onTClick(it)
+                        }
 
+                    }
+                    Spacer(modifier = Modifier.size(circleSize))
                 }
-
-                Spacer(modifier = Modifier.size(circleSize))
             }
-        }
-
-        Box( // 원형
-            modifier = modifier
-                .padding(end = buttonEndPadding)
-                .align(alignment = Alignment.CenterEnd)
-        ) {
+        } else {
             CircleButton(
-                icon = icon
-            ) {
-                onExportClick()
-            }
+                modifier=Modifier.padding(end = buttonEndPadding)
+                    .align(alignment = Alignment.CenterEnd),icon, onClick = onIntervalClick
+            )
         }
+    }
+}
+
+@Composable
+fun InfoText(modifier: Modifier = Modifier, text:String){
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.ic_info),
+            contentDescription = "Icon Description",
+            modifier = Modifier.size(12.dp),
+            alignment = Alignment.Center
+        )
+        Spacer(modifier = Modifier.width(2.dp))
+        Text(
+            text = text,
+            fontSize = 12.sp,
+            color = Color.Gray
+        )
     }
 }
 
@@ -354,7 +414,7 @@ fun SquareScaleButton(
 }
 
 @Composable
-fun Backplate(backPlateHeight: Dp, buttonEndPadding: Dp, squareSize: Dp, circleSize: Dp) {
+fun Backplate(backPlateHeight: Dp, buttonEndPadding: Dp, squareSize: Dp, circleSize: Dp, onButtonClick:()->Unit={}) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(40.dp))
@@ -365,7 +425,7 @@ fun Backplate(backPlateHeight: Dp, buttonEndPadding: Dp, squareSize: Dp, circleS
         Row {
             Row(
                 modifier = Modifier.padding(horizontal = 15.dp),
-                horizontalArrangement = Arrangement.spacedBy(15.dp)
+                horizontalArrangement = Arrangement.spacedBy(15.dp),
             ) {
                 Spacer(modifier = Modifier.size(squareSize))
                 Spacer(modifier = Modifier.size(squareSize))
@@ -373,25 +433,8 @@ fun Backplate(backPlateHeight: Dp, buttonEndPadding: Dp, squareSize: Dp, circleS
             }
             Spacer(modifier = Modifier.size(circleSize))
         }
-        Row(
-            modifier = Modifier
-                .padding(start = 30.dp)
-                .align(alignment = Alignment.BottomStart),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_info),
-                contentDescription = "Icon Description",
-                modifier = Modifier.size(12.dp),
-                alignment = Alignment.Center
-            )
-            Spacer(modifier = Modifier.width(2.dp))
-            Text(
-                modifier = Modifier,
-                text = stringResource(R.string.exclude_my_location_on_long_press),
-                fontSize = 12.sp,
-                color = Color.Gray
-            )
-        }
+        CircleButton(modifier = Modifier.align(alignment = Alignment.CenterEnd), icon = R.drawable.ic_share, onClick = onButtonClick)
+        InfoText(Modifier.padding(start = 30.dp).align(alignment = Alignment.BottomStart),
+            text = stringResource(R.string.exclude_my_location_on_long_press))
     }
 }

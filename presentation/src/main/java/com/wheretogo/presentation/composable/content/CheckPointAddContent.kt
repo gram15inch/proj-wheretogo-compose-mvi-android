@@ -199,10 +199,11 @@ fun CheckpointAddBottomSheetPreview() {
         Box(modifier = Modifier.width(400.dp)) {
             BottomSheet(
                 modifier = Modifier.height(400.dp),
-                400,
+                initHeight = 400,
+                bottomSpace = 0.dp,
                 isVisible = true,
-                {},
-                {},
+                onStateChange = {},
+                onHeightChange = {}
             ) {
                 if (state.isVisible) {
                     CheckPointAddContent(

@@ -33,6 +33,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -54,7 +55,8 @@ class CourseAddViewModel @Inject constructor(
 
                 //서치바
                 is CourseAddIntent.SearchBarItemClick -> searchBarItemClick(intent.searchBarItem)
-                is CourseAddIntent.SearchBarClick -> searchBarClick(intent.isExpend)
+                is CourseAddIntent.SearchBarClick -> searchBarClick()
+                is CourseAddIntent.SearchBarClose -> searchBarClose()
                 is CourseAddIntent.SubmitClick -> submitClick(intent.submitVaule)
 
                 //지도
@@ -97,20 +99,23 @@ class CourseAddViewModel @Inject constructor(
         }
     }
 
-    private fun searchBarClick(isExpend: Boolean) {
-        _courseAddScreenState.value = _courseAddScreenState.value.run {
-            if (!isExpend) {
-                searchBarInit()
-            } else {
-                this
-            }
+    private fun searchBarClick() {
+        _courseAddScreenState.update {
+            it.copy(
+                searchBarState = it.searchBarState.copy(isActive = true, searchBarItemGroup = emptyList()),
+                bottomSheetState = it.bottomSheetState.copy(isBottomSheetDown = true)
+            )
         }
+    }
 
+    private fun searchBarClose() {
+        _courseAddScreenState.update { it.searchBarInit() }
     }
 
     private fun CourseAddScreenState.searchBarInit():CourseAddScreenState{
         return copy(
             searchBarState = searchBarState.copy(
+                isActive = false,
                 isLoading = false,
                 isEmptyVisible = false,
                 searchBarItemGroup = emptyList()

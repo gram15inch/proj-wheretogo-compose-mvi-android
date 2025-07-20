@@ -10,3 +10,7 @@
 
 ### :iphone: 사진
 <img width="360" alt="Android Small - 1@2x" src="https://github.com/user-attachments/assets/75c0d819-8a68-4392-88e1-ea3cb19855fd">
+
+## License
+This project is licensed under the Apache License 2.0.  
+See the [LICENSE](LICENSE.txt) file for details.

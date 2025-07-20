@@ -54,6 +54,7 @@ sealed class AppError : Exception() {
     data class MapNotSupportExcludeLocation(val msg: String = "") : AppError()
     data class CredentialError(val msg:String = "") : AppError()
     data class Ignore(val msg:String = "") : AppError()
+    data class AdLoadError(val msg:String = "") : AppError()
     data class UnexpectedException(val throwable: Throwable): AppError()
 }
 
@@ -68,6 +69,12 @@ sealed class AppScreen {
     data object Drive : AppScreen()
     data object CourseAdd : AppScreen()
     data object Setting : AppScreen()
+}
+
+enum class AdMinSize(val widthDp:Int,val heightDp:Int){
+    INVISIBLE(0,0),
+    Row(600,320),
+    Card(300,600)
 }
 
 sealed class AppPermission(val name: String) {
@@ -89,6 +96,12 @@ enum class MarkerType{
 enum class PathType{
     PARTIAL, FULL
 }
+
+enum class AppLifecycle{
+    onLaunch, onResume, onPause, onDispose, onDestory
+}
+
+enum class AdLifecycle{ onResume, onPause }
 
 enum class SheetState{
     PartiallyExpand, PartiallyExpanded, Expand, Expanded
@@ -167,8 +180,7 @@ fun Throwable.toAppError():AppError{
         is GetCredentialCustomException -> AppError.CredentialError()
         is NoCredentialException -> AppError.CredentialError()
         else -> {
-            if(!BuildConfig.DEBUG)
-                FirebaseCrashlytics.getInstance().recordException(this)
+            FirebaseCrashlytics.getInstance().recordException(this)
             AppError.UnexpectedException(this)
         }
     }

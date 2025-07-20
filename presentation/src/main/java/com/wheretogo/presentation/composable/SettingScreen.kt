@@ -47,16 +47,55 @@ import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePrivate
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.SettingInfoType
+import com.wheretogo.presentation.composable.content.AdaptiveAd
 import com.wheretogo.presentation.composable.content.DelayLottieAnimation
+import com.wheretogo.presentation.composable.content.LifecycleDisposer
 import com.wheretogo.presentation.feature.openActivity
 import com.wheretogo.presentation.feature.openWeb
 import com.wheretogo.presentation.intent.SettingIntent
+import com.wheretogo.presentation.model.AdItem
 import com.wheretogo.presentation.parseLogoImgRes
 import com.wheretogo.presentation.state.SettingScreenState
 import com.wheretogo.presentation.theme.White50
 import com.wheretogo.presentation.theme.hancomMalangFontFamily
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 import com.wheretogo.presentation.viewmodel.SettingViewModel
+
+@Preview("landscape", widthDp = 800, heightDp = 380)
+@Composable
+fun SettingContentLandscapePreview() {
+    SettingContent(
+        settingState = SettingScreenState().copy(
+            isProfile = true,
+            profile = Profile(
+                name = "어디갈까",
+                private = ProfilePrivate(
+                    mail = "wheretogohelp@gmail.com"
+                )
+            ),
+            isLoading = false,
+            isDialog = false
+        )
+    )
+}
+
+@Preview(name = "portrait", widthDp = 380, heightDp = 800)
+@Composable
+fun SettingContentPortraitPreview() {
+    SettingContent(
+        settingState = SettingScreenState().copy(
+            isProfile = true,
+            profile = Profile(
+                name = "어디갈까",
+                private = ProfilePrivate(
+                    mail = "wheretogohelp@gmail.com"
+                )
+            ),
+            isLoading = false,
+            isDialog = false
+        )
+    )
+}
 
 @Composable
 fun SettingScreen(navController: NavController, viewModel: SettingViewModel = hiltViewModel()) {
@@ -87,28 +126,10 @@ fun SettingScreen(navController: NavController, viewModel: SettingViewModel = hi
             isLoading = state.isLoading,
             onDialogAnswer = { viewModel.handleIntent(SettingIntent.DialogAnswer(it)) },
         )
-    //todo replace 3
-}
-
-
-@Preview
-@Composable
-fun SettingContentPreview() { //todo replace 4
-    SettingContent(
-        settingState = SettingScreenState().copy(
-            isProfile = true,
-            profile = Profile(
-                name = "어디갈까",
-                private = ProfilePrivate(
-                    mail = "wheretogohelp@gmail.com"
-                )
-            ),
-            isLoading = false,
-            isDialog = false
-        )
+    LifecycleDisposer(
+        onEventChange = { viewModel.handleIntent(SettingIntent.LifecycleChange(it)) }
     )
 }
-
 
 @Composable
 fun SettingTopBar(navController: NavController) {
@@ -158,11 +179,11 @@ fun SettingContent(
             onUserNameChangeButtonClick = onUserNameChangeButtonClick,
             onLogoutButtonClick = onLogoutButtonClick
         )
-        SectionDivider() // todo replace 1
+        AdSection(settingState.adItemGroup)
         InfoSection(onWebInfoButtonClick)
-        SectionDivider()
-        if (settingState.isProfile)
+        if (settingState.isProfile) {
             UserDeleteSection(onUserDeleteButtonClick)
+        }
     }
 }
 
@@ -202,7 +223,7 @@ fun ProfileSection(
                             )
                             Image(
                                 modifier = Modifier
-                                    .size(0.dp) //todo 추후 수정 추가시 복원
+                                    .size(0.dp) //todo 수정 기능 추가
                                     .padding(start = 3.dp),
                                 painter = painterResource(R.drawable.ic_edit),
                                 contentDescription = ""
@@ -273,7 +294,19 @@ fun ProfileSection(
     }
 }
 
-// todo replace 2
+@Composable
+fun AdSection(adItemGroup: List<AdItem> = emptyList()) {
+    val nativeAd = adItemGroup.firstOrNull()?.nativeAd
+
+    Box(
+        modifier = Modifier
+            .padding(12.dp)
+            .fillMaxWidth()) {
+        AdaptiveAd(elevation = 4.dp, nativeAd = nativeAd)
+    }
+
+}
+
 
 @Composable
 fun InfoSection(
@@ -329,7 +362,8 @@ fun InfoSection(
 
 @Composable
 fun UserDeleteSection(onUserDeleteButtonClick: () -> Unit = {}) {
-    Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+    Column (modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+        SectionDivider()
         Box(
             modifier = Modifier
                 .padding(5.dp)

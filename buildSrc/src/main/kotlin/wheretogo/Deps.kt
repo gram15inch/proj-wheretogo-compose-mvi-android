@@ -121,6 +121,7 @@ object Firebase{
 object Google{
     const val IDENTITY_GOOGLEID = "com.google.android.libraries.identity.googleid:googleid:1.1.1"
     const val PLAY_SERVICES_LOCATION = "com.google.android.gms:play-services-location:21.3.0"
+    const val PLAY_SERVICES_ADS = "com.google.android.gms:play-services-ads:24.4.0"
 }
 
 object Libraries {
@@ -133,7 +134,7 @@ object Libraries {
     const val NAVER_MAPS = "com.naver.maps:map-sdk:3.19.1"
     const val KOMORAN = "com.github.shin285:KOMORAN:3.3.9"
 
-    const val SHIMMER_COMPOSE = "com.valentinilk.shimmer:compose-shimmer:1.3.1"
+    const val SHIMMER_COMPOSE = "com.valentinilk.shimmer:compose-shimmer:1.3.3"
     const val LANDSCAPIST_GLIDE = "com.github.skydoves:landscapist-glide:2.4.0"
     const val FIREBASE_GEOFIRE = "com.firebase:geofire-android:${Versions.FILREBASE_GEOFIRE}"
     const val FIREBASE_GEOFIRE_COMMON = "com.firebase:geofire-android-common:${Versions.FILREBASE_GEOFIRE}"

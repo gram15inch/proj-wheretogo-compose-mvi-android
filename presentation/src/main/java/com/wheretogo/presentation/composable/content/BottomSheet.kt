@@ -3,13 +3,10 @@ package com.wheretogo.presentation.composable.content
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -42,6 +39,8 @@ import com.wheretogo.presentation.SheetState
 fun BottomSheet(
     modifier: Modifier = Modifier,
     initHeight: Int = 0,
+    bottomSpace: Dp = 0.dp,
+    isSpaceVisibleWhenClose: Boolean = false,
     isVisible: Boolean = false,
     onStateChange: (SheetState) -> Unit,
     onHeightChange: (Dp) -> Unit,
@@ -92,11 +91,11 @@ fun BottomSheet(
         }
     }
 
+    val initHeightWithSpace = initHeight.dp + if(isSpaceVisibleWhenClose) bottomSpace else 0.dp
+
     Box(
         modifier = modifier
-            .statusBarsPadding()
     ) {
-        val naviBar = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
         BottomSheetScaffold(
             modifier = Modifier,
             scaffoldState = scaffoldState,
@@ -106,7 +105,7 @@ fun BottomSheet(
                     modifier = Modifier
                         .onGloballyPositioned { coordinates ->
                             val heightPx = coordinates.size.height
-                            val dp = if (isVisible) with(density) { heightPx.toDp() - naviBar + 20.dp } else (initHeight.dp - naviBar).run { if(this<0.dp) 0.dp else this }
+                            val dp = if (isVisible) with(density) { heightPx.toDp() + 20.dp } else initHeightWithSpace.run { if(this<0.dp) 0.dp else this }
                             if (dp != latestDp) {
                                 onHeightChange(dp)
                                 latestDp = dp
@@ -119,13 +118,14 @@ fun BottomSheet(
                             .verticalScroll(scrollState)
                     ) {
                         content()
+                        Spacer(Modifier.height(bottomSpace))
                     }
                 }
             },
             sheetDragHandle = {
                 DragHandle()
             },
-            sheetPeekHeight = initHeight.dp,
+            sheetPeekHeight = initHeightWithSpace,
             content = {}
         )
     }

@@ -36,6 +36,8 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        manifestPlaceholders["adsMobAppId"] = getLocalProperties("adsMobAppId")
         manifestPlaceholders["naverMapClientId"] = getLocalProperties("naverMapClientId")
     }
     signingConfigs {

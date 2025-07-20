@@ -26,6 +26,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -65,6 +66,7 @@ import com.wheretogo.presentation.composable.content.DriveListContent
 import com.wheretogo.presentation.composable.content.FadeAnimation
 import com.wheretogo.presentation.composable.content.FloatingButtons
 import com.wheretogo.presentation.composable.content.InfoContent
+import com.wheretogo.presentation.composable.content.LifecycleDisposer
 import com.wheretogo.presentation.composable.content.MapPopup
 import com.wheretogo.presentation.composable.content.NaverMap
 import com.wheretogo.presentation.composable.content.SearchBar
@@ -94,6 +96,9 @@ fun DriveScreen(
 ) {
     val driveState by viewModel.driveScreenState.collectAsState()
 
+    LifecycleDisposer(
+        onEventChange = { viewModel.handleIntent(DriveScreenIntent.LifecycleChange(it)) }
+    )
 
     BackHandler {
         navController.navigateUp()
@@ -110,13 +115,13 @@ fun DriveScreen(
             onCheckPointMarkerClick = { handleIntent(DriveScreenIntent.CheckPointMarkerClick(it)) },
 
             //Blur
-            onBlurClick = { handleIntent(DriveScreenIntent.DismissPopup) },
+            onBlurClick = { handleIntent(DriveScreenIntent.BlurClick) },
 
             //Searchbar
             onSearchSubmit = { handleIntent(DriveScreenIntent.SearchSubmit(it)) },
-            onSearchBarClick = { handleIntent(DriveScreenIntent.SearchBarClick(it)) },
+            onSearchBarClick = { handleIntent(DriveScreenIntent.SearchBarClick) },
             onSearchBarItemClick = { handleIntent(DriveScreenIntent.AddressItemClick(it)) },
-            onSearchBarClose = { handleIntent(DriveScreenIntent.SearchBarClick(false)) },
+            onSearchBarClose = { handleIntent(DriveScreenIntent.SearchBarClose) },
 
             //DriveListContent
             onListItemClick = { handleIntent(DriveScreenIntent.DriveListItemClick(it)) },
@@ -178,7 +183,7 @@ fun DriveContent(
 
     //SearchBar
     onSearchBarItemClick: (SearchBarItem) -> Unit = {},
-    onSearchBarClick: (Boolean) -> Unit = {},
+    onSearchBarClick: () -> Unit = {},
     onSearchSubmit: (String) -> Unit = {},
     onSearchBarClose: ()-> Unit = {},
 
@@ -235,7 +240,9 @@ fun DriveContent(
     Scaffold(
         contentWindowInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout),
         content = { systemBars->
-
+            val systemBarBottomPadding by remember {
+                derivedStateOf { systemBars.calculateBottomPadding() }
+            }
             NaverMap(
                 modifier = Modifier
                     .fillMaxSize(),
@@ -249,12 +256,18 @@ fun DriveContent(
                 onCourseMarkerClick = onCourseMarkerClick,
                 onCheckPointMarkerClick = onCheckPointMarkerClick,
                 onOverlayRenderComplete = {},
-                contentPadding = ContentPadding(bottom = mapBottomPadding + systemBars.calculateBottomPadding())
+                contentPadding = ContentPadding(
+                    start = systemBars.calculateStartPadding(LocalLayoutDirection.current),
+                    end = systemBars.calculateEndPadding(LocalLayoutDirection.current),
+                    top = systemBars.calculateTopPadding(),
+                    bottom = maxOf(mapBottomPadding, systemBarBottomPadding)
+                )
             )
 
 
             FadeAnimation(modifier = Modifier.zIndex(1f),
-                visible = state.popUpState.isVisible || state.floatingButtonState.isBackPlateVisible,) {
+                visible = state.popUpState.isVisible || state.floatingButtonState.isBackPlateVisible,
+                short = state.floatingButtonState.isBackPlateVisible) {
                 BlurEffect(onClick = onBlurClick)
             }
 
@@ -299,12 +312,16 @@ fun DriveContent(
                             ) {
                                 SearchBar(
                                     modifier = Modifier,
+                                    isActive = isActive,
+                                    isAdVisible = isAdVisible,
                                     isLoading = isLoading,
                                     isEmptyVisible = isEmptyVisible,
                                     searchBarItemGroup = searchBarItemGroup,
+                                    adItemGroup = adItemGroup,
                                     onSearchSubmit = onSearchSubmit,
                                     onSearchBarClick = onSearchBarClick,
                                     onSearchBarItemClick = onSearchBarItemClick,
+                                    onSearchBarClose = onSearchBarClose
                                 )
                             }
                         }
@@ -312,7 +329,7 @@ fun DriveContent(
 
                     FadeAnimation(
                         modifier = Modifier
-                            .padding(bottom = systemBars.calculateBottomPadding())
+                            .padding(bottom = systemBarBottomPadding)
                             .align(alignment = Alignment.BottomEnd),
                         visible = state.listState.isVisible
                     ) {
@@ -329,7 +346,7 @@ fun DriveContent(
 
                     FadeAnimation(
                         modifier = Modifier
-                            .padding(bottom = systemBars.calculateBottomPadding())
+                            .padding(bottom = systemBarBottomPadding)
                             .align(alignment = Alignment.BottomStart),
                         visible = state.popUpState.isVisible
                     ) {
@@ -351,40 +368,39 @@ fun DriveContent(
                             onCommentTypePress = onCommentTypePress
                         )
                     }
-                    val isPreview = LocalInspectionMode.current
+
                     BottomSheet(
                         modifier = Modifier
                             .zIndex(3f),
-                        initHeight = state.bottomSheetState.initHeight,
                         isVisible = state.bottomSheetState.isVisible,
+                        initHeight = state.bottomSheetState.initHeight,
+                        isSpaceVisibleWhenClose = false,
+                        bottomSpace = systemBarBottomPadding,
                         onHeightChange = {
                             bottomSheetHeight = it
                             onBottomSheetHeightChange(it)
                         },
                         onStateChange = onBottomSheetStateChange
                     ) {
-                        Box(modifier = Modifier.padding(bottom = systemBars.calculateBottomPadding()),
-                        ){
-                            when (state.bottomSheetState.content) {
-                                DriveBottomSheetContent.CHECKPOINT_ADD -> {
-                                    CheckPointAddContent(
-                                        state = state.bottomSheetState.checkPointAddState,
-                                        onSubmitClick = onCheckPointAddSubmitClick,
-                                        onSliderChange = onSliderChange,
-                                        onImageChange = onImageChange
-                                    )
-                                }
-
-                                DriveBottomSheetContent.INFO -> {
-                                    InfoContent(
-                                        state = state.bottomSheetState.infoState,
-                                        onRemoveClick = onInfoRemoveClick,
-                                        onReportClick = onInfoReportClick
-                                    )
-                                }
-
-                                else -> {}
+                        when (state.bottomSheetState.content) {
+                            DriveBottomSheetContent.CHECKPOINT_ADD -> {
+                                CheckPointAddContent(
+                                    state = state.bottomSheetState.checkPointAddState,
+                                    onSubmitClick = onCheckPointAddSubmitClick,
+                                    onSliderChange = onSliderChange,
+                                    onImageChange = onImageChange
+                                )
                             }
+
+                            DriveBottomSheetContent.INFO -> {
+                                InfoContent(
+                                    state = state.bottomSheetState.infoState,
+                                    onRemoveClick = onInfoRemoveClick,
+                                    onReportClick = onInfoReportClick
+                                )
+                            }
+
+                            else -> {}
                         }
                     }
 
@@ -394,6 +410,7 @@ fun DriveContent(
                             .padding(bottom = systemBars.calculateBottomPadding())
                             .fillMaxSize(),
                         course = state.listState.clickItem.course,
+                        adItemGroup = state.floatingButtonState.adItemGroup,
                         isCommentVisible = state.floatingButtonState.isCommentVisible && isNotOtherVisible,
                         isCheckpointAddVisible = state.floatingButtonState.isCheckpointAddVisible && isNotOtherVisible,
                         isInfoVisible = state.floatingButtonState.isInfoVisible && isNotOtherVisible,
@@ -459,7 +476,7 @@ fun ExtendArea(
     moveContent: @Composable () -> Unit
 ) {
     if (isExtend) {
-        Row() {
+        Row {
             holdContent()
             moveContent()
         }
@@ -493,6 +510,7 @@ fun DefaultContentPreview(){
                     listItemGroup = newListItemGroup
                 ),
                 searchBarState = searchBarState.copy(
+                    isActive = true,
                     searchBarItemGroup = searchBarItemGroup
                 ),
             )
@@ -506,12 +524,12 @@ fun CheckpointAddContentPreview(){
     DriveContent(
         state = DriveScreenState().run {
             copy(
-                searchBarState.copy(
+                searchBarState = searchBarState.copy(
                     isVisible = false
                 ),
                 bottomSheetState = bottomSheetState.copy(
-                    infoState = InfoState(isRemoveButton = true),
                     initHeight = 400,
+                    infoState = InfoState(isRemoveButton = true),
                     content = DriveBottomSheetContent.CHECKPOINT_ADD,
                     checkPointAddState = CheckPointAddState(
                         isLoading = false,

@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.PlatformTextStyle
@@ -403,6 +404,7 @@ fun PopUpImage(
     onPopupImageClick: () -> Unit,
     onPopupBlurClick: () -> Unit
 ) {
+    val isPreview = LocalInspectionMode.current
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
@@ -416,7 +418,7 @@ fun PopUpImage(
                         onPopupImageClick()
                     }
                     .fillMaxSize(),
-                imageModel = { uri },
+                imageModel = { if(isPreview) R.drawable.lg_app else uri },
                 imageOptions = ImageOptions(contentScale = ContentScale.Crop)
             )
         }

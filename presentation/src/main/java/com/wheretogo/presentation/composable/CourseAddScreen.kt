@@ -1,6 +1,5 @@
 package com.wheretogo.presentation.composable
 
-import android.content.Context
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -13,18 +12,17 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -37,6 +35,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,12 +49,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -81,7 +80,6 @@ import com.wheretogo.presentation.toStrRes
 import com.wheretogo.presentation.viewmodel.CourseAddViewModel
 import kotlinx.coroutines.launch
 import kotlin.math.max
-import kotlin.math.min
 
 @Composable
 fun CourseAddScreen(
@@ -90,24 +88,100 @@ fun CourseAddScreen(
     val state by viewModel.courseAddScreenState.collectAsState()
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    var bottomSheetHeight by remember { mutableStateOf(0.dp) }
-    val mapBottomPadding by animateDpAsState(
-        targetValue = bottomSheetHeight,
-        animationSpec = tween(durationMillis = 300)
-    )
 
     Scaffold(
         contentWindowInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout),
-        content = { naviBar->
-            Box(
+        content = { systemBars->
+            var bottomSheetHeight by remember { mutableStateOf(0.dp) }
+            val mapBottomPadding by animateDpAsState(
+                targetValue = bottomSheetHeight,
+                animationSpec = tween(durationMillis = 300)
+            )
+            val systemBarBottomPadding by remember {
+                derivedStateOf { systemBars.calculateBottomPadding() }
+            }
+            NaverMap(
+                modifier = Modifier
+                    .zIndex(0f)
+                    .fillMaxSize()
+                    .background(color = Color.Green),
+                mapOverlayGroup = state.overlayGroup,
+                onMapAsync = { map ->
+                    coroutineScope.launch { map.setCurrentLocation(context) }
+                },
+                cameraState = state.cameraState,
+                onCameraUpdate = { viewModel.handleIntent(CourseAddIntent.CameraUpdated(it)) },
+                onMapClickListener = { viewModel.handleIntent(CourseAddIntent.MapClick(it)) },
+                onCheckPointMarkerClick = { viewModel.handleIntent(CourseAddIntent.WaypointMarkerClick(it)) },
+                contentPadding = ContentPadding(
+                    start = systemBars.calculateStartPadding(LocalLayoutDirection.current),
+                    end = systemBars.calculateEndPadding(LocalLayoutDirection.current),
+                    top = systemBars.calculateTopPadding(),
+                    bottom = mapBottomPadding
+                )
+            )
+
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .navigationBarsPadding()
+                    .padding(
+                        start = systemBars.calculateStartPadding(LocalLayoutDirection.current),
+                        end = systemBars.calculateEndPadding(LocalLayoutDirection.current),
+                        top = systemBars.calculateTopPadding()
+                    )
             ) {
+                SearchBar(
+                    modifier = Modifier
+                        .zIndex(1f),
+                    isActive = state.searchBarState.isActive,
+                    isAdVisible = state.searchBarState.isAdVisible,
+                    isLoading = state.searchBarState.isLoading,
+                    isEmptyVisible = state.searchBarState.isEmptyVisible,
+                    searchBarItemGroup = state.searchBarState.searchBarItemGroup ,
+                    onSearchSubmit = { viewModel.handleIntent(CourseAddIntent.SubmitClick(it)) },
+                    onSearchBarClick = { viewModel.handleIntent(CourseAddIntent.SearchBarClick) },
+                    onSearchBarClose = { viewModel.handleIntent(CourseAddIntent.SearchBarClose) },
+                    onSearchBarItemClick = { viewModel.handleIntent(CourseAddIntent.SearchBarItemClick(it)) }
+                )
+
+                BottomSheet(
+                    modifier = Modifier,
+                    initHeight = 80,
+                    bottomSpace = systemBarBottomPadding,
+                    isVisible = !state.bottomSheetState.isBottomSheetDown,
+                    isSpaceVisibleWhenClose = true,
+                    onHeightChange = { dp ->
+                        bottomSheetHeight = dp
+                        viewModel.handleIntent(CourseAddIntent.ContentPaddingChanged(bottomSheetHeight.value.toInt()))
+                    },
+                    onStateChange = {
+                        viewModel.handleIntent(CourseAddIntent.SheetStateChange(it))
+                    }
+                ) {
+                    CourseAddContent(
+                        state = state.bottomSheetState.courseAddState,
+                        onRouteCreateClick = { viewModel.handleIntent(CourseAddIntent.RouteCreateClick) },
+                        onCategorySelect = { viewModel.handleIntent(CourseAddIntent.RouteCategorySelect(it)) },
+                        onCommendClick = { viewModel.handleIntent(CourseAddIntent.CommendClick) },
+                        onBackClick = { viewModel.handleIntent(CourseAddIntent.DetailBackClick) },
+                        onNameEditValueChange = { viewModel.handleIntent(CourseAddIntent.NameEditValueChange(it)) },
+                    )
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    start = systemBars.calculateStartPadding(LocalLayoutDirection.current),
+                    end = systemBars.calculateEndPadding(LocalLayoutDirection.current),
+                    top = systemBars.calculateTopPadding(),
+                    bottom = mapBottomPadding
+                )
+            ){
                 if (BuildConfig.TEST_UI) {
                     Box(
                         modifier = Modifier
-                            .systemBarsPadding()
                             .fillMaxWidth()
                             .zIndex(1f)
                     ) {
@@ -118,13 +192,11 @@ fun CourseAddScreen(
                         )
                     }
                 }
-
                 if (state.isFloatMarker)
                     Box(// 중앙 마커
                         modifier = Modifier
                             .fillMaxSize()
-                            .zIndex(1f)
-                            .padding(bottom = mapBottomPadding + naviBar.calculateBottomPadding()),
+                            .zIndex(1f),
                         contentAlignment = Alignment.Center
                     ) {
                         Image(
@@ -136,79 +208,18 @@ fun CourseAddScreen(
                         )
                     }
 
-                SearchBar(
-                    modifier = Modifier
-                        .zIndex(1f)
-                        .statusBarsPadding()
-                        .padding(top = 10.dp, end = 10.dp)
-                        .align(alignment = Alignment.TopEnd),
-                    isLoading = state.searchBarState.isLoading,
-                    isEmptyVisible = state.searchBarState.isEmptyVisible,
-                    searchBarItemGroup = state.searchBarState.searchBarItemGroup ,
-                    onSearchSubmit = { viewModel.handleIntent(CourseAddIntent.SubmitClick(it)) },
-                    onSearchBarClick = { viewModel.handleIntent(CourseAddIntent.SearchBarClick(it)) },
-                    onSearchBarItemClick = { viewModel.handleIntent(CourseAddIntent.SearchBarItemClick(it)) }
-                )
-                NaverMap(
-                    modifier = Modifier
-                        .zIndex(0f)
-                        .fillMaxSize()
-                        .height(300.dp)
-                        .background(color = Color.Green),
-                    mapOverlayGroup = state.overlayGroup,
-                    onMapAsync = { map ->
-                        coroutineScope.launch { map.setCurrentLocation(context) }
-                    },
-                    cameraState = state.cameraState,
-                    onCameraUpdate = { viewModel.handleIntent(CourseAddIntent.CameraUpdated(it)) },
-                    onMapClickListener = { viewModel.handleIntent(CourseAddIntent.MapClick(it)) },
-                    onCheckPointMarkerClick = { viewModel.handleIntent(CourseAddIntent.WaypointMarkerClick(it)) },
-                    contentPadding = ContentPadding(bottom = mapBottomPadding + naviBar.calculateBottomPadding())
-                )
-            }
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .statusBarsPadding()
-                    .navigationBarsPadding()
-            ) {
-                Box {
-                    if (state.isFloatingButton) {
-                        FloatingButtonGroup(
-                            modifier = Modifier
-                                .align(Alignment.BottomEnd)
-                                .padding(bottom = mapBottomPadding + naviBar.calculateBottomPadding()),
-                            onMarkerMoveClick = {
-                                viewModel.handleIntent(CourseAddIntent.MarkerMoveFloatingClick)
-                            },
-                            onMarkerRemoveClick = {
-                                viewModel.handleIntent(CourseAddIntent.MarkerRemoveFloatingClick)
-                            }
-                        )
-                    }
-                    BottomSheet(
-                        modifier = Modifier,
-                        initHeight = 80,
-                        isVisible = !state.bottomSheetState.isBottomSheetDown,
-                        onHeightChange = { dp ->
-                            bottomSheetHeight = dp
-                            viewModel.handleIntent(CourseAddIntent.ContentPaddingChanged(dp.value.toInt()))
+
+                if (state.isFloatingButton) {
+                    FloatingButtonGroup(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd),
+                        onMarkerMoveClick = {
+                            viewModel.handleIntent(CourseAddIntent.MarkerMoveFloatingClick)
                         },
-                        onStateChange = {
-                            viewModel.handleIntent(CourseAddIntent.SheetStateChange(it))
+                        onMarkerRemoveClick = {
+                            viewModel.handleIntent(CourseAddIntent.MarkerRemoveFloatingClick)
                         }
-                    ) {
-                        CourseAddContent(
-                            state = state.bottomSheetState.courseAddState,
-                            onRouteCreateClick = { viewModel.handleIntent(CourseAddIntent.RouteCreateClick) },
-                            onCategorySelect = { viewModel.handleIntent(CourseAddIntent.RouteCategorySelect(it)) },
-
-                            onCommendClick = { viewModel.handleIntent(CourseAddIntent.CommendClick) },
-                            onBackClick = { viewModel.handleIntent(CourseAddIntent.DetailBackClick) },
-                            onNameEditValueChange = { viewModel.handleIntent(CourseAddIntent.NameEditValueChange(it)) },
-                        )
-
-                    }
+                    )
                 }
             }
         }
@@ -222,10 +233,11 @@ fun CourseAddScreen(
 fun CourseAddScreenPreview() {
     BottomSheet(
         modifier = Modifier.height(400.dp),
-        400,
-        true,
-        {},
-        {}
+        initHeight = 400,
+        bottomSpace = 0.dp,
+        isVisible = true,
+        onStateChange = {},
+        onHeightChange = {}
     ) {
         CourseAddContent(
             CourseAddScreenState.CourseAddState(
@@ -291,43 +303,45 @@ fun CourseAddContent(
     onNameEditValueChange: (String) -> Unit,
     onBackClick: () -> Unit,
 ) {
-    Box(modifier = Modifier.heightIn(min=320.dp)) {
-        SlideAnimation(
-            visible = !state.isTwoStep,
-            direction = AnimationDirection.CenterUp
-        ) {
-            RouteWaypointContent(
-                modifier = Modifier
-                    .padding(top = 15.dp, start = 15.dp, end = 15.dp, bottom = 5.dp)
-                    .fillMaxWidth(),
-                routeName = state.courseName,
-                duration = state.routeState.duration,
-                waypointItemStateGroup = state.routeState.waypointItemStateGroup,
-                onRouteCreateClick = onRouteCreateClick,
-                onNameEditValueChange = onNameEditValueChange,
-            )
-        }
+    Column {
+        Box(modifier = Modifier.heightIn(min=320.dp)) {
+            SlideAnimation(
+                visible = !state.isTwoStep,
+                direction = AnimationDirection.CenterUp
+            ) {
+                RouteWaypointContent(
+                    modifier = Modifier
+                        .padding(top = 15.dp, start = 15.dp, end = 15.dp, bottom = 5.dp)
+                        .fillMaxWidth(),
+                    routeName = state.courseName,
+                    duration = state.routeState.duration,
+                    waypointItemStateGroup = state.routeState.waypointItemStateGroup,
+                    onRouteCreateClick = onRouteCreateClick,
+                    onNameEditValueChange = onNameEditValueChange,
+                )
+            }
 
-        SlideAnimation(
-            visible = state.isTwoStep,
-            direction = AnimationDirection.CenterDown
-        ) {
-            RouteDetailContent(
-                modifier = Modifier
-                    .padding(15.dp),
-                selectedItemGroup = state.selectedCategoryCodeGroup,
-                onCategorySelect = onCategorySelect,
-                onBackClick = onBackClick
-            )
+            SlideAnimation(
+                visible = state.isTwoStep,
+                direction = AnimationDirection.CenterDown
+            ) {
+                RouteDetailContent(
+                    modifier = Modifier
+                        .padding(15.dp),
+                    selectedItemGroup = state.selectedCategoryCodeGroup,
+                    onCategorySelect = onCategorySelect,
+                    onBackClick = onBackClick
+                )
+            }
         }
+        CommendButton(
+            modifier = Modifier.height(60.dp),
+            isDetailContent = state.isTwoStep,
+            isDone = state.isNextStepButtonActive,
+            isLoading = state.isLoading,
+            onCommendClick = onCommendClick
+        )
     }
-    CommendButton(
-        modifier = Modifier.height(60.dp),
-        isDetailContent = state.isTwoStep,
-        isDone = state.isNextStepButtonActive,
-        isLoading = state.isLoading,
-        onCommendClick = onCommendClick
-    )
 }
 
 @Composable
@@ -625,18 +639,4 @@ fun AddressItem(modifier: Modifier, item: CourseAddScreenState.RouteWaypointItem
             )
         }
     }
-}
-
-fun Context.getAddPopUpWidthDp(): Dp {
-    val width = resources.displayMetrics.run {
-        widthPixels / density
-    }
-
-
-    val newWidth = if (width >= 600) {
-        min(350f, width / 2)
-    } else {
-        400f
-    }
-    return newWidth.dp
 }

@@ -2,6 +2,7 @@ package com.wheretogo.presentation.intent
 
 import android.net.Uri
 import androidx.compose.ui.text.input.TextFieldValue
+import com.wheretogo.presentation.AppLifecycle
 import com.wheretogo.presentation.CommentType
 import com.wheretogo.presentation.SheetState
 import com.wheretogo.presentation.model.MapOverlay
@@ -16,7 +17,8 @@ sealed class DriveScreenIntent {
 
     //서치바
     data class AddressItemClick(val searchBarItem: SearchBarItem) : DriveScreenIntent()
-    data class SearchBarClick(val isBar:Boolean) : DriveScreenIntent()
+    data object SearchBarClick : DriveScreenIntent()
+    data object SearchBarClose : DriveScreenIntent()
     data class SearchSubmit(val submit:String) : DriveScreenIntent()
 
     //지도
@@ -31,7 +33,6 @@ sealed class DriveScreenIntent {
     data class DriveListItemClick(val itemState: ListItemState) : DriveScreenIntent()
 
     //팝업
-    data object DismissPopup : DriveScreenIntent()
     data object DismissPopupComment :DriveScreenIntent()
     data class CommentListItemClick(val itemState: CommentItemState) : DriveScreenIntent()
     data class CommentListItemLongClick(val itemState: CommentItemState) : DriveScreenIntent()
@@ -62,4 +63,8 @@ sealed class DriveScreenIntent {
     data object CheckpointSubmitClick : DriveScreenIntent()
     data class InfoReportClick(val infoState: InfoState) : DriveScreenIntent()
     data class InfoRemoveClick(val infoState: InfoState) : DriveScreenIntent()
+
+    // 공통
+    data class LifecycleChange(val event: AppLifecycle) : DriveScreenIntent()
+    data object BlurClick : DriveScreenIntent()
 }
