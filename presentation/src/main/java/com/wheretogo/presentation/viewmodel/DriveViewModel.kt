@@ -34,7 +34,7 @@ import com.wheretogo.domain.usecase.user.GetHistoryStreamUseCase
 import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
 import com.wheretogo.presentation.AppError
 import com.wheretogo.presentation.AppEvent
-import com.wheretogo.presentation.BuildConfig
+import com.wheretogo.presentation.AppLifecycle
 import com.wheretogo.presentation.CHECKPOINT_ADD_MARKER
 import com.wheretogo.presentation.CLEAR_ADDRESS
 import com.wheretogo.presentation.CameraUpdateSource
@@ -46,9 +46,9 @@ import com.wheretogo.presentation.R
 import com.wheretogo.presentation.SEARCH_MARKER
 import com.wheretogo.presentation.SheetState
 import com.wheretogo.presentation.feature.EventBus
+import com.wheretogo.presentation.feature.ads.AdService
 import com.wheretogo.presentation.feature.geo.distanceTo
 import com.wheretogo.presentation.feature.map.DriveMapOverlayService
-import com.wheretogo.presentation.feature.withLogging
 import com.wheretogo.presentation.getCommentEmogiGroup
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.model.EventMsg
@@ -62,8 +62,10 @@ import com.wheretogo.presentation.state.CommentState.CommentAddState
 import com.wheretogo.presentation.state.CommentState.CommentItemState
 import com.wheretogo.presentation.state.DriveScreenState
 import com.wheretogo.presentation.state.InfoState
+import com.wheretogo.presentation.state.SearchBarState
 import com.wheretogo.presentation.toComment
 import com.wheretogo.presentation.toDomainLatLng
+import com.wheretogo.presentation.toItem
 import com.wheretogo.presentation.toSearchBarItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -71,6 +73,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -95,24 +98,33 @@ class DriveViewModel @Inject constructor(
     private val reportCheckPointUseCase: ReportCheckPointUseCase,
     private val reportCommentUseCase: ReportCommentUseCase,
     private val searchKeywordUseCase: SearchKeywordUseCase,
-    private val mapOverlayService: DriveMapOverlayService
+    private val mapOverlayService: DriveMapOverlayService,
+    private val nativeAdService: AdService
 ) : ViewModel() {
     private val _driveScreenState =
-        MutableStateFlow(DriveScreenState(mapState = DriveScreenState.MapState(mapOverlayService.overlays))).withLogging { caller, value ->
-            if (BuildConfig.TEST_UI)
-                caller?.let {
-                    //Log.d("tst_state", "${caller.shortPath()} --> ${value.popUpState}")
-                }
-        }
+        MutableStateFlow(
+            DriveScreenState(
+                mapState = DriveScreenState.MapState(mapOverlayService.overlays),
+                searchBarState = SearchBarState(
+                    isAdVisible = true
+                )
+            )
+        )
     val driveScreenState: StateFlow<DriveScreenState> = _driveScreenState
     private var isMapUpdate = true
+
+    override fun onCleared() {
+        super.onCleared()
+        _driveScreenState.value.destroyAd()
+    }
 
     fun handleIntent(intent: DriveScreenIntent) {
         viewModelScope.launch {
             when (intent) {
                 //서치바
                 is DriveScreenIntent.AddressItemClick -> searchBarItemClick(intent.searchBarItem)
-                is DriveScreenIntent.SearchBarClick -> searchBarClick(intent.isBar)
+                is DriveScreenIntent.SearchBarClick -> searchBarClick()
+                is DriveScreenIntent.SearchBarClose -> searchBarClose()
                 is DriveScreenIntent.SearchSubmit -> searchSubmit(intent.submit)
 
                 //지도
@@ -126,7 +138,6 @@ class DriveViewModel @Inject constructor(
                 is DriveScreenIntent.DriveListItemClick ->  driveListItemClick(intent.itemState)
 
                 //팝업
-                is DriveScreenIntent.DismissPopup -> dismissPopup()
                 is DriveScreenIntent.DismissPopupComment -> dismissPopupComment()
                 is DriveScreenIntent.CommentListItemClick -> commentListItemClick(intent.itemState)
                 is DriveScreenIntent.CommentListItemLongClick -> commentListItemLongClick(intent.itemState)
@@ -155,6 +166,11 @@ class DriveViewModel @Inject constructor(
                 is DriveScreenIntent.CheckpointSubmitClick -> checkpointSubmitClick()
                 is DriveScreenIntent.InfoReportClick -> infoReportClick(intent.infoState)
                 is DriveScreenIntent.InfoRemoveClick -> infoRemoveClick(intent.infoState)
+
+                //공통
+                is DriveScreenIntent.LifecycleChange -> lifecycleChange(intent.event)
+                is DriveScreenIntent.BlurClick -> blurClick()
+
             }
         }
     }
@@ -183,20 +199,35 @@ class DriveViewModel @Inject constructor(
 
     }
 
-    private fun searchBarClick(isExpend: Boolean) {
-        _driveScreenState.value.apply {
-            mapOverlayService.removeCheckPoint(listOf(SEARCH_MARKER))
-            _driveScreenState.value =
-                if (!isExpend) {
-                    searchBarInit()
-                } else {
-                    this
-                }
+    private fun searchBarClick() {
+        mapOverlayService.removeCheckPoint(listOf(SEARCH_MARKER))
+        _driveScreenState.update {
+            it.copy(
+                searchBarState = it.searchBarState.copy(isActive = true, searchBarItemGroup = emptyList())
+            )
+        }
+
+        if(_driveScreenState.value.searchBarState.adItemGroup.isEmpty()){
+            _driveScreenState.update { it.copy(
+                listState = it.listState.copy(isVisible = false))
+            }
+           loadAd()
+        } else {
+            searchBarClose()
+        }
+    }
+
+    private fun searchBarClose(){
+        mapOverlayService.removeCheckPoint(listOf(SEARCH_MARKER))
+        _driveScreenState.update {
+            it.searchBarInit().copy(
+                listState = it.listState.copy(isVisible = true)
+            )
         }
     }
 
     private suspend fun searchSubmit(address: String) {
-        if(address.trim().isNotBlank()){
+        if(address.trim().isNotBlank()){ // 주소 없을시 취소 버튼
             _driveScreenState.value =
                 _driveScreenState.value.run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
             val keywordResponse = withContext(Dispatchers.IO) { searchKeywordUseCase(address) }
@@ -228,11 +259,14 @@ class DriveViewModel @Inject constructor(
     }
 
     private fun DriveScreenState.searchBarInit(): DriveScreenState {
+        clearAd()
         return copy(
             searchBarState = searchBarState.copy(
+                isActive = false,
                 isLoading = false,
                 isEmptyVisible = false,
-                searchBarItemGroup = emptyList()
+                searchBarItemGroup = emptyList(),
+                adItemGroup = emptyList()
             )
         )
     }
@@ -415,7 +449,7 @@ class DriveViewModel @Inject constructor(
     }
 
     //팝업
-    private fun dismissPopup() {
+    private fun blurClick() {
         _driveScreenState.value = _driveScreenState.value.initWithLevelState(2)
     }
 
@@ -753,12 +787,27 @@ class DriveViewModel @Inject constructor(
     }
 
     private fun exportMapFloatingButtonClick() {
-        _driveScreenState.value = _driveScreenState.value.run {
-            copy(
-                floatingButtonState = floatingButtonState.copy(
-                    isBackPlateVisible = !floatingButtonState.isBackPlateVisible
-                )
+        _driveScreenState.update {
+            it.initWithLevelState(2).copy(
+                floatingButtonState = it.floatingButtonState.copy(
+                    isBackPlateVisible = !it.floatingButtonState.isBackPlateVisible
+                ),
             )
+        }
+
+        if(_driveScreenState.value.floatingButtonState.isBackPlateVisible){
+           viewModelScope.launch(Dispatchers.IO) {
+               delay(50)
+               loadAd()
+           }
+        } else {
+            _driveScreenState.update {
+                it.copy(
+                    floatingButtonState = it.floatingButtonState.copy(
+                        adItemGroup = emptyList()
+                    )
+                )
+            }
         }
     }
 
@@ -1058,6 +1107,7 @@ class DriveViewModel @Inject constructor(
     }
 
     private fun DriveScreenState.initWithLevelState(level: Int): DriveScreenState {
+        clearAd()
         return when (level) {
             1 -> {//목록
                 run {
@@ -1081,6 +1131,7 @@ class DriveViewModel @Inject constructor(
                         listState = listState.copy(isVisible = false),
                         popUpState = DriveScreenState.PopUpState(isVisible = false),
                         floatingButtonState = DriveScreenState.FloatingButtonState(
+                            emptyList(),
                             false, true, true, true, false, true
                         ),
                         bottomSheetState = bottomSheetState.copy(
@@ -1099,6 +1150,7 @@ class DriveViewModel @Inject constructor(
                     copy(
                         searchBarState = searchBarState.copy(isVisible = false),
                         floatingButtonState = DriveScreenState.FloatingButtonState(
+                            emptyList(),
                             true, false, true, true, false, true
                         ),
                         popUpState = popUpState.copy(
@@ -1125,8 +1177,73 @@ class DriveViewModel @Inject constructor(
         }
     }
 
+    //공통
+    private fun lifecycleChange(event: AppLifecycle){
+        when(event){
+
+            AppLifecycle.onResume->{
+                loadAd()
+            }
+
+            AppLifecycle.onPause->{
+                clearAd()
+            }
+
+            AppLifecycle.onDispose->{
+                clearAd()
+            }
+
+            else->{}
+        }
+    }
 
     //유틸
+    private fun loadAd() {
+        if(_driveScreenState.value.searchBarState.isActive || _driveScreenState.value.floatingButtonState.isBackPlateVisible)
+            viewModelScope.launch(Dispatchers.IO) {
+                nativeAdService.getAd()
+                   .onSuccess { newAdItemGroup ->
+                            _driveScreenState.update {
+                                when {
+                                    it.floatingButtonState.isBackPlateVisible -> {
+                                        it.copy(floatingButtonState = it.floatingButtonState.copy(adItemGroup = newAdItemGroup.toItem()))
+                                    }
+                                    it.searchBarState.isActive -> {
+                                        it.copy(searchBarState = it.searchBarState.copy(adItemGroup = newAdItemGroup.toItem()))
+                                    }
+                                    else -> {
+                                        clearAd()
+                                        it
+                                    }
+                                }
+                            }
+                    }.onFailure {
+                        EventBus.send(AppEvent.SnackBar(EventMsg(R.string.network_error)))
+                    }
+            }
+    }
+
+    private fun clearAd() {
+        viewModelScope.launch {
+            _driveScreenState.update {
+                it.destroyAd()
+                it.copy(
+                    searchBarState = it.searchBarState.copy(adItemGroup = emptyList()),
+                    floatingButtonState = it.floatingButtonState.copy(adItemGroup = emptyList())
+                )
+            }
+        }
+    }
+
+    private fun DriveScreenState.destroyAd(){
+        searchBarState.adItemGroup.forEach {
+            it.nativeAd.destroy()
+        }
+        floatingButtonState.adItemGroup.forEach {
+            it.nativeAd.destroy()
+        }
+    }
+
     private suspend fun getCommentItemGroupAndUpdateCaption(checkPointId: String): List<CommentItemState> {
         val newCommentGroup = withContext(Dispatchers.IO) {
              getCommentForCheckPointUseCase(checkPointId)

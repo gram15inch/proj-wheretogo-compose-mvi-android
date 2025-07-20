@@ -11,7 +11,8 @@ sealed class CourseAddIntent {
 
     //서치바
     data class SearchBarItemClick(val searchBarItem: SearchBarItem) : CourseAddIntent()
-    data class SearchBarClick(val isExpend:Boolean) : CourseAddIntent()
+    data object SearchBarClick : CourseAddIntent()
+    data object SearchBarClose : CourseAddIntent()
     data class SubmitClick(val submitVaule:String) : CourseAddIntent()
 
     //지도

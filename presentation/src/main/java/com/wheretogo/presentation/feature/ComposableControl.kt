@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
@@ -15,9 +16,12 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
@@ -93,4 +97,23 @@ fun screenSize(isWidth: Boolean): Dp {
     val screenWidthDp = configuration.screenWidthDp
     val screenHeightDp = configuration.screenHeightDp
     return if (isWidth) screenWidthDp.dp else screenHeightDp.dp
+}
+
+@Composable
+fun Modifier.intervalTab(
+    intervalMillis: Long = 500L,
+    onTab:()->Unit
+): Modifier = composed{
+    var lastClickTime by remember { mutableLongStateOf(0L) }
+    Modifier.pointerInput(Unit) {
+        detectTapGestures(
+            onTap = {
+                val currentTime = System.currentTimeMillis()
+                if (currentTime - lastClickTime >= intervalMillis) {
+                    lastClickTime = currentTime
+                    onTab()
+                }
+            },
+        )
+    }
 }

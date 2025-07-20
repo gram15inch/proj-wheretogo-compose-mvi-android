@@ -59,11 +59,11 @@ fun InfoContent(
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 if (state.isRemoveButton)
-                    CircleButton(R.drawable.ic_delete, onClick = {
+                    CircleBorderButton(R.drawable.ic_delete, onClick = {
                         onRemoveClick(state)
                     })
                 if (state.isReportButton)
-                    CircleButton(R.drawable.ic_block, onClick = {
+                    CircleBorderButton(R.drawable.ic_block, onClick = {
                         onReportClick(state)
                     })
             }
@@ -72,7 +72,7 @@ fun InfoContent(
 }
 
 @Composable
-private fun CircleButton(icon: Int, onClick: () -> Unit) {
+private fun CircleBorderButton(icon: Int, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .size(50.dp)

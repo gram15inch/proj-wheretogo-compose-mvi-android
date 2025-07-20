@@ -3,14 +3,15 @@ package com.wheretogo.presentation.composable.content
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -22,8 +23,10 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -33,12 +36,13 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalInspectionMode
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -49,6 +53,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wheretogo.presentation.CLEAR_ADDRESS
 import com.wheretogo.presentation.R
+import com.wheretogo.presentation.feature.intervalTab
+import com.wheretogo.presentation.model.AdItem
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 import kotlinx.coroutines.CoroutineScope
@@ -59,42 +65,36 @@ import kotlinx.coroutines.launch
 @Composable
 fun SearchBar(
     modifier: Modifier = Modifier,
+    isActive: Boolean = false,
     isLoading: Boolean = false,
+    isAdVisible: Boolean = false,
     isEmptyVisible: Boolean = false,
     searchBarItemGroup: List<SearchBarItem> = emptyList(),
+    adItemGroup: List<AdItem> = emptyList(),
     onSearchBarItemClick: (SearchBarItem) -> Unit = {},
-    onSearchBarClick: (Boolean) -> Unit = {},
+    onSearchBarClick: () -> Unit = {},
     onSearchSubmit: (String) -> Unit = {},
-    isInputModeDefault: Boolean = false
+    onSearchBarClose: ()-> Unit = {}
 ) {
     val isPreview = LocalInspectionMode.current
-    val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
-    var isInputMode by remember { mutableStateOf(isInputModeDefault) }
+    var isFocused by remember { mutableStateOf(false) }
     var editText by remember { mutableStateOf("") }
     var alpha by remember { mutableFloatStateOf(0.75f) }
+    val outDp = 12.dp
 
-    fun closeKeyboard() {
-        focusManager.clearFocus()
-        keyboardController?.hide()
-    }
-
-    fun clearBar() {
-        isInputMode = false
-        alpha = 0.75f
-        editText = ""
-    }
-
-    fun toggleInputMode(): Boolean {
-        if (isInputMode) {
-            clearBar()
-            closeKeyboard()
-        } else {
-            isInputMode = true
+    LaunchedEffect(isActive) {
+        if(isActive) {
             alpha = 1f
+        } else {
+            alpha = 0.75f
+            editText = ""
         }
-        return isInputMode
+    }
+
+    fun clearFocus() {
+        focusManager.clearFocus()
     }
 
     Column(
@@ -104,6 +104,7 @@ fun SearchBar(
     ) {
         Box(
             modifier = Modifier
+                .padding(horizontal = outDp)
                 .width(250.dp)
                 .alpha(alpha)
                 .clip(RoundedCornerShape(16.dp))
@@ -114,55 +115,118 @@ fun SearchBar(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 BarTextField(
-                    Modifier.weight(1f), editText, isInputMode, focusRequester,
+                    Modifier.weight(1f),
+                    textValue = editText,
+                    readOnly = !isActive,
+                    focusRequester = focusRequester,
                     onTextValueChange = { editText = it },
                     onSearchSubmit = {
-                        if (editText == "")
-                            toggleInputMode()
-                        else
-                            closeKeyboard()
+                        clearFocus()
                         onSearchSubmit(it)
-                    })
+                    },
+                    onFocusChanged = {
+                        isFocused = it.isFocused
+                        when{
+                            it.isFocused && editText.isBlank()->{
+                                onSearchBarClick()
+                            }
+                            !it.isFocused && editText.isBlank()->{
+                                onSearchBarClose()
+                            }
+                        }
+                    }
+                )
                 BarIcon(isLoading)
             }
             Box(
                 Modifier
                     .fillMaxSize()
-                    .pointerInput(Unit) {
-                        detectTapGestures(
-                            onTap = {
-                                if (editText.isNotBlank() || toggleInputMode()) {
-                                    focusRequester.requestFocus()
-                                }
-                                onSearchBarClick(isInputMode)
-                            },
-                        )
-                    }) { }
+                    .intervalTab {
+                        when {
+                            isFocused && editText.isBlank() -> {
+                                focusManager.clearFocus()
+                            }
+
+                            isFocused && editText.isNotBlank() -> {
+                                editText = ""
+                                focusRequester.requestFocus()
+                            }
+
+                            else -> {
+                                focusRequester.requestFocus()
+                            }
+
+                        }
+                    }
+            ) { }
         }
-        //todo replace 1
-        if (isPreview || isInputMode && searchBarItemGroup.isNotEmpty()) {
-            BarDropList(isEmptyVisible, searchBarItemGroup, onSearchBarItemClick = {
-                if (it.label == CLEAR_ADDRESS)
-                    toggleInputMode()
-                else
-                    closeKeyboard()
-                onSearchBarItemClick(it)
+
+        KeyboardTrack(
+            onKeyboardClose = {
+                if (isActive && searchBarItemGroup.isEmpty() && !isEmptyVisible) {
+                    clearFocus()
+                }
             })
+
+        Box{
+            val isAd = if (isPreview) isAdVisible else isAdVisible && isActive && searchBarItemGroup.isEmpty() && !isEmptyVisible
+
+            if(!isAd)
+                BarDropList(modifier.padding(horizontal = outDp) ,isEmptyVisible, searchBarItemGroup, onSearchBarItemClick = {
+                    if (it.label == CLEAR_ADDRESS) {
+                        onSearchBarClose()
+                        clearFocus()
+                    }
+                    else {
+                        clearFocus()
+                    }
+                    onSearchBarItemClick(it)
+                })
+
+            SlideAnimation(
+                visible = isAd,
+                direction = AnimationDirection.CenterRight
+            ) {
+                AdaptiveAd(modifier=Modifier.padding(bottom = outDp, start = outDp, end= outDp), nativeAd = adItemGroup.firstOrNull()?.nativeAd)
+            }
+
         }
-
-
     }
 }
 
-//todo replace 2
+@Composable
+fun KeyboardTrack(onKeyboardClose: () -> Unit) {
+    val density = LocalDensity.current
+    val height = WindowInsets.ime.getBottom(density)
+    var latestHeight by remember { mutableIntStateOf(0) }
+    var direction by remember { mutableIntStateOf(0) }
+
+    val diff = height - latestHeight
+    when {
+        diff > 0 -> {
+            if (direction <= 0) direction = 1
+        }
+
+        diff < 0 -> {
+            if (direction > 0) direction = -1
+        }
+    }
+
+    if (direction < 0 && height == 0 && latestHeight != height) {
+        onKeyboardClose()
+    }
+    latestHeight = height
+}
+
 @Composable
 fun BarTextField(
     modifier: Modifier,
     textValue: String,
-    isInputMode: Boolean,
+    readOnly: Boolean,
     focusRequester: FocusRequester,
     onTextValueChange: (String) -> Unit,
-    onSearchSubmit: (String) -> Unit = {}
+    onSearchSubmit: (String) -> Unit = {},
+    onFocusChanged: (FocusState) -> Unit = {}
 ) {
     val textStyle = TextStyle(
         fontSize = 15.sp,
@@ -176,7 +240,11 @@ fun BarTextField(
         BasicTextField(
             modifier = Modifier
                 .fillMaxWidth()
-                .focusRequester(focusRequester),
+                .focusRequester(focusRequester)
+                .onFocusChanged {
+                    onFocusChanged(it)
+                }
+               ,
             textStyle = textStyle,
             value = textValue,
             maxLines = 1,
@@ -188,7 +256,7 @@ fun BarTextField(
                     onSearchSubmit(textValue)
                 }
             ),
-            readOnly = !isInputMode,
+            readOnly = readOnly,
             onValueChange = { onTextValueChange(it) })
     }
 }
@@ -216,12 +284,12 @@ fun BarIcon(isLoading: Boolean) {
 }
 
 @Composable
-fun BarDropList(
+fun BarDropList(modifier: Modifier = Modifier,
     isEmptyVisible: Boolean,
     searchBarItemGroup: List<SearchBarItem>,
     onSearchBarItemClick: (SearchBarItem) -> Unit
 ) {
-    Column(horizontalAlignment = Alignment.End) {
+    Column(modifier= modifier, horizontalAlignment = Alignment.End) {
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.End,
@@ -305,7 +373,9 @@ fun BarClearItem(onSearchBarItemClick: (SearchBarItem) -> Unit) {
     }
 }
 
-@Preview
+@Preview("s10", widthDp = 670, heightDp = 336)
+@Preview("s24+", widthDp = 832, heightDp = 384)
+@Preview("s6l", widthDp = 1333, heightDp = 728)
 @Composable
 fun SearchBarPreview() {
     var simpleAddressGroups by remember {
@@ -325,9 +395,11 @@ fun SearchBarPreview() {
     var isLoading by remember { mutableStateOf<Boolean>(false) }
     SearchBar(
         modifier = Modifier.padding(15.dp),
+        isActive = true,
         isLoading = isLoading,
         isEmptyVisible = false,
-        searchBarItemGroup = simpleAddressGroups,
+        isAdVisible = true,
+        searchBarItemGroup = emptyList(),
         onSearchBarItemClick = {
             CoroutineScope(Dispatchers.Main).launch {
                 isLoading = true
@@ -336,13 +408,9 @@ fun SearchBarPreview() {
                 simpleAddressGroups = emptyList()
             }
         },
-        onSearchBarClick = {
-            if (!it)
-                simpleAddressGroups = emptyList()
-        },
+        onSearchBarClick = {},
         onSearchSubmit = {
             simpleAddressGroups += SearchBarItem(it, "경기도 용인시 기흥구 120")
         },
-        isInputModeDefault = true,
     )
 }

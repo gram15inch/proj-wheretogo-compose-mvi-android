@@ -7,7 +7,7 @@ import com.wheretogo.domain.model.user.ProfilePrivate
 import kotlinx.coroutines.flow.Flow
 
 interface UserRepository {
-    suspend fun isRequestLoginStream(): Flow<Boolean>
+    fun isRequestLoginStream(): Flow<Boolean>
 
     suspend fun setRequestLogin(boolean: Boolean)
 

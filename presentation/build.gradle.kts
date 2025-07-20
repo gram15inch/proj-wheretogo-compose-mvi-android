@@ -26,14 +26,18 @@ android {
     }
 
     buildTypes{
+        val testNativeAdId = "\"ca-app-pub-3940256099942544/2247696110\""
         debug {
             buildConfigField( "Boolean", "TEST_UI", "true")
+            buildConfigField( "String", "NATIVE_AD_ID", testNativeAdId)
         }
         create("qa") {
             buildConfigField( "Boolean", "TEST_UI", "false")
+            buildConfigField( "String", "NATIVE_AD_ID", testNativeAdId)
         }
         release {
             buildConfigField( "Boolean", "TEST_UI", "false")
+            buildConfigField( "String", "NATIVE_AD_ID", getLocalProperties("nativeAdId"))
         }
     }
 
@@ -50,6 +54,7 @@ android {
 
         buildConfigField( "String", "GOOGLE_WEB_CLIENT_ID_KEY", getLocalProperties("googleWebClientId"))
 
+        manifestPlaceholders["adsMobAppId"] = getLocalProperties("adsMobAppId")
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -103,6 +108,7 @@ dependencies {
     // Goggle
     implementation(Google.IDENTITY_GOOGLEID)
     implementation(Google.PLAY_SERVICES_LOCATION)
+    implementation(Google.PLAY_SERVICES_ADS)
 
     // Firebase
     implementation(platform(Firebase.FIREBASE_BOM))
@@ -113,6 +119,7 @@ dependencies {
     implementation(files("libs/com.skt.Tmap_1.76.jar"))
     implementation(Libraries.LOTTIE_COMPOSE)
     implementation(Libraries.LANDSCAPIST_GLIDE)
+    implementation(Libraries.SHIMMER_COMPOSE)
 }
 
 fun getLocalProperties(key: String): String{

@@ -129,12 +129,13 @@ fun SlideAnimation(
 fun FadeAnimation(
     modifier: Modifier = Modifier,
     visible: Boolean,
+    short:Boolean = false,
     content: @Composable () -> Unit
 ) {
     AnimatedVisibility(
         modifier = modifier,
         visible = visible,
-        enter = fadeIn(animationSpec = tween(durationMillis = 250)),
+        enter = fadeIn(animationSpec = tween(durationMillis = if(short) 100 else 250)),
         exit = fadeOut(animationSpec = tween(durationMillis = 50))
     ) {
         content()
