@@ -40,7 +40,7 @@ import com.wheretogo.presentation.CLEAR_ADDRESS
 import com.wheretogo.presentation.CameraUpdateSource
 import com.wheretogo.presentation.CommentType
 import com.wheretogo.presentation.DRIVE_LIST_MIN_ZOOM
-import com.wheretogo.presentation.DriveBottomSheetContent
+import com.wheretogo.presentation.BottomSheetContent
 import com.wheretogo.presentation.MarkerType
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.SEARCH_MARKER
@@ -55,13 +55,18 @@ import com.wheretogo.presentation.model.EventMsg
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.MarkerInfo
 import com.wheretogo.presentation.model.SearchBarItem
+import com.wheretogo.presentation.state.BottomSheetState
 import com.wheretogo.presentation.state.CameraState
 import com.wheretogo.presentation.state.CheckPointAddState
 import com.wheretogo.presentation.state.CommentState
 import com.wheretogo.presentation.state.CommentState.CommentAddState
 import com.wheretogo.presentation.state.CommentState.CommentItemState
 import com.wheretogo.presentation.state.DriveScreenState
+import com.wheretogo.presentation.state.FloatingButtonState
 import com.wheretogo.presentation.state.InfoState
+import com.wheretogo.presentation.state.ListState
+import com.wheretogo.presentation.state.NaverMapState
+import com.wheretogo.presentation.state.PopUpState
 import com.wheretogo.presentation.state.SearchBarState
 import com.wheretogo.presentation.toComment
 import com.wheretogo.presentation.toDomainLatLng
@@ -104,7 +109,7 @@ class DriveViewModel @Inject constructor(
     private val _driveScreenState =
         MutableStateFlow(
             DriveScreenState(
-                mapState = DriveScreenState.MapState(mapOverlayService.overlays),
+                naverMapState = NaverMapState(mapOverlayService.overlays),
                 searchBarState = SearchBarState(
                     isAdVisible = true
                 )
@@ -184,8 +189,8 @@ class DriveViewModel @Inject constructor(
                 mapOverlayService.addCheckPoint(listOf(CheckPoint(SEARCH_MARKER, latLng = item.latlng)))
                 copy(
                     searchBarState = searchBarState.copy(isLoading = false),
-                    mapState = mapState.copy(
-                        cameraState = mapState.cameraState.copy(
+                    naverMapState = naverMapState.copy(
+                        cameraState = naverMapState.cameraState.copy(
                             latLng = item.latlng,
                             updateSource = CameraUpdateSource.APP_EASING
                         )
@@ -277,7 +282,7 @@ class DriveViewModel @Inject constructor(
     private fun mapIsReady() {
         _driveScreenState.apply {
             this.value = value.copy(
-                mapState = _driveScreenState.value.mapState.copy(isMapReady = true)
+                naverMapState = _driveScreenState.value.naverMapState.copy(isMapReady = true)
             )
         }
     }
@@ -285,7 +290,7 @@ class DriveViewModel @Inject constructor(
     private suspend fun cameraUpdated(cameraState: CameraState) {
         val isCameraUpdate =
             _driveScreenState.value.run {
-                val oldCamera = mapState.cameraState
+                val oldCamera = naverMapState.cameraState
                 oldCamera.latLng.distanceTo(cameraState.latLng) >= 1
                         || oldCamera.updateSource != cameraState.updateSource
             }
@@ -299,7 +304,7 @@ class DriveViewModel @Inject constructor(
         if (isCameraUpdate)
             _driveScreenState.value = _driveScreenState.value.run {
                 copy(
-                    mapState = mapState.copy(
+                    naverMapState = naverMapState.copy(
                         cameraState = cameraState.copy(updateSource = CameraUpdateSource.USER)
                     )
                 )
@@ -319,11 +324,11 @@ class DriveViewModel @Inject constructor(
 
         _driveScreenState.value = _driveScreenState.value.run {
             val zoom =
-                if (mapState.cameraState.zoom > DRIVE_LIST_MIN_ZOOM) mapState.cameraState.zoom else DRIVE_LIST_MIN_ZOOM + 0.1
+                if (naverMapState.cameraState.zoom > DRIVE_LIST_MIN_ZOOM) naverMapState.cameraState.zoom else DRIVE_LIST_MIN_ZOOM + 0.1
             val latlng = overlay.marker.position.toDomainLatLng()
             val newCameraState = CameraState(latlng, zoom, updateSource = CameraUpdateSource.APP_EASING)
             copy(
-                mapState = mapState.copy(cameraState = newCameraState)
+                naverMapState = naverMapState.copy(cameraState = newCameraState)
             )
         }
 
@@ -398,15 +403,15 @@ class DriveViewModel @Inject constructor(
     private fun moveCamera(latLng: LatLng, zoom:Double? = null){
         if(latLng!=LatLng())
             _driveScreenState.value = _driveScreenState.value.run {
-                val oldZoom = zoom ?: mapState.cameraState.zoom
+                val oldZoom = zoom ?: naverMapState.cameraState.zoom
                 val newZoom = when {
                     oldZoom <= LIST_ITEM_ZOOM -> LIST_ITEM_ZOOM
                     else-> oldZoom
                 }
 
                 copy(
-                    mapState = mapState.copy(
-                        cameraState = mapState.cameraState.copy(
+                    naverMapState = naverMapState.copy(
+                        cameraState = naverMapState.cameraState.copy(
                             latLng = latLng,
                             zoom = newZoom,
                             updateSource = CameraUpdateSource.APP_LINEAR
@@ -417,7 +422,7 @@ class DriveViewModel @Inject constructor(
     }
 
     //목록
-    private suspend fun driveListItemClick(state: DriveScreenState.ListState.ListItemState) {
+    private suspend fun driveListItemClick(state: ListState.ListItemState) {
         val course = state.course
         _driveScreenState.value = _driveScreenState.value
             .initWithLevelState(2)
@@ -729,7 +734,7 @@ class DriveViewModel @Inject constructor(
                 copy(
                     bottomSheetState = bottomSheetState.copy(
                         isVisible = true,
-                        content = DriveBottomSheetContent.CHECKPOINT_ADD,
+                        content = BottomSheetContent.CHECKPOINT_ADD,
                     )
                 )
         }
@@ -757,7 +762,7 @@ class DriveViewModel @Inject constructor(
                 copy(
                     bottomSheetState = bottomSheetState.copy(
                         isVisible = true,
-                        content = DriveBottomSheetContent.INFO,
+                        content = BottomSheetContent.INFO,
                     ),
                     popUpState = popUpState.copy(
                         commentState = popUpState.commentState.copy(
@@ -841,7 +846,7 @@ class DriveViewModel @Inject constructor(
     private suspend fun bottomSheetChange(state:SheetState) {
         val content = _driveScreenState.value.bottomSheetState.content
             when(content){
-                DriveBottomSheetContent.CHECKPOINT_ADD->{
+                BottomSheetContent.CHECKPOINT_ADD->{
                     val course = _driveScreenState.value.listState.clickItem.course
                     when(state){
                         SheetState.Expand->{
@@ -869,7 +874,7 @@ class DriveViewModel @Inject constructor(
                         }
                     }
                 }
-                DriveBottomSheetContent.INFO->{
+                BottomSheetContent.INFO->{
                     when(state){
                         SheetState.Expand->{
                             _driveScreenState.value = _driveScreenState.value.infoStateInit()
@@ -1009,7 +1014,7 @@ class DriveViewModel @Inject constructor(
                         mapOverlayService.removeCourse(listOf(course.courseId))
                         mapOverlayService.removeCheckPoint(course.checkpointIdGroup)
                         initWithLevelState(1)
-                            .updateNearCourse(mapState.cameraState)
+                            .updateNearCourse(naverMapState.cameraState)
                     }
                 }
 
@@ -1049,7 +1054,7 @@ class DriveViewModel @Inject constructor(
                         mapOverlayService.removeCourse(listOf(course.courseId))
                         mapOverlayService.removeCheckPoint(course.checkpointIdGroup)
                         initWithLevelState(1)
-                            .updateNearCourse(mapState.cameraState)
+                            .updateNearCourse(naverMapState.cameraState)
                     }
                 }
 
@@ -1115,11 +1120,11 @@ class DriveViewModel @Inject constructor(
                         searchBarState = searchBarState.copy(isVisible = true),
                         listState = listState.copy(
                             isVisible = true,
-                            clickItem = DriveScreenState.ListState.ListItemState()
+                            clickItem = ListState.ListItemState()
                         ),
                         popUpState = popUpState.copy(isVisible = false),
-                        floatingButtonState = DriveScreenState.FloatingButtonState(),
-                        bottomSheetState = DriveScreenState.BottomSheetState()
+                        floatingButtonState = FloatingButtonState(),
+                        bottomSheetState = BottomSheetState()
                     )
                 }
             }
@@ -1129,8 +1134,8 @@ class DriveViewModel @Inject constructor(
                     copy(
                         searchBarState = searchBarState.copy(isVisible = false),
                         listState = listState.copy(isVisible = false),
-                        popUpState = DriveScreenState.PopUpState(isVisible = false),
-                        floatingButtonState = DriveScreenState.FloatingButtonState(
+                        popUpState = PopUpState(isVisible = false),
+                        floatingButtonState = FloatingButtonState(
                             emptyList(),
                             false, true, true, true, false, true
                         ),
@@ -1149,7 +1154,7 @@ class DriveViewModel @Inject constructor(
                 run {
                     copy(
                         searchBarState = searchBarState.copy(isVisible = false),
-                        floatingButtonState = DriveScreenState.FloatingButtonState(
+                        floatingButtonState = FloatingButtonState(
                             emptyList(),
                             true, false, true, true, false, true
                         ),
@@ -1167,8 +1172,8 @@ class DriveViewModel @Inject constructor(
                         searchBarState = searchBarState.copy(isVisible = false),
                         listState = listState.copy(isVisible = false),
                         popUpState = popUpState.copy(isVisible = false),
-                        floatingButtonState = DriveScreenState.FloatingButtonState(),
-                        bottomSheetState = DriveScreenState.BottomSheetState()
+                        floatingButtonState = FloatingButtonState(),
+                        bottomSheetState = BottomSheetState()
                     )
                 }
             }
@@ -1277,12 +1282,12 @@ class DriveViewModel @Inject constructor(
     private fun List<Course>.filterNearByListGroup(
         center: LatLng,
         meter: Int
-    ): List<DriveScreenState.ListState.ListItemState> {
+    ): List<ListState.ListItemState> {
         return mapNotNull {
             val course = it.cameraLatLng
             val distance = center.distanceTo(course)
             if (distance < meter) // 근처 코스만 필터링
-                DriveScreenState.ListState.ListItemState(
+                ListState.ListItemState(
                     distanceFromCenter = distance,
                     course = it,
                     isBookmark = false

@@ -33,6 +33,7 @@ import androidx.core.net.toUri
 import com.wheretogo.domain.model.community.ImageInfo
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.formatFileSizeToMB
+import com.wheretogo.presentation.state.BottomSheetState
 import com.wheretogo.presentation.state.CheckPointAddState
 import com.wheretogo.presentation.state.DriveScreenState
 import com.wheretogo.presentation.state.InfoState
@@ -187,7 +188,7 @@ fun LocationSlider(
 @Preview
 @Composable
 fun CheckpointAddBottomSheetPreview() {
-    val state = DriveScreenState.BottomSheetState(
+    val state = BottomSheetState(
         isVisible = true,
         infoState = InfoState(isRemoveButton = true),
         checkPointAddState = CheckPointAddState(
@@ -199,9 +200,11 @@ fun CheckpointAddBottomSheetPreview() {
         Box(modifier = Modifier.width(400.dp)) {
             BottomSheet(
                 modifier = Modifier.height(400.dp),
-                initHeight = 400,
+                state= BottomSheetState(
+                    isVisible = true,
+                    initHeight = 400
+                ),
                 bottomSpace = 0.dp,
-                isVisible = true,
                 onStateChange = {},
                 onHeightChange = {}
             ) {

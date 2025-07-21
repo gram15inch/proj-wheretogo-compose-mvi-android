@@ -73,6 +73,7 @@ import com.wheretogo.presentation.composable.content.SlideAnimation
 import com.wheretogo.presentation.feature.naver.setCurrentLocation
 import com.wheretogo.presentation.intent.CourseAddIntent
 import com.wheretogo.presentation.model.ContentPadding
+import com.wheretogo.presentation.state.BottomSheetState
 import com.wheretogo.presentation.state.CourseAddScreenState
 import com.wheretogo.presentation.theme.interBoldFontFamily
 import com.wheretogo.presentation.theme.interFontFamily
@@ -105,11 +106,10 @@ fun CourseAddScreen(
                     .zIndex(0f)
                     .fillMaxSize()
                     .background(color = Color.Green),
-                mapOverlayGroup = state.overlayGroup,
+                state = state.naverMapState,
                 onMapAsync = { map ->
                     coroutineScope.launch { map.setCurrentLocation(context) }
                 },
-                cameraState = state.cameraState,
                 onCameraUpdate = { viewModel.handleIntent(CourseAddIntent.CameraUpdated(it)) },
                 onMapClickListener = { viewModel.handleIntent(CourseAddIntent.MapClick(it)) },
                 onCheckPointMarkerClick = { viewModel.handleIntent(CourseAddIntent.WaypointMarkerClick(it)) },
@@ -133,11 +133,7 @@ fun CourseAddScreen(
                 SearchBar(
                     modifier = Modifier
                         .zIndex(1f),
-                    isActive = state.searchBarState.isActive,
-                    isAdVisible = state.searchBarState.isAdVisible,
-                    isLoading = state.searchBarState.isLoading,
-                    isEmptyVisible = state.searchBarState.isEmptyVisible,
-                    searchBarItemGroup = state.searchBarState.searchBarItemGroup ,
+                    state = state.searchBarState,
                     onSearchSubmit = { viewModel.handleIntent(CourseAddIntent.SubmitClick(it)) },
                     onSearchBarClick = { viewModel.handleIntent(CourseAddIntent.SearchBarClick) },
                     onSearchBarClose = { viewModel.handleIntent(CourseAddIntent.SearchBarClose) },
@@ -146,10 +142,8 @@ fun CourseAddScreen(
 
                 BottomSheet(
                     modifier = Modifier,
-                    initHeight = 80,
+                    state = state.bottomSheetState,
                     bottomSpace = systemBarBottomPadding,
-                    isVisible = !state.bottomSheetState.isBottomSheetDown,
-                    isSpaceVisibleWhenClose = true,
                     onHeightChange = { dp ->
                         bottomSheetHeight = dp
                         viewModel.handleIntent(CourseAddIntent.ContentPaddingChanged(bottomSheetHeight.value.toInt()))
@@ -171,13 +165,13 @@ fun CourseAddScreen(
 
             Box(
                 modifier = Modifier
-                .fillMaxSize()
-                .padding(
-                    start = systemBars.calculateStartPadding(LocalLayoutDirection.current),
-                    end = systemBars.calculateEndPadding(LocalLayoutDirection.current),
-                    top = systemBars.calculateTopPadding(),
-                    bottom = mapBottomPadding
-                )
+                    .fillMaxSize()
+                    .padding(
+                        start = systemBars.calculateStartPadding(LocalLayoutDirection.current),
+                        end = systemBars.calculateEndPadding(LocalLayoutDirection.current),
+                        top = systemBars.calculateTopPadding(),
+                        bottom = mapBottomPadding
+                    )
             ){
                 if (BuildConfig.TEST_UI) {
                     Box(
@@ -187,7 +181,7 @@ fun CourseAddScreen(
                     ) {
                         Text(
                             modifier = Modifier.align(alignment = Alignment.TopStart),
-                            text = "${state.overlayGroup.size}",
+                            text = "${state.naverMapState.overlayGroup.size}",
                             fontSize = 50.sp
                         )
                     }
@@ -233,9 +227,11 @@ fun CourseAddScreen(
 fun CourseAddScreenPreview() {
     BottomSheet(
         modifier = Modifier.height(400.dp),
-        initHeight = 400,
+        state = BottomSheetState(
+            initHeight = 400,
+            isVisible = true,
+        ),
         bottomSpace = 0.dp,
-        isVisible = true,
         onStateChange = {},
         onHeightChange = {}
     ) {

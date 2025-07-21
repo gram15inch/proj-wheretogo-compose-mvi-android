@@ -52,7 +52,7 @@ import com.wheretogo.domain.model.map.Course
 import com.wheretogo.presentation.ExportMap
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.callMap
-import com.wheretogo.presentation.model.AdItem
+import com.wheretogo.presentation.state.FloatingButtonState
 import com.wheretogo.presentation.theme.Gray100
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 import kotlinx.coroutines.delay
@@ -63,14 +63,17 @@ import kotlinx.coroutines.launch
 fun FloatingPortraitButtonPreview() {
     FloatingButtons(
         modifier = Modifier.background(Gray100),
-        Course(),
-        emptyList(),
-        isCommentVisible = true,
-        isCheckpointAddVisible = true,
-        isExportVisible = true,
-        isFoldVisible = true,
-        isInfoVisible = true,
-        isExportBackPlate = true,
+        state = FloatingButtonState(
+            adItemGroup = emptyList(),
+            isCommentVisible = true,
+            isCheckpointAddVisible = true,
+            isExportVisible = true,
+            isFoldVisible = true,
+            isInfoVisible = true,
+            isBackPlateVisible = true
+        ),
+        isNotOtherVisible = false,
+        course = Course(),
         {}, {}, {}, {}, {}, {}
     )
 }
@@ -80,14 +83,17 @@ fun FloatingPortraitButtonPreview() {
 fun FloatingLandscapeButtonPreview() {
     FloatingButtons(
         modifier = Modifier.background(Gray100),
-        Course(),
-        emptyList(),
-        isCommentVisible = true,
-        isCheckpointAddVisible = true,
-        isExportVisible = true,
-        isFoldVisible = true,
-        isInfoVisible = true,
-        isExportBackPlate = true,
+        state = FloatingButtonState(
+            adItemGroup = emptyList(),
+            isCommentVisible = true,
+            isCheckpointAddVisible = true,
+            isExportVisible = true,
+            isFoldVisible = true,
+            isInfoVisible = true,
+            isBackPlateVisible = true
+        ),
+        isNotOtherVisible = false,
+        course = Course(),
         {}, {}, {}, {}, {}, {}
     )
 }
@@ -96,14 +102,9 @@ fun FloatingLandscapeButtonPreview() {
 @Composable
 fun FloatingButtons(
     modifier: Modifier = Modifier,
+    state: FloatingButtonState,
+    isNotOtherVisible:Boolean,
     course: Course,
-    adItemGroup:List<AdItem>,
-    isCommentVisible: Boolean,
-    isCheckpointAddVisible: Boolean,
-    isExportVisible: Boolean,
-    isFoldVisible: Boolean,
-    isInfoVisible: Boolean,
-    isExportBackPlate: Boolean,
     onCommentClick: () -> Unit,
     onCheckpointAddClick: () -> Unit,
     onInfoClick: () -> Unit,
@@ -112,6 +113,12 @@ fun FloatingButtons(
     onFoldClick: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
+    val isCommentVisible = state.isCommentVisible && isNotOtherVisible
+    val isCheckpointAddVisible = state.isCheckpointAddVisible && isNotOtherVisible
+    val isInfoVisible = state.isInfoVisible && isNotOtherVisible
+    val isExportVisible = state.isExportVisible && isNotOtherVisible
+    val isBackPlateVisible = state.isBackPlateVisible
+    val isFoldVisible = state.isFoldVisible && isNotOtherVisible
     Box(
         modifier = modifier,
         contentAlignment = Alignment.BottomEnd
@@ -121,7 +128,7 @@ fun FloatingButtons(
         SlideAnimation(
             modifier = Modifier
                 .fillMaxSize(),
-            visible = isExportBackPlate,
+            visible = isBackPlateVisible,
             direction = AnimationDirection.CenterRight  
         ) {
             AdaptiveAd(modifier=Modifier.padding(
@@ -130,19 +137,19 @@ fun FloatingButtons(
                 top = 10.dp,
                 bottom = buttonEndPadding + 10.dp
 
-            ), nativeAd = adItemGroup.firstOrNull()?.nativeAd)
+            ), nativeAd = state.adItemGroup.firstOrNull()?.nativeAd)
         }
 
         Column(
             horizontalAlignment = Alignment.End,
-            verticalArrangement = Arrangement.spacedBy(if (isExportBackPlate) 0.dp else 10.dp),
+            verticalArrangement = Arrangement.spacedBy(if (isBackPlateVisible) 0.dp else 10.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = buttonEndPadding)
         ) {
             SlideAnimation(
                 modifier = Modifier,
-                visible = isCommentVisible && !isExportBackPlate,
+                visible = isCommentVisible && !isBackPlateVisible,
                 direction = AnimationDirection.RightCenter
             ) {
                 CircleButton(
@@ -155,12 +162,12 @@ fun FloatingButtons(
 
             SlideAnimation(
                 modifier = Modifier,
-                visible = isCheckpointAddVisible && !isExportBackPlate,
+                visible = isCheckpointAddVisible && !isBackPlateVisible,
                 direction = AnimationDirection.RightCenter
             ) {
                 CircleButton(
                     Modifier.padding(
-                        top = if (isExportBackPlate) 10.dp else 0.dp,
+                        top = if (isBackPlateVisible) 10.dp else 0.dp,
                         end = buttonEndPadding
                     ), icon = R.drawable.ic_location
                 ) {
@@ -170,12 +177,12 @@ fun FloatingButtons(
 
             SlideAnimation(
                 modifier = Modifier,
-                visible = isInfoVisible && !isExportBackPlate,
+                visible = isInfoVisible && !isBackPlateVisible,
                 direction = AnimationDirection.RightCenter
             ) {
                 CircleButton(
                     Modifier.padding(
-                        top = if (isExportBackPlate) 10.dp else 0.dp,
+                        top = if (isBackPlateVisible) 10.dp else 0.dp,
                         end = buttonEndPadding
                     ), icon = R.drawable.ic_info
                 ) {
@@ -190,7 +197,7 @@ fun FloatingButtons(
             ) {
                 CirclePlateButton(
                     icon = R.drawable.ic_share,
-                    isBackPlate = isExportBackPlate && isExportVisible,
+                    isBackPlate = isBackPlateVisible && isExportVisible,
                     buttonEndPadding = buttonEndPadding,
                     onNaverClick = { isLongClick ->
                         scope.launch {

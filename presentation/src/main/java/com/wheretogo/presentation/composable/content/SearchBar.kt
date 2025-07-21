@@ -54,8 +54,8 @@ import androidx.compose.ui.unit.sp
 import com.wheretogo.presentation.CLEAR_ADDRESS
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.intervalTab
-import com.wheretogo.presentation.model.AdItem
 import com.wheretogo.presentation.model.SearchBarItem
+import com.wheretogo.presentation.state.SearchBarState
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -65,12 +65,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun SearchBar(
     modifier: Modifier = Modifier,
-    isActive: Boolean = false,
-    isLoading: Boolean = false,
-    isAdVisible: Boolean = false,
-    isEmptyVisible: Boolean = false,
-    searchBarItemGroup: List<SearchBarItem> = emptyList(),
-    adItemGroup: List<AdItem> = emptyList(),
+    state: SearchBarState = SearchBarState(),
     onSearchBarItemClick: (SearchBarItem) -> Unit = {},
     onSearchBarClick: () -> Unit = {},
     onSearchSubmit: (String) -> Unit = {},
@@ -84,8 +79,8 @@ fun SearchBar(
     var alpha by remember { mutableFloatStateOf(0.75f) }
     val outDp = 12.dp
 
-    LaunchedEffect(isActive) {
-        if(isActive) {
+    LaunchedEffect(state.isActive) {
+        if (state.isActive) {
             alpha = 1f
         } else {
             alpha = 0.75f
@@ -117,7 +112,7 @@ fun SearchBar(
                 BarTextField(
                     Modifier.weight(1f),
                     textValue = editText,
-                    readOnly = !isActive,
+                    readOnly = !state.isActive,
                     focusRequester = focusRequester,
                     onTextValueChange = { editText = it },
                     onSearchSubmit = {
@@ -136,7 +131,7 @@ fun SearchBar(
                         }
                     }
                 )
-                BarIcon(isLoading)
+                BarIcon(state.isLoading)
             }
             Box(
                 Modifier
@@ -163,16 +158,20 @@ fun SearchBar(
 
         KeyboardTrack(
             onKeyboardClose = {
-                if (isActive && searchBarItemGroup.isEmpty() && !isEmptyVisible) {
+                if (state.isActive && state.searchBarItemGroup.isEmpty() && !state.isEmptyVisible) {
                     clearFocus()
                 }
             })
 
         Box{
-            val isAd = if (isPreview) isAdVisible else isAdVisible && isActive && searchBarItemGroup.isEmpty() && !isEmptyVisible
+            val isAd = if (isPreview) state.isAdVisible else state.isAdVisible && state.isActive && state.searchBarItemGroup.isEmpty() && !state.isEmptyVisible
 
             if(!isAd)
-                BarDropList(modifier.padding(horizontal = outDp) ,isEmptyVisible, searchBarItemGroup, onSearchBarItemClick = {
+                BarDropList(
+                modifier = modifier.padding(horizontal = outDp),
+                isEmptyVisible = state.isEmptyVisible,
+                searchBarItemGroup = state.searchBarItemGroup,
+                onSearchBarItemClick = {
                     if (it.label == CLEAR_ADDRESS) {
                         onSearchBarClose()
                         clearFocus()
@@ -187,7 +186,10 @@ fun SearchBar(
                 visible = isAd,
                 direction = AnimationDirection.CenterRight
             ) {
-                AdaptiveAd(modifier=Modifier.padding(bottom = outDp, start = outDp, end= outDp), nativeAd = adItemGroup.firstOrNull()?.nativeAd)
+                AdaptiveAd(
+                    modifier = Modifier.padding(bottom = outDp, start = outDp, end = outDp),
+                    nativeAd = state.adItemGroup.firstOrNull()?.nativeAd
+                )
             }
 
         }
@@ -395,11 +397,13 @@ fun SearchBarPreview() {
     var isLoading by remember { mutableStateOf<Boolean>(false) }
     SearchBar(
         modifier = Modifier.padding(15.dp),
-        isActive = true,
-        isLoading = isLoading,
-        isEmptyVisible = false,
-        isAdVisible = true,
-        searchBarItemGroup = emptyList(),
+        state = SearchBarState(
+            isActive = true,
+            isLoading = isLoading,
+            isEmptyVisible = false,
+            isAdVisible = true,
+            searchBarItemGroup = emptyList(),
+        ),
         onSearchBarItemClick = {
             CoroutineScope(Dispatchers.Main).launch {
                 isLoading = true

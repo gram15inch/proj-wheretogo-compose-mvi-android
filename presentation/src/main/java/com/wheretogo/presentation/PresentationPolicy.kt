@@ -85,8 +85,8 @@ enum class ExportMap{
     NAVER, KAKAO, SKT
 }
 
-enum class DriveBottomSheetContent{
-   EMPTY ,CHECKPOINT_ADD, INFO
+enum class BottomSheetContent{
+   EMPTY ,COURSE_ADD, CHECKPOINT_ADD, INFO,
 }
 
 enum class MarkerType{

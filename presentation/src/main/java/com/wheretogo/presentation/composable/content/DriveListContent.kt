@@ -43,7 +43,8 @@ import androidx.compose.ui.unit.sp
 import com.wheretogo.domain.model.map.Course
 import com.wheretogo.domain.model.map.RouteCategory
 import com.wheretogo.presentation.R
-import com.wheretogo.presentation.state.DriveScreenState.ListState.ListItemState
+import com.wheretogo.presentation.state.ListState
+import com.wheretogo.presentation.state.ListState.*
 import com.wheretogo.presentation.theme.White100
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 import com.wheretogo.presentation.toStrRes
@@ -54,11 +55,16 @@ import com.wheretogo.presentation.toStrRes
 fun DriveListPreview() {
     DriveListContent(
         modifier = Modifier,
-        listOf(ListItemState(
-            course = Course(
-                courseName = "노르테유 스카이웨이"
+        state = ListState(
+            listItemGroup = listOf(
+                ListItemState(
+                    course = Course(
+                        courseName = "노르테유 스카이웨이"
+                    )
+                )
             )
-        )),
+        )
+        ,
         onItemClick = {},
         onBookmarkClick = {},
         onHeightPxChange = {}
@@ -68,7 +74,7 @@ fun DriveListPreview() {
 @Composable
 fun DriveListContent(
     modifier: Modifier,
-    listItemGroup: List<ListItemState>,
+    state: ListState,
     onItemClick: (ListItemState) -> Unit,
     onBookmarkClick: (ListItemState) -> Unit,
     onHeightPxChange: (Int) -> Unit
@@ -82,7 +88,7 @@ fun DriveListContent(
             verticalArrangement = Arrangement.spacedBy(6.dp),
             state = listState
         ) {
-            items(listItemGroup) { item ->
+            items(state.listItemGroup) { item ->
                 DriveListItem(
                     modifier = Modifier
                         .clip(RoundedCornerShape(16.dp))

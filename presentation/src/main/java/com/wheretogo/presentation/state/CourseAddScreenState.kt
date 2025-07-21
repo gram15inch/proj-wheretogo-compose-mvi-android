@@ -9,9 +9,8 @@ import com.wheretogo.presentation.model.MapOverlay
 
 data class CourseAddScreenState(
     val searchBarState: SearchBarState = SearchBarState(),
-    val overlayGroup : Collection<MapOverlay> = emptyList(),
+    val naverMapState: NaverMapState = NaverMapState(),
     val selectedMarkerItem: MapOverlay.MarkerContainer? = null,
-    val cameraState: CameraState = CameraState(),
     val bottomSheetState: BottomSheetState = BottomSheetState(),
     val isFloatMarker: Boolean = false,
     val isFloatingButton: Boolean = false,
@@ -19,10 +18,6 @@ data class CourseAddScreenState(
     val error: String = "",
     val timeStamp : Long =0L
 ) {
-    data class BottomSheetState(
-        val courseAddState :CourseAddState = CourseAddState(),
-        val isBottomSheetDown: Boolean = false,
-    )
 
     data class CourseAddState(
         val courseName: String = "",
