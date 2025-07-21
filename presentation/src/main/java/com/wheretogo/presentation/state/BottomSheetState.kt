@@ -1,14 +1,14 @@
 package com.wheretogo.presentation.state
 
-import com.wheretogo.presentation.BottomSheetContent
-import com.wheretogo.presentation.state.CourseAddScreenState.CourseAddState
+import com.wheretogo.presentation.DriveBottomSheetContent
+import com.wheretogo.presentation.state.CourseAddScreenState.CourseAddSheetState
 
 data class BottomSheetState(
     val isVisible: Boolean = false,
     val isSpaceVisibleWhenClose: Boolean = false,
     val initHeight: Int = 0,
-    val content: BottomSheetContent = BottomSheetContent.EMPTY,
+    val content: DriveBottomSheetContent = DriveBottomSheetContent.EMPTY,
     val checkPointAddState: CheckPointAddState = CheckPointAddState(),
-    val courseAddState: CourseAddState = CourseAddState(),
+    val courseAddSheetState: CourseAddSheetState = CourseAddSheetState(),
     val infoState: InfoState = InfoState()
 )

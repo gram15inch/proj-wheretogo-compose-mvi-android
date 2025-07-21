@@ -52,59 +52,20 @@ import com.wheretogo.domain.model.map.Course
 import com.wheretogo.presentation.ExportMap
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.callMap
+import com.wheretogo.presentation.model.AdItem
 import com.wheretogo.presentation.state.FloatingButtonState
 import com.wheretogo.presentation.theme.Gray100
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-@Preview(name="portrait", widthDp = 400, heightDp = 600)
-@Composable
-fun FloatingPortraitButtonPreview() {
-    FloatingButtons(
-        modifier = Modifier.background(Gray100),
-        state = FloatingButtonState(
-            adItemGroup = emptyList(),
-            isCommentVisible = true,
-            isCheckpointAddVisible = true,
-            isExportVisible = true,
-            isFoldVisible = true,
-            isInfoVisible = true,
-            isBackPlateVisible = true
-        ),
-        isNotOtherVisible = false,
-        course = Course(),
-        {}, {}, {}, {}, {}, {}
-    )
-}
-
-@Preview(name="landscape", widthDp = 700, heightDp = 400)
-@Composable
-fun FloatingLandscapeButtonPreview() {
-    FloatingButtons(
-        modifier = Modifier.background(Gray100),
-        state = FloatingButtonState(
-            adItemGroup = emptyList(),
-            isCommentVisible = true,
-            isCheckpointAddVisible = true,
-            isExportVisible = true,
-            isFoldVisible = true,
-            isInfoVisible = true,
-            isBackPlateVisible = true
-        ),
-        isNotOtherVisible = false,
-        course = Course(),
-        {}, {}, {}, {}, {}, {}
-    )
-}
-
 
 @Composable
 fun FloatingButtons(
     modifier: Modifier = Modifier,
-    state: FloatingButtonState,
-    isNotOtherVisible:Boolean,
+    state: FloatingButtonState = FloatingButtonState(),
     course: Course,
+    isNotOtherVisible : Boolean,
     onCommentClick: () -> Unit,
     onCheckpointAddClick: () -> Unit,
     onInfoClick: () -> Unit,
@@ -113,12 +74,12 @@ fun FloatingButtons(
     onFoldClick: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    val isCommentVisible = state.isCommentVisible && isNotOtherVisible
-    val isCheckpointAddVisible = state.isCheckpointAddVisible && isNotOtherVisible
-    val isInfoVisible = state.isInfoVisible && isNotOtherVisible
-    val isExportVisible = state.isExportVisible && isNotOtherVisible
-    val isBackPlateVisible = state.isBackPlateVisible
-    val isFoldVisible = state.isFoldVisible && isNotOtherVisible
+    val isCommentVisible = state.isCommentVisible && isNotOtherVisible && !state.isBackPlateVisible
+    val isCheckpointAddVisible =  state.isCheckpointAddVisible && isNotOtherVisible && !state.isBackPlateVisible
+    val isInfoVisible: Boolean = state.isInfoVisible && isNotOtherVisible && !state.isBackPlateVisible
+    val isExportVisible: Boolean = state.isExportVisible && isNotOtherVisible
+    val isBackPlateVisible: Boolean = state.isBackPlateVisible && state.isExportVisible
+    val isFoldVisible: Boolean = state.isFoldVisible && isNotOtherVisible
     Box(
         modifier = modifier,
         contentAlignment = Alignment.BottomEnd
@@ -149,7 +110,7 @@ fun FloatingButtons(
         ) {
             SlideAnimation(
                 modifier = Modifier,
-                visible = isCommentVisible && !isBackPlateVisible,
+                visible = isCommentVisible,
                 direction = AnimationDirection.RightCenter
             ) {
                 CircleButton(
@@ -162,7 +123,7 @@ fun FloatingButtons(
 
             SlideAnimation(
                 modifier = Modifier,
-                visible = isCheckpointAddVisible && !isBackPlateVisible,
+                visible = isCheckpointAddVisible,
                 direction = AnimationDirection.RightCenter
             ) {
                 CircleButton(
@@ -177,7 +138,7 @@ fun FloatingButtons(
 
             SlideAnimation(
                 modifier = Modifier,
-                visible = isInfoVisible && !isBackPlateVisible,
+                visible = isInfoVisible ,
                 direction = AnimationDirection.RightCenter
             ) {
                 CircleButton(
@@ -197,7 +158,7 @@ fun FloatingButtons(
             ) {
                 CirclePlateButton(
                     icon = R.drawable.ic_share,
-                    isBackPlate = isBackPlateVisible && isExportVisible,
+                    isBackPlate = isBackPlateVisible,
                     buttonEndPadding = buttonEndPadding,
                     onNaverClick = { isLongClick ->
                         scope.launch {
@@ -444,4 +405,25 @@ fun Backplate(backPlateHeight: Dp, buttonEndPadding: Dp, squareSize: Dp, circleS
         InfoText(Modifier.padding(start = 30.dp).align(alignment = Alignment.BottomStart),
             text = stringResource(R.string.exclude_my_location_on_long_press))
     }
+}
+
+@Preview(name="portrait", widthDp = 400, heightDp = 600)
+@Preview(name="landscape", widthDp = 700, heightDp = 400)
+@Composable
+fun FloatingLandscapeButtonPreview() {
+    FloatingButtons(
+        modifier = Modifier.background(Gray100),
+        state = FloatingButtonState(
+            adItemGroup = emptyList(),
+            isCommentVisible = true,
+            isCheckpointAddVisible = true,
+            isExportVisible = true,
+            isFoldVisible = true,
+            isInfoVisible = true,
+            isBackPlateVisible = true,
+        ),
+        course = Course(),
+        isNotOtherVisible = true,
+        {}, {}, {}, {}, {}, {}
+    )
 }

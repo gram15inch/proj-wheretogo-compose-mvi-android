@@ -41,8 +41,8 @@ fun BottomSheet(
     modifier: Modifier = Modifier,
     state: BottomSheetState = BottomSheetState(),
     bottomSpace: Dp = 0.dp,
-    onStateChange: (SheetState) -> Unit,
-    onHeightChange: (Dp) -> Unit,
+    onSheetStateChange: (SheetState) -> Unit,
+    onSheetHeightChange: (Dp) -> Unit,
     content: @Composable () -> Unit,
 ) {
     val density = LocalDensity.current
@@ -63,11 +63,11 @@ fun BottomSheet(
         snapshotFlow { sheetState.targetValue }.collect { value ->
             when (value) {
                 SheetValue.Expanded -> {
-                    onStateChange(SheetState.Expand)
+                    onSheetStateChange(SheetState.Expand)
                 }
 
                 SheetValue.PartiallyExpanded -> {
-                    onStateChange(SheetState.PartiallyExpand)
+                    onSheetStateChange(SheetState.PartiallyExpand)
                 }
 
                 else -> {}
@@ -79,11 +79,11 @@ fun BottomSheet(
         snapshotFlow { sheetState.currentValue }.collect { value ->
             when (value) {
                 SheetValue.Expanded -> {
-                    onStateChange(SheetState.Expanded)
+                    onSheetStateChange(SheetState.Expanded)
                 }
 
                 SheetValue.PartiallyExpanded -> {
-                    onStateChange(SheetState.PartiallyExpanded)
+                    onSheetStateChange(SheetState.PartiallyExpanded)
                 }
 
                 else -> {}
@@ -98,7 +98,6 @@ fun BottomSheet(
         modifier = modifier
     ) {
         BottomSheetScaffold(
-            modifier = Modifier,
             scaffoldState = scaffoldState,
             sheetContainerColor = Color.White,
             sheetContent = {
@@ -113,7 +112,7 @@ fun BottomSheet(
                                     initHeightWithSpace.run { if(this<0.dp) 0.dp else this }
 
                             if (dp != latestDp) {
-                                onHeightChange(dp)
+                                onSheetHeightChange(dp)
                                 latestDp = dp
                             }
                         }

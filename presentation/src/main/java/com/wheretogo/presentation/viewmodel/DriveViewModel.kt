@@ -40,7 +40,7 @@ import com.wheretogo.presentation.CLEAR_ADDRESS
 import com.wheretogo.presentation.CameraUpdateSource
 import com.wheretogo.presentation.CommentType
 import com.wheretogo.presentation.DRIVE_LIST_MIN_ZOOM
-import com.wheretogo.presentation.BottomSheetContent
+import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.MarkerType
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.SEARCH_MARKER
@@ -65,7 +65,6 @@ import com.wheretogo.presentation.state.DriveScreenState
 import com.wheretogo.presentation.state.FloatingButtonState
 import com.wheretogo.presentation.state.InfoState
 import com.wheretogo.presentation.state.ListState
-import com.wheretogo.presentation.state.NaverMapState
 import com.wheretogo.presentation.state.PopUpState
 import com.wheretogo.presentation.state.SearchBarState
 import com.wheretogo.presentation.toComment
@@ -109,7 +108,7 @@ class DriveViewModel @Inject constructor(
     private val _driveScreenState =
         MutableStateFlow(
             DriveScreenState(
-                naverMapState = NaverMapState(mapOverlayService.overlays),
+                overlayGroup = mapOverlayService.overlays,
                 searchBarState = SearchBarState(
                     isAdVisible = true
                 )
@@ -734,7 +733,7 @@ class DriveViewModel @Inject constructor(
                 copy(
                     bottomSheetState = bottomSheetState.copy(
                         isVisible = true,
-                        content = BottomSheetContent.CHECKPOINT_ADD,
+                        content = DriveBottomSheetContent.CHECKPOINT_ADD,
                     )
                 )
         }
@@ -762,7 +761,7 @@ class DriveViewModel @Inject constructor(
                 copy(
                     bottomSheetState = bottomSheetState.copy(
                         isVisible = true,
-                        content = BottomSheetContent.INFO,
+                        content = DriveBottomSheetContent.INFO,
                     ),
                     popUpState = popUpState.copy(
                         commentState = popUpState.commentState.copy(
@@ -846,7 +845,7 @@ class DriveViewModel @Inject constructor(
     private suspend fun bottomSheetChange(state:SheetState) {
         val content = _driveScreenState.value.bottomSheetState.content
             when(content){
-                BottomSheetContent.CHECKPOINT_ADD->{
+                DriveBottomSheetContent.CHECKPOINT_ADD->{
                     val course = _driveScreenState.value.listState.clickItem.course
                     when(state){
                         SheetState.Expand->{
@@ -874,7 +873,7 @@ class DriveViewModel @Inject constructor(
                         }
                     }
                 }
-                BottomSheetContent.INFO->{
+                DriveBottomSheetContent.INFO->{
                     when(state){
                         SheetState.Expand->{
                             _driveScreenState.value = _driveScreenState.value.infoStateInit()

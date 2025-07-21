@@ -53,7 +53,7 @@ import com.wheretogo.domain.model.community.ImageInfo
 import com.wheretogo.domain.model.dummy.getCourseDummy
 import com.wheretogo.presentation.BuildConfig
 import com.wheretogo.presentation.CommentType
-import com.wheretogo.presentation.BottomSheetContent
+import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.SheetState
 import com.wheretogo.presentation.WIDE_WIDTH
@@ -248,6 +248,7 @@ fun DriveContent(
                 modifier = Modifier
                     .fillMaxSize(),
                 state = state.naverMapState,
+                overlayGroup = state.overlayGroup,
                 onMapAsync = {
                     onMapAsync(it)
                     coroutineScope.launch { it.setCurrentLocation(context) }
@@ -255,7 +256,6 @@ fun DriveContent(
                 onCameraUpdate = onCameraUpdate,
                 onCourseMarkerClick = onCourseMarkerClick,
                 onCheckPointMarkerClick = onCheckPointMarkerClick,
-                onOverlayRenderComplete = {},
                 contentPadding = ContentPadding(
                     start = systemBars.calculateStartPadding(LocalLayoutDirection.current),
                     end = systemBars.calculateEndPadding(LocalLayoutDirection.current),
@@ -286,7 +286,7 @@ fun DriveContent(
                 if(BuildConfig.TEST_UI && !isPreview)
                     Text(
                         modifier = Modifier.align(alignment = Alignment.TopStart),
-                        text = "${state.naverMapState.overlayGroup.size}",
+                        text = "${state.overlayGroup.size}",
                         fontSize = 50.sp
                     )
 
@@ -332,8 +332,6 @@ fun DriveContent(
                                 .align(alignment = Alignment.BottomCenter),
                             state = state.listState,
                             onItemClick = onListItemClick,
-                            onBookmarkClick = {},
-                            onHeightPxChange = {}
                         )
                     }
 
@@ -366,17 +364,17 @@ fun DriveContent(
                             .zIndex(3f),
                         state = state.bottomSheetState,
                         bottomSpace = systemBarBottomPadding,
-                        onHeightChange = {
-                            if (state.bottomSheetState.content != BottomSheetContent.INFO) {
+                        onSheetHeightChange = {
+                            if (state.bottomSheetState.content != DriveBottomSheetContent.INFO) {
                                 bottomSheetHeight = it
                                 onBottomSheetHeightChange(it)
                             }
 
                         },
-                        onStateChange = onBottomSheetStateChange
+                        onSheetStateChange = onBottomSheetStateChange
                     ) {
                         when (state.bottomSheetState.content) {
-                            BottomSheetContent.CHECKPOINT_ADD -> {
+                            DriveBottomSheetContent.CHECKPOINT_ADD -> {
                                 CheckPointAddContent(
                                     state = state.bottomSheetState.checkPointAddState,
                                     onSubmitClick = onCheckPointAddSubmitClick,
@@ -385,7 +383,7 @@ fun DriveContent(
                                 )
                             }
 
-                            BottomSheetContent.INFO -> {
+                            DriveBottomSheetContent.INFO -> {
                                 InfoContent(
                                     state = state.bottomSheetState.infoState,
                                     onRemoveClick = onInfoRemoveClick,
@@ -530,7 +528,7 @@ fun CheckpointAddContentPreview(){
                 bottomSheetState = bottomSheetState.copy(
                     initHeight = 400,
                     infoState = InfoState(isRemoveButton = true),
-                    content = BottomSheetContent.CHECKPOINT_ADD,
+                    content = DriveBottomSheetContent.CHECKPOINT_ADD,
                     checkPointAddState = CheckPointAddState(
                         isLoading = false,
                         description = "안녕하세요",

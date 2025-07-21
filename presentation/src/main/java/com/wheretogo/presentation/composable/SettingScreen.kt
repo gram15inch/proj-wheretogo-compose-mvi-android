@@ -61,42 +61,6 @@ import com.wheretogo.presentation.theme.hancomMalangFontFamily
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 import com.wheretogo.presentation.viewmodel.SettingViewModel
 
-@Preview("landscape", widthDp = 800, heightDp = 380)
-@Composable
-fun SettingContentLandscapePreview() {
-    SettingContent(
-        settingState = SettingScreenState().copy(
-            isProfile = true,
-            profile = Profile(
-                name = "어디갈까",
-                private = ProfilePrivate(
-                    mail = "wheretogohelp@gmail.com"
-                )
-            ),
-            isLoading = false,
-            isDialog = false
-        )
-    )
-}
-
-@Preview(name = "portrait", widthDp = 380, heightDp = 800)
-@Composable
-fun SettingContentPortraitPreview() {
-    SettingContent(
-        settingState = SettingScreenState().copy(
-            isProfile = true,
-            profile = Profile(
-                name = "어디갈까",
-                private = ProfilePrivate(
-                    mail = "wheretogohelp@gmail.com"
-                )
-            ),
-            isLoading = false,
-            isDialog = false
-        )
-    )
-}
-
 @Composable
 fun SettingScreen(navController: NavController, viewModel: SettingViewModel = hiltViewModel()) {
     val state by viewModel.settingScreenState.collectAsState()
@@ -480,5 +444,41 @@ fun SettingDialog(
                     Text(color = Color.Gray, text = stringResource(R.string.keep_going))
                 }
         }
+    )
+}
+
+@Preview("landscape", widthDp = 800, heightDp = 380)
+@Composable
+fun SettingContentLandscapePreview() {
+    SettingContent(
+        settingState = SettingScreenState().copy(
+            isProfile = true,
+            profile = Profile(
+                name = "어디갈까",
+                private = ProfilePrivate(
+                    mail = "wheretogohelp@gmail.com"
+                )
+            ),
+            isLoading = false,
+            isDialog = false
+        )
+    )
+}
+
+@Preview(name = "portrait", widthDp = 380, heightDp = 800)
+@Composable
+fun SettingContentPortraitPreview() {
+    SettingContent(
+        settingState = SettingScreenState().copy(
+            isProfile = true,
+            profile = Profile(
+                name = "어디갈까",
+                private = ProfilePrivate(
+                    mail = "wheretogohelp@gmail.com"
+                )
+            ),
+            isLoading = false,
+            isDialog = false
+        )
     )
 }

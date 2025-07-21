@@ -113,8 +113,8 @@ fun PopupPreview() {
 @Composable
 fun MapPopup(
     modifier: Modifier,
-    state: PopUpState,
-    isLoading:Boolean,
+    state : PopUpState = PopUpState(),
+    isLoading: Boolean,
     onPopupImageClick: () -> Unit,
     onPopupBlurClick: () -> Unit,
     onCommentListItemClick: (CommentItemState) -> Unit,

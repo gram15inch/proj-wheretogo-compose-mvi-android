@@ -5,13 +5,11 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -66,14 +64,6 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
         }
     )
 
-}
-
-@Preview
-@Composable
-fun LoginContentPreview() {
-    Column(modifier = Modifier.height(800.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        LoginContent()
-    }
 }
 
 @Composable
@@ -177,4 +167,10 @@ fun GoogleLoginButton(isLoading: Boolean, onClick: () -> Unit) {
             }
 
     }
+}
+
+@Preview(heightDp = 800, widthDp = 400)
+@Composable
+fun LoginContentPreview() {
+    LoginContent()
 }

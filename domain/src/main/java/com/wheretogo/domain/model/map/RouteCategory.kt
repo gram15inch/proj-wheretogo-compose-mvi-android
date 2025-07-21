@@ -10,12 +10,14 @@ import com.wheretogo.domain.typeCategoryGroup
 data class RouteCategory(val code:Int, val attr: RouteAttr, val item: RouteAttrItem){
     companion object{
         fun fromCode(strCode:String):RouteCategory?{
-            val code = strCode.toInt()
-            (typeCategoryGroup + levelCategoryGroup + relationCategoryGroup).forEach {
-                if(it.code == code)
-                    return it
-            }
-            return null
+           return kotlin.runCatching{
+                val code = strCode.toInt()
+                (typeCategoryGroup + levelCategoryGroup + relationCategoryGroup).forEach {
+                    if (it.code == code)
+                        return it
+                }
+                return null
+            }.getOrNull()
         }
 
         fun fromItem(item:RouteAttrItem):RouteCategory?{

@@ -10,8 +10,8 @@ import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.CameraState
 import com.wheretogo.presentation.state.CommentState.CommentAddState
 import com.wheretogo.presentation.state.CommentState.CommentItemState
+import com.wheretogo.presentation.state.ListState.ListItemState
 import com.wheretogo.presentation.state.InfoState
-import com.wheretogo.presentation.state.ListState
 
 sealed class DriveScreenIntent {
 
@@ -30,7 +30,7 @@ sealed class DriveScreenIntent {
 
 
     //목록
-    data class DriveListItemClick(val itemState: ListState.ListItemState) : DriveScreenIntent()
+    data class DriveListItemClick(val itemState: ListItemState) : DriveScreenIntent()
 
     //팝업
     data object DismissPopupComment :DriveScreenIntent()

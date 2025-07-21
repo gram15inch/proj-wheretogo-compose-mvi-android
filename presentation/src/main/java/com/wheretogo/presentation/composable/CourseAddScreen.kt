@@ -34,6 +34,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -49,20 +50,27 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.naver.maps.map.NaverMap
 import com.wheretogo.domain.RouteAttr
+import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.RouteCategory
+
 import com.wheretogo.presentation.BuildConfig
+import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.R
+import com.wheretogo.presentation.SheetState
 import com.wheretogo.presentation.composable.content.AnimationDirection
 import com.wheretogo.presentation.composable.content.BottomSheet
 import com.wheretogo.presentation.composable.content.DelayLottieAnimation
@@ -70,10 +78,14 @@ import com.wheretogo.presentation.composable.content.FadeAnimation
 import com.wheretogo.presentation.composable.content.NaverMap
 import com.wheretogo.presentation.composable.content.SearchBar
 import com.wheretogo.presentation.composable.content.SlideAnimation
+import com.wheretogo.presentation.feature.intervalTab
 import com.wheretogo.presentation.feature.naver.setCurrentLocation
 import com.wheretogo.presentation.intent.CourseAddIntent
 import com.wheretogo.presentation.model.ContentPadding
+import com.wheretogo.presentation.model.MapOverlay
+import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.BottomSheetState
+import com.wheretogo.presentation.state.CameraState
 import com.wheretogo.presentation.state.CourseAddScreenState
 import com.wheretogo.presentation.theme.interBoldFontFamily
 import com.wheretogo.presentation.theme.interFontFamily
@@ -90,6 +102,72 @@ fun CourseAddScreen(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
+
+    CourseAddSheetContent(
+        state = state,
+
+        //NaverMap
+        onMapAsync = { coroutineScope.launch { it.setCurrentLocation(context) } },
+        onCameraUpdate = { viewModel.handleIntent(CourseAddIntent.CameraUpdated(it)) },
+        onMapClick = { viewModel.handleIntent(CourseAddIntent.MapClick(it)) },
+        onCheckPointMarkerClick = { viewModel.handleIntent(CourseAddIntent.WaypointMarkerClick(it)) },
+
+        //SearchBar
+        onSearchSubmit = { viewModel.handleIntent(CourseAddIntent.SubmitClick(it)) },
+        onSearchBarClick = { viewModel.handleIntent(CourseAddIntent.SearchBarClick) },
+        onSearchBarClose = { viewModel.handleIntent(CourseAddIntent.SearchBarClose) },
+        onSearchBarItemClick = { viewModel.handleIntent(CourseAddIntent.SearchBarItemClick(it)) },
+
+        //BottomSheet
+        onHeightChange = { viewModel.handleIntent(CourseAddIntent.ContentPaddingChanged(it.value.toInt())) },
+        onSheetStateChange = { viewModel.handleIntent(CourseAddIntent.SheetStateChange(it)) },
+
+        //CourseAddSheetContent
+        onRouteCreateClick = { viewModel.handleIntent(CourseAddIntent.RouteCreateClick) },
+        onCategorySelect = { viewModel.handleIntent(CourseAddIntent.RouteCategorySelect(it)) },
+        onCommendClick = { viewModel.handleIntent(CourseAddIntent.CommendClick) },
+        onBackClick = { viewModel.handleIntent(CourseAddIntent.DetailBackClick) },
+        onNameEditValueChange = { viewModel.handleIntent(CourseAddIntent.NameEditValueChange(it)) },
+
+        //FloatingButtonGroup
+        onMarkerMoveClick = { viewModel.handleIntent(CourseAddIntent.MarkerMoveFloatingClick) },
+        onMarkerRemoveClick = { viewModel.handleIntent(CourseAddIntent.MarkerRemoveFloatingClick) }
+
+    )
+}
+
+@Composable
+fun CourseAddSheetContent(
+    state:CourseAddScreenState = CourseAddScreenState(),
+
+    //NaverMap
+    onMapAsync: (NaverMap) -> Unit = {},
+    onCameraUpdate: (CameraState) -> Unit = {},
+    onMapClick: (LatLng) -> Unit = {},
+    onCheckPointMarkerClick: (MapOverlay.MarkerContainer) -> Unit = {},
+
+    //SearchBar
+    onSearchBarItemClick: (SearchBarItem) -> Unit = {},
+    onSearchBarClick: () -> Unit = {},
+    onSearchSubmit: (String) -> Unit = {},
+    onSearchBarClose: ()-> Unit = {},
+
+    //BottomSheet
+    onSheetStateChange: (SheetState) -> Unit = {},
+    onHeightChange: (Dp) -> Unit = {},
+
+    //CourseAddSheetContent
+    onCategorySelect: (RouteCategory) -> Unit = {},
+    onRouteCreateClick: () -> Unit = {},
+    onCommendClick: () -> Unit = {},
+    onNameEditValueChange: (String) -> Unit = {},
+    onBackClick: () -> Unit = {},
+
+    //FloatingButtonGroup
+    onMarkerMoveClick: () -> Unit = {},
+    onMarkerRemoveClick: () -> Unit = {}
+){
+    val isPreview = LocalInspectionMode.current
     Scaffold(
         contentWindowInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout),
         content = { systemBars->
@@ -104,15 +182,13 @@ fun CourseAddScreen(
             NaverMap(
                 modifier = Modifier
                     .zIndex(0f)
-                    .fillMaxSize()
-                    .background(color = Color.Green),
+                    .fillMaxSize(),
                 state = state.naverMapState,
-                onMapAsync = { map ->
-                    coroutineScope.launch { map.setCurrentLocation(context) }
-                },
-                onCameraUpdate = { viewModel.handleIntent(CourseAddIntent.CameraUpdated(it)) },
-                onMapClickListener = { viewModel.handleIntent(CourseAddIntent.MapClick(it)) },
-                onCheckPointMarkerClick = { viewModel.handleIntent(CourseAddIntent.WaypointMarkerClick(it)) },
+                overlayGroup = state.overlayGroup,
+                onMapAsync = onMapAsync,
+                onCameraUpdate = onCameraUpdate,
+                onMapClick = onMapClick,
+                onCheckPointMarkerClick = onCheckPointMarkerClick,
                 contentPadding = ContentPadding(
                     start = systemBars.calculateStartPadding(LocalLayoutDirection.current),
                     end = systemBars.calculateEndPadding(LocalLayoutDirection.current),
@@ -134,44 +210,42 @@ fun CourseAddScreen(
                     modifier = Modifier
                         .zIndex(1f),
                     state = state.searchBarState,
-                    onSearchSubmit = { viewModel.handleIntent(CourseAddIntent.SubmitClick(it)) },
-                    onSearchBarClick = { viewModel.handleIntent(CourseAddIntent.SearchBarClick) },
-                    onSearchBarClose = { viewModel.handleIntent(CourseAddIntent.SearchBarClose) },
-                    onSearchBarItemClick = { viewModel.handleIntent(CourseAddIntent.SearchBarItemClick(it)) }
+                    onSearchSubmit = onSearchSubmit,
+                    onSearchBarClick = onSearchBarClick,
+                    onSearchBarClose = onSearchBarClose,
+                    onSearchBarItemClick = onSearchBarItemClick
                 )
 
                 BottomSheet(
                     modifier = Modifier,
                     state = state.bottomSheetState,
                     bottomSpace = systemBarBottomPadding,
-                    onHeightChange = { dp ->
+                    onSheetHeightChange = { dp ->
                         bottomSheetHeight = dp
-                        viewModel.handleIntent(CourseAddIntent.ContentPaddingChanged(bottomSheetHeight.value.toInt()))
+                        onHeightChange(bottomSheetHeight)
                     },
-                    onStateChange = {
-                        viewModel.handleIntent(CourseAddIntent.SheetStateChange(it))
-                    }
+                    onSheetStateChange = onSheetStateChange
                 ) {
-                    CourseAddContent(
-                        state = state.bottomSheetState.courseAddState,
-                        onRouteCreateClick = { viewModel.handleIntent(CourseAddIntent.RouteCreateClick) },
-                        onCategorySelect = { viewModel.handleIntent(CourseAddIntent.RouteCategorySelect(it)) },
-                        onCommendClick = { viewModel.handleIntent(CourseAddIntent.CommendClick) },
-                        onBackClick = { viewModel.handleIntent(CourseAddIntent.DetailBackClick) },
-                        onNameEditValueChange = { viewModel.handleIntent(CourseAddIntent.NameEditValueChange(it)) },
+                    CourseAddSheetContent(
+                        state = state.bottomSheetState.courseAddSheetState,
+                        onRouteCreateClick = onRouteCreateClick,
+                        onCategorySelect = onCategorySelect,
+                        onCommendClick = onCommendClick,
+                        onBackClick = onBackClick,
+                        onNameEditValueChange = onNameEditValueChange,
                     )
                 }
             }
 
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(
-                        start = systemBars.calculateStartPadding(LocalLayoutDirection.current),
-                        end = systemBars.calculateEndPadding(LocalLayoutDirection.current),
-                        top = systemBars.calculateTopPadding(),
-                        bottom = mapBottomPadding
-                    )
+                .fillMaxSize()
+                .padding(
+                    start = systemBars.calculateStartPadding(LocalLayoutDirection.current),
+                    end = systemBars.calculateEndPadding(LocalLayoutDirection.current),
+                    top = systemBars.calculateTopPadding(),
+                    bottom = mapBottomPadding
+                )
             ){
                 if (BuildConfig.TEST_UI) {
                     Box(
@@ -181,7 +255,7 @@ fun CourseAddScreen(
                     ) {
                         Text(
                             modifier = Modifier.align(alignment = Alignment.TopStart),
-                            text = "${state.naverMapState.overlayGroup.size}",
+                            text = "${state.overlayGroup.size}",
                             fontSize = 50.sp
                         )
                     }
@@ -207,50 +281,14 @@ fun CourseAddScreen(
                     FloatingButtonGroup(
                         modifier = Modifier
                             .align(Alignment.BottomEnd),
-                        onMarkerMoveClick = {
-                            viewModel.handleIntent(CourseAddIntent.MarkerMoveFloatingClick)
-                        },
-                        onMarkerRemoveClick = {
-                            viewModel.handleIntent(CourseAddIntent.MarkerRemoveFloatingClick)
-                        }
+                        onMarkerMoveClick = onMarkerMoveClick,
+                        onMarkerRemoveClick = onMarkerRemoveClick
                     )
                 }
             }
         }
     )
 
-}
-
-
-@Preview
-@Composable
-fun CourseAddScreenPreview() {
-    BottomSheet(
-        modifier = Modifier.height(400.dp),
-        state = BottomSheetState(
-            initHeight = 400,
-            isVisible = true,
-        ),
-        bottomSpace = 0.dp,
-        onStateChange = {},
-        onHeightChange = {}
-    ) {
-        CourseAddContent(
-            CourseAddScreenState.CourseAddState(
-                isTwoStep = true,
-                selectedCategoryCodeGroup = mapOf(
-                    RouteAttr.TYPE to 1,
-                    RouteAttr.LEVEL to 4,
-                    RouteAttr.RELATION to 9,
-                )
-            ),
-            {},
-            {},
-            {},
-            {},
-            {},
-        )
-    }
 }
 
 @Composable
@@ -291,8 +329,8 @@ fun FloatingButtonGroup(
 }
 
 @Composable
-fun CourseAddContent(
-    state: CourseAddScreenState.CourseAddState,
+fun CourseAddSheetContent(
+    state: CourseAddScreenState.CourseAddSheetState,
     onCategorySelect: (RouteCategory) -> Unit,
     onRouteCreateClick: () -> Unit,
     onCommendClick: () -> Unit,
@@ -348,13 +386,15 @@ fun CommendButton(
     isDetailContent: Boolean,
     onCommendClick: () -> Unit
 ) {
+    var isCommendActive by remember { mutableStateOf(isDone) }
+    LaunchedEffect(isDone) { isCommendActive=isDone }
     Box(
         modifier = modifier.padding(horizontal = 15.dp, vertical = 5.dp),
         contentAlignment = Alignment.BottomCenter
     ) {
         val text = if (isDetailContent) R.string.done else R.string.next_step
-        val textColor = if (isDone) R.color.white else R.color.black
-        val backColor = if (isDone) R.color.blue else R.color.white
+        val textColor = if (isCommendActive) R.color.white else R.color.black
+        val backColor = if (isCommendActive) R.color.blue else R.color.white
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -365,8 +405,9 @@ fun CommendButton(
                     width = 1.dp
                 )
                 .background(colorResource(backColor))
-                .clickable {
-                    onCommendClick()
+                .intervalTab(1000L) {
+                    if(isCommendActive)
+                        onCommendClick()
                 },
             contentAlignment = Alignment.Center
         ) {
@@ -522,7 +563,7 @@ fun RouteWaypointContent(
                             color = colorResource(R.color.gray_B9B9B9)
                         )
                         .align(Alignment.TopEnd)
-                        .clickable { onRouteCreateClick() },
+                        .intervalTab(2000) { onRouteCreateClick() },
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -635,4 +676,48 @@ fun AddressItem(modifier: Modifier, item: CourseAddScreenState.RouteWaypointItem
             )
         }
     }
+}
+
+@Preview(widthDp = 350, heightDp = 600)
+@Composable
+fun CourseAddOneStepPreview() {
+    CourseAddSheetContent(
+        state = CourseAddScreenState(
+            bottomSheetState = BottomSheetState(
+                initHeight = 400,
+                isVisible = true,
+                content = DriveBottomSheetContent.COURSE_ADD,
+                courseAddSheetState = CourseAddScreenState.CourseAddSheetState(
+                    isTwoStep = false,
+                    selectedCategoryCodeGroup = mapOf(
+                        RouteAttr.TYPE to 1,
+                        RouteAttr.LEVEL to 4,
+                        RouteAttr.RELATION to 9,
+                    )
+                )
+            )
+        )
+    )
+}
+
+@Preview(widthDp = 350, heightDp = 600)
+@Composable
+fun CourseAddTwoStepPreview() {
+    CourseAddSheetContent(
+        state = CourseAddScreenState(
+            bottomSheetState = BottomSheetState(
+                initHeight = 400,
+                isVisible = true,
+                content = DriveBottomSheetContent.COURSE_ADD,
+                courseAddSheetState = CourseAddScreenState.CourseAddSheetState(
+                    isTwoStep = true,
+                    selectedCategoryCodeGroup = mapOf(
+                        RouteAttr.TYPE to 1,
+                        RouteAttr.LEVEL to 4,
+                        RouteAttr.RELATION to 9,
+                    )
+                )
+            )
+        )
+    )
 }

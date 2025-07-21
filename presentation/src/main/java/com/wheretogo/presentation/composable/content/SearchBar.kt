@@ -65,7 +65,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun SearchBar(
     modifier: Modifier = Modifier,
-    state: SearchBarState = SearchBarState(),
+    state: SearchBarState= SearchBarState(),
     onSearchBarItemClick: (SearchBarItem) -> Unit = {},
     onSearchBarClick: () -> Unit = {},
     onSearchSubmit: (String) -> Unit = {},
@@ -80,7 +80,7 @@ fun SearchBar(
     val outDp = 12.dp
 
     LaunchedEffect(state.isActive) {
-        if (state.isActive) {
+        if(state.isActive) {
             alpha = 1f
         } else {
             alpha = 0.75f
@@ -402,7 +402,7 @@ fun SearchBarPreview() {
             isLoading = isLoading,
             isEmptyVisible = false,
             isAdVisible = true,
-            searchBarItemGroup = emptyList(),
+            searchBarItemGroup = emptyList()
         ),
         onSearchBarItemClick = {
             CoroutineScope(Dispatchers.Main).launch {

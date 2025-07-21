@@ -35,7 +35,6 @@ import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.formatFileSizeToMB
 import com.wheretogo.presentation.state.BottomSheetState
 import com.wheretogo.presentation.state.CheckPointAddState
-import com.wheretogo.presentation.state.DriveScreenState
 import com.wheretogo.presentation.state.InfoState
 import com.wheretogo.presentation.theme.WhereTogoTheme
 import com.wheretogo.presentation.theme.interBoldFontFamily
@@ -205,8 +204,8 @@ fun CheckpointAddBottomSheetPreview() {
                     initHeight = 400
                 ),
                 bottomSpace = 0.dp,
-                onStateChange = {},
-                onHeightChange = {}
+                onSheetStateChange = {},
+                onSheetHeightChange = {}
             ) {
                 if (state.isVisible) {
                     CheckPointAddContent(

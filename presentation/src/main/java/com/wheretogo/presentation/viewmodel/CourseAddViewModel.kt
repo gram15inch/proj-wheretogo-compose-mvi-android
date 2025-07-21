@@ -18,7 +18,7 @@ import com.wheretogo.presentation.CameraUpdateSource
 import com.wheretogo.presentation.PathType
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.AppScreen
-import com.wheretogo.presentation.BottomSheetContent
+import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.SheetState
 import com.wheretogo.presentation.feature.EventBus
 import com.wheretogo.presentation.feature.map.CourseAddMapOverlayService
@@ -51,11 +51,11 @@ class CourseAddViewModel @Inject constructor(
 ) : ViewModel() {
     private val _courseAddScreenState = MutableStateFlow(
         CourseAddScreenState(
-            naverMapState = NaverMapState(overlayGroup = mapOverlayService.overlays),
+            overlayGroup = mapOverlayService.overlays,
             bottomSheetState = BottomSheetState(
                 isVisible = true,
                 initHeight = 80,
-                content = BottomSheetContent.COURSE_ADD,
+                content = DriveBottomSheetContent.COURSE_ADD,
                 isSpaceVisibleWhenClose = true
             )
         )
@@ -182,7 +182,7 @@ class CourseAddViewModel @Inject constructor(
                 mapOverlayService.addWaypoint(latlng)
                 mapOverlayService.createWaypointPath()
                 copy(
-                    timeStamp = System.currentTimeMillis()
+                   timeStamp = System.currentTimeMillis()
                 )
             }
         }
@@ -232,7 +232,7 @@ class CourseAddViewModel @Inject constructor(
 
             copy(
                 bottomSheetState = bottomSheetState.copy(
-                    courseAddState = bottomSheetState.courseAddState.copy(
+                    courseAddSheetState = bottomSheetState.courseAddSheetState.copy(
                         routeState = CourseAddScreenState.RouteState(),
                         isOneStepDone = false,
                         isNextStepButtonActive = false
@@ -254,7 +254,7 @@ class CourseAddViewModel @Inject constructor(
                 copy(
                     selectedMarkerItem = null,
                     bottomSheetState = bottomSheetState.copy(
-                        courseAddState = bottomSheetState.courseAddState.copy(
+                        courseAddSheetState = bottomSheetState.courseAddSheetState.copy(
                             routeState = CourseAddScreenState.RouteState(),
                             isOneStepDone = false,
                             isNextStepButtonActive = false,
@@ -284,10 +284,10 @@ class CourseAddViewModel @Inject constructor(
                     val isOneStepDone = validateOneStep(this)
                     copy(
                         bottomSheetState = bottomSheetState.copy(
-                            courseAddState = bottomSheetState.courseAddState.copy(
+                            courseAddSheetState = bottomSheetState.courseAddSheetState.copy(
                                 isOneStepDone = isOneStepDone,
                                 isNextStepButtonActive = isOneStepDone,
-                                routeState = bottomSheetState.courseAddState.routeState.copy(
+                                routeState = bottomSheetState.courseAddSheetState.routeState.copy(
                                     duration = route.duration,
                                     distance = route.distance,
                                     points = route.points,
@@ -314,7 +314,7 @@ class CourseAddViewModel @Inject constructor(
             _courseAddScreenState.value = _courseAddScreenState.value.run {
                 copy(
                     bottomSheetState = bottomSheetState.copy(
-                        courseAddState = bottomSheetState.courseAddState.copy(
+                        courseAddSheetState = bottomSheetState.courseAddSheetState.copy(
                             courseName = text
                         )
                     )
@@ -322,7 +322,7 @@ class CourseAddViewModel @Inject constructor(
                     val isOneStepDone = validateOneStep(this)
                     copy(
                         bottomSheetState = bottomSheetState.copy(
-                            courseAddState = bottomSheetState.courseAddState.copy(
+                            courseAddSheetState = bottomSheetState.courseAddSheetState.copy(
                                 isOneStepDone = isOneStepDone,
                                 isNextStepButtonActive = isOneStepDone
                             )
@@ -361,13 +361,13 @@ class CourseAddViewModel @Inject constructor(
 
     private fun routeCategorySelect(item: RouteCategory) {
         _courseAddScreenState.value = _courseAddScreenState.value.run {
-            val newSelectedItemGroup = bottomSheetState.courseAddState.selectedCategoryCodeGroup.toMutableMap().apply {
+            val newSelectedItemGroup = bottomSheetState.courseAddSheetState.selectedCategoryCodeGroup.toMutableMap().apply {
                 put(item.attr,item.code)
             }
 
             copy(
                 bottomSheetState = bottomSheetState.copy(
-                    courseAddState = bottomSheetState.courseAddState.copy(
+                    courseAddSheetState = bottomSheetState.courseAddSheetState.copy(
                         selectedCategoryCodeGroup = newSelectedItemGroup,
                     )
                 ),
@@ -378,9 +378,9 @@ class CourseAddViewModel @Inject constructor(
             val isTwoStepDone = validateTwoStep(this)
             copy(
                 bottomSheetState = bottomSheetState.copy(
-                    courseAddState = bottomSheetState.courseAddState.copy(
+                    courseAddSheetState = bottomSheetState.courseAddSheetState.copy(
                         isTwoStepDone= isTwoStepDone,
-                        isNextStepButtonActive = bottomSheetState.courseAddState.isOneStepDone && isTwoStepDone
+                        isNextStepButtonActive = bottomSheetState.courseAddSheetState.isOneStepDone && isTwoStepDone
                     )
                 ),
 
@@ -389,14 +389,14 @@ class CourseAddViewModel @Inject constructor(
     }
 
     private suspend fun commendClick() {
-        val isTwoStep = _courseAddScreenState.value.bottomSheetState.courseAddState.isTwoStep
+        val isTwoStep = _courseAddScreenState.value.bottomSheetState.courseAddSheetState.isTwoStep
         if (!isTwoStep) { // 첫째 페이지
             _courseAddScreenState.value = _courseAddScreenState.value.run {
                 copy(
                     bottomSheetState = bottomSheetState.copy(
-                        courseAddState = bottomSheetState.courseAddState.copy(
-                            isTwoStep = bottomSheetState.courseAddState.isOneStepDone,
-                            isNextStepButtonActive = bottomSheetState.courseAddState.isTwoStepDone
+                        courseAddSheetState = bottomSheetState.courseAddSheetState.copy(
+                            isTwoStep = bottomSheetState.courseAddSheetState.isOneStepDone,
+                            isNextStepButtonActive = bottomSheetState.courseAddSheetState.isTwoStepDone
                         )
                     ),
                 )
@@ -404,7 +404,7 @@ class CourseAddViewModel @Inject constructor(
         } else { // 둘쨰 페이지
             _courseAddScreenState.value = _courseAddScreenState.value.setContentLoading(true)
             val addCourseResponse = _courseAddScreenState.value .run {
-                val courseAddState = bottomSheetState.courseAddState
+                val courseAddState = bottomSheetState.courseAddSheetState
                 val routeState = courseAddState.routeState
                 val waypoints = routeState.waypointItemStateGroup.map { it.data.latlng }
                 val newCourse = CourseAddRequest(
@@ -441,9 +441,9 @@ class CourseAddViewModel @Inject constructor(
         _courseAddScreenState.value = _courseAddScreenState.value.run {
             copy(
                 bottomSheetState = bottomSheetState.copy(
-                    courseAddState = bottomSheetState.courseAddState.copy(
+                    courseAddSheetState = bottomSheetState.courseAddSheetState.copy(
                         isTwoStep = false,
-                        isNextStepButtonActive = bottomSheetState.courseAddState.isOneStepDone
+                        isNextStepButtonActive = bottomSheetState.courseAddSheetState.isOneStepDone
                     )
                 ),
 
@@ -471,7 +471,7 @@ class CourseAddViewModel @Inject constructor(
 
     private fun validateOneStep(state: CourseAddScreenState):Boolean{
         return state.run {
-            val isCourseNameValidate = state.bottomSheetState.courseAddState.courseName.trim().length in 2..  COURSE_NAME_MAX_LENGTH
+            val isCourseNameValidate = state.bottomSheetState.courseAddSheetState.courseName.trim().length in 2..  COURSE_NAME_MAX_LENGTH
             val isPathValidate = mapOverlayService.getWaypointPath()?.run { type == PathType.FULL }?:false
             val isWaypointValidate = mapOverlayService.getWaypoints().size >= 2
 
@@ -480,7 +480,7 @@ class CourseAddViewModel @Inject constructor(
     }
 
     private fun validateTwoStep(state: CourseAddScreenState):Boolean{
-        val selectedGroup =state.bottomSheetState.courseAddState.selectedCategoryCodeGroup
+        val selectedGroup =state.bottomSheetState.courseAddSheetState.selectedCategoryCodeGroup
 
         if(selectedGroup.size != RouteAttr.entries.size)
             return false
@@ -496,7 +496,7 @@ class CourseAddViewModel @Inject constructor(
        return run {
             copy(
                 bottomSheetState = bottomSheetState.copy(
-                    courseAddState = bottomSheetState.courseAddState.copy(
+                    courseAddSheetState = bottomSheetState.courseAddSheetState.copy(
                         isLoading = isLoading
                     )
                 )

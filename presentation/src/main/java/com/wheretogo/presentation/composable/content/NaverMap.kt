@@ -13,7 +13,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInspectionMode
@@ -37,6 +36,7 @@ import com.wheretogo.presentation.model.ContentPadding
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.state.CameraState
 import com.wheretogo.presentation.state.NaverMapState
+import com.wheretogo.presentation.theme.Green50
 import com.wheretogo.presentation.toCameraState
 import com.wheretogo.presentation.toDomainLatLng
 import com.wheretogo.presentation.toNaver
@@ -46,10 +46,11 @@ import java.lang.ref.WeakReference
 fun NaverMap(
     modifier: Modifier = Modifier,
     state: NaverMapState,
+    overlayGroup : Collection<MapOverlay> = emptyList(),
     contentPadding: ContentPadding = ContentPadding(),
     onMapAsync: (NaverMap) -> Unit = {},
     onCameraUpdate: (CameraState) -> Unit = {},
-    onMapClickListener: (LatLng) -> Unit = {},
+    onMapClick: (LatLng) -> Unit = {},
     onCourseMarkerClick: (MapOverlay.MarkerContainer) -> Unit = {},
     onCheckPointMarkerClick: (MapOverlay.MarkerContainer) -> Unit = {},
     onOverlayRenderComplete: (Boolean) -> Unit = {}
@@ -75,7 +76,7 @@ fun NaverMap(
                    }
 
                     setOnMapClickListener { _, latlng ->
-                        onMapClickListener(latlng.toDomainLatLng())
+                        onMapClick(latlng.toDomainLatLng())
                     }
                 }
             }
@@ -87,7 +88,7 @@ fun NaverMap(
     if(isPreview)
         Box(modifier
             .fillMaxSize()
-            .background(Color.White))
+            .background(Green50))
     else{
         mapView?.let { syncMapView ->
             DisposableEffect(Unit) {
@@ -104,7 +105,7 @@ fun NaverMap(
         mapView?.getMapAsync { naverMap ->
             naverMap.contentPaddingUpdate(density, contentPadding)
             naverMap.overlayUpdate(
-                overlayGroup = state.overlayGroup,
+                overlayGroup = overlayGroup,
                 onCourseMarkerClick = onCourseMarkerClick,
                 onCheckPointMarkerClick = onCheckPointMarkerClick,
                 onOverlayRenderComplete = onOverlayRenderComplete
