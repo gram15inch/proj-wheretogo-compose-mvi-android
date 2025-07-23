@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -32,11 +33,11 @@ class RootViewModel @Inject constructor(
     )
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            isRequestLoginState.collect {
-                val event = if(it) AdLifecycle.onPause else AdLifecycle.onResume
+            isRequestLoginState.collect { isRequestLogin->
+                val event = if(isRequestLogin) AdLifecycle.onPause else AdLifecycle.onResume
                 adService.lifeCycleChange(event = event)
-                _rootScreenState.value = _rootScreenState.value.run {
-                    copy(isRequestLogin = it)
+                _rootScreenState.update {
+                    it.copy(isRequestLogin = isRequestLogin)
                 }
             }
         }
