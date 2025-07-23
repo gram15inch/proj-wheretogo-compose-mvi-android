@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
@@ -33,7 +32,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -43,6 +41,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.topShadow
+import com.wheretogo.presentation.theme.PrimeBlue
+import com.wheretogo.presentation.theme.Gray150
 
 
 @Composable
@@ -154,7 +154,7 @@ fun DescriptionTextField(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(16.dp))
-                        .background(colorResource(R.color.gray_B9B9B9))
+                        .background(Gray150)
                         .padding(10.dp)
                 ) {
                     BasicTextField(
@@ -191,7 +191,7 @@ fun EnterButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
-            .background(colorResource(R.color.blue))
+            .background(PrimeBlue)
             .clickable { onClick() }
             .padding(vertical = 3.dp, horizontal = 15.dp),
         contentAlignment = Alignment.Center

@@ -13,7 +13,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInspectionMode
@@ -27,7 +26,6 @@ import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapView
 import com.naver.maps.map.NaverMap
-import com.valentinilk.shimmer.shimmer
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.presentation.BuildConfig
 import com.wheretogo.presentation.CameraUpdateSource
@@ -37,7 +35,8 @@ import com.wheretogo.presentation.feature.geo.FollowLocationSource
 import com.wheretogo.presentation.model.ContentPadding
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.state.CameraState
-import com.wheretogo.presentation.theme.White50
+import com.wheretogo.presentation.state.NaverMapState
+import com.wheretogo.presentation.theme.Green50
 import com.wheretogo.presentation.toCameraState
 import com.wheretogo.presentation.toDomainLatLng
 import com.wheretogo.presentation.toNaver
@@ -46,12 +45,12 @@ import java.lang.ref.WeakReference
 @Composable
 fun NaverMap(
     modifier: Modifier = Modifier,
-    mapOverlayGroup: Collection<MapOverlay> = emptyList(),
+    state: NaverMapState,
+    overlayGroup : Collection<MapOverlay> = emptyList(),
     contentPadding: ContentPadding = ContentPadding(),
-    cameraState: CameraState = CameraState(),
     onMapAsync: (NaverMap) -> Unit = {},
     onCameraUpdate: (CameraState) -> Unit = {},
-    onMapClickListener: (LatLng) -> Unit = {},
+    onMapClick: (LatLng) -> Unit = {},
     onCourseMarkerClick: (MapOverlay.MarkerContainer) -> Unit = {},
     onCheckPointMarkerClick: (MapOverlay.MarkerContainer) -> Unit = {},
     onOverlayRenderComplete: (Boolean) -> Unit = {}
@@ -72,12 +71,12 @@ fun NaverMap(
                     naverMap.setUiSetting()
                     naverMap.locationSetting(context)
                  addOnCameraIdleListener {
-                     if(cameraState.updateSource==CameraUpdateSource.USER)
+                     if (state.cameraState.updateSource == CameraUpdateSource.USER)
                         onCameraUpdate(naverMap.toCameraState())
                    }
 
                     setOnMapClickListener { _, latlng ->
-                        onMapClickListener(latlng.toDomainLatLng())
+                        onMapClick(latlng.toDomainLatLng())
                     }
                 }
             }
@@ -87,7 +86,9 @@ fun NaverMap(
 
 
     if(isPreview)
-        Box(modifier.fillMaxSize().background(Color.White))
+        Box(modifier
+            .fillMaxSize()
+            .background(Green50))
     else{
         mapView?.let { syncMapView ->
             DisposableEffect(Unit) {
@@ -104,16 +105,16 @@ fun NaverMap(
         mapView?.getMapAsync { naverMap ->
             naverMap.contentPaddingUpdate(density, contentPadding)
             naverMap.overlayUpdate(
-                overlayGroup = mapOverlayGroup,
+                overlayGroup = overlayGroup,
                 onCourseMarkerClick = onCourseMarkerClick,
                 onCheckPointMarkerClick = onCheckPointMarkerClick,
                 onOverlayRenderComplete = onOverlayRenderComplete
             )
 
-            if(!isMoving && cameraState.updateSource != CameraUpdateSource.USER) {
+            if (!isMoving && state.cameraState.updateSource != CameraUpdateSource.USER) {
                 isMoving = true
                 naverMap.setGesture(false)
-                naverMap.cameraMove(cameraState){
+                naverMap.cameraMove(state.cameraState) {
                     isMoving = false
                     naverMap.setGesture(true)
                 }

@@ -28,30 +28,29 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.wheretogo.presentation.R
 import com.wheretogo.presentation.SheetState
+import com.wheretogo.presentation.state.BottomSheetState
+import com.wheretogo.presentation.theme.Gray6080
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomSheet(
     modifier: Modifier = Modifier,
-    initHeight: Int = 0,
+    state: BottomSheetState = BottomSheetState(),
     bottomSpace: Dp = 0.dp,
-    isSpaceVisibleWhenClose: Boolean = false,
-    isVisible: Boolean = false,
-    onStateChange: (SheetState) -> Unit,
-    onHeightChange: (Dp) -> Unit,
+    onSheetStateChange: (SheetState) -> Unit,
+    onSheetHeightChange: (Dp) -> Unit,
     content: @Composable () -> Unit,
 ) {
     val density = LocalDensity.current
     var latestDp by remember { mutableStateOf(0.dp) }
     val scaffoldState = rememberBottomSheetScaffoldState()
     val sheetState = scaffoldState.bottomSheetState
-    LaunchedEffect(isVisible) {
-        if (isVisible) {
+
+    LaunchedEffect(state.isVisible) {
+        if (state.isVisible) {
             scaffoldState.bottomSheetState.expand()
         } else {
             if (scaffoldState.bottomSheetState.targetValue == SheetValue.Expanded)
@@ -63,11 +62,11 @@ fun BottomSheet(
         snapshotFlow { sheetState.targetValue }.collect { value ->
             when (value) {
                 SheetValue.Expanded -> {
-                    onStateChange(SheetState.Expand)
+                    onSheetStateChange(SheetState.Expand)
                 }
 
                 SheetValue.PartiallyExpanded -> {
-                    onStateChange(SheetState.PartiallyExpand)
+                    onSheetStateChange(SheetState.PartiallyExpand)
                 }
 
                 else -> {}
@@ -79,11 +78,11 @@ fun BottomSheet(
         snapshotFlow { sheetState.currentValue }.collect { value ->
             when (value) {
                 SheetValue.Expanded -> {
-                    onStateChange(SheetState.Expanded)
+                    onSheetStateChange(SheetState.Expanded)
                 }
 
                 SheetValue.PartiallyExpanded -> {
-                    onStateChange(SheetState.PartiallyExpanded)
+                    onSheetStateChange(SheetState.PartiallyExpanded)
                 }
 
                 else -> {}
@@ -91,13 +90,13 @@ fun BottomSheet(
         }
     }
 
-    val initHeightWithSpace = initHeight.dp + if(isSpaceVisibleWhenClose) bottomSpace else 0.dp
+    val initHeightWithSpace =
+        state.initHeight.dp + if(state.isSpaceVisibleWhenClose) bottomSpace else 0.dp
 
     Box(
         modifier = modifier
     ) {
         BottomSheetScaffold(
-            modifier = Modifier,
             scaffoldState = scaffoldState,
             sheetContainerColor = Color.White,
             sheetContent = {
@@ -105,9 +104,14 @@ fun BottomSheet(
                     modifier = Modifier
                         .onGloballyPositioned { coordinates ->
                             val heightPx = coordinates.size.height
-                            val dp = if (isVisible) with(density) { heightPx.toDp() + 20.dp } else initHeightWithSpace.run { if(this<0.dp) 0.dp else this }
+                            val dp =
+                                if (state.isVisible)
+                                    with(density) { heightPx.toDp() + 20.dp }
+                                else
+                                    initHeightWithSpace.run { if(this<0.dp) 0.dp else this }
+
                             if (dp != latestDp) {
-                                onHeightChange(dp)
+                                onSheetHeightChange(dp)
                                 latestDp = dp
                             }
                         }
@@ -141,7 +145,7 @@ fun DragHandle(modifier: Modifier = Modifier) {
                 .clip(RoundedCornerShape(16.dp))
                 .width(40.dp)
                 .height(5.dp)
-                .background(colorResource(R.color.gray_C7C7C7_80))
+                .background(Gray6080)
         )
     }
 }

@@ -19,6 +19,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -33,9 +34,7 @@ class LoginViewModel @Inject constructor(
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
         when (exception) {
             else -> {
-                _loginScreenState.value = _loginScreenState.value.copy(
-                    error = exception.message
-                )
+                _loginScreenState.update { it.copy(error = exception.message) }
                 exception.printStackTrace()
             }
         }
@@ -43,23 +42,19 @@ class LoginViewModel @Inject constructor(
 
     fun signUpAndSignIn(authRequest: Result<AuthRequest>) {
         viewModelScope.launch(exceptionHandler) {
-            _loginScreenState.value = _loginScreenState.value.copy(isLoading = true)
+            _loginScreenState.update { it.copy(isLoading = true) }
 
             authRequest.onFailure {
                 it.toAppError().toStringRes()?.let {
                     EventBus.send(AppEvent.SnackBar(EventMsg(it)))
                 }
-                _loginScreenState.value = _loginScreenState.value.run {
-                    copy(
-                        isLoading = false
-                    )
-                }
+                _loginScreenState.update { it.copy(isLoading = false) }
             }.onSuccess {
                 val result = withContext(Dispatchers.IO) { userSignUpAndSignInUseCase(it) }
                 when (result.status) {
                     UseCaseResponse.Status.Success -> {
-                        _loginScreenState.value = _loginScreenState.value.run {
-                            copy(
+                        _loginScreenState.update {
+                            it.copy(
                                 isExit = true,
                                 isLoading = false
                             )
@@ -68,9 +63,7 @@ class LoginViewModel @Inject constructor(
                     }
 
                     UseCaseResponse.Status.Fail -> {
-                        _loginScreenState.value = _loginScreenState.value.run {
-                            copy(isLoading = false)
-                        }
+                        _loginScreenState.update { it.copy(isLoading = false) }
                         if (result.failType != null)
                             EventBus.send(AppEvent.SnackBar(EventMsg(result.failType!!.toStringRes())))
                         else
@@ -84,9 +77,7 @@ class LoginViewModel @Inject constructor(
     fun signInPass() {
         viewModelScope.launch(exceptionHandler) {
             withContext(Dispatchers.IO){ userSignUpAndSignInUseCase.signInPass() }
-            _loginScreenState.value = _loginScreenState.value.run {
-                copy(isExit = true)
-            }
+            _loginScreenState.update { it.copy(isExit = true) }
         }
     }
 }

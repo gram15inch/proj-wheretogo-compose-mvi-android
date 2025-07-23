@@ -43,7 +43,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalInspectionMode
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -54,8 +53,12 @@ import androidx.compose.ui.unit.sp
 import com.wheretogo.presentation.CLEAR_ADDRESS
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.intervalTab
-import com.wheretogo.presentation.model.AdItem
 import com.wheretogo.presentation.model.SearchBarItem
+import com.wheretogo.presentation.state.SearchBarState
+import com.wheretogo.presentation.theme.PrimeBlue
+import com.wheretogo.presentation.theme.Gray320
+import com.wheretogo.presentation.theme.Gray150
+import com.wheretogo.presentation.theme.White
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -65,12 +68,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun SearchBar(
     modifier: Modifier = Modifier,
-    isActive: Boolean = false,
-    isLoading: Boolean = false,
-    isAdVisible: Boolean = false,
-    isEmptyVisible: Boolean = false,
-    searchBarItemGroup: List<SearchBarItem> = emptyList(),
-    adItemGroup: List<AdItem> = emptyList(),
+    state: SearchBarState= SearchBarState(),
     onSearchBarItemClick: (SearchBarItem) -> Unit = {},
     onSearchBarClick: () -> Unit = {},
     onSearchSubmit: (String) -> Unit = {},
@@ -84,8 +82,8 @@ fun SearchBar(
     var alpha by remember { mutableFloatStateOf(0.75f) }
     val outDp = 12.dp
 
-    LaunchedEffect(isActive) {
-        if(isActive) {
+    LaunchedEffect(state.isActive) {
+        if(state.isActive) {
             alpha = 1f
         } else {
             alpha = 0.75f
@@ -117,7 +115,7 @@ fun SearchBar(
                 BarTextField(
                     Modifier.weight(1f),
                     textValue = editText,
-                    readOnly = !isActive,
+                    readOnly = !state.isActive,
                     focusRequester = focusRequester,
                     onTextValueChange = { editText = it },
                     onSearchSubmit = {
@@ -136,7 +134,7 @@ fun SearchBar(
                         }
                     }
                 )
-                BarIcon(isLoading)
+                BarIcon(state.isLoading)
             }
             Box(
                 Modifier
@@ -163,16 +161,20 @@ fun SearchBar(
 
         KeyboardTrack(
             onKeyboardClose = {
-                if (isActive && searchBarItemGroup.isEmpty() && !isEmptyVisible) {
+                if (state.isActive && state.searchBarItemGroup.isEmpty() && !state.isEmptyVisible) {
                     clearFocus()
                 }
             })
 
         Box{
-            val isAd = if (isPreview) isAdVisible else isAdVisible && isActive && searchBarItemGroup.isEmpty() && !isEmptyVisible
+            val isAd = if (isPreview) state.isAdVisible else state.isAdVisible && state.isActive && state.searchBarItemGroup.isEmpty() && !state.isEmptyVisible
 
             if(!isAd)
-                BarDropList(modifier.padding(horizontal = outDp) ,isEmptyVisible, searchBarItemGroup, onSearchBarItemClick = {
+                BarDropList(
+                modifier = modifier.padding(horizontal = outDp),
+                isEmptyVisible = state.isEmptyVisible,
+                searchBarItemGroup = state.searchBarItemGroup,
+                onSearchBarItemClick = {
                     if (it.label == CLEAR_ADDRESS) {
                         onSearchBarClose()
                         clearFocus()
@@ -187,7 +189,10 @@ fun SearchBar(
                 visible = isAd,
                 direction = AnimationDirection.CenterRight
             ) {
-                AdaptiveAd(modifier=Modifier.padding(bottom = outDp, start = outDp, end= outDp), nativeAd = adItemGroup.firstOrNull()?.nativeAd)
+                AdaptiveAd(
+                    modifier = Modifier.padding(bottom = outDp, start = outDp, end = outDp),
+                    nativeAd = state.adItemGroup.firstOrNull()?.nativeAd
+                )
             }
 
         }
@@ -231,7 +236,7 @@ fun BarTextField(
     val textStyle = TextStyle(
         fontSize = 15.sp,
         fontFamily = hancomSansFontFamily,
-        color = colorResource(R.color.gray_474747)
+        color = Gray320
     )
     Box(
         modifier = modifier
@@ -327,11 +332,11 @@ fun BarDropList(modifier: Modifier = Modifier,
 @Composable
 fun BarListItem(searchBarItem: SearchBarItem, onSearchBarItemClick: (SearchBarItem) -> Unit) {
     val isCourse = searchBarItem.address.isBlank()
-    val textColor = if (isCourse) R.color.white else R.color.gray_474747
-    val backgroundColor = if (isCourse) R.color.blue else R.color.white
+    val textColor = if (isCourse) White else Gray320
+    val backgroundColor = if (isCourse) PrimeBlue else White
     val textStyle = TextStyle(
         fontFamily = hancomSansFontFamily,
-        color = colorResource(textColor)
+        color = textColor
     )
     Box(
         Modifier
@@ -342,7 +347,7 @@ fun BarListItem(searchBarItem: SearchBarItem, onSearchBarItemClick: (SearchBarIt
                 elevation = 1.5.dp, shape = RoundedCornerShape(16.dp), clip = false
             )
             .clip(RoundedCornerShape(16.dp))
-            .background(colorResource(backgroundColor))
+            .background(backgroundColor)
     ) {
         Text(
             modifier = Modifier.padding(8.dp), text = searchBarItem.label, style = textStyle
@@ -361,7 +366,7 @@ fun BarClearItem(onSearchBarItemClick: (SearchBarItem) -> Unit) {
             .clickable {
                 onSearchBarItemClick(SearchBarItem(CLEAR_ADDRESS, ""))
             }
-            .background(colorResource(R.color.gray_B9B9B9))
+            .background(Gray150)
     ) {
         Image(
             modifier = Modifier
@@ -395,11 +400,13 @@ fun SearchBarPreview() {
     var isLoading by remember { mutableStateOf<Boolean>(false) }
     SearchBar(
         modifier = Modifier.padding(15.dp),
-        isActive = true,
-        isLoading = isLoading,
-        isEmptyVisible = false,
-        isAdVisible = true,
-        searchBarItemGroup = emptyList(),
+        state = SearchBarState(
+            isActive = true,
+            isLoading = isLoading,
+            isEmptyVisible = false,
+            isAdVisible = true,
+            searchBarItemGroup = emptyList()
+        ),
         onSearchBarItemClick = {
             CoroutineScope(Dispatchers.Main).launch {
                 isLoading = true

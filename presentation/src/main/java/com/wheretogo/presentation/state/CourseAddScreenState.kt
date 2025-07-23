@@ -9,22 +9,18 @@ import com.wheretogo.presentation.model.MapOverlay
 
 data class CourseAddScreenState(
     val searchBarState: SearchBarState = SearchBarState(),
-    val overlayGroup : Collection<MapOverlay> = emptyList(),
+    val naverMapState: NaverMapState = NaverMapState(),
+    val overlayGroup :Collection<MapOverlay> = emptyList(),
     val selectedMarkerItem: MapOverlay.MarkerContainer? = null,
-    val cameraState: CameraState = CameraState(),
     val bottomSheetState: BottomSheetState = BottomSheetState(),
     val isFloatMarker: Boolean = false,
     val isFloatingButton: Boolean = false,
     val padding: ContentPadding = ContentPadding(bottom = 350.dp),
     val error: String = "",
-    val timeStamp : Long =0L
+    val timeStamp : Long = 0L
 ) {
-    data class BottomSheetState(
-        val courseAddState :CourseAddState = CourseAddState(),
-        val isBottomSheetDown: Boolean = false,
-    )
 
-    data class CourseAddState(
+    data class CourseAddSheetState(
         val courseName: String = "",
         val routeState: RouteState = RouteState(),
         val selectedCategoryCodeGroup : Map<RouteAttr,Int> = emptyMap(), //카테고리 (속성, 코드)

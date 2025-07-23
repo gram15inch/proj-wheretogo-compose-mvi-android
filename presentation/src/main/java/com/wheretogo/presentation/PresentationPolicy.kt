@@ -86,7 +86,7 @@ enum class ExportMap{
 }
 
 enum class DriveBottomSheetContent{
-   EMPTY ,CHECKPOINT_ADD, INFO
+   EMPTY, COURSE_ADD ,CHECKPOINT_ADD, INFO
 }
 
 enum class MarkerType{

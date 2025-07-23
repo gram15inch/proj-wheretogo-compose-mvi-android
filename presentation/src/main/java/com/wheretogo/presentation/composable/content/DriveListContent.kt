@@ -30,7 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -38,12 +38,14 @@ import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wheretogo.domain.model.map.Course
 import com.wheretogo.domain.model.map.RouteCategory
 import com.wheretogo.presentation.R
-import com.wheretogo.presentation.state.DriveScreenState.ListState.ListItemState
+import com.wheretogo.presentation.state.ListState
+import com.wheretogo.presentation.theme.Gray250
 import com.wheretogo.presentation.theme.White100
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 import com.wheretogo.presentation.toStrRes
@@ -54,35 +56,41 @@ import com.wheretogo.presentation.toStrRes
 fun DriveListPreview() {
     DriveListContent(
         modifier = Modifier,
-        listOf(ListItemState(
-            course = Course(
-                courseName = "노르테유 스카이웨이"
+        state = ListState(
+            listItemGroup = listOf(
+                ListState.ListItemState(
+                    course = Course(
+                        courseName = "노르테유 스카이웨이"
+                    )
+                )
             )
-        )),
+        ),
         onItemClick = {},
         onBookmarkClick = {},
-        onHeightPxChange = {}
+        onHeightChange = {}
     )
 }
 
 @Composable
 fun DriveListContent(
     modifier: Modifier,
-    listItemGroup: List<ListItemState>,
-    onItemClick: (ListItemState) -> Unit,
-    onBookmarkClick: (ListItemState) -> Unit,
-    onHeightPxChange: (Int) -> Unit
+    state : ListState = ListState(),
+    onItemClick: (ListState.ListItemState) -> Unit,
+    onHeightChange: (Dp) -> Unit = {},
+    onBookmarkClick: (ListState.ListItemState) -> Unit = {}
 ) {
+    val density = LocalDensity.current
+
     val listState = rememberLazyListState()
     Box(modifier.onSizeChanged { size ->
-        onHeightPxChange(size.height)
+        onHeightChange(with(density) { size.height.toDp() })
     }){
         LazyColumn(
             modifier = modifier.heightIn(max = 280.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp),
             state = listState
         ) {
-            items(listItemGroup) { item ->
+            items(state.listItemGroup) { item ->
                 DriveListItem(
                     modifier = Modifier
                         .clip(RoundedCornerShape(16.dp))
@@ -101,8 +109,8 @@ fun DriveListContent(
 @Composable
 fun DriveListItem(
     modifier: Modifier,
-    listItem: ListItemState,
-    onBookmarkClick: (ListItemState) -> Unit
+    listItem: ListState.ListItemState,
+    onBookmarkClick: (ListState.ListItemState) -> Unit
 ) {
     AnimatedVisibility(
         modifier = Modifier.shadow(
@@ -215,7 +223,7 @@ fun DriveItemAttribute(modifier: Modifier, content: String, type: String) {
                 text = type,
                 fontSize = 9.5.sp,
                 fontFamily = hancomSansFontFamily,
-                color = colorResource(R.color.gray_848484),
+                color = Gray250,
                 textAlign = TextAlign.Center,
                 style = TextStyle(
                     lineHeightStyle = LineHeightStyle(

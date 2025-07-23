@@ -18,6 +18,7 @@ import com.wheretogo.presentation.CameraUpdateSource
 import com.wheretogo.presentation.PathType
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.AppScreen
+import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.SheetState
 import com.wheretogo.presentation.feature.EventBus
 import com.wheretogo.presentation.feature.map.CourseAddMapOverlayService
@@ -25,8 +26,10 @@ import com.wheretogo.presentation.intent.CourseAddIntent
 import com.wheretogo.presentation.model.EventMsg
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.SearchBarItem
+import com.wheretogo.presentation.state.BottomSheetState
 import com.wheretogo.presentation.state.CameraState
 import com.wheretogo.presentation.state.CourseAddScreenState
+import com.wheretogo.presentation.state.NaverMapState
 import com.wheretogo.presentation.toDomainLatLng
 import com.wheretogo.presentation.toSearchBarItem
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -46,7 +49,17 @@ class CourseAddViewModel @Inject constructor(
     private val searchKeywordUseCase: SearchKeywordUseCase,
     private val mapOverlayService: CourseAddMapOverlayService
 ) : ViewModel() {
-    private val _courseAddScreenState = MutableStateFlow(CourseAddScreenState(overlayGroup = mapOverlayService.overlays))
+    private val _courseAddScreenState = MutableStateFlow(
+        CourseAddScreenState(
+            overlayGroup = mapOverlayService.overlays,
+            bottomSheetState = BottomSheetState(
+                isVisible = true,
+                initHeight = 80,
+                content = DriveBottomSheetContent.COURSE_ADD,
+                isSpaceVisibleWhenClose = true
+            )
+        )
+    )
     val courseAddScreenState: StateFlow<CourseAddScreenState> = _courseAddScreenState
 
     fun handleIntent(intent: CourseAddIntent) {
@@ -84,18 +97,21 @@ class CourseAddViewModel @Inject constructor(
     //서치바
     private fun searchBarItemClick(item: SearchBarItem) {
         if(item.label != CLEAR_ADDRESS && item.latlng!=null){
-            _courseAddScreenState.value = _courseAddScreenState.value.run {
-                copy(
-                    searchBarState = searchBarState.copy(isLoading = false),
-                    cameraState = cameraState.copy(
-                        latLng = item.latlng,
-                        updateSource = CameraUpdateSource.APP_EASING
+            _courseAddScreenState.update {
+                it.run {
+                    copy(
+                        searchBarState = searchBarState.copy(isLoading = false),
+                        naverMapState = NaverMapState(
+                            cameraState = naverMapState.cameraState.copy(
+                                latLng = item.latlng,
+                                updateSource = CameraUpdateSource.APP_EASING
+                            )
+                        )
                     )
-
-                )
+                }
             }
         } else {
-            _courseAddScreenState.value = _courseAddScreenState.value.searchBarInit()
+            _courseAddScreenState.update { it.searchBarInit()}
         }
     }
 
@@ -103,7 +119,9 @@ class CourseAddViewModel @Inject constructor(
         _courseAddScreenState.update {
             it.copy(
                 searchBarState = it.searchBarState.copy(isActive = true, searchBarItemGroup = emptyList()),
-                bottomSheetState = it.bottomSheetState.copy(isBottomSheetDown = true)
+                bottomSheetState = it.bottomSheetState.copy(
+                    isVisible = false
+                )
             )
         }
     }
@@ -125,73 +143,91 @@ class CourseAddViewModel @Inject constructor(
 
     private suspend fun submitClick(submitValue: String) {
         if(submitValue.trim().isNotBlank()){
-            _courseAddScreenState.value =
-                _courseAddScreenState.value.run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
+            _courseAddScreenState.update {
+                it.run { copy(searchBarState = searchBarState.copy(isLoading = true)) }
+            }
 
             val keywordResponse = withContext(Dispatchers.IO) { searchKeywordUseCase(submitValue, SearchType.ADRESS) }
-            _courseAddScreenState.value = _courseAddScreenState.value.run {
-                when (keywordResponse.status) {
-                    UseCaseResponse.Status.Success -> {
-                        copy(
-                            searchBarState = searchBarState.copy(
-                                isLoading = false,
-                                isEmptyVisible = keywordResponse.data?.isEmpty() ?: false,
-                                searchBarItemGroup = keywordResponse.data?.map{ it.toSearchBarItem()} ?: emptyList()
+            _courseAddScreenState.update {
+                it.run {
+                    when (keywordResponse.status) {
+                        UseCaseResponse.Status.Success -> {
+                            copy(
+                                searchBarState = searchBarState.copy(
+                                    isLoading = false,
+                                    isEmptyVisible = keywordResponse.data?.isEmpty() ?: false,
+                                    searchBarItemGroup = keywordResponse.data?.map { it.toSearchBarItem() }
+                                        ?: emptyList()
+                                )
                             )
-                        )
-                    }
+                        }
 
-                    UseCaseResponse.Status.Fail -> {
-                        copy(
-                            searchBarState = searchBarState.copy(
-                                isLoading = false
+                        UseCaseResponse.Status.Fail -> {
+                            copy(
+                                searchBarState = searchBarState.copy(
+                                    isLoading = false
+                                )
                             )
-                        )
+                        }
                     }
                 }
-
             }
+
         } else {
-            _courseAddScreenState.value = _courseAddScreenState.value.searchBarInit()
+            _courseAddScreenState.update { it.searchBarInit()}
         }
     }
 
 
     //지도
     private fun mapClick(latlng: LatLng) {
-        _courseAddScreenState.value = _courseAddScreenState.value.run {
-            if (isFloatingButton) {
-                copy()
-            } else {
-                mapOverlayService.addWaypoint(latlng)
-                mapOverlayService.createWaypointPath()
-                copy(
-                    timeStamp = System.currentTimeMillis()
-                )
+        _courseAddScreenState.update {
+            it.run {
+                if (isFloatingButton) {
+                    copy()
+                } else {
+                    mapOverlayService.addWaypoint(latlng)
+                    mapOverlayService.createWaypointPath()
+                    copy(
+                        timeStamp = System.currentTimeMillis()
+                    )
+                }
             }
         }
     }
 
     private fun cameraUpdated(cameraState: CameraState) {
-        _courseAddScreenState.value = _courseAddScreenState.value.run {
-            copy(cameraState = cameraState.copy(updateSource = CameraUpdateSource.USER))
+        _courseAddScreenState.update {
+            it.run {
+                copy(
+                    naverMapState = NaverMapState(
+                        cameraState = cameraState.copy(
+                            updateSource = CameraUpdateSource.USER
+                        )
+                    )
+                )
+            }
         }
     }
 
     private fun waypointMarkerClick(markerContainer : MapOverlay.MarkerContainer) {
         val isFloatMarker = _courseAddScreenState.value.isFloatMarker
         if(!isFloatMarker)
-            _courseAddScreenState.value = _courseAddScreenState.value.run {
-                mapOverlayService.hideWaypoint(markerContainer.id)
-                copy(
-                    isFloatingButton = true,
-                    isFloatMarker = true,
-                    selectedMarkerItem = markerContainer,
-                    cameraState = cameraState.copy(
-                        latLng = markerContainer.marker.position.toDomainLatLng(),
-                        updateSource = CameraUpdateSource.APP_LINEAR
+            _courseAddScreenState.update {
+                it.run {
+                    mapOverlayService.hideWaypoint(markerContainer.id)
+                    copy(
+                        isFloatingButton = true,
+                        isFloatMarker = true,
+                        selectedMarkerItem = markerContainer,
+                        naverMapState = NaverMapState(
+                            cameraState = naverMapState.cameraState.copy(
+                                latLng = markerContainer.marker.position.toDomainLatLng(),
+                                updateSource = CameraUpdateSource.APP_LINEAR
+                            )
+                        )
                     )
-                )
+                }
             }
     }
 
@@ -200,49 +236,55 @@ class CourseAddViewModel @Inject constructor(
 
     //플로팅
     private fun markerRemoveFloatingClick() {
-        _courseAddScreenState.value = _courseAddScreenState.value.run {
-            selectedMarkerItem?.id?.let{
-                mapOverlayService.removeWaypoint(it)
-                mapOverlayService.createWaypointPath()
-            }
+        _courseAddScreenState.update {
+            it.run {
+                selectedMarkerItem?.id?.let {
+                    mapOverlayService.removeWaypoint(it)
+                    mapOverlayService.createWaypointPath()
+                }
 
-            copy(
-                bottomSheetState = bottomSheetState.copy(
-                    courseAddState = bottomSheetState.courseAddState.copy(
-                        routeState = CourseAddScreenState.RouteState(),
-                        isOneStepDone = false,
-                        isNextStepButtonActive = false
-                    )
-                ),
-                selectedMarkerItem = null,
-                isFloatMarker = false,
-                isFloatingButton = false,
-            )
+                copy(
+                    bottomSheetState = bottomSheetState.copy(
+                        courseAddSheetState = bottomSheetState.courseAddSheetState.copy(
+                            routeState = CourseAddScreenState.RouteState(),
+                            isOneStepDone = false,
+                            isNextStepButtonActive = false
+                        )
+                    ),
+                    selectedMarkerItem = null,
+                    isFloatMarker = false,
+                    isFloatingButton = false,
+                )
+            }
         }
     }
 
     private fun markerMoveFloatingClick() {
         val item =_courseAddScreenState.value.selectedMarkerItem
         if (item != null)
-            _courseAddScreenState.value = _courseAddScreenState.value.run {
-                mapOverlayService.moveWaypoint(item.id, cameraState.latLng)
-                mapOverlayService.createWaypointPath()
-                copy(
-                    selectedMarkerItem = null,
-                    bottomSheetState = bottomSheetState.copy(
-                        courseAddState = bottomSheetState.courseAddState.copy(
-                            routeState = CourseAddScreenState.RouteState(),
-                            isOneStepDone = false,
-                            isNextStepButtonActive = false,
+            _courseAddScreenState.update {
+                it.run {
+                    mapOverlayService.moveWaypoint(item.id, naverMapState.cameraState.latLng)
+                    mapOverlayService.createWaypointPath()
+                    copy(
+                        selectedMarkerItem = null,
+                        bottomSheetState = bottomSheetState.copy(
+                            courseAddSheetState = bottomSheetState.courseAddSheetState.copy(
+                                routeState = CourseAddScreenState.RouteState(),
+                                isOneStepDone = false,
+                                isNextStepButtonActive = false,
+                            )
+                        ),
+                        isFloatingButton = !isFloatMarker,
+                        isFloatMarker = !isFloatMarker,
+                        naverMapState = naverMapState.copy(
+                            cameraState = naverMapState.cameraState.copy(
+                                latLng = selectedMarkerItem!!.marker.position.toDomainLatLng(),
+                                updateSource = CameraUpdateSource.APP_LINEAR
+                            )
                         )
-                    ),
-                    isFloatingButton = !isFloatMarker,
-                    isFloatMarker = !isFloatMarker,
-                    cameraState = cameraState.copy(
-                        latLng = selectedMarkerItem!!.marker.position.toDomainLatLng(),
-                        updateSource = CameraUpdateSource.APP_LINEAR
                     )
-                )
+                }
             }
     }
 
@@ -254,26 +296,26 @@ class CourseAddViewModel @Inject constructor(
         if(route!=null){
             val isCreatePath = mapOverlayService.createWaypointPath(route.points)
             if(isCreatePath){
-                _courseAddScreenState.value = _courseAddScreenState.value.run {
-                    val isOneStepDone = validateOneStep(this)
-                    copy(
-                        bottomSheetState = bottomSheetState.copy(
-                            courseAddState = bottomSheetState.courseAddState.copy(
-                                isOneStepDone = isOneStepDone,
-                                isNextStepButtonActive = isOneStepDone,
-                                routeState = bottomSheetState.courseAddState.routeState.copy(
-                                    duration = route.duration,
-                                    distance = route.distance,
-                                    points = route.points,
-                                    waypointItemStateGroup = route.waypointItems.map {
-                                        CourseAddScreenState.RouteWaypointItemState(it)
-                                    }
+                _courseAddScreenState.update {
+                    it.run {
+                        val isOneStepDone = validateOneStep(this)
+                        copy(
+                            bottomSheetState = bottomSheetState.copy(
+                                courseAddSheetState = bottomSheetState.courseAddSheetState.copy(
+                                    isOneStepDone = isOneStepDone,
+                                    isNextStepButtonActive = isOneStepDone,
+                                    routeState = bottomSheetState.courseAddSheetState.routeState.copy(
+                                        duration = route.duration,
+                                        distance = route.distance,
+                                        points = route.points,
+                                        waypointItemStateGroup = route.waypointItems.map {
+                                            CourseAddScreenState.RouteWaypointItemState(it)
+                                        }
+                                    )
                                 )
-                            )
-                        ),
-
-
-                    )
+                            ),
+                        )
+                    }
                 }
             } else {
                 EventBus.send(AppEvent.SnackBar(EventMsg(R.string.add_marker_by_click_map)))
@@ -285,23 +327,17 @@ class CourseAddViewModel @Inject constructor(
 
     private fun nameEditValueChange(text: String) {
         if (text.length <= COURSE_NAME_MAX_LENGTH) {
-            _courseAddScreenState.value = _courseAddScreenState.value.run {
-                copy(
-                    bottomSheetState = bottomSheetState.copy(
-                        courseAddState = bottomSheetState.courseAddState.copy(
-                            courseName = text
-                        )
-                    )
-                ).run {
+            _courseAddScreenState.update {
+                it.run {
                     val isOneStepDone = validateOneStep(this)
                     copy(
                         bottomSheetState = bottomSheetState.copy(
-                            courseAddState = bottomSheetState.courseAddState.copy(
+                            courseAddSheetState = bottomSheetState.courseAddSheetState.copy(
+                                courseName = text,
                                 isOneStepDone = isOneStepDone,
                                 isNextStepButtonActive = isOneStepDone
                             )
-                        ),
-
+                        )
                     )
                 }
             }
@@ -311,22 +347,26 @@ class CourseAddViewModel @Inject constructor(
     private fun bottomSheetChange(state: SheetState){
         when(state){
             SheetState.Expand ->{
-                _courseAddScreenState.value = _courseAddScreenState.value.run {
-                    copy(
-                        bottomSheetState = bottomSheetState.copy(
-                            isBottomSheetDown = false
+                _courseAddScreenState.update {
+                    it.run {
+                        copy(
+                            bottomSheetState = bottomSheetState.copy(
+                                isVisible = true
+                            )
                         )
-                    )
+                    }
                 }
             }
 
             SheetState.PartiallyExpand ->{
-                _courseAddScreenState.value = _courseAddScreenState.value.run {
-                    copy(
-                        bottomSheetState = bottomSheetState.copy(
-                            isBottomSheetDown = true
+                _courseAddScreenState.update {
+                    it.run {
+                        copy(
+                            bottomSheetState = bottomSheetState.copy(
+                                isVisible = false
+                            )
                         )
-                    )
+                    }
                 }
             }
             else->{}
@@ -334,51 +374,58 @@ class CourseAddViewModel @Inject constructor(
     }
 
     private fun routeCategorySelect(item: RouteCategory) {
-        _courseAddScreenState.value = _courseAddScreenState.value.run {
-            val newSelectedItemGroup = bottomSheetState.courseAddState.selectedCategoryCodeGroup.toMutableMap().apply {
-                put(item.attr,item.code)
-            }
+        _courseAddScreenState.update {
+            it.run {
+                val newSelectedItemGroup =
+                    bottomSheetState.courseAddSheetState.selectedCategoryCodeGroup.toMutableMap()
+                        .apply {
+                            put(item.attr, item.code)
+                        }
 
-            copy(
-                bottomSheetState = bottomSheetState.copy(
-                    courseAddState = bottomSheetState.courseAddState.copy(
-                        selectedCategoryCodeGroup = newSelectedItemGroup,
-                    )
-                ),
-            )
-        }
-
-        _courseAddScreenState.value = _courseAddScreenState.value.run {
-            val isTwoStepDone = validateTwoStep(this)
-            copy(
-                bottomSheetState = bottomSheetState.copy(
-                    courseAddState = bottomSheetState.courseAddState.copy(
-                        isTwoStepDone= isTwoStepDone,
-                        isNextStepButtonActive = bottomSheetState.courseAddState.isOneStepDone && isTwoStepDone
-                    )
-                ),
-
-                )
-        }
-    }
-
-    private suspend fun commendClick() {
-        val isTwoStep = _courseAddScreenState.value.bottomSheetState.courseAddState.isTwoStep
-        if (!isTwoStep) { // 첫째 페이지
-            _courseAddScreenState.value = _courseAddScreenState.value.run {
                 copy(
                     bottomSheetState = bottomSheetState.copy(
-                        courseAddState = bottomSheetState.courseAddState.copy(
-                            isTwoStep = bottomSheetState.courseAddState.isOneStepDone,
-                            isNextStepButtonActive = bottomSheetState.courseAddState.isTwoStepDone
+                        courseAddSheetState = bottomSheetState.courseAddSheetState.copy(
+                            selectedCategoryCodeGroup = newSelectedItemGroup,
                         )
                     ),
                 )
             }
+        }
+
+        _courseAddScreenState.update {
+            it.run {
+                val isTwoStepDone = validateTwoStep(this)
+                copy(
+                    bottomSheetState = bottomSheetState.copy(
+                        courseAddSheetState = bottomSheetState.courseAddSheetState.copy(
+                            isTwoStepDone = isTwoStepDone,
+                            isNextStepButtonActive = bottomSheetState.courseAddSheetState.isOneStepDone && isTwoStepDone
+                        )
+                    )
+                )
+            }
+        }
+    }
+
+    private suspend fun commendClick() {
+        val isTwoStep = _courseAddScreenState.value.bottomSheetState.courseAddSheetState.isTwoStep
+        if (!isTwoStep) { // 첫째 페이지
+            _courseAddScreenState.update {
+                it.run {
+                    copy(
+                        bottomSheetState = bottomSheetState.copy(
+                            courseAddSheetState = bottomSheetState.courseAddSheetState.copy(
+                                isTwoStep = bottomSheetState.courseAddSheetState.isOneStepDone,
+                                isNextStepButtonActive = bottomSheetState.courseAddSheetState.isTwoStepDone
+                            )
+                        )
+                    )
+                }
+            }
         } else { // 둘쨰 페이지
-            _courseAddScreenState.value = _courseAddScreenState.value.setContentLoading(true)
+            _courseAddScreenState.update { it.setContentLoading(true) }
             val addCourseResponse = _courseAddScreenState.value .run {
-                val courseAddState = bottomSheetState.courseAddState
+                val courseAddState = bottomSheetState.courseAddSheetState
                 val routeState = courseAddState.routeState
                 val waypoints = routeState.waypointItemStateGroup.map { it.data.latlng }
                 val newCourse = CourseAddRequest(
@@ -402,48 +449,51 @@ class CourseAddViewModel @Inject constructor(
 
                 else -> {
                     EventBus.send(AppEvent.SnackBar(EventMsg(R.string.course_add_error,": ${addCourseResponse.data}")))
-                    _courseAddScreenState.value = _courseAddScreenState.value.run {
-                        copy(error = "코스 등록 오류")
-                    }
+                    _courseAddScreenState.update { it.copy(error = "코스 등록 오류") }
                 }
             }
-            _courseAddScreenState.value = _courseAddScreenState.value.setContentLoading(false)
+            _courseAddScreenState.update { it.setContentLoading(false) }
         }
     }
 
     private fun detailBackClick() {
-        _courseAddScreenState.value = _courseAddScreenState.value.run {
-            copy(
-                bottomSheetState = bottomSheetState.copy(
-                    courseAddState = bottomSheetState.courseAddState.copy(
-                        isTwoStep = false,
-                        isNextStepButtonActive = bottomSheetState.courseAddState.isOneStepDone
+        _courseAddScreenState.update {
+            it.run {
+                copy(
+                    bottomSheetState = bottomSheetState.copy(
+                        courseAddSheetState = bottomSheetState.courseAddSheetState.copy(
+                            isTwoStep = false,
+                            isNextStepButtonActive = bottomSheetState.courseAddSheetState.isOneStepDone
+                        )
                     )
-                ),
-
                 )
+            }
         }
     }
 
     @Suppress("unused")
     private fun moveCamera(latLng: LatLng, zoom:Double? = null){
         if(latLng!=LatLng()) {
-            _courseAddScreenState.value = _courseAddScreenState.value.run {
-                val newZoom = zoom ?: cameraState.zoom
-                copy(
-                    cameraState = cameraState.copy(
-                        latLng = latLng,
-                        zoom = newZoom,
-                        updateSource = CameraUpdateSource.APP_LINEAR
+            _courseAddScreenState.update {
+                it.run {
+                    val newZoom = zoom ?: naverMapState.cameraState.zoom
+                    copy(
+                        naverMapState = naverMapState.copy(
+                            cameraState = naverMapState.cameraState.copy(
+                                latLng = latLng,
+                                zoom = newZoom,
+                                updateSource = CameraUpdateSource.APP_LINEAR
+                            )
+                        )
                     )
-                )
+                }
             }
         }
     }
 
     private fun validateOneStep(state: CourseAddScreenState):Boolean{
         return state.run {
-            val isCourseNameValidate = state.bottomSheetState.courseAddState.courseName.trim().length in 2..  COURSE_NAME_MAX_LENGTH
+            val isCourseNameValidate = state.bottomSheetState.courseAddSheetState.courseName.trim().length in 2..  COURSE_NAME_MAX_LENGTH
             val isPathValidate = mapOverlayService.getWaypointPath()?.run { type == PathType.FULL }?:false
             val isWaypointValidate = mapOverlayService.getWaypoints().size >= 2
 
@@ -452,7 +502,7 @@ class CourseAddViewModel @Inject constructor(
     }
 
     private fun validateTwoStep(state: CourseAddScreenState):Boolean{
-        val selectedGroup =state.bottomSheetState.courseAddState.selectedCategoryCodeGroup
+        val selectedGroup =state.bottomSheetState.courseAddSheetState.selectedCategoryCodeGroup
 
         if(selectedGroup.size != RouteAttr.entries.size)
             return false
@@ -468,7 +518,7 @@ class CourseAddViewModel @Inject constructor(
        return run {
             copy(
                 bottomSheetState = bottomSheetState.copy(
-                    courseAddState = bottomSheetState.courseAddState.copy(
+                    courseAddSheetState = bottomSheetState.courseAddSheetState.copy(
                         isLoading = isLoading
                     )
                 )

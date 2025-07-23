@@ -28,10 +28,9 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.wheretogo.presentation.R
+import com.wheretogo.presentation.theme.Gray6080
 import kotlin.math.max
 
 
@@ -65,7 +64,7 @@ fun BlurEffect(modifier: Modifier = Modifier, onClick: () -> Unit) {
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(color = colorResource(R.color.gray_C7C7C7_80))
+            .background(color = Gray6080)
             .clickable(
                 indication = null,
                 interactionSource = interactionSource

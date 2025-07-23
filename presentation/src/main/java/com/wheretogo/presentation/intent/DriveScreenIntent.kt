@@ -10,7 +10,7 @@ import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.CameraState
 import com.wheretogo.presentation.state.CommentState.CommentAddState
 import com.wheretogo.presentation.state.CommentState.CommentItemState
-import com.wheretogo.presentation.state.DriveScreenState.ListState.ListItemState
+import com.wheretogo.presentation.state.ListState.ListItemState
 import com.wheretogo.presentation.state.InfoState
 
 sealed class DriveScreenIntent {

@@ -66,8 +66,8 @@ class SettingViewModel @Inject constructor(
     }
 
     private fun userDeleteClick() {
-        _settingScreenState.value = _settingScreenState.value.run {
-            copy(
+        _settingScreenState.update {
+            it.copy(
                 isLoading = false,
                 isDialog = true
             )
@@ -89,16 +89,16 @@ class SettingViewModel @Inject constructor(
 
     private suspend fun dialogAnswer(answer:Boolean) {
         if(answer){
-            _settingScreenState.value = _settingScreenState.value.run {
-                copy(
+            _settingScreenState.update {
+                it.copy(
                     isLoading = true,
                     isDialog = true
                 )
             }
             withContext(Dispatchers.IO){ deleteUserUseCase()}
         }
-        _settingScreenState.value = _settingScreenState.value.run {
-            copy(
+        _settingScreenState.update {
+            it.copy(
                 isLoading = false,
                 isDialog = false
             )
@@ -137,20 +137,20 @@ class SettingViewModel @Inject constructor(
     // 초기화
     private fun profileInit(){
         viewModelScope.launch {
-            getUserProfileStreamUseCase().collect {
-                when (it.status) {
+            getUserProfileStreamUseCase().collect { profile->
+                when (profile.status) {
                     UseCaseResponse.Status.Success -> {
-                        _settingScreenState.value = _settingScreenState.value.run {
-                            copy(
-                                profile = it.data!!,
+                        _settingScreenState.update {
+                            it.copy(
+                                profile = profile.data!!,
                                 isProfile = true
                             )
                         }
                     }
 
                     else -> {
-                        _settingScreenState.value = _settingScreenState.value.run {
-                            copy(profile = Profile(), isProfile = false)
+                        _settingScreenState.update {
+                            it.copy(profile = Profile(), isProfile = false)
                         }
                     }
                 }
