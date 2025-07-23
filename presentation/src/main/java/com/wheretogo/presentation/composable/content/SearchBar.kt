@@ -43,7 +43,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalInspectionMode
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -56,6 +55,10 @@ import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.intervalTab
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.SearchBarState
+import com.wheretogo.presentation.theme.PrimeBlue
+import com.wheretogo.presentation.theme.Gray320
+import com.wheretogo.presentation.theme.Gray150
+import com.wheretogo.presentation.theme.White
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -233,7 +236,7 @@ fun BarTextField(
     val textStyle = TextStyle(
         fontSize = 15.sp,
         fontFamily = hancomSansFontFamily,
-        color = colorResource(R.color.gray_474747)
+        color = Gray320
     )
     Box(
         modifier = modifier
@@ -329,11 +332,11 @@ fun BarDropList(modifier: Modifier = Modifier,
 @Composable
 fun BarListItem(searchBarItem: SearchBarItem, onSearchBarItemClick: (SearchBarItem) -> Unit) {
     val isCourse = searchBarItem.address.isBlank()
-    val textColor = if (isCourse) R.color.white else R.color.gray_474747
-    val backgroundColor = if (isCourse) R.color.blue else R.color.white
+    val textColor = if (isCourse) White else Gray320
+    val backgroundColor = if (isCourse) PrimeBlue else White
     val textStyle = TextStyle(
         fontFamily = hancomSansFontFamily,
-        color = colorResource(textColor)
+        color = textColor
     )
     Box(
         Modifier
@@ -344,7 +347,7 @@ fun BarListItem(searchBarItem: SearchBarItem, onSearchBarItemClick: (SearchBarIt
                 elevation = 1.5.dp, shape = RoundedCornerShape(16.dp), clip = false
             )
             .clip(RoundedCornerShape(16.dp))
-            .background(colorResource(backgroundColor))
+            .background(backgroundColor)
     ) {
         Text(
             modifier = Modifier.padding(8.dp), text = searchBarItem.label, style = textStyle
@@ -363,7 +366,7 @@ fun BarClearItem(onSearchBarItemClick: (SearchBarItem) -> Unit) {
             .clickable {
                 onSearchBarItemClick(SearchBarItem(CLEAR_ADDRESS, ""))
             }
-            .background(colorResource(R.color.gray_B9B9B9))
+            .background(Gray150)
     ) {
         Image(
             modifier = Modifier

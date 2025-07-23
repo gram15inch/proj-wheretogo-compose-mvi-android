@@ -28,12 +28,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.wheretogo.presentation.R
 import com.wheretogo.presentation.SheetState
 import com.wheretogo.presentation.state.BottomSheetState
+import com.wheretogo.presentation.theme.Gray6080
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -146,7 +145,7 @@ fun DragHandle(modifier: Modifier = Modifier) {
                 .clip(RoundedCornerShape(16.dp))
                 .width(40.dp)
                 .height(5.dp)
-                .background(colorResource(R.color.gray_C7C7C7_80))
+                .background(Gray6080)
         )
     }
 }

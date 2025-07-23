@@ -35,7 +35,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -56,6 +55,9 @@ import com.wheretogo.presentation.intent.SettingIntent
 import com.wheretogo.presentation.model.AdItem
 import com.wheretogo.presentation.parseLogoImgRes
 import com.wheretogo.presentation.state.SettingScreenState
+import com.wheretogo.presentation.theme.PrimeBlue
+import com.wheretogo.presentation.theme.Gray280
+import com.wheretogo.presentation.theme.Gray6080
 import com.wheretogo.presentation.theme.White50
 import com.wheretogo.presentation.theme.hancomMalangFontFamily
 import com.wheretogo.presentation.theme.hancomSansFontFamily
@@ -235,7 +237,7 @@ fun ProfileSection(
                     .border(
                         width = 1.3.dp,
                         shape = RoundedCornerShape(16.dp),
-                        color = colorResource(R.color.gray_C7C7C7_80)
+                        color = Gray6080
                     )
                     .clickable {
                         onLogoutButtonClick()
@@ -281,7 +283,7 @@ fun InfoSection(
             Text(
                 text = stringResource(R.string.info),
                 fontFamily = hancomSansFontFamily,
-                color = colorResource(R.color.gray_6F6F6F)
+                color = Gray280
             )
         }
         Box(
@@ -398,7 +400,7 @@ fun SectionDivider(modifier: Modifier = Modifier) {
     HorizontalDivider(
         modifier = modifier.fillMaxWidth(),
         thickness = 2.dp,
-        color = colorResource(R.color.gray_C7C7C7_80)
+        color = Gray6080
     )
 }
 
@@ -431,7 +433,7 @@ fun SettingDialog(
                     onDialogAnswer(false)
                 }) {
                     Text(
-                        color = colorResource(R.color.blue),
+                        color = PrimeBlue,
                         text = stringResource(R.string.turn_around)
                     )
                 }

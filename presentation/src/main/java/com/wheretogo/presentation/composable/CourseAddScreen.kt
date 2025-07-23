@@ -52,7 +52,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -66,7 +65,6 @@ import com.naver.maps.map.NaverMap
 import com.wheretogo.domain.RouteAttr
 import com.wheretogo.domain.model.map.LatLng
 import com.wheretogo.domain.model.map.RouteCategory
-
 import com.wheretogo.presentation.BuildConfig
 import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.R
@@ -87,6 +85,14 @@ import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.BottomSheetState
 import com.wheretogo.presentation.state.CameraState
 import com.wheretogo.presentation.state.CourseAddScreenState
+import com.wheretogo.presentation.theme.Black
+import com.wheretogo.presentation.theme.Gray150
+import com.wheretogo.presentation.theme.Gray280
+import com.wheretogo.presentation.theme.Gray50
+import com.wheretogo.presentation.theme.Gray6080
+import com.wheretogo.presentation.theme.PrimeBlue
+import com.wheretogo.presentation.theme.White
+import com.wheretogo.presentation.theme.White85
 import com.wheretogo.presentation.theme.interBoldFontFamily
 import com.wheretogo.presentation.theme.interFontFamily
 import com.wheretogo.presentation.toStrRes
@@ -306,7 +312,7 @@ fun FloatingButtonGroup(
                 modifier = Modifier
                     .size(50.dp)
                     .clip(CircleShape)
-                    .background(color = colorResource(R.color.white_85))
+                    .background(White85)
                     .clickable {
                         onMarkerMoveClick()
                     }, contentAlignment = Alignment.Center
@@ -317,7 +323,7 @@ fun FloatingButtonGroup(
                 modifier = Modifier
                     .size(50.dp)
                     .clip(CircleShape)
-                    .background(color = colorResource(R.color.white_85))
+                    .background(White85)
                     .clickable {
                         onMarkerRemoveClick()
                     }, contentAlignment = Alignment.Center
@@ -393,18 +399,18 @@ fun CommendButton(
         contentAlignment = Alignment.BottomCenter
     ) {
         val text = if (isDetailContent) R.string.done else R.string.next_step
-        val textColor = if (isCommendActive) R.color.white else R.color.black
-        val backColor = if (isCommendActive) R.color.blue else R.color.white
+        val textColor = if (isCommendActive) White else Black
+        val backColor = if (isCommendActive) PrimeBlue else White
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .clip(RoundedCornerShape(16.dp))
                 .border(
-                    color = colorResource(R.color.gray_C7C7C7_80),
+                    color = Gray6080,
                     shape = RoundedCornerShape(16.dp),
                     width = 1.dp
                 )
-                .background(colorResource(backColor))
+                .background(backColor)
                 .intervalTab(1000L) {
                     if(isCommendActive)
                         onCommendClick()
@@ -422,7 +428,7 @@ fun CommendButton(
             else
                 Text(
                     text = stringResource(text),
-                    color = colorResource(textColor),
+                    color = textColor,
                     fontFamily = interBoldFontFamily
                 )
         }
@@ -515,7 +521,7 @@ fun RouteDetailItem(
         modifier = Modifier
             .clip(RoundedCornerShape(16.dp))
             .background(
-                colorResource(if (isClick) R.color.blue else R.color.gray_C7C7C7_80)
+                if (isClick) PrimeBlue else Gray6080
             )
             .clickable {
                 onRouteDetailItemClick(item)
@@ -560,7 +566,7 @@ fun RouteWaypointContent(
                         .border(
                             width = 1.dp,
                             shape = RoundedCornerShape(16.dp),
-                            color = colorResource(R.color.gray_B9B9B9)
+                            color = Gray150
                         )
                         .align(Alignment.TopEnd)
                         .intervalTab(2000) { onRouteCreateClick() },
@@ -599,13 +605,13 @@ fun RouteWaypointContent(
                                 if (routeName.isEmpty()) {
                                     Text(
                                         text = "경로 이름",
-                                        style = textStyle.copy(color = colorResource(R.color.gray_B9B9B9))
+                                        style = textStyle.copy(color = Gray150)
                                     )
                                 }
                                 innerTextField()
                             }
                         },
-                        textStyle = textStyle.copy(color = colorResource(R.color.black)),
+                        textStyle = textStyle.copy(color = Black),
                         keyboardActions = KeyboardActions(
                             onDone = { focusManager.clearFocus() }
                         )
@@ -637,7 +643,7 @@ fun RouteWaypointContent(
                         modifier = Modifier
                             .clip(RoundedCornerShape(16.dp))
                             .fillMaxSize()
-                            .background(colorResource(R.color.gray_)),
+                            .background(Gray50),
                         contentAlignment = Alignment.Center
                     ) {
                         Text("생성으로 새 경로를 만들어 보세요.", fontFamily = interFontFamily)
@@ -657,7 +663,7 @@ fun AddressItem(modifier: Modifier, item: CourseAddScreenState.RouteWaypointItem
             .fillMaxWidth()
             .border(
                 width = 1.dp,
-                color = colorResource(R.color.gray_6F6F6F),
+                color = Gray280,
                 shape = RoundedCornerShape(16.dp)
             )
 

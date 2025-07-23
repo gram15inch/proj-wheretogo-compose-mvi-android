@@ -40,7 +40,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -52,9 +51,9 @@ import com.wheretogo.domain.model.map.Course
 import com.wheretogo.presentation.ExportMap
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.callMap
-import com.wheretogo.presentation.model.AdItem
 import com.wheretogo.presentation.state.FloatingButtonState
 import com.wheretogo.presentation.theme.Gray100
+import com.wheretogo.presentation.theme.White85
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -202,7 +201,7 @@ fun FloatingButtons(
 fun CircleButton(
     modifier: Modifier = Modifier,
     @DrawableRes icon: Int,
-    color: Color = colorResource(R.color.white_85),
+    color: Color = White85,
     onClick: () -> Unit
 ) {
     Button(

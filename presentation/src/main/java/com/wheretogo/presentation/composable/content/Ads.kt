@@ -31,7 +31,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalInspectionMode
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
@@ -54,6 +53,7 @@ import com.wheretogo.presentation.composable.content.ad.NativeAdView
 import com.wheretogo.presentation.theme.Blue100
 import com.wheretogo.presentation.theme.Blue50
 import com.wheretogo.presentation.theme.Blue500
+import com.wheretogo.presentation.theme.Gray280
 import com.wheretogo.presentation.theme.Gray300
 import com.wheretogo.presentation.theme.Green100
 import com.wheretogo.presentation.theme.Green50
@@ -269,7 +269,7 @@ fun AdAdvertiser(modifier: Modifier=Modifier, text:String?){
     if(text!=null)
         NativeAdAdvertiserView(modifier =modifier,) {
             Text(text = text, fontSize = 10.sp,
-                color = colorResource(R.color.gray_6F6F6F), fontFamily = interFontFamily,
+                color = Gray280, fontFamily = interFontFamily,
                 style = TextStyle(fontSize = 10.sp, lineHeight = 10.sp))
         }
 }

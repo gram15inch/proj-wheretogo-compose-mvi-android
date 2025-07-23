@@ -27,7 +27,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
@@ -37,6 +36,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.state.CommentState.CommentItemState
+import com.wheretogo.presentation.theme.Gray250
+import com.wheretogo.presentation.theme.Gray8090
 import com.wheretogo.presentation.theme.hancomMalangFontFamily
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 
@@ -174,7 +175,7 @@ fun CommentListItem(
                                 )
                             ),
                             fontFamily = hancomSansFontFamily,
-                            color = colorResource(R.color.gray_848484)
+                            color = Gray250
                         )
                 }
                 Column(modifier.padding(top = 4.dp)) {
@@ -322,7 +323,7 @@ fun CommentSetting(
                     onBackgroundClick()
                 }
             )
-            .background(colorResource(R.color.gray_C7C7C7_90)),
+            .background(Gray8090),
         contentAlignment = Alignment.Center
     ) {
         Column(

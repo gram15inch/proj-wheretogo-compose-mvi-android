@@ -24,7 +24,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -36,7 +35,11 @@ import com.wheretogo.presentation.feature.formatFileSizeToMB
 import com.wheretogo.presentation.state.BottomSheetState
 import com.wheretogo.presentation.state.CheckPointAddState
 import com.wheretogo.presentation.state.InfoState
+import com.wheretogo.presentation.theme.Gray250
+import com.wheretogo.presentation.theme.Gray6080
+import com.wheretogo.presentation.theme.PrimeBlue
 import com.wheretogo.presentation.theme.WhereTogoTheme
+import com.wheretogo.presentation.theme.White
 import com.wheretogo.presentation.theme.interBoldFontFamily
 import com.wheretogo.presentation.theme.interFontFamily
 
@@ -83,7 +86,7 @@ fun CheckPointAddContent(
                 .clip(RoundedCornerShape(14.dp))
                 .fillMaxWidth()
                 .height(40.dp)
-                .background(colorResource(R.color.gray_C7C7C7_80))
+                .background(Gray6080)
                 .clickable {
                     launcher.launch("image/*")
                 },
@@ -112,7 +115,7 @@ fun CheckPointAddContent(
                 .clip(RoundedCornerShape(16.dp))
                 .fillMaxWidth()
                 .height(100.dp)
-                .background(colorResource(R.color.gray_C7C7C7_80))
+                .background(Gray6080)
 
         ) {
             Text(
@@ -127,8 +130,8 @@ fun CheckPointAddContent(
                 fontFamily = interFontFamily
             )
         }
-        val textColor = if (state.isSubmitActive) R.color.white else R.color.gray_848484
-        val backColor = if (state.isSubmitActive) R.color.blue else R.color.white
+        val textColor = if (state.isSubmitActive) White else Gray250
+        val backColor = if (state.isSubmitActive) PrimeBlue else White
 
         Box(
             modifier = Modifier
@@ -136,12 +139,12 @@ fun CheckPointAddContent(
                 .padding(10.dp)
                 .clip(RoundedCornerShape(16.dp))
                 .border(
-                    color = colorResource(R.color.gray_C7C7C7_80),
+                    color = Gray6080,
                     shape = RoundedCornerShape(16.dp),
                     width = 1.dp
                 )
                 .height(60.dp)
-                .background(colorResource(backColor))
+                .background(backColor)
                 .clickable { onSubmitClick() },
             contentAlignment = Alignment.Center
         ) {
@@ -156,7 +159,7 @@ fun CheckPointAddContent(
             else
                 Text(
                     text = stringResource(R.string.submit),
-                    color = colorResource(textColor),
+                    color = textColor,
                     fontFamily = interBoldFontFamily
                 )
         }

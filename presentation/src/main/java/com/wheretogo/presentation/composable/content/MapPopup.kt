@@ -2,7 +2,6 @@ package com.wheretogo.presentation.composable.content
 
 import android.net.Uri
 import android.view.MotionEvent
-import androidx.annotation.ColorRes
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -39,7 +38,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalInspectionMode
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
@@ -65,6 +63,9 @@ import com.wheretogo.presentation.state.CommentState
 import com.wheretogo.presentation.state.CommentState.CommentAddState
 import com.wheretogo.presentation.state.CommentState.CommentItemState
 import com.wheretogo.presentation.state.PopUpState
+import com.wheretogo.presentation.theme.Purple200
+import com.wheretogo.presentation.theme.Teal200
+import com.wheretogo.presentation.theme.White
 import com.wheretogo.presentation.theme.hancomMalangFontFamily
 
 
@@ -154,7 +155,7 @@ fun MapPopup(
                             .sizeIn(maxHeight = maxHeight)
                             .consumptionEvent()
                             .clip(RoundedCornerShape(16.dp))
-                            .background(colorResource(R.color.white)),
+                            .background(White),
                         commentState = state.commentState,
                         isLoading=isLoading ,
                         onCommentListItemClick = onCommentListItemClick,
@@ -286,13 +287,13 @@ fun ReviewButtonGroup(
         ReviewButton(
             type = CommentType.ONE,
             selectedType = selectedType,
-            color = R.color.teal_200,
+            color = Teal200,
             onReviewButtonClick = onReviewButtonClick
         )
         ReviewButton(
             type = CommentType.DETAIL,
             selectedType = selectedType,
-            color = R.color.purple_200,
+            color = Purple200,
             onReviewButtonClick = onReviewButtonClick
         )
     }
@@ -303,7 +304,7 @@ fun ReviewButtonGroup(
 fun ReviewButton(
     type: CommentType,
     selectedType: CommentType,
-    @ColorRes color: Int,
+    color: Color,
     onReviewButtonClick: (CommentType) -> Unit
 ) {
     val buttonScale = remember { Animatable(1f) }
@@ -319,7 +320,7 @@ fun ReviewButton(
             .padding(top = 10.dp)
             .scale(buttonScale.value)
             .clip(RoundedCornerShape(16.dp))
-            .background(colorResource(color))
+            .background(color)
             .pointerInteropFilter { event ->
                 when (event.action) {
                     MotionEvent.ACTION_DOWN -> { // 누를 때

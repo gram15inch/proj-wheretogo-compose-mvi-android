@@ -38,7 +38,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -87,6 +86,7 @@ import com.wheretogo.presentation.state.CommentState.CommentItemState
 import com.wheretogo.presentation.state.DriveScreenState
 import com.wheretogo.presentation.state.InfoState
 import com.wheretogo.presentation.state.ListState
+import com.wheretogo.presentation.theme.Gray6080
 import com.wheretogo.presentation.viewmodel.DriveViewModel
 import kotlinx.coroutines.launch
 
@@ -440,7 +440,7 @@ fun BlurEffect(modifier: Modifier = Modifier, onClick: () -> Unit) {
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(color = colorResource(R.color.gray_C7C7C7_80))
+            .background(color = Gray6080)
             .clickable(
                 indication = null,
                 interactionSource = interactionSource

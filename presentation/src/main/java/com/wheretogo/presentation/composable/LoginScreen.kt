@@ -29,7 +29,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -40,6 +39,8 @@ import com.wheretogo.presentation.composable.content.DelayLottieAnimation
 import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.feature.googleAuthOnDevice
 import com.wheretogo.presentation.state.LoginScreenState
+import com.wheretogo.presentation.theme.Gray280
+import com.wheretogo.presentation.theme.Gray250
 import com.wheretogo.presentation.theme.interFontFamily
 import com.wheretogo.presentation.viewmodel.LoginViewModel
 import kotlinx.coroutines.launch
@@ -124,7 +125,7 @@ fun LoginContent(
                     },
                 text = stringResource(R.string.explore_without_login),
                 fontFamily = interFontFamily,
-                color = colorResource(R.color.gray_6F6F6F)
+                color = Gray280
             )
     }
 }
@@ -153,7 +154,7 @@ fun GoogleLoginButton(isLoading: Boolean, onClick: () -> Unit) {
                     .width(250.dp)
                     .border(
                         width = 1.2.dp,
-                        color = colorResource(R.color.gray_848484),
+                        color = Gray250,
                         shape = RoundedCornerShape(4.dp)
                     ), contentAlignment = Alignment.Center
             ) {
