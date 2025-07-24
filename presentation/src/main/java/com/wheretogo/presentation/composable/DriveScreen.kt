@@ -452,17 +452,18 @@ fun BlurEffect(modifier: Modifier = Modifier, onClick: () -> Unit) {
 
 @Composable
 fun ExtendArea(
+    modifier: Modifier = Modifier,
     isExtend: Boolean,
     holdContent: @Composable () -> Unit,
     moveContent: @Composable () -> Unit
 ) {
     if (isExtend) {
-        Row {
+        Row(modifier, verticalAlignment = Alignment.Bottom) {
             holdContent()
             moveContent()
         }
     } else {
-        Box(modifier = Modifier.graphicsLayer(clip = true), contentAlignment = Alignment.BottomCenter) {
+        Box(modifier = modifier.graphicsLayer(clip = true), contentAlignment = Alignment.BottomCenter) {
             holdContent()
             moveContent()
         }
@@ -526,7 +527,7 @@ fun CheckpointAddContentPreview(){
                     isVisible = false
                 ),
                 bottomSheetState = bottomSheetState.copy(
-                    initHeight = 400,
+                    minHeight = 400,
                     infoState = InfoState(isRemoveButton = true),
                     content = DriveBottomSheetContent.CHECKPOINT_ADD,
                     checkPointAddState = CheckPointAddState(

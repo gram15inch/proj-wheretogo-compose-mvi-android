@@ -204,7 +204,7 @@ fun CheckpointAddBottomSheetPreview() {
                 modifier = Modifier.height(400.dp),
                 state= BottomSheetState(
                     isVisible = true,
-                    initHeight = 400
+                    minHeight = 400
                 ),
                 bottomSpace = 0.dp,
                 onSheetStateChange = {},

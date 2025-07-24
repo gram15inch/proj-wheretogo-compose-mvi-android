@@ -54,7 +54,7 @@ class CourseAddViewModel @Inject constructor(
             overlayGroup = mapOverlayService.overlays,
             bottomSheetState = BottomSheetState(
                 isVisible = true,
-                initHeight = 80,
+                minHeight = 80,
                 content = DriveBottomSheetContent.COURSE_ADD,
                 isSpaceVisibleWhenClose = true
             )

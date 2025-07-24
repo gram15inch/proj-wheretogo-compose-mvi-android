@@ -690,7 +690,7 @@ fun CourseAddOneStepPreview() {
     CourseAddSheetContent(
         state = CourseAddScreenState(
             bottomSheetState = BottomSheetState(
-                initHeight = 400,
+                minHeight = 400,
                 isVisible = true,
                 content = DriveBottomSheetContent.COURSE_ADD,
                 courseAddSheetState = CourseAddScreenState.CourseAddSheetState(
@@ -712,7 +712,7 @@ fun CourseAddTwoStepPreview() {
     CourseAddSheetContent(
         state = CourseAddScreenState(
             bottomSheetState = BottomSheetState(
-                initHeight = 400,
+                minHeight = 400,
                 isVisible = true,
                 content = DriveBottomSheetContent.COURSE_ADD,
                 courseAddSheetState = CourseAddScreenState.CourseAddSheetState(

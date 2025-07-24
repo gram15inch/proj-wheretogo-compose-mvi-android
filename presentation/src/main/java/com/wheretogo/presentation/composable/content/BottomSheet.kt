@@ -91,7 +91,7 @@ fun BottomSheet(
     }
 
     val initHeightWithSpace =
-        state.initHeight.dp + if(state.isSpaceVisibleWhenClose) bottomSpace else 0.dp
+        state.minHeight.dp + if(state.isSpaceVisibleWhenClose) bottomSpace else 0.dp
 
     Box(
         modifier = modifier

@@ -16,16 +16,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -33,7 +34,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.ContentScale
@@ -49,9 +49,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.skydoves.landscapist.ImageOptions
 import com.skydoves.landscapist.glide.GlideImage
+import com.valentinilk.shimmer.shimmer
 import com.wheretogo.domain.model.dummy.getCommentDummy
 import com.wheretogo.presentation.CommentType
-import com.wheretogo.presentation.R
+import com.wheretogo.presentation.SheetState
 import com.wheretogo.presentation.WIDE_WIDTH
 import com.wheretogo.presentation.composable.ExtendArea
 import com.wheretogo.presentation.feature.BlurEffect
@@ -59,57 +60,18 @@ import com.wheretogo.presentation.feature.ImeStickyBox
 import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.feature.topShadow
 import com.wheretogo.presentation.getCommentEmogiGroup
+import com.wheretogo.presentation.state.BottomSheetState
 import com.wheretogo.presentation.state.CommentState
 import com.wheretogo.presentation.state.CommentState.CommentAddState
 import com.wheretogo.presentation.state.CommentState.CommentItemState
 import com.wheretogo.presentation.state.PopUpState
+import com.wheretogo.presentation.theme.Green50
 import com.wheretogo.presentation.theme.Purple200
 import com.wheretogo.presentation.theme.Teal200
 import com.wheretogo.presentation.theme.White
 import com.wheretogo.presentation.theme.hancomMalangFontFamily
-
-
-@Preview
-@Composable
-fun PopupPreview() {
-    Box(modifier = Modifier) {
-        MapPopup(
-            modifier = Modifier.align(alignment = Alignment.BottomEnd),
-            state = PopUpState(
-                commentState = CommentState(
-                    isCommentVisible = true,
-                    isCommentSettingVisible = false,
-                    commentItemGroup = getCommentDummy().mapIndexed { idx, item ->
-                        CommentItemState(
-                            data = item,
-                            isLike = if (item.like % 2 == 0) false else true,
-                            isFold = if (item.like % 2 == 0) true else false,
-                            isFocus = idx == 0
-                        )
-                    },
-                    commentAddState = CommentAddState(
-                        isEmogiGroup = true,
-                        emogiGroup = getCommentEmogiGroup()
-                    )
-                ),
-                imageUri = Uri.parse(""),
-            ),
-            isLoading = false,
-            onPopupImageClick = {},
-            onPopupBlurClick = {},
-            onCommentListItemClick = {},
-            onCommentListItemLongClick = {},
-            onCommentLikeClick = {},
-            onCommentRemoveClick = {},
-            onCommentReportClick = {},
-            onCommentAddClick = {},
-            onCommentEditValueChange = {},
-            onCommentEmogiPress = {},
-            onCommentTypePress = {}
-        )
-    }
-}
-
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun MapPopup(
@@ -130,45 +92,63 @@ fun MapPopup(
 ) {
     var imeContainerHeight by remember { mutableStateOf(0.dp) }
     val isWideSize = screenSize(true) >= WIDE_WIDTH.dp
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(state.isVisible) {
+        if(state.isVisible && isWideSize){
+            coroutineScope.launch {
+                delay(250)
+                if(!state.commentState.isCommentVisible)
+                    onPopupImageClick()
+            }
+        }
+    }
+
     Box(modifier = modifier, contentAlignment = Alignment.BottomCenter) {
         ExtendArea( // 넓은 화면에서 확장
             isExtend = isWideSize,
             holdContent = {
-                PopUpImage( // 고정
-                    modifier = modifier.padding(start = 12.dp, bottom = 12.dp),
-                    uri = state.imageUri,
-                    isBlur = state.commentState.isCommentVisible && !isWideSize,
-                    onPopupImageClick = onPopupImageClick,
-                    onPopupBlurClick = onPopupBlurClick
-                )
+                Column(modifier=modifier) {
+                    PopUpImage( // 고정
+                        modifier = Modifier.padding(start = 12.dp, bottom = 12.dp),
+                        uri = state.imageUri,
+                        isBlur = state.commentState.isCommentVisible && !isWideSize,
+                        onPopupImageClick = {
+                            if(!isLoading)
+                                onPopupImageClick()
+                        },
+                        onPopupBlurClick = onPopupBlurClick
+                    )
+                    if(isWideSize)
+                        Surface(modifier=Modifier.height(70.dp)) {  }
+                }
             },
             moveContent = { // 이동
-                SlideAnimation(
-                    modifier = Modifier
-                        .graphicsLayer(clip = true),
-                    visible = state.commentState.isCommentVisible,
-                    direction = if (isWideSize) AnimationDirection.CenterRight else AnimationDirection.CenterDown
-                ) {
-                    val maxHeight = (if (!isWideSize) 480.dp else 500.dp)
-                    CommentContent(
-                        modifier = Modifier
-                            .sizeIn(maxHeight = maxHeight)
-                            .consumptionEvent()
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(White),
-                        commentState = state.commentState,
-                        isLoading=isLoading ,
-                        onCommentListItemClick = onCommentListItemClick,
-                        onCommentListItemLongClick = onCommentListItemLongClick,
-                        onCommentLikeClick = onCommentLikeClick,
-                        onCommentRemoveClick =  onCommentRemoveClick,
-                        onCommentReportClick = onCommentReportClick,
-                    )
+                val maxHeight = (if (isWideSize) 500 else 400)
+                if(state.commentState.isCommentVisible) {
+                    Column(modifier=Modifier.padding(bottom = 12.dp)) {
+                        CommentDragSheet(
+                            modifier=modifier.sizeIn(maxHeight=maxHeight.dp),
+                            state = state.commentState,
+                            onCommentListItemClick = onCommentListItemClick,
+                            onCommentListItemLongClick = onCommentListItemLongClick,
+                            onCommentLikeClick = onCommentLikeClick,
+                            onCommentRemoveClick = onCommentRemoveClick,
+                            onCommentReportClick = onCommentReportClick,
+                            onPopupBlurClick = onPopupBlurClick
+                        )
+                        Surface(modifier=Modifier.height(70.dp)) {  }
+                    }
                 }
+                else
+                    Surface(modifier=Modifier.fillMaxWidth()) {  }
             }
         )
+        val isImeVisible =
+            if (!isWideSize) state.commentState.isCommentVisible
+            else state.commentState.isCommentVisible && !state.commentState.isCommentSettingVisible
         SlideAnimation(
-            visible = state.commentState.isCommentVisible && !state.commentState.isCommentSettingVisible,
+            visible = isImeVisible,
             direction = AnimationDirection.CenterDown
         ) {
             CommentImeStickyBox( modifier = Modifier
@@ -190,19 +170,69 @@ fun MapPopup(
 }
 
 @Composable
-fun CommentContent(
-    modifier: Modifier,
-    commentState: CommentState,
-    isLoading: Boolean,
+fun CommentDragSheet(
+    modifier: Modifier = Modifier,
+    state: CommentState,
     onCommentListItemClick: (CommentItemState) -> Unit,
     onCommentListItemLongClick: (CommentItemState) -> Unit,
     onCommentLikeClick: (CommentItemState) -> Unit,
     onCommentRemoveClick: (CommentItemState) -> Unit,
     onCommentReportClick: (CommentItemState) -> Unit,
+    onPopupBlurClick: () -> Unit
+) {
+    val isPreview = LocalInspectionMode.current
+    Box(modifier=modifier){
+        BottomSheet(
+            modifier = Modifier
+                .fillMaxWidth(),
+            state = BottomSheetState(
+                isVisible = true,
+                minHeight = if(isPreview) 400 else 0
+            ),
+            onSheetStateChange = {
+                if (it == SheetState.PartiallyExpand)
+                    onPopupBlurClick()
+            },
+            onSheetHeightChange = {}
+        ) {
+
+        CommentContent(
+                modifier = Modifier
+                    .height(500.dp)
+                    .consumptionEvent()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(White),
+                commentState = state,
+                onCommentListItemClick = onCommentListItemClick,
+                onCommentListItemLongClick = onCommentListItemLongClick,
+                onCommentLikeClick = onCommentLikeClick,
+            )
+        }
+
+        FadeAnimation(modifier= Modifier.clip(RoundedCornerShape(topStart = 28.5.dp, topEnd = 28.5.dp)),
+            visible = state.isCommentSettingVisible) {
+            CommentSetting(
+                selectedItem = state.selectedCommentSettingItem,
+                onCommentRemoveClick = onCommentRemoveClick,
+                onCommentReportClick = onCommentReportClick,
+                onBackgroundClick = {
+                    onCommentListItemLongClick(state.selectedCommentSettingItem)
+                })
+        }
+    }
+}
+
+@Composable
+fun CommentContent(
+    modifier: Modifier,
+    commentState: CommentState,
+    onCommentListItemClick: (CommentItemState) -> Unit,
+    onCommentListItemLongClick: (CommentItemState) -> Unit,
+    onCommentLikeClick: (CommentItemState) -> Unit
 ){
     Box(modifier = modifier){
         CommentList(
-            isLoading = isLoading,
+            isLoading = commentState.isLoading,
             commentItemGroup = commentState.commentItemGroup,
             onItemClick = { item ->
                 onCommentListItemClick(item)
@@ -214,15 +244,6 @@ fun CommentContent(
                 onCommentLikeClick(item)
             }
         )
-        FadeAnimation(visible = commentState.isCommentSettingVisible) {
-            CommentSetting(
-                selectedItem = commentState.selectedCommentSettingItem,
-                onCommentRemoveClick = onCommentRemoveClick,
-                onCommentReportClick = onCommentReportClick,
-                onBackgroundClick = {
-                    onCommentListItemLongClick(commentState.selectedCommentSettingItem)
-                })
-        }
     }
 }
 
@@ -299,7 +320,6 @@ fun ReviewButtonGroup(
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ReviewButton(
     type: CommentType,
@@ -454,26 +474,24 @@ fun PopUpImage(
             .sizeIn(maxWidth = 260.dp, maxHeight = 500.dp),
         contentAlignment = Alignment.Center
     ) {
-        FadeAnimation(visible = uri != null) {
+
+        if (!isPreview && uri!= null){
             GlideImage(
                 modifier = Modifier
                     .clickable {
                         onPopupImageClick()
                     }
                     .fillMaxSize(),
-                imageModel = { if(isPreview) R.drawable.lg_app else uri },
+                imageModel = { uri },
                 imageOptions = ImageOptions(contentScale = ContentScale.Crop)
-            )
-        }
-        FadeAnimation(visible = uri == null) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .consumptionEvent()
-                    .background(color = Color.White), contentAlignment = Alignment.Center
-            ) {
-                DelayLottieAnimation(Modifier.size(50.dp), R.raw.lt_loading, true, 0)
-            }
+                )
+        } else {
+            Box(modifier=Modifier
+                .fillMaxSize()
+                .shimmer()
+                .background(White)
+                .consumptionEvent()
+            ){}
         }
 
         FadeAnimation(visible = isBlur) {
@@ -484,4 +502,47 @@ fun PopUpImage(
         }
     }
 
+}
+
+
+@Preview(widthDp = 600, heightDp = 600)
+@Preview(widthDp = 400, heightDp = 600)
+@Composable
+fun PopupPreview() {
+    Box(modifier = Modifier.background(Green50)) {
+        MapPopup(
+            modifier = Modifier.align(alignment = Alignment.BottomEnd),
+            state = PopUpState(
+                commentState = CommentState(
+                    isCommentVisible = true,
+                    isCommentSettingVisible = false,
+                    commentItemGroup = getCommentDummy().mapIndexed { idx, item ->
+                        CommentItemState(
+                            data = item,
+                            isLike = if (item.like % 2 == 0) false else true,
+                            isFold = if (item.like % 2 == 0) true else false,
+                            isFocus = idx == 0
+                        )
+                    },
+                    commentAddState = CommentAddState(
+                        isEmogiGroup = true,
+                        emogiGroup = getCommentEmogiGroup()
+                    )
+                ),
+                imageUri = Uri.parse(""),
+            ),
+            isLoading = false,
+            onPopupImageClick = {},
+            onPopupBlurClick = {},
+            onCommentListItemClick = {},
+            onCommentListItemLongClick = {},
+            onCommentLikeClick = {},
+            onCommentRemoveClick = {},
+            onCommentReportClick = {},
+            onCommentAddClick = {},
+            onCommentEditValueChange = {},
+            onCommentEmogiPress = {},
+            onCommentTypePress = {}
+        )
+    }
 }
