@@ -7,6 +7,7 @@ import com.wheretogo.presentation.CommentType
 data class CommentState(
     val isCommentVisible: Boolean = false,
     val isCommentSettingVisible: Boolean = false,
+    val isLoading :Boolean = false,
     val selectedCommentSettingItem: CommentItemState = CommentItemState(),
     val commentItemGroup: List<CommentItemState> = emptyList(),
     val commentAddState: CommentAddState = CommentAddState()

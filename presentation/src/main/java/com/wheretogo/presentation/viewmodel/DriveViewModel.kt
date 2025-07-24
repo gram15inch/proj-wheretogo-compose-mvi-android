@@ -359,7 +359,6 @@ class DriveViewModel @Inject constructor(
         _driveScreenState.update {
             it.initWithLevelState(3).run {
                 copy(
-                    isLoading = true,
                     popUpState = popUpState.copy(
                         isVisible = true,
                         checkPointId = overlay.id
@@ -399,7 +398,6 @@ class DriveViewModel @Inject constructor(
             it.run{
                 if (popUpState.isVisible)
                     copy(
-                        isLoading = false,
                         popUpState = popUpState.copy(
                             checkPointId = checkpoint.checkPointId,
                             imageUri = image
@@ -731,10 +729,10 @@ class DriveViewModel @Inject constructor(
         _driveScreenState.update {
             it.run {
                 copy(
-                    isLoading = true,
                     popUpState = popUpState.copy(
                         commentState = popUpState.commentState.copy(
                             isCommentVisible = !popUpState.commentState.isCommentVisible,
+                            isLoading = true,
                             commentAddState = CommentAddState(
                                 groupId = checkPointId,
                                 largeEmoji = emogiGroup.firstOrNull() ?: "",
@@ -754,9 +752,9 @@ class DriveViewModel @Inject constructor(
             it.run {
                 if (popUpState.commentState.isCommentVisible)
                     copy(
-                        isLoading = false,
                         popUpState = popUpState.copy(
                             commentState = popUpState.commentState.copy(
+                                isLoading = false,
                                 commentItemGroup = commentItemGroup
                             )
                         )
