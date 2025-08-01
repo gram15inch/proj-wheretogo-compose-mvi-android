@@ -21,12 +21,16 @@ class MockCheckPointRemoteDatasourceImpl @Inject constructor() : CheckPointRemot
         }
     }
 
+    override suspend fun getCheckPointByCourseId(courseId: String): List<RemoteCheckPoint> {
+        return newCheckPointGroup.filter { it.courseId == courseId }
+    }
+
     override suspend fun setCheckPoint(checkPoint: RemoteCheckPoint) {
         newCheckPointGroup.add(checkPoint)
     }
 
     override suspend fun removeCheckPoint(checkPointId: String) {
-        newCheckPointGroup.removeIf { it.checkPointId == checkPointId }
+        newCheckPointGroup.removeIf { it.courseId == checkPointId }
     }
 
     override suspend fun updateCheckPoint(checkPointId: String, captioin: String) {

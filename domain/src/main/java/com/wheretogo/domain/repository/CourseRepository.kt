@@ -1,7 +1,7 @@
 package com.wheretogo.domain.repository
 
 import com.wheretogo.domain.model.map.Course
-import com.wheretogo.domain.model.map.MetaCheckPoint
+import com.wheretogo.domain.model.map.Snapshot
 
 interface CourseRepository {
     suspend fun getCourse(courseId: String): Result<Course>
@@ -17,8 +17,11 @@ interface CourseRepository {
 
     suspend fun removeCourse(courseId: String): Result<Unit>
 
-    suspend fun updateMetaCheckpoint(
-        courseId: String,
-        metaCheckPoint: MetaCheckPoint
-    ): Result<Unit>
+    suspend fun getSnapshot(courseId: String): Snapshot
+
+    suspend fun updateSnapshot(snapshot: Snapshot): Result<Unit>
+
+    suspend fun appendIndex(snapshot: Snapshot): Result<Unit>
+
+    suspend fun removeIndex(snapshot: Snapshot): Result<Unit>
 }

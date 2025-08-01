@@ -62,7 +62,7 @@ class CourseScenarioTest {
         )
         val authRequest = AuthRequest(authType = AuthType.PROFILE, authProfile = addUser)
         val inputCourse = MockModelModule().provideRemoteCourseGroup().first().run {
-            this.toCourse(points = waypoints.toLatLngGroup())
+            this.toCourse().copy(points = waypoints.toLatLngGroup())
         }
 
         getNearByCourseUseCase(inputCourse.cameraLatLng, 8.0).empty(inputCourse.courseId)
@@ -85,7 +85,7 @@ class CourseScenarioTest {
         )
         val authRequest = AuthRequest(authType = AuthType.PROFILE, authProfile = addUser)
         val inputCourse = MockModelModule().provideRemoteCourseGroup().first().run {
-            this.toCourse(points = waypoints.toLatLngGroup())
+            this.toCourse().copy(points = waypoints.toLatLngGroup())
         }
 
         signUpAndSignInUseCase(authRequest).success()

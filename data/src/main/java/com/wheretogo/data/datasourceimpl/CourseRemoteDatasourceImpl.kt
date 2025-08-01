@@ -3,7 +3,6 @@ package com.wheretogo.data.datasourceimpl
 import com.google.firebase.firestore.FirebaseFirestore
 import com.wheretogo.data.FireStoreCollections
 import com.wheretogo.data.datasource.CourseRemoteDatasource
-import com.wheretogo.data.model.course.DataMetaCheckPoint
 import com.wheretogo.data.model.course.RemoteCourse
 import com.wheretogo.data.name
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -77,21 +76,6 @@ class CourseRemoteDatasourceImpl @Inject constructor() : CourseRemoteDatasource 
         return suspendCancellableCoroutine { continuation ->
             firestore.collection(courseRootCollection).document(courseId)
                 .delete()
-                .addOnSuccessListener {
-                    continuation.resume(true)
-                }.addOnFailureListener {
-                    continuation.resumeWithException(it)
-                }
-        }
-    }
-
-    override suspend fun updateMetaCheckpoint(
-        courseId: String,
-        metaCheckPoint: DataMetaCheckPoint
-    ): Boolean {
-        return suspendCancellableCoroutine { continuation ->
-            firestore.collection(courseRootCollection).document(courseId)
-                .update(RemoteCourse::dataMetaCheckPoint.name, metaCheckPoint)
                 .addOnSuccessListener {
                     continuation.resume(true)
                 }.addOnFailureListener {

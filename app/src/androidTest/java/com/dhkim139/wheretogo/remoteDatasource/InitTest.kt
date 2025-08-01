@@ -3,7 +3,6 @@ package com.dhkim139.wheretogo.remoteDatasource
 import com.wheretogo.data.datasourceimpl.CheckPointRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.CourseRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.RouteRemoteDatasourceImpl
-import com.wheretogo.data.model.course.DataMetaCheckPoint
 import com.wheretogo.data.model.route.RemoteRoute
 import com.wheretogo.data.toDataLatLngGroup
 import com.wheretogo.data.toRemoteCheckPoint
@@ -44,14 +43,7 @@ class InitTest {
      fun courseInit(): Unit = runBlocking {
          val courseGroup = getCourseDummy()
          courseGroup.forEach { course ->
-             val r = courseDatasourceImpl.setCourse(
-                 course.toRemoteCourse().copy(
-                     dataMetaCheckPoint = DataMetaCheckPoint(
-                         course.checkpointIdGroup,
-                         timeStamp = System.currentTimeMillis()
-                     )
-                 )
-             )
+             val r = courseDatasourceImpl.setCourse(course.toRemoteCourse())
              assertEquals(true, r)
          }
          val cs1 = courseGroup.first()

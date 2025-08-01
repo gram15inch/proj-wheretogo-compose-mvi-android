@@ -94,7 +94,7 @@ class CheckPointScenarioTest {
         val authRequest = AuthRequest(authType = AuthType.PROFILE, authProfile = addUser)
         val addCourse = MockModelModule().provideRemoteCourseGroup()
             .first { it.courseId == "cs3" }
-            .run { toCourse(points = waypoints.toLatLngGroup()).toCourseAddRequest() }
+            .run { toCourse().copy(points = waypoints.toLatLngGroup()).toCourseAddRequest() }
         val uri = getAssetFileUri(context, "photo_opt.jpg")
 
         //로그인후 코스, 체크포인트 추가

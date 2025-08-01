@@ -10,7 +10,6 @@ import com.wheretogo.domain.model.map.Course
 import com.wheretogo.domain.model.map.CourseAddRequest
 import com.wheretogo.domain.model.map.History
 import com.wheretogo.domain.model.map.LatLng
-import com.wheretogo.domain.model.map.MetaCheckPoint
 import com.wheretogo.domain.model.user.AuthProfile
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePrivate
@@ -151,15 +150,6 @@ fun parseDateToMillis(dateString: String, pattern: String = USER_DATE_FORMAT): L
     return date?.time ?: throw IllegalArgumentException("Invalid date format or value")
 }
 
-fun List<CheckPoint>.toMetaCheckPoint(
-    timestamp: Long = 0L
-): MetaCheckPoint {
-    return MetaCheckPoint(
-        checkPointIdGroup = map { it.checkPointId },
-        timeStamp = timestamp
-    )
-}
-
 fun CheckPointAddRequest.toCheckpoint(
     userId: String,
     userName: String,
@@ -168,6 +158,7 @@ fun CheckPointAddRequest.toCheckpoint(
 ): CheckPoint {
     return CheckPoint(
         checkPointId = checkPointId,
+        courseId = courseId,
         userId = userId,
         userName = userName,
         imageName = imageName,

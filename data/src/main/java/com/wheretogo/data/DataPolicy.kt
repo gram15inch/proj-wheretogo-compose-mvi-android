@@ -4,6 +4,8 @@ import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.wheretogo.domain.DomainError
+import com.wheretogo.domain.model.map.Snapshot
+import java.util.concurrent.TimeUnit
 
 const val NAVER_OPEN_API_APIGW_URL = "https://naveropenapi.apigw.ntruss.com"
 const val NAVER_MAPS_NTRUSS_APIGW_URL = "https://maps.apigw.ntruss.com/"
@@ -50,6 +52,24 @@ fun<T> Result<T>.toDomainResult():Result<T>{
         }
     )
 }
+
+sealed interface CachePolicy {
+    fun isExpired(snapshot: Snapshot): Boolean
+}
+
+data object CheckpointPolicy : CachePolicy {
+    override fun isExpired(snapshot: Snapshot): Boolean {
+        val refreshDuration =
+            TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - snapshot.timeStamp)
+        return when {
+            snapshot.indexIdGroup.isEmpty() && refreshDuration >= 60 ->  true
+            snapshot.indexIdGroup.isNotEmpty() && refreshDuration >= 15 -> true
+            else -> false
+        }
+    }
+}
+
+
 //파이어스토어 컬렉션명
 enum class FireStoreCollections {
     USER,
@@ -60,6 +80,7 @@ enum class FireStoreCollections {
     CHECKPOINT,
     ROUTE,
     LIKE,
+    META,
 
     COMMENT,
     REPORT,

@@ -11,7 +11,7 @@ import androidx.room.TypeConverters
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import com.wheretogo.data.model.course.DataMetaCheckPoint
+import com.wheretogo.data.model.course.LocalSnapshot
 import com.wheretogo.data.model.course.LocalCourse
 import com.wheretogo.data.model.map.DataLatLng
 import com.wheretogo.data.model.meta.LocalMetaGeoHash
@@ -20,7 +20,7 @@ import java.lang.reflect.Type
 @TypeConverters(CourseJsonConverters::class)
 @Database(
     entities = [LocalCourse::class, LocalMetaGeoHash::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class CourseDatabase : RoomDatabase() {
@@ -40,7 +40,7 @@ interface CourseDao {
     suspend fun selectByGeoHash(geoHash: String): List<LocalCourse>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(entity: LocalCourse)
+    suspend fun insert(entity: List<LocalCourse>)
 
     @Query("DELETE FROM LocalCourse WHERE courseId = :courseId")
     suspend fun delete(courseId: String)
@@ -54,9 +54,11 @@ interface CourseDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun setMetaGeoHash(entity: LocalMetaGeoHash)
 
-    @Query("UPDATE LocalCourse SET localMetaCheckPoint = :metaCheckPoint WHERE courseId = :courseId")
-    suspend fun updateMetaCheckPoint(courseId: String, metaCheckPoint: DataMetaCheckPoint)
+    @Query("UPDATE LocalCourse SET checkpointSnapshot = :localSnapshot WHERE courseId = :courseId")
+    suspend fun updateSnapshot(courseId: String, localSnapshot: LocalSnapshot)
 
+    @Query("SELECT checkpointSnapshot FROM LocalCourse WHERE courseId = :courseId")
+    suspend fun getCheckPointSnapshot(courseId: String):LocalSnapshot
 }
 
 class CourseJsonConverters {
@@ -69,7 +71,7 @@ class CourseJsonConverters {
         Types.newParameterizedType(List::class.java, DataLatLng::class.java)
     private val latLngGroupAdapter = moshi.adapter<List<DataLatLng>>(latLngListType)
     private val latLngAdapter = moshi.adapter(DataLatLng::class.java)
-    private val metaCheckPointAdapter = moshi.adapter(DataMetaCheckPoint::class.java)
+    private val snapshotAdapter = moshi.adapter(LocalSnapshot::class.java)
 
     @TypeConverter
     fun fromLatLngList(latLngList: List<DataLatLng>?): String? {
@@ -80,7 +82,6 @@ class CourseJsonConverters {
     fun toLatLngList(jsonString: String?): List<DataLatLng>? {
         return jsonString?.let { latLngGroupAdapter.fromJson(it) }
     }
-
 
     @TypeConverter
     fun toLatLng(jsonString: String?): DataLatLng? {
@@ -93,13 +94,13 @@ class CourseJsonConverters {
     }
 
     @TypeConverter
-    fun toCheckpoint(jsonString: String?): DataMetaCheckPoint? {
-        return jsonString?.let { metaCheckPointAdapter.fromJson(it) }
+    fun toSnapshot(jsonString: String?): LocalSnapshot? {
+        return jsonString?.let { snapshotAdapter.fromJson(it) }
     }
 
     @TypeConverter
-    fun fromCheckpoint(checkpoint: DataMetaCheckPoint?): String? {
-        return checkpoint?.let { metaCheckPointAdapter.toJson(it) }
+    fun fromSnapshot(checkpoint: LocalSnapshot?): String? {
+        return checkpoint?.let { snapshotAdapter.toJson(it) }
     }
 
 }

@@ -11,6 +11,7 @@ import com.wheretogo.data.model.map.DataLatLng
 data class LocalCheckPoint(
     @PrimaryKey
     val checkPointId: String = DATA_NULL,
+    val courseId:String = "",
     val userId: String = "",
     val userName :String = "",
     val latLng: DataLatLng = DataLatLng(),

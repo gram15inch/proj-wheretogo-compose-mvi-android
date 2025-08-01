@@ -39,6 +39,20 @@ class CheckPointRemoteDatasourceImpl @Inject constructor() : CheckPointRemoteDat
         }
     }
 
+    override suspend fun getCheckPointByCourseId(courseId: String): List<RemoteCheckPoint> {
+        return suspendCancellableCoroutine { continuation ->
+            firestore.collection(checkPointRootCollection)
+                .whereEqualTo(RemoteCheckPoint::courseId.name, courseId)
+                .get()
+                .addOnSuccessListener {
+                    val group = it.toObjects(RemoteCheckPoint::class.java)
+                    continuation.resume(group)
+                }.addOnFailureListener {
+                    continuation.resumeWithException(it)
+                }
+        }
+    }
+
     override suspend fun setCheckPoint(checkPoint: RemoteCheckPoint) {
         return suspendCancellableCoroutine { continuation ->
             firestore.collection(checkPointRootCollection).document(checkPoint.checkPointId)

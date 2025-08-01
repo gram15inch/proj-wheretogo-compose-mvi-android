@@ -1,7 +1,6 @@
 package com.dhkim139.wheretogo.di
 
 import com.dhkim139.wheretogo.mock.model.MockRemoteUser
-import com.wheretogo.data.model.course.DataMetaCheckPoint
 import com.wheretogo.data.model.course.RemoteCourse
 import com.wheretogo.data.toRemoteCourse
 import com.wheretogo.domain.AuthCompany
@@ -49,6 +48,6 @@ class MockModelModule {
     @Provides
     @Singleton
     fun provideRemoteCourseGroup(): List<RemoteCourse> {
-        return courseGroup.map { it.toRemoteCourse(checkPoint = DataMetaCheckPoint(it.checkpointIdGroup)) }
+        return courseGroup.map { it.toRemoteCourse() }
     }
 }

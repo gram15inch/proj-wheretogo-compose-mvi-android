@@ -184,7 +184,8 @@ fun getCheckPointDummy(courseId: String = ""): List<CheckPoint> {
                 val user = profileGroup[0]
                 list.add(
                     CheckPoint(
-                        checkPointId = "cs1_cp${i}",
+                        checkPointId = "cp${i}",
+                        courseId = "cs1",
                         userId = user.uid,
                         userName = user.name,
                         latLng = latlng
@@ -198,7 +199,8 @@ fun getCheckPointDummy(courseId: String = ""): List<CheckPoint> {
             getWaypointDummy("cs2").forEachIndexed {i,latlng->
                 list.add(
                     CheckPoint(
-                        checkPointId = "cs2_cp${i}",
+                        checkPointId = "cp${i}",
+                        courseId = "cs2",
                         userId = user.uid,
                         userName = user.name,
                         latLng = latlng
@@ -212,10 +214,11 @@ fun getCheckPointDummy(courseId: String = ""): List<CheckPoint> {
             getWaypointDummy("cs6").forEachIndexed {i,latlng->
                 list.add(
                     CheckPoint(
-                        checkPointId = "cs6_cp${i}",
+                        checkPointId = "cp${i}",
+                        courseId = "cs6",
                         userId = user.uid,
                         userName = user.name,
-                        latlng
+                        latLng = latlng
                     )
                 )
             }
