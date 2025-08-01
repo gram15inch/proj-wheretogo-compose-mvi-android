@@ -53,6 +53,8 @@ class UserRepositoryImpl @Inject constructor(
                 historyId = historyId,
                 type = type
             )
+        }.onFailure {
+            userLocalDatasource.removeHistory(historyId, type)
         }
     }
 
@@ -90,7 +92,8 @@ class UserRepositoryImpl @Inject constructor(
                     type
                 )
             )
-
+        }.onFailure {
+            userLocalDatasource.addHistory(historyId, type)
         }
     }
 

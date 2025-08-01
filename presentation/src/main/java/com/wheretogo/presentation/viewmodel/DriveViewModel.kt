@@ -375,9 +375,15 @@ class DriveViewModel @Inject constructor(
         val checkpoint = withContext(Dispatchers.IO) {
             _driveScreenState.value.run {
                 val course = listState.clickItem.course
-                getCheckPointForMarkerUseCase(course.courseId).first { it.checkPointId == overlay.id }
+                getCheckPointForMarkerUseCase(course.courseId).firstOrNull { it.checkPointId == overlay.id }
             }
         }
+
+        if(checkpoint==null){
+            mapOverlayService.removeCheckPoint(listOf(overlay.id))
+            return
+        }
+
         _driveScreenState.update {
             it.run {
                 if (popUpState.isVisible)
@@ -1093,8 +1099,8 @@ class DriveViewModel @Inject constructor(
             when (removeResponse.status) {
                 UseCaseResponse.Status.Success -> {
                     _driveScreenState.update {
+                        mapOverlayService.removeCheckPoint(listOf(checkPoint.checkPointId))
                         it.initWithLevelState(2)
-                            .apply { mapOverlayService.removeCheckPoint(listOf(checkPoint.checkPointId)) }
                     }
                 }
 

@@ -13,9 +13,6 @@ import com.wheretogo.data.model.user.RemoteProfilePublic
 import com.wheretogo.data.model.user.UserDeleteRequest
 import com.wheretogo.data.name
 import com.wheretogo.domain.HistoryType
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
 import kotlin.coroutines.resume
@@ -153,7 +150,7 @@ class UserRemoteDatasourceImpl @Inject constructor(
 
 
     override suspend fun setHistoryGroup(uid: String, wrapper: RemoteHistoryGroupWrapper) {
-        return suspendCancellableCoroutine { continuation ->
+        suspendCancellableCoroutine { continuation ->
             firestore.collection(FireStoreCollections.USER.name()).document(uid)
                 .collection(FireStoreCollections.HISTORY.name)
                 .document(wrapper.type.toCollectionName())
@@ -181,7 +178,7 @@ class UserRemoteDatasourceImpl @Inject constructor(
     }
 
     override suspend fun addHistory(uid: String, historyId: String, type: HistoryType) {
-        return suspendCancellableCoroutine { continuation ->
+       val isNull= suspendCancellableCoroutine { continuation ->
             firestore.collection(FireStoreCollections.USER.name()).document(uid)
                 .collection(FireStoreCollections.HISTORY.name)
                 .document(type.toCollectionName())
@@ -190,17 +187,23 @@ class UserRemoteDatasourceImpl @Inject constructor(
                     FieldValue.arrayUnion(historyId)
                 )
                 .addOnSuccessListener {
-                    continuation.resume(Unit)
+                    continuation.resume(false)
                 }.addOnFailureListener { e ->
-                    CoroutineScope(Dispatchers.IO).launch {
-                        if (e is FirebaseFirestoreException) {
-                            setHistoryGroup(uid, RemoteHistoryGroupWrapper(listOf(historyId), type))
-                            continuation.resume(Unit)
-                        } else
-                            continuation.resumeWithException(e)
+                    if (e is FirebaseFirestoreException) {
+                        return@addOnFailureListener when(e.code){
+                            FirebaseFirestoreException.Code.NOT_FOUND ->{
+                                continuation.resume(true)
+                            }
+                            else->{
+                                continuation.resumeWithException(e)
+                            }
+                        }
                     }
+                    continuation.resumeWithException(e)
                 }
         }
+        if(isNull) //히스토리 컬렉션이 존재하지 않음
+            setHistoryGroup(uid, RemoteHistoryGroupWrapper(listOf(historyId), type))
     }
 
     override suspend fun getHistoryGroup(
