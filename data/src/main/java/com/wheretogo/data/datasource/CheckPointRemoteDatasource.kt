@@ -8,6 +8,8 @@ interface CheckPointRemoteDatasource {
 
     suspend fun getCheckPoint(checkPointId: String): RemoteCheckPoint?
 
+    suspend fun getCheckPointByCourseId(courseId: String): List<RemoteCheckPoint>
+
     suspend fun setCheckPoint(checkPoint: RemoteCheckPoint)
 
     suspend fun updateCheckPoint(checkPointId: String, captioin: String)

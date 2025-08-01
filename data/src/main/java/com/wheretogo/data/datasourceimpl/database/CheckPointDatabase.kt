@@ -17,7 +17,7 @@ import com.wheretogo.data.model.map.DataLatLng
 @TypeConverters(CheckPointJsonConverters::class)
 @Database(
     entities = [LocalCheckPoint::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class CheckPointDatabase : RoomDatabase() {
@@ -30,11 +30,20 @@ interface CheckPointDao {
     @Query("SELECT * FROM LocalCheckPoint WHERE checkPointId = :checkPointId")
     suspend fun select(checkPointId: String): LocalCheckPoint?
 
+    @Query("SELECT * FROM LocalCheckPoint Where checkPointId IN (:checkpointIdGroup)")
+    suspend fun selectByGroup(checkpointIdGroup: List<String>): List<LocalCheckPoint>
+
+    @Query("SELECT * FROM LocalCheckPoint WHERE courseId = :courseId")
+    suspend fun selectByCourseId(courseId: String): List<LocalCheckPoint>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(entity: LocalCheckPoint)
+    suspend fun insert(entity: List<LocalCheckPoint>)
 
     @Query("DELETE FROM LocalCheckPoint WHERE checkPointId = :checkPointId")
     suspend fun delete(checkPointId: String)
+
+    @Query("DELETE FROM LocalCheckPoint WHERE courseId IN (:checkPointIdGroup)")
+    suspend fun deleteByGroup(checkPointIdGroup: List<String>)
 
     @Query("UPDATE LocalCheckPoint SET caption =:caption WHERE checkPointId = :checkPointId")
     suspend fun update(checkPointId: String, caption: String)

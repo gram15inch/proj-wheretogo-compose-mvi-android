@@ -2,7 +2,7 @@ package com.wheretogo.data.datasourceimpl
 
 import com.wheretogo.data.datasource.CourseLocalDatasource
 import com.wheretogo.data.datasourceimpl.database.CourseDatabase
-import com.wheretogo.data.model.course.DataMetaCheckPoint
+import com.wheretogo.data.model.course.LocalSnapshot
 import com.wheretogo.data.model.course.LocalCourse
 import com.wheretogo.data.model.meta.LocalMetaGeoHash
 import com.wheretogo.domain.COURSE_UPDATE_TIME
@@ -16,8 +16,8 @@ class CourseLocalDatasourceImpl @Inject constructor(
         return courseDao.select(courseId)
     }
 
-    override suspend fun setCourse(course: LocalCourse) {
-        courseDao.insert(course)
+    override suspend fun setCourse(courseGroup: List<LocalCourse>) {
+        courseDao.insert(courseGroup)
     }
 
     override suspend fun removeCourse(courseId: String) {
@@ -42,11 +42,28 @@ class CourseLocalDatasourceImpl @Inject constructor(
         courseDao.setMetaGeoHash(entity)
     }
 
-    override suspend fun updateMetaCheckPoint(
-        courseId: String,
-        dataMetaCheckPoint: DataMetaCheckPoint
+    override suspend fun updateSnapshot(
+        localSnapshot: LocalSnapshot
     ) {
-        courseDao.updateMetaCheckPoint(courseId, dataMetaCheckPoint)
+        courseDao.updateSnapshot(
+            courseId = localSnapshot.refId,
+            localSnapshot = localSnapshot,
+        )
     }
 
+    override suspend fun appendIndex(
+        localSnapshot: LocalSnapshot
+    ){
+        val oldGroup= courseDao.getCheckPointSnapshot(localSnapshot.refId).indexIdGroup
+        val newGroup = oldGroup + localSnapshot.indexIdGroup
+        courseDao.updateSnapshot(localSnapshot.refId, localSnapshot.copy(indexIdGroup = newGroup))
+    }
+
+    override suspend fun removeIndex(
+        localSnapshot: LocalSnapshot
+    ) {
+        val oldGroup= courseDao.getCheckPointSnapshot(localSnapshot.refId).indexIdGroup
+        val newGroup = oldGroup - localSnapshot.indexIdGroup.toSet()
+        courseDao.updateSnapshot(localSnapshot.refId, localSnapshot.copy(indexIdGroup = newGroup))
+    }
 }

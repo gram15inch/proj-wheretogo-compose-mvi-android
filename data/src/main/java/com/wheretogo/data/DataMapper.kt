@@ -3,7 +3,7 @@ package com.wheretogo.data
 import com.wheretogo.data.model.checkpoint.LocalCheckPoint
 import com.wheretogo.data.model.checkpoint.RemoteCheckPoint
 import com.wheretogo.data.model.comment.RemoteComment
-import com.wheretogo.data.model.course.DataMetaCheckPoint
+import com.wheretogo.data.model.course.LocalSnapshot
 import com.wheretogo.data.model.course.LocalCourse
 import com.wheretogo.data.model.course.RemoteCourse
 import com.wheretogo.data.model.map.DataLatLng
@@ -22,7 +22,7 @@ import com.wheretogo.domain.model.map.CheckPoint
 import com.wheretogo.domain.model.map.Comment
 import com.wheretogo.domain.model.map.Course
 import com.wheretogo.domain.model.map.LatLng
-import com.wheretogo.domain.model.map.MetaCheckPoint
+import com.wheretogo.domain.model.map.Snapshot
 import com.wheretogo.domain.model.map.Route
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePrivate
@@ -231,13 +231,18 @@ fun Comment.toRemoteComment(): RemoteComment {
     )
 }
 
-fun DataMetaCheckPoint.toMetaCheckPoint(timestamp: Long = timeStamp): MetaCheckPoint {
-    return MetaCheckPoint(checkPointIdGroup = checkPointIdGroup, timeStamp = timestamp)
+fun LocalSnapshot.toSnapshot(): Snapshot {
+    return Snapshot(
+        indexIdGroup = indexIdGroup,
+        refId = refId,
+        timeStamp = timeStamp
+    )
 }
 
 fun CheckPoint.toRemoteCheckPoint(): RemoteCheckPoint {
     return RemoteCheckPoint(
         checkPointId = checkPointId,
+        courseId = courseId,
         userId = userId,
         userName = userName,
         latLng = latLng.toDataLatLng(),
@@ -250,6 +255,7 @@ fun CheckPoint.toRemoteCheckPoint(): RemoteCheckPoint {
 fun CheckPoint.toLocalCheckPoint(): LocalCheckPoint {
     return LocalCheckPoint(
         checkPointId = checkPointId,
+        courseId = courseId,
         userId = userId,
         userName = userName,
         latLng = latLng.toDataLatLng(),
@@ -264,6 +270,7 @@ fun CheckPoint.toLocalCheckPoint(): LocalCheckPoint {
 fun RemoteCheckPoint.toCheckPoint(): CheckPoint {
     return CheckPoint(
         checkPointId = checkPointId,
+        courseId = courseId,
         userId = userId,
         userName = userName,
         latLng = latLng.toLatLng(),
@@ -273,27 +280,26 @@ fun RemoteCheckPoint.toCheckPoint(): CheckPoint {
     )
 }
 
-fun RemoteCheckPoint.toLocalCheckPoint(
-    localImgUrl: String = "",
-    timestamp: Long = 0L
-): LocalCheckPoint {
+fun RemoteCheckPoint.toLocalCheckPoint(): LocalCheckPoint {
     return LocalCheckPoint(
         checkPointId = checkPointId,
+        courseId = courseId,
         userId= userId,
         userName= userName,
         latLng = latLng,
         caption = caption,
         imageName = imageName,
-        imageLocalPath = localImgUrl,
+        imageLocalPath = imageName,
         description = description,
-        timestamp = timestamp
+        timestamp = System.currentTimeMillis()
     )
 }
 
 fun LocalCheckPoint.toCheckPoint(): CheckPoint {
     return CheckPoint(
         checkPointId = checkPointId,
-        userId=userId,
+        courseId= courseId,
+        userId = userId,
         userName = userName,
         latLng = latLng.toLatLng(),
         caption = caption,
@@ -313,7 +319,7 @@ fun LocalCourse.toCourse(
         userId = userId,
         userName = userName,
         waypoints = waypoints.toLatLngGroup(),
-        checkpointIdGroup = localMetaCheckPoint.checkPointIdGroup,
+        checkpointIdGroup = checkpointSnapshot.indexIdGroup,
         points = points,
         duration = duration,
         type = type,
@@ -326,7 +332,7 @@ fun LocalCourse.toCourse(
 }
 
 fun Course.toLocalCourse(
-    checkPoint: DataMetaCheckPoint = DataMetaCheckPoint()
+    checkPoint: LocalSnapshot = LocalSnapshot()
 ): LocalCourse {
     return LocalCourse(
         courseId = courseId,
@@ -337,7 +343,7 @@ fun Course.toLocalCourse(
         longitude = cameraLatLng.longitude,
         geoHash = cameraLatLng.toGeoHash(6),
         waypoints = waypoints.toDataLatLngGroup(),
-        localMetaCheckPoint = checkPoint,
+        checkpointSnapshot = checkPoint,
         duration = duration,
         type = type,
         level = level,
@@ -349,10 +355,7 @@ fun Course.toLocalCourse(
 }
 
 
-fun RemoteCourse.toLocalCourse(
-    checkPoint: DataMetaCheckPoint = DataMetaCheckPoint(checkPointIdGroup = this.dataMetaCheckPoint.checkPointIdGroup),
-    like: Int = 0
-): LocalCourse {
+fun RemoteCourse.toLocalCourse(): LocalCourse {
     return LocalCourse(
         courseId = courseId,
         courseName = courseName,
@@ -362,19 +365,18 @@ fun RemoteCourse.toLocalCourse(
         longitude = cameraLatLng.longitude,
         geoHash = cameraLatLng.toLatLng().toGeoHash(6),
         waypoints = waypoints,
-        localMetaCheckPoint = checkPoint,
+        checkpointSnapshot = LocalSnapshot(),
         duration = duration,
         type = type,
         level = level,
         relation = relation,
         cameraLatLng = cameraLatLng,
         zoom = zoom,
-        like = like,
+        like = 0,
     )
 }
 
 fun Course.toRemoteCourse(
-    checkPoint: DataMetaCheckPoint = DataMetaCheckPoint(),
     keyword:List<String> = emptyList()
 ): RemoteCourse {
     return RemoteCourse(
@@ -386,7 +388,6 @@ fun Course.toRemoteCourse(
         longitude = cameraLatLng.longitude,
         geoHash = cameraLatLng.toGeoHash(6),
         waypoints = waypoints.toDataLatLngGroup(),
-        dataMetaCheckPoint = checkPoint,
         keyword = keyword,
         duration = duration,
         type = type,
@@ -397,31 +398,29 @@ fun Course.toRemoteCourse(
     )
 }
 
-fun RemoteCourse.toCourse(
-    points: List<LatLng> = emptyList(),
-    like: Int = 0
-): Course {
+fun RemoteCourse.toCourse(): Course {
     return Course(
         courseId = courseId,
         courseName = courseName,
         userId = userId,
         userName = userName,
         waypoints = waypoints.toLatLngGroup(),
-        checkpointIdGroup = dataMetaCheckPoint.checkPointIdGroup,
-        points = points,
+        checkpointIdGroup = emptyList(),
+        points = emptyList(),
         duration = duration,
         type = type,
         level = level,
         relation = relation,
         cameraLatLng = cameraLatLng.toLatLng(),
         zoom = zoom,
-        like = like
+        like = 0
     )
 }
 
-fun MetaCheckPoint.toDataMetaCheckPoint(timeStamp: Long = this.timeStamp): DataMetaCheckPoint {
-    return DataMetaCheckPoint(
-        checkPointIdGroup = checkPointIdGroup,
+fun Snapshot.toLocalSnapshot(timeStamp:Long = System.currentTimeMillis()): LocalSnapshot {
+    return LocalSnapshot(
+        refId = refId,
+        indexIdGroup = indexIdGroup,
         timeStamp = timeStamp
     )
 }

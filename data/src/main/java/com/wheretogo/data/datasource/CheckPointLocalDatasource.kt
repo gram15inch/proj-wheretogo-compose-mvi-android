@@ -8,7 +8,9 @@ interface CheckPointLocalDatasource {
 
     suspend fun getCheckPoint(checkPointId: String): LocalCheckPoint?
 
-    suspend fun setCheckPoint(checkPoint: LocalCheckPoint)
+    suspend fun setCheckPoint(checkPointGroup: List<LocalCheckPoint>)
+
+    suspend fun replaceCheckpointByCourse(courseId: String, checkPointGroup: List<LocalCheckPoint>)
 
     suspend fun removeCheckPoint(checkPointId: String)
 

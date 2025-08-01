@@ -2,6 +2,7 @@ package com.wheretogo.domain.model.map
 
 data class CheckPoint(
     val checkPointId: String = "",
+    val courseId: String = "",
     val userId: String = "",
     val userName: String = "",
     val latLng: LatLng = LatLng(),

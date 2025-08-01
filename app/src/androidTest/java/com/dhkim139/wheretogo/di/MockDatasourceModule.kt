@@ -3,6 +3,7 @@ package com.dhkim139.wheretogo.di
 import com.dhkim139.wheretogo.mock.MockAddressRemoteDatasourceImpl
 import com.dhkim139.wheretogo.mock.MockAuthRemoteDatasourceImpl
 import com.dhkim139.wheretogo.mock.MockCheckPointRemoteDatasourceImpl
+import com.dhkim139.wheretogo.mock.MockCommentRemoteDatasourceImpl
 import com.dhkim139.wheretogo.mock.MockCourseRemoteDatasourceImpl
 import com.dhkim139.wheretogo.mock.MockImageRemoteDatasourceImpl
 import com.dhkim139.wheretogo.mock.MockReportRemoteDatasourceImpl
@@ -91,7 +92,7 @@ abstract class MockDatasourceModule {
     abstract fun bindLikeRemoteDatasource(datasource: LikeRemoteDatasourceImpl): LikeRemoteDatasource
 
     @Binds
-    abstract fun bindCommentRemoteDatasource(datasource: CommentRemoteDatasourceImpl): CommentRemoteDatasource
+    abstract fun bindCommentRemoteDatasource(datasource: MockCommentRemoteDatasourceImpl): CommentRemoteDatasource
 
     @Binds
     abstract fun bindReportRemoteDatasource(datasource: MockReportRemoteDatasourceImpl): ReportRemoteDatasource

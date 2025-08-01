@@ -9,10 +9,12 @@ const val MIN = 60*SECOND
 const val HOUR = 60*MIN
 const val DAY = 24*HOUR
 const val COURSE_UPDATE_TIME = DAY
-const val ROUTE_GEOHASH_MIN_LENGTH = 4
 const val USER_DATE_FORMAT = "yyyy-MM-dd"
+const val LOG_DATE_FORMAT = "yyyy-MM-dd H:m:s"
 const val DOMAIN_EMPTY = ""
 
+const val ROUTE_MIN_ZOOM = 9.5
+const val CHECKPOINT_MIN_ZOOM = 9.5
 const val LIST_ITEM_ZOOM = 12.0
 
 sealed class DomainError : Exception() {
