@@ -1,7 +1,7 @@
 package com.dhkim139.wheretogo.di
 
 import com.wheretogo.data.model.key.AppKey
-import com.wheretogo.presentation.BuildConfig
+import com.dhkim139.wheretogo.BuildConfig
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

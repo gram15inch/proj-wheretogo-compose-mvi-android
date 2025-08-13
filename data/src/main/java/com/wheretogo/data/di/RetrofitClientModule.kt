@@ -2,9 +2,9 @@ package com.wheretogo.data.di
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import com.wheretogo.data.FIREBASE_CLOUD_API_URL
 import com.wheretogo.data.NAVER_MAPS_NTRUSS_APIGW_URL
 import com.wheretogo.data.NAVER_OPEN_API_URL
+import com.wheretogo.data.firebaseApiUrlByBuild
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -70,11 +70,9 @@ object RetrofitClientModule {
     @Named("firebase")
     fun provideFirebaseRetrofit(moshi: Moshi, client: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .addConverterFactory(
-                MoshiConverterFactory.create(moshi)
-            )
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
             .client(client)
-            .baseUrl(FIREBASE_CLOUD_API_URL)
+            .baseUrl(firebaseApiUrlByBuild())
             .build()
     }
 }
