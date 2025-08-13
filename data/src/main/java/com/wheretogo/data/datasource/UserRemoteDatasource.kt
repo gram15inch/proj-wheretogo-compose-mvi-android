@@ -12,7 +12,7 @@ interface UserRemoteDatasource {
     suspend fun getProfilePublicWithMail(hashMail: String): RemoteProfilePublic?
     suspend fun getProfilePrivate(uid: String): RemoteProfilePrivate?
     suspend fun deleteProfile(uid: String)
-    suspend fun deleteUser(userId: String, token: String):String
+    suspend fun deleteUser(userId: String): Result<String>
 
     suspend fun addHistory(uid: String, historyId: String, type: HistoryType)
     suspend fun getHistoryGroup(uid: String, type: HistoryType): Pair<HistoryType, HashSet<String>>

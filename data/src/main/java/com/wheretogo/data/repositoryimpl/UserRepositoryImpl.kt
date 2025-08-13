@@ -197,7 +197,6 @@ class UserRepositoryImpl @Inject constructor(
                     val newProfile = profile.copy(private = newPrivate.await())
                     val history = async { getRemoteHistory(authProfile.uid).getOrNull() ?: History() }
                     userLocalDatasource.setProfile(newProfile.toLocalProfile())
-                    userLocalDatasource.setToken(authProfile.token)
                     setLocalHistory(history.await())
                     return@coroutineScope profile
                 }
@@ -216,10 +215,8 @@ class UserRepositoryImpl @Inject constructor(
     override suspend fun deleteUser(): Result<Unit> {
         return runCatching{
             val uid = userLocalDatasource.getProfileFlow().first().uid
-            val token= userLocalDatasource.getTokenFlow().first()
             check(uid.isNotBlank())
-            check(token.isNotBlank())
-            userRemoteDatasource.deleteUser(uid, token)
+            userRemoteDatasource.deleteUser(uid)
             clearUserCache()
         }
     }

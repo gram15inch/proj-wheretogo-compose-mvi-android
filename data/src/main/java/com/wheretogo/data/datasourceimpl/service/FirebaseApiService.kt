@@ -1,16 +1,13 @@
 package com.wheretogo.data.datasourceimpl.service
 
-import com.wheretogo.data.model.user.UserDeleteRequest
 import com.wheretogo.data.model.user.UserDeleteResponse
 import retrofit2.Response
-import retrofit2.http.Body
-import retrofit2.http.Header
-import retrofit2.http.POST
+import retrofit2.http.DELETE
+import retrofit2.http.Path
 
 interface FirebaseApiService {
-        @POST("anonymizeAndDeleteUser")
+    @DELETE("api/user/{userId}")
     suspend fun deleteUser(
-        @Body request: UserDeleteRequest,
-        @Header("Authorization") authorization: String
+        @Path("userId") userId:String
     ): Response<UserDeleteResponse>
 }

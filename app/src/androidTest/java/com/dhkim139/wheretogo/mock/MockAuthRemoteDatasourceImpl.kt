@@ -34,4 +34,8 @@ class MockAuthRemoteDatasourceImpl @Inject constructor(
     override suspend fun deleteUser(): Boolean {
         return true
     }
+
+    override suspend fun getApiToken(isForceRefresh: Boolean): Result<String?> {
+        return Result.success("")
+    }
 }

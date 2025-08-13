@@ -5,6 +5,7 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.wheretogo.data.NAVER_MAPS_NTRUSS_APIGW_URL
 import com.wheretogo.data.NAVER_OPEN_API_URL
 import com.wheretogo.data.firebaseApiUrlByBuild
+import com.wheretogo.data.network.AuthInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,25 +20,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object RetrofitClientModule {
-
-    @Singleton
-    @Provides
-    fun provideClient(): OkHttpClient {
-        return OkHttpClient.Builder()
-            .connectTimeout(5, TimeUnit.SECONDS)
-            .readTimeout(10, TimeUnit.SECONDS)
-            .writeTimeout(10,TimeUnit.SECONDS)
-            .callTimeout(30, TimeUnit.SECONDS)
-            .build()
-    }
-
-    @Singleton
-    @Provides
-    fun provideMoshi(): Moshi {
-        return Moshi.Builder()
-            .add(KotlinJsonAdapterFactory())
-            .build()
-    }
 
     @Singleton
     @Provides
@@ -68,11 +50,50 @@ object RetrofitClientModule {
     @Singleton
     @Provides
     @Named("firebase")
-    fun provideFirebaseRetrofit(moshi: Moshi, client: OkHttpClient): Retrofit {
+    fun provideFirebaseApiRetrofit(
+        moshi: Moshi,
+        @Named("authHttp") client: OkHttpClient
+    ): Retrofit {
         return Retrofit.Builder()
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .client(client)
             .baseUrl(firebaseApiUrlByBuild())
+            .build()
+    }
+
+
+    // 레트로핏 유틸
+
+    @Singleton
+    @Provides
+    @Named("authHttp")
+    fun provideAuthHttpClient(authInterceptor: AuthInterceptor): OkHttpClient {
+        return OkHttpClient.Builder()
+            .connectTimeout(5, TimeUnit.SECONDS)
+            .readTimeout(10, TimeUnit.SECONDS)
+            .writeTimeout(10,TimeUnit.SECONDS)
+            .callTimeout(30, TimeUnit.SECONDS)
+            .addInterceptor(authInterceptor)
+            .build()
+    }
+
+
+    @Singleton
+    @Provides
+    fun provideHttpClient(): OkHttpClient {
+        return OkHttpClient.Builder()
+            .connectTimeout(5, TimeUnit.SECONDS)
+            .readTimeout(10, TimeUnit.SECONDS)
+            .writeTimeout(10,TimeUnit.SECONDS)
+            .callTimeout(30, TimeUnit.SECONDS)
+            .build()
+    }
+
+    @Singleton
+    @Provides
+    fun provideMoshi(): Moshi {
+        return Moshi.Builder()
+            .add(KotlinJsonAdapterFactory())
             .build()
     }
 }

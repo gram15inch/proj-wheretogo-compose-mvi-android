@@ -3,14 +3,13 @@ package com.wheretogo.data.datasourceimpl
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
+import com.wheretogo.data.DataError
 import com.wheretogo.data.FireStoreCollections
 import com.wheretogo.data.datasource.UserRemoteDatasource
 import com.wheretogo.data.datasourceimpl.service.FirebaseApiService
-import com.wheretogo.data.getDbOption
 import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
 import com.wheretogo.data.model.user.RemoteProfilePrivate
 import com.wheretogo.data.model.user.RemoteProfilePublic
-import com.wheretogo.data.model.user.UserDeleteRequest
 import com.wheretogo.data.name
 import com.wheretogo.domain.HistoryType
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -23,12 +22,14 @@ class UserRemoteDatasourceImpl @Inject constructor(
 ) : UserRemoteDatasource {
     private val firestore by lazy { FirebaseFirestore.getInstance() }
 
-    override suspend fun deleteUser(userId: String, token: String):String{
-        return firebaseApiService.deleteUser(
-            UserDeleteRequest(userId, getDbOption()),
-            "Bearer $token"
-        ).body()?.toString()?:""
+    override suspend fun deleteUser(userId: String): Result<String> {
+        val response = firebaseApiService.deleteUser(userId = userId)
 
+        return if (response.isSuccessful) {
+            Result.success(userId)
+        } else {
+            Result.failure(DataError.UnexpectedException(Exception(response.message())))
+        }
     }
 
     override suspend fun setProfilePublic(public: RemoteProfilePublic) {
@@ -178,7 +179,7 @@ class UserRemoteDatasourceImpl @Inject constructor(
     }
 
     override suspend fun addHistory(uid: String, historyId: String, type: HistoryType) {
-       val isNull= suspendCancellableCoroutine { continuation ->
+        val isNull = suspendCancellableCoroutine { continuation ->
             firestore.collection(FireStoreCollections.USER.name()).document(uid)
                 .collection(FireStoreCollections.HISTORY.name)
                 .document(type.toCollectionName())
@@ -190,11 +191,12 @@ class UserRemoteDatasourceImpl @Inject constructor(
                     continuation.resume(false)
                 }.addOnFailureListener { e ->
                     if (e is FirebaseFirestoreException) {
-                        return@addOnFailureListener when(e.code){
-                            FirebaseFirestoreException.Code.NOT_FOUND ->{
+                        return@addOnFailureListener when (e.code) {
+                            FirebaseFirestoreException.Code.NOT_FOUND -> {
                                 continuation.resume(true)
                             }
-                            else->{
+
+                            else -> {
                                 continuation.resumeWithException(e)
                             }
                         }
@@ -202,7 +204,7 @@ class UserRemoteDatasourceImpl @Inject constructor(
                     continuation.resumeWithException(e)
                 }
         }
-        if(isNull) //히스토리 컬렉션이 존재하지 않음
+        if (isNull) //히스토리 컬렉션이 존재하지 않음
             setHistoryGroup(uid, RemoteHistoryGroupWrapper(listOf(historyId), type))
     }
 
@@ -230,14 +232,14 @@ class UserRemoteDatasourceImpl @Inject constructor(
         }
     }
 
-    private fun HistoryType.toCollectionName():String{
-        return when(this){
-            HistoryType.COURSE-> FireStoreCollections.COURSE.name
-            HistoryType.CHECKPOINT-> FireStoreCollections.CHECKPOINT.name
-            HistoryType.COMMENT-> FireStoreCollections.COMMENT.name
-            HistoryType.LIKE-> FireStoreCollections.LIKE.name
-            HistoryType.BOOKMARK-> FireStoreCollections.BOOKMARK.name
-            HistoryType.REPORT_CONTENT-> FireStoreCollections.REPORT_CONTENT.name
+    private fun HistoryType.toCollectionName(): String {
+        return when (this) {
+            HistoryType.COURSE -> FireStoreCollections.COURSE.name
+            HistoryType.CHECKPOINT -> FireStoreCollections.CHECKPOINT.name
+            HistoryType.COMMENT -> FireStoreCollections.COMMENT.name
+            HistoryType.LIKE -> FireStoreCollections.LIKE.name
+            HistoryType.BOOKMARK -> FireStoreCollections.BOOKMARK.name
+            HistoryType.REPORT_CONTENT -> FireStoreCollections.REPORT_CONTENT.name
         }
     }
 }

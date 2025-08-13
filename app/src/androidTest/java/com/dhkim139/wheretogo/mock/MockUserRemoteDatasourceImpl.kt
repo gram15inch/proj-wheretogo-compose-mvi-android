@@ -12,7 +12,6 @@ import com.wheretogo.data.toRemoteProfilePrivate
 import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.get
 import com.wheretogo.domain.map
-import com.wheretogo.domain.model.user.ProfilePrivate
 import javax.inject.Inject
 
 class MockUserRemoteDatasourceImpl @Inject constructor(
@@ -58,9 +57,9 @@ class MockUserRemoteDatasourceImpl @Inject constructor(
         userRemoteGroup.remove(uid)
     }
 
-    override suspend fun deleteUser(userId: String, token: String): String {
+    override suspend fun deleteUser(userId: String): Result<String> {
         userRemoteGroup.remove(userId)
-        return ""
+        return Result.success("")
     }
 
     override suspend fun addHistory(uid: String, historyId: String, type: HistoryType) {
