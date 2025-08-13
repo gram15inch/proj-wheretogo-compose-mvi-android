@@ -52,8 +52,6 @@ android {
 
         buildConfigField( "String", "TMAP_APP_KEY", getLocalProperties("tmapApp"))
 
-        buildConfigField( "String", "GOOGLE_WEB_CLIENT_ID_KEY", getLocalProperties("googleWebClientId"))
-
         manifestPlaceholders["adsMobAppId"] = getLocalProperties("adsMobAppId")
     }
     compileOptions {

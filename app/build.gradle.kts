@@ -50,20 +50,24 @@ android {
     }
     buildTypes {
         debug {
+            applicationIdSuffix = ".debug"
             buildConfigField( "Boolean", "CRASHLYTICS", "false")
+            buildConfigField("String",  "GOOGLE_WEB_CLIENT_ID_KEY", getLocalProperties("googleStagingWebClientId"))
         }
         create("qa") {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-qa"
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            versionNameSuffix = "-qa"
             signingConfig = signingConfigs.getByName("debug")
             isDebuggable = true
 
             buildConfigField( "Boolean", "CRASHLYTICS", "false")
+            buildConfigField("String","GOOGLE_WEB_CLIENT_ID_KEY", getLocalProperties("googleStagingWebClientId"))
         }
 
         release {
@@ -76,6 +80,7 @@ android {
             signingConfig = signingConfigs.getByName("release")
 
             buildConfigField( "Boolean", "CRASHLYTICS", "true")
+            buildConfigField("String", "GOOGLE_WEB_CLIENT_ID_KEY", getLocalProperties("googleWebClientId"))
         }
     }
     compileOptions {

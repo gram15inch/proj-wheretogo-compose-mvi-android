@@ -11,6 +11,7 @@ const val NAVER_OPEN_API_APIGW_URL = "https://naveropenapi.apigw.ntruss.com"
 const val NAVER_MAPS_NTRUSS_APIGW_URL = "https://maps.apigw.ntruss.com/"
 const val NAVER_OPEN_API_URL = "https://openapi.naver.com/"
 const val FIREBASE_CLOUD_API_URL = "https://asia-northeast3-where-to-go-35813.cloudfunctions.net/"
+const val FIREBASE_CLOUD_STAGING_API_URL = "https://asia-northeast3-where-to-go-staging.cloudfunctions.net/"
 
 const val DATA_NULL = ""
 const val IMAGE_DOWN_MAX_MB = 10
@@ -100,6 +101,13 @@ fun getDbOption():Int{
     return when(BuildConfig.FIREBASE){
         "RELEASE" ->  1
         else -> 0
+    }
+}
+
+fun firebaseApiUrlByBuild(): String{
+    return when(BuildConfig.FIREBASE){
+        "RELEASE" -> FIREBASE_CLOUD_API_URL
+        else -> FIREBASE_CLOUD_STAGING_API_URL
     }
 }
 
