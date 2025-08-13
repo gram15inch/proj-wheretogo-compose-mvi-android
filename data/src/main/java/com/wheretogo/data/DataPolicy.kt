@@ -97,13 +97,6 @@ fun FireStoreCollections.name(): String {
     }
 }
 
-fun getDbOption():Int{
-    return when(BuildConfig.FIREBASE){
-        "RELEASE" ->  1
-        else -> 0
-    }
-}
-
 fun firebaseApiUrlByBuild(): String{
     return when(BuildConfig.FIREBASE){
         "RELEASE" -> FIREBASE_CLOUD_API_URL
