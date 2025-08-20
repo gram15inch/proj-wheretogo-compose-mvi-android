@@ -3,7 +3,6 @@ package com.wheretogo.data.datasourceimpl
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
-import com.wheretogo.data.DataError
 import com.wheretogo.data.FireStoreCollections
 import com.wheretogo.data.datasource.UserRemoteDatasource
 import com.wheretogo.data.datasourceimpl.service.FirebaseApiService
@@ -11,6 +10,7 @@ import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
 import com.wheretogo.data.model.user.RemoteProfilePrivate
 import com.wheretogo.data.model.user.RemoteProfilePublic
 import com.wheretogo.data.name
+import com.wheretogo.data.toDataError
 import com.wheretogo.domain.HistoryType
 import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
@@ -25,11 +25,9 @@ class UserRemoteDatasourceImpl @Inject constructor(
     override suspend fun deleteUser(userId: String): Result<String> {
         val response = firebaseApiService.deleteUser(userId = userId)
 
-        return if (response.isSuccessful) {
-            Result.success(userId)
-        } else {
-            Result.failure(DataError.UnexpectedException(Exception(response.message())))
-        }
+        if (!response.isSuccessful)
+            return Result.failure(response.toDataError())
+        return Result.success(userId)
     }
 
     override suspend fun setProfilePublic(public: RemoteProfilePublic) {
