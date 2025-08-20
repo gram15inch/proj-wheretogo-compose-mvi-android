@@ -3,7 +3,7 @@ package com.wheretogo.data.repositoryimpl
 import com.wheretogo.data.CachePolicy
 import com.wheretogo.data.datasource.CheckPointLocalDatasource
 import com.wheretogo.data.datasource.CheckPointRemoteDatasource
-import com.wheretogo.data.di.Checkpoint
+import com.wheretogo.data.di.CheckpointCache
 import com.wheretogo.data.toCheckPoint
 import com.wheretogo.data.toLocalCheckPoint
 import com.wheretogo.data.toRemoteCheckPoint
@@ -16,7 +16,7 @@ import javax.inject.Inject
 class CheckPointRepositoryImpl @Inject constructor(
     private val checkPointRemoteDatasource: CheckPointRemoteDatasource,
     private val checkPointLocalDatasource: CheckPointLocalDatasource,
-    @Checkpoint private val cachePolicy: CachePolicy
+    @CheckpointCache private val cachePolicy: CachePolicy
 ) : CheckPointRepository {
 
     override suspend fun setCheckPoint(checkPoint: CheckPoint): Result<Unit> {
@@ -40,10 +40,15 @@ class CheckPointRepositoryImpl @Inject constructor(
 
     override suspend fun getCheckPointBySnapshot(snapshot: Snapshot): Result<List<CheckPoint>> {
         return runCatching {
-            if (cachePolicy.isExpired(snapshot)) {
+            if (cachePolicy.isExpired(
+                    timestamp = snapshot.timeStamp,
+                    isEmpty = snapshot.indexIdGroup.isEmpty()
+                )
+            ) {
                 getCheckpointByCourse(snapshot.refId)
             } else {
-                checkPointLocalDatasource.getCheckPointGroup(snapshot.indexIdGroup).map { it.toCheckPoint() }
+                checkPointLocalDatasource.getCheckPointGroup(snapshot.indexIdGroup)
+                    .map { it.toCheckPoint() }
             }
         }
     }

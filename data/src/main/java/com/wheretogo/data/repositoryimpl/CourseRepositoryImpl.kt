@@ -3,7 +3,7 @@ package com.wheretogo.data.repositoryimpl
 import com.wheretogo.data.CachePolicy
 import com.wheretogo.data.datasource.CourseLocalDatasource
 import com.wheretogo.data.datasource.CourseRemoteDatasource
-import com.wheretogo.data.di.Checkpoint
+import com.wheretogo.data.di.CourseCache
 import com.wheretogo.data.model.meta.LocalMetaGeoHash
 import com.wheretogo.data.toCourse
 import com.wheretogo.data.toLocalCourse
@@ -18,7 +18,7 @@ import javax.inject.Inject
 class CourseRepositoryImpl @Inject constructor(
     private val courseRemoteDatasource: CourseRemoteDatasource,
     private val courseLocalDatasource: CourseLocalDatasource,
-    @Checkpoint private val cachePolicy: CachePolicy
+    @CourseCache private val cachePolicy: CachePolicy
 ) : CourseRepository {
     private val cacheCourseGroupByKeyword = mutableMapOf<String, List<Course>>()
     override suspend fun getCourse(courseId: String): Result<Course> {
@@ -47,7 +47,7 @@ class CourseRepositoryImpl @Inject constructor(
 
     override suspend fun getCourseGroupByKeyword(keyword: String): Result<List<Course>> {
         return runCatching {
-            cacheCourseGroupByKeyword.getOrPut(keyword){
+            cacheCourseGroupByKeyword.getOrPut(keyword) {
                 courseRemoteDatasource.getCourseGroupByKeyword(keyword).map { it.toCourse() }
             }
         }
@@ -77,9 +77,13 @@ class CourseRepositoryImpl @Inject constructor(
 
     override suspend fun updateSnapshot(snapshot: Snapshot): Result<Unit> {
         return runCatching {
-            if(cachePolicy.isExpired(snapshot))
+            if (cachePolicy.isExpired(
+                    timestamp = snapshot.timeStamp,
+                    isEmpty = snapshot.indexIdGroup.isEmpty()
+                )
+            ) {
                 courseLocalDatasource.updateSnapshot(snapshot.toLocalSnapshot())
-
+            }
         }
     }
 

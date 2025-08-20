@@ -1,5 +1,7 @@
 package com.wheretogo.data.repositoryimpl
 
+import com.wheretogo.data.CachePolicy
+import com.wheretogo.data.di.CommentCache
 import com.wheretogo.data.datasource.CommentRemoteDatasource
 import com.wheretogo.data.model.comment.RemoteCommentGroupWrapper
 import com.wheretogo.data.toComment
@@ -11,6 +13,7 @@ import javax.inject.Inject
 
 class CommentRepositoryImpl @Inject constructor(
     private val remoteDatasource: CommentRemoteDatasource,
+    @CommentCache private val cachePolicy: CachePolicy
 ) : CommentRepository {
     private val _cacheCommentGroup = mutableMapOf<String, List<Comment>>() // 체크포인트id
     override suspend fun getComment(groupId: String): Result<List<Comment>> {

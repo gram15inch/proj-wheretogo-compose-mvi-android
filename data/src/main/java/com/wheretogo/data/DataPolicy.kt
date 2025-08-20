@@ -16,6 +16,10 @@ const val FIREBASE_CLOUD_STAGING_API_URL = "https://asia-northeast3-where-to-go-
 const val DATA_NULL = ""
 const val IMAGE_DOWN_MAX_MB = 10
 
+val CheckpointPolicy = DefaultPolicy(60, 15)
+val CommentPolicy = DefaultPolicy(20, 5)
+val CoursePolicy = DefaultPolicy(60, 15)
+
 sealed class DataError: Exception(){
     data class NetworkError(val msg:String = ""): DataError()
     data class UserInvalid(val msg:String = ""): DataError()
@@ -55,16 +59,19 @@ fun<T> Result<T>.toDomainResult():Result<T>{
 }
 
 sealed interface CachePolicy {
-    fun isExpired(snapshot: Snapshot): Boolean
+    fun isExpired(timestamp: Long, isEmpty: Boolean): Boolean
 }
 
-data object CheckpointPolicy : CachePolicy {
-    override fun isExpired(snapshot: Snapshot): Boolean {
+data class DefaultPolicy(
+    val whenEmpty: Int = 60,
+    val whenNotEmpty: Int = 15
+) : CachePolicy {
+    override fun isExpired(timestamp: Long, isEmpty: Boolean): Boolean {
         val refreshDuration =
-            TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - snapshot.timeStamp)
+            TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - timestamp)
         return when {
-            snapshot.indexIdGroup.isEmpty() && refreshDuration >= 60 ->  true
-            snapshot.indexIdGroup.isNotEmpty() && refreshDuration >= 15 -> true
+            isEmpty && refreshDuration >= whenEmpty -> true
+            !isEmpty && refreshDuration >= whenNotEmpty -> true
             else -> false
         }
     }
