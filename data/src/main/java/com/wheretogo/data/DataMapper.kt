@@ -274,6 +274,7 @@ fun RemoteCheckPoint.toCheckPoint(): CheckPoint {
         userId = userId,
         userName = userName,
         latLng = latLng.toLatLng(),
+        captionId = captionId,
         caption = caption,
         imageName = imageName,
         description = description
@@ -287,6 +288,7 @@ fun RemoteCheckPoint.toLocalCheckPoint(): LocalCheckPoint {
         userId= userId,
         userName= userName,
         latLng = latLng,
+        captionId = captionId,
         caption = caption,
         imageName = imageName,
         imageLocalPath = imageName,
