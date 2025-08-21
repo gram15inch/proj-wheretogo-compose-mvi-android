@@ -20,7 +20,16 @@ const val LIST_ITEM_ZOOM = 12.0
 sealed class DomainError : Exception() {
     data class NetworkError(val msg: String = "") : DomainError()
     data class UserInvalid(val msg: String = "") : DomainError()
+    data class InternalError(val msg: String = "") : DomainError()
     data class UnexpectedException(val throwable: Throwable) : DomainError()
+}
+
+fun Throwable?.toDomainError(): DomainError {
+    return when (this) {
+        is DomainError -> this
+        null -> DomainError.InternalError("알수없는 오류")
+        else -> DomainError.UnexpectedException(this)
+    }
 }
 
 fun <T> DomainError.toUseCaseResponse(): UseCaseResponse<T> {

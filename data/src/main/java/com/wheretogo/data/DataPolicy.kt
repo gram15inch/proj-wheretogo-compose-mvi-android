@@ -3,8 +3,9 @@ package com.wheretogo.data
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.wheretogo.data.feature.safeErrorBody
 import com.wheretogo.domain.DomainError
-import com.wheretogo.domain.model.map.Snapshot
+import retrofit2.Response
 import java.util.concurrent.TimeUnit
 
 const val NAVER_OPEN_API_APIGW_URL = "https://naveropenapi.apigw.ntruss.com"
@@ -16,18 +17,46 @@ const val FIREBASE_CLOUD_STAGING_API_URL = "https://asia-northeast3-where-to-go-
 const val DATA_NULL = ""
 const val IMAGE_DOWN_MAX_MB = 10
 
+val CheckpointPolicy = DefaultPolicy(60, 15)
+val CommentPolicy = DefaultPolicy(20, 5)
+val CoursePolicy = DefaultPolicy(60, 15)
+
 sealed class DataError: Exception(){
     data class NetworkError(val msg:String = ""): DataError()
     data class UserInvalid(val msg:String = ""): DataError()
+    data class Unauthorized(val msg:String = ""): DataError()
+    data class ArgumentInvalid(val msg:String = ""): DataError()
+    data class Forbidden(val msg:String = ""): DataError()
+    data class NotFound(val msg:String = ""): DataError()
+    data class Conflict(val msg:String = ""): DataError()
+    data class TooManyRequests(val msg:String = ""): DataError()
     data class ServerError(val msg:String = ""): DataError()
+    data class InternalError(val msg:String = ""): DataError()
     data class UnexpectedException(val throwable:Throwable): DataError()
 }
 
-fun Exception.toDataError():DataError{
+fun Response<*>.toDataError(): DataError {
+    val body = safeErrorBody()
+
+    val msg = body?.message?:"알 수 없는 오류"
+    return when(code()){
+        400 -> DataError.ArgumentInvalid(msg)
+        401 -> DataError.Unauthorized(msg)
+        403 -> DataError.Forbidden(msg)
+        404 -> DataError.NotFound(msg)
+        409 -> DataError.Conflict(msg)
+        429 -> DataError.TooManyRequests(msg)
+        else -> DataError.ServerError(msg)
+    }
+}
+
+
+fun Throwable?.toDataError():DataError{
     return when(this){
         is DataError -> this
         is FirebaseNetworkException -> DataError.NetworkError()
         is FirebaseAuthInvalidUserException -> DataError.UserInvalid()
+        null -> DataError.InternalError("알수없는 오류")
         else -> DataError.UnexpectedException(this)
     }
 }
@@ -37,6 +66,7 @@ fun DataError.toDomainError():DomainError{
         is DataError.NetworkError->{ DomainError.NetworkError() }
         is DataError.ServerError->{ DomainError.NetworkError("Server Error") }
         is DataError.UserInvalid->{ DomainError.UserInvalid() }
+        is DataError.Unauthorized->{ DomainError.UserInvalid() }
         else -> {
             FirebaseCrashlytics.getInstance().recordException(this)
             DomainError.UnexpectedException(this)
@@ -55,16 +85,19 @@ fun<T> Result<T>.toDomainResult():Result<T>{
 }
 
 sealed interface CachePolicy {
-    fun isExpired(snapshot: Snapshot): Boolean
+    fun isExpired(timestamp: Long, isEmpty: Boolean): Boolean
 }
 
-data object CheckpointPolicy : CachePolicy {
-    override fun isExpired(snapshot: Snapshot): Boolean {
+data class DefaultPolicy(
+    val whenEmpty: Int = 60,
+    val whenNotEmpty: Int = 15
+) : CachePolicy {
+    override fun isExpired(timestamp: Long, isEmpty: Boolean): Boolean {
         val refreshDuration =
-            TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - snapshot.timeStamp)
+            TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - timestamp)
         return when {
-            snapshot.indexIdGroup.isEmpty() && refreshDuration >= 60 ->  true
-            snapshot.indexIdGroup.isNotEmpty() && refreshDuration >= 15 -> true
+            isEmpty && refreshDuration >= whenEmpty -> true
+            !isEmpty && refreshDuration >= whenNotEmpty -> true
             else -> false
         }
     }
