@@ -19,7 +19,7 @@ interface CourseRepository {
 
     suspend fun getSnapshot(courseId: String): Snapshot
 
-    suspend fun updateSnapshot(courseId: String, checkpointIdGroup: List<String>): Result<Unit>
+    suspend fun updateSnapshot(snapshot: Snapshot): Result<Unit>
 
     suspend fun appendIndex(snapshot: Snapshot): Result<Unit>
 

@@ -21,10 +21,13 @@ class CheckPointLocalDatasourceImpl @Inject constructor(
         checkPointDao.insert(checkPointGroup)
     }
 
-    override suspend fun replaceCheckpointByCourse(courseId: String, checkPointGroup: List<LocalCheckPoint>){
-        val newIdGroup= checkPointGroup.map { it.checkPointId }
-        val staleIdGroup= checkPointDao.selectByCourseId(courseId)
-            .filter{ it.checkPointId !in newIdGroup }
+    override suspend fun replaceCheckpointByCourse(
+        courseId: String,
+        checkPointGroup: List<LocalCheckPoint>
+    ) {
+        val newIdGroup = checkPointGroup.map { it.checkPointId }
+        val staleIdGroup = checkPointDao.selectByCourseId(courseId)
+            .filter { it.checkPointId !in newIdGroup }
             .map { it.checkPointId }
         checkPointDao.deleteByGroup(staleIdGroup)
         checkPointDao.insert(checkPointGroup)
@@ -35,7 +38,10 @@ class CheckPointLocalDatasourceImpl @Inject constructor(
     }
 
     override suspend fun updateCheckPoint(checkPointId: String, caption: String) {
-        checkPointDao.update(checkPointId, caption)
+        checkPointDao.updateCaption(checkPointId, caption)
     }
 
+    override suspend fun initTimestamp(checkPointId: String) {
+        checkPointDao.updateTimestamp(checkPointId, 0)
+    }
 }

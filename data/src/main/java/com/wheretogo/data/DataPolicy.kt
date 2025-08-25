@@ -89,15 +89,15 @@ sealed interface CachePolicy {
 }
 
 data class DefaultPolicy(
-    val whenEmpty: Int = 60,
-    val whenNotEmpty: Int = 15
+    val minuteWhenEmpty: Int = 60,
+    val minuteWhenNotEmpty: Int = 15
 ) : CachePolicy {
     override fun isExpired(timestamp: Long, isEmpty: Boolean): Boolean {
         val refreshDuration =
             TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - timestamp)
         return when {
-            isEmpty && refreshDuration >= whenEmpty -> true
-            !isEmpty && refreshDuration >= whenNotEmpty -> true
+            isEmpty && refreshDuration >= minuteWhenEmpty -> true
+            !isEmpty && refreshDuration >= minuteWhenNotEmpty -> true
             else -> false
         }
     }

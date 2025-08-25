@@ -7,14 +7,14 @@ interface CheckPointRepository {
 
     suspend fun setCheckPoint(checkPoint: CheckPoint): Result<Unit>
 
-    suspend fun getCheckPoint(checkPointId: String): Result<CheckPoint>
-
-    suspend fun getCheckPointBySnapshot(snapshot: Snapshot): Result<List<CheckPoint>>
-
     suspend fun getCheckPointGroup(checkpointIdGroup: List<String>): Result<List<CheckPoint>>
 
     suspend fun removeCheckPoint(checkPointId: String): Result<Unit>
 
+    suspend fun refreshSnapshot(snapshot: Snapshot): Result<Snapshot>
+
     suspend fun updateCaption(checkPointId: String, caption: String): Result<Unit>
+
+    suspend fun forceCacheExpire(checkPointId: String): Result<Unit>
 
 }

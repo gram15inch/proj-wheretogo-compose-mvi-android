@@ -16,4 +16,6 @@ interface CheckPointLocalDatasource {
 
     suspend fun updateCheckPoint(checkPointId: String, caption: String)
 
+    suspend fun initTimestamp(checkPointId: String)
+
 }

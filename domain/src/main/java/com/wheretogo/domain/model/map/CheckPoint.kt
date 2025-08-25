@@ -10,5 +10,6 @@ data class CheckPoint(
     val caption: String = "",
     val imageName: String = "",
     val imageLocalPath: String = "",
-    val description: String = ""
+    val description: String = "",
+    val isUserCreated: Boolean = false
 )

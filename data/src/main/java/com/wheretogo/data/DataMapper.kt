@@ -310,6 +310,13 @@ fun LocalCheckPoint.toCheckPoint(): CheckPoint {
     )
 }
 
+@JvmName("fromRemoteCheckPointToLocal")
+fun List<RemoteCheckPoint>.toLocal() = map { it.toLocalCheckPoint() }
+@JvmName("fromRemoteCheckPointToDomain")
+fun List<RemoteCheckPoint>.toDomain() = map { it.toCheckPoint() }
+@JvmName("fromLocalCheckPointToDomain")
+fun List<LocalCheckPoint>.toDomain() = map { it.toCheckPoint() }
+
 
 fun LocalCourse.toCourse(
     points: List<LatLng> = emptyList(),
@@ -419,7 +426,7 @@ fun RemoteCourse.toCourse(): Course {
     )
 }
 
-fun Snapshot.toLocalSnapshot(timeStamp:Long = System.currentTimeMillis()): LocalSnapshot {
+fun Snapshot.toLocalSnapshot(): LocalSnapshot {
     return LocalSnapshot(
         refId = refId,
         indexIdGroup = indexIdGroup,
