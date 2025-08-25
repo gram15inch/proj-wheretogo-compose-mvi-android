@@ -15,10 +15,10 @@ class CheckPointRemoteDatasourceImpl @Inject constructor() : CheckPointRemoteDat
     private val checkPointRootCollection = FireStoreCollections.CHECKPOINT.name()
     private val checkPointIdAttr = RemoteCheckPoint::checkPointId.name
 
-    override suspend fun getCheckPointGroup(checkPoints: List<String>): List<RemoteCheckPoint> {
+    override suspend fun getCheckPointGroup(checkPointIdGroup: List<String>): List<RemoteCheckPoint> {
         return suspendCancellableCoroutine { continuation ->
             firestore.collection(checkPointRootCollection)
-                .whereIn(checkPointIdAttr, checkPoints.chunked(10)).get()
+                .whereIn(checkPointIdAttr, checkPointIdGroup).get()
                 .addOnSuccessListener {
                     val group = it.map { it.toObject(RemoteCheckPoint::class.java) }
                     continuation.resume(group)
@@ -39,7 +39,7 @@ class CheckPointRemoteDatasourceImpl @Inject constructor() : CheckPointRemoteDat
         }
     }
 
-    override suspend fun getCheckPointByCourseId(courseId: String): List<RemoteCheckPoint> {
+    override suspend fun getCheckPointGroupByCourseId(courseId: String): List<RemoteCheckPoint> {
         return suspendCancellableCoroutine { continuation ->
             firestore.collection(checkPointRootCollection)
                 .whereEqualTo(RemoteCheckPoint::courseId.name, courseId)

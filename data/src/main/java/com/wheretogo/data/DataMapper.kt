@@ -274,6 +274,7 @@ fun RemoteCheckPoint.toCheckPoint(): CheckPoint {
         userId = userId,
         userName = userName,
         latLng = latLng.toLatLng(),
+        captionId = captionId,
         caption = caption,
         imageName = imageName,
         description = description
@@ -287,6 +288,7 @@ fun RemoteCheckPoint.toLocalCheckPoint(): LocalCheckPoint {
         userId= userId,
         userName= userName,
         latLng = latLng,
+        captionId = captionId,
         caption = caption,
         imageName = imageName,
         imageLocalPath = imageName,
@@ -307,6 +309,13 @@ fun LocalCheckPoint.toCheckPoint(): CheckPoint {
         imageLocalPath = imageLocalPath,
     )
 }
+
+@JvmName("fromRemoteCheckPointToLocal")
+fun List<RemoteCheckPoint>.toLocal() = map { it.toLocalCheckPoint() }
+@JvmName("fromRemoteCheckPointToDomain")
+fun List<RemoteCheckPoint>.toDomain() = map { it.toCheckPoint() }
+@JvmName("fromLocalCheckPointToDomain")
+fun List<LocalCheckPoint>.toDomain() = map { it.toCheckPoint() }
 
 
 fun LocalCourse.toCourse(
@@ -365,7 +374,7 @@ fun RemoteCourse.toLocalCourse(): LocalCourse {
         longitude = cameraLatLng.longitude,
         geoHash = cameraLatLng.toLatLng().toGeoHash(6),
         waypoints = waypoints,
-        checkpointSnapshot = LocalSnapshot(),
+        checkpointSnapshot = LocalSnapshot(refId = courseId),
         duration = duration,
         type = type,
         level = level,
@@ -417,7 +426,7 @@ fun RemoteCourse.toCourse(): Course {
     )
 }
 
-fun Snapshot.toLocalSnapshot(timeStamp:Long = System.currentTimeMillis()): LocalSnapshot {
+fun Snapshot.toLocalSnapshot(): LocalSnapshot {
     return LocalSnapshot(
         refId = refId,
         indexIdGroup = indexIdGroup,

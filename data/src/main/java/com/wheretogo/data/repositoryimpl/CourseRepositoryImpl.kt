@@ -3,7 +3,7 @@ package com.wheretogo.data.repositoryimpl
 import com.wheretogo.data.CachePolicy
 import com.wheretogo.data.datasource.CourseLocalDatasource
 import com.wheretogo.data.datasource.CourseRemoteDatasource
-import com.wheretogo.data.di.CourseCache
+import com.wheretogo.data.di.CheckpointCache
 import com.wheretogo.data.model.meta.LocalMetaGeoHash
 import com.wheretogo.data.toCourse
 import com.wheretogo.data.toLocalCourse
@@ -18,7 +18,7 @@ import javax.inject.Inject
 class CourseRepositoryImpl @Inject constructor(
     private val courseRemoteDatasource: CourseRemoteDatasource,
     private val courseLocalDatasource: CourseLocalDatasource,
-    @CourseCache private val cachePolicy: CachePolicy
+    @CheckpointCache private val cachePolicy: CachePolicy
 ) : CourseRepository {
     private val cacheCourseGroupByKeyword = mutableMapOf<String, List<Course>>()
     override suspend fun getCourse(courseId: String): Result<Course> {
@@ -71,19 +71,28 @@ class CourseRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getSnapshot(courseId: String): Snapshot {
-        return courseLocalDatasource.getCourse(courseId)?.checkpointSnapshot
-            ?.copy(refId = courseId)?.toSnapshot() ?: Snapshot(refId = courseId)
+        check(courseId.isNotBlank()){"courseId Empty!!"}
+        val snapshot =courseLocalDatasource.getCourse(courseId)?.checkpointSnapshot
+        if(snapshot==null)
+            return Snapshot(refId = courseId)
+
+        return snapshot.toSnapshot()
     }
 
     override suspend fun updateSnapshot(snapshot: Snapshot): Result<Unit> {
         return runCatching {
-            if (cachePolicy.isExpired(
-                    timestamp = snapshot.timeStamp,
-                    isEmpty = snapshot.indexIdGroup.isEmpty()
-                )
-            ) {
-                courseLocalDatasource.updateSnapshot(snapshot.toLocalSnapshot())
-            }
+            val oldIdGroup = getSnapshot(snapshot.refId).indexIdGroup
+            val isExpire = cachePolicy.isExpired(
+                snapshot.timeStamp,
+                snapshot.indexIdGroup.isEmpty()
+            )
+            val isEqual = oldIdGroup.toSet() == snapshot.indexIdGroup.toSet()
+
+            if(isEqual && !isExpire)
+                return@runCatching
+
+            val snapshot = snapshot.copy(timeStamp = System.currentTimeMillis())
+            courseLocalDatasource.updateSnapshot(snapshot.toLocalSnapshot())
         }
     }
 

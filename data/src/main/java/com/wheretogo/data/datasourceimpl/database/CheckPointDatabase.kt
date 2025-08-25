@@ -46,7 +46,10 @@ interface CheckPointDao {
     suspend fun deleteByGroup(checkPointIdGroup: List<String>)
 
     @Query("UPDATE LocalCheckPoint SET caption =:caption WHERE checkPointId = :checkPointId")
-    suspend fun update(checkPointId: String, caption: String)
+    suspend fun updateCaption(checkPointId: String, caption: String)
+
+    @Query("UPDATE LocalCheckPoint SET timestamp =:timestamp WHERE checkPointId = :checkPointId")
+    suspend fun updateTimestamp(checkPointId: String, timestamp: Long)
 
 }
 
