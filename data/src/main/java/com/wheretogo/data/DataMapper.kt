@@ -367,7 +367,7 @@ fun RemoteCourse.toLocalCourse(): LocalCourse {
         longitude = cameraLatLng.longitude,
         geoHash = cameraLatLng.toLatLng().toGeoHash(6),
         waypoints = waypoints,
-        checkpointSnapshot = LocalSnapshot(),
+        checkpointSnapshot = LocalSnapshot(refId = courseId),
         duration = duration,
         type = type,
         level = level,

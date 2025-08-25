@@ -71,19 +71,18 @@ class CourseRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getSnapshot(courseId: String): Snapshot {
-        return courseLocalDatasource.getCourse(courseId)?.checkpointSnapshot
-            ?.copy(refId = courseId)?.toSnapshot() ?: Snapshot(refId = courseId)
+        check(courseId.isNotBlank()){"courseId Empty!!"}
+        val snapshot =courseLocalDatasource.getCourse(courseId)?.checkpointSnapshot
+        if(snapshot==null)
+            return Snapshot(refId = courseId)
+
+        return snapshot.toSnapshot()
     }
 
-    override suspend fun updateSnapshot(snapshot: Snapshot): Result<Unit> {
+    override suspend fun updateSnapshot(courseId: String, checkpointIdGroup: List<String>): Result<Unit> {
+        val snapshot= Snapshot(checkpointIdGroup,courseId, System.currentTimeMillis())
         return runCatching {
-            if (cachePolicy.isExpired(
-                    timestamp = snapshot.timeStamp,
-                    isEmpty = snapshot.indexIdGroup.isEmpty()
-                )
-            ) {
-                courseLocalDatasource.updateSnapshot(snapshot.toLocalSnapshot())
-            }
+            courseLocalDatasource.updateSnapshot(snapshot.toLocalSnapshot())
         }
     }
 

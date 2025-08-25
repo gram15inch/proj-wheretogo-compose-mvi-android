@@ -15,6 +15,7 @@ data class Course(
     val level: String = "",
     val relation: String = "",
     val cameraLatLng: LatLng = LatLng(),
+    val isUserCreated: Boolean = false,
     val zoom: String = "",
     val like: Int = 0
     //todo 미니맵 추가

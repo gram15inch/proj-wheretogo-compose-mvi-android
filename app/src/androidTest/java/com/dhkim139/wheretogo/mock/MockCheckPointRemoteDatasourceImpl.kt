@@ -6,9 +6,9 @@ import javax.inject.Inject
 
 class MockCheckPointRemoteDatasourceImpl @Inject constructor() : CheckPointRemoteDatasource {
     private var newCheckPointGroup = mutableListOf<RemoteCheckPoint>()
-    override suspend fun getCheckPointGroup(checkPoints: List<String>): List<RemoteCheckPoint> {
+    override suspend fun getCheckPointGroup(checkPointIdGroup: List<String>): List<RemoteCheckPoint> {
         return newCheckPointGroup.mapNotNull {
-            if (it.checkPointId in checkPoints)
+            if (it.checkPointId in checkPointIdGroup)
                 it
             else
                 null
@@ -21,7 +21,7 @@ class MockCheckPointRemoteDatasourceImpl @Inject constructor() : CheckPointRemot
         }
     }
 
-    override suspend fun getCheckPointByCourseId(courseId: String): List<RemoteCheckPoint> {
+    override suspend fun getCheckPointGroupByCourseId(courseId: String): List<RemoteCheckPoint> {
         return newCheckPointGroup.filter { it.courseId == courseId }
     }
 
