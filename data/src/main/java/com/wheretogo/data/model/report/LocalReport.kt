@@ -15,5 +15,6 @@ data class LocalReport(
     val targetUserName: String = "",
     val reason: String = "",
     val status: String = "",
-    val timestamp : Long = 0
+    val createAt: Long = 0,
+    val timestamp: Long = 0
 )

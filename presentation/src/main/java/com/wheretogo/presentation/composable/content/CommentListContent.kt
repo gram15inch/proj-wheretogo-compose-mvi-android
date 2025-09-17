@@ -32,9 +32,12 @@ import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.presentation.R
+import com.wheretogo.presentation.state.CommentState
 import com.wheretogo.presentation.state.CommentState.CommentItemState
 import com.wheretogo.presentation.theme.Gray250
 import com.wheretogo.presentation.theme.Gray8090
@@ -47,7 +50,7 @@ fun CommentList(
     isLoading: Boolean,
     commentItemGroup: List<CommentItemState>,
     onItemClick: (CommentItemState) -> Unit,
-    onItemLongClick: (CommentItemState) -> Unit,
+    onItemLongClick: (Comment) -> Unit,
     onLikeClick: (CommentItemState) -> Unit
 ) {
     Box(
@@ -60,7 +63,7 @@ fun CommentList(
                 contentAlignment = Alignment.Center
             ) {
                 if (isLoading)
-                    DelayLottieAnimation(Modifier.width(50.dp), R.raw.lt_loading, true, 0)
+                    DelayLottieAnimation(Modifier.width(50.dp), R.raw.lt_loading, true, 350)
                 else
                     Text(
                         text = "첫 발자국을 남겨보세요.",
@@ -74,27 +77,37 @@ fun CommentList(
                     .fillMaxSize()
                     .padding(2.dp)
             ) {
-                val focusItem = commentItemGroup.firstOrNull { it.isFocus }
+                val focusItem = if (commentItemGroup.isNotEmpty()) {
+                    val temp = commentItemGroup.firstOrNull { it.data.isFocus }
+                    temp ?: commentItemGroup[0]
+                } else null
+
                 if (focusItem != null) {
                     item {
                         CommentFocusItem(
                             comment = focusItem,
                             onItemLongClick = { item ->
-                                onItemLongClick(item)
+                                onItemLongClick(item.data)
                             },
                             onLikeClick = { item ->
                                 onLikeClick(item)
                             }
                         )
                     }
-                    items(commentItemGroup.filter { it.data.commentId != focusItem.data.commentId }) { item ->
+                    val sortedCommentGroup =
+                        commentItemGroup.filter { it.data.commentId != focusItem.data.commentId }
+                            .sortedWith(
+                                compareBy<CommentItemState> { it.data.isUserCreated }
+                                    .thenByDescending { it.data.createAt }
+                            )
+                    items(sortedCommentGroup) { item ->
                         CommentListItem(
                             comment = item,
                             onItemClick = {
                                 onItemClick(it)
                             },
                             onItemLongClick = {
-                                onItemLongClick(it)
+                                onItemLongClick(it.data)
                             },
                             onLikeClick = {
                                 onLikeClick(it)
@@ -182,7 +195,7 @@ fun CommentListItem(
                     Box(
                         modifier = Modifier
                             .clip(CircleShape)
-                            .clickable {
+                            .clickable(!comment.isLoading) {
                                 onLikeClick(comment)
                             }
                     ) {
@@ -190,7 +203,7 @@ fun CommentListItem(
                             modifier = Modifier
                                 .size(22.dp)
                                 .padding(5.dp),
-                            painter = painterResource(if (comment.isLike) R.drawable.ic_heart_fill else R.drawable.ic_heart_line),
+                            painter = painterResource(if (comment.data.isUserLiked) R.drawable.ic_heart_fill else R.drawable.ic_heart_line),
                             contentDescription = "",
                         )
                     }
@@ -280,7 +293,7 @@ fun CommentFocusItem(
                 Row(
                     modifier
                         .clip(RoundedCornerShape(12.dp))
-                        .clickable {
+                        .clickable(!comment.isLoading) {
                             onLikeClick(comment)
                         }) {
                     Image(
@@ -288,7 +301,7 @@ fun CommentFocusItem(
                             .size(22.dp)
                             .padding(5.dp)
                             .align(alignment = Alignment.CenterVertically),
-                        painter = painterResource(if (comment.isLike) R.drawable.ic_heart_fill else R.drawable.ic_heart_line),
+                        painter = painterResource(if (comment.data.isUserLiked) R.drawable.ic_heart_fill else R.drawable.ic_heart_line),
                         contentDescription = "",
                     )
                     Text(
@@ -308,9 +321,9 @@ fun CommentFocusItem(
 @Composable
 fun CommentSetting(
     modifier: Modifier = Modifier,
-    selectedItem: CommentItemState,
-    onCommentRemoveClick: (CommentItemState) -> Unit,
-    onCommentReportClick: (CommentItemState) -> Unit,
+    state: CommentState.CommentSettingState,
+    onCommentRemoveClick: (Comment) -> Unit,
+    onCommentReportClick: (Comment) -> Unit,
     onBackgroundClick: () -> Unit
 ) {
     Box(
@@ -331,31 +344,52 @@ fun CommentSetting(
                 .wrapContentSize()
                 .background(Color.White),
         ) {
-
-            if (selectedItem.isUserCreated) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
-                        .clickable {
-                            onCommentRemoveClick(selectedItem)
-                        }, contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "삭제", fontSize = 16.sp, fontFamily = hancomSansFontFamily)
-                }
-            } else {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
-                        .clickable {
-                            onCommentReportClick(selectedItem)
-                        }, contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "신고", fontSize = 16.sp, fontFamily = hancomSansFontFamily)
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(50.dp), contentAlignment = Alignment.Center
+            ) {
+                if (state.isLoading) {
+                    DelayLottieAnimation(Modifier.size(30.dp), R.raw.lt_loading, true, 0)
+                } else {
+                    if (state.comment.isUserCreated) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clickable {
+                                    onCommentRemoveClick(state.comment)
+                                }, contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = "삭제", fontSize = 16.sp, fontFamily = hancomSansFontFamily)
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clickable {
+                                    onCommentReportClick(state.comment)
+                                }, contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = "신고", fontSize = 16.sp, fontFamily = hancomSansFontFamily)
+                        }
+                    }
                 }
             }
-
         }
+
     }
+}
+
+@Preview(widthDp = 500, heightDp = 500)
+@Composable
+fun CommentSettingPreview() {
+    CommentSetting(
+        modifier = Modifier.fillMaxSize(),
+        state = CommentState.CommentSettingState(
+            isVisible = true,
+        ),
+        {},
+        {},
+        {}
+    )
 }

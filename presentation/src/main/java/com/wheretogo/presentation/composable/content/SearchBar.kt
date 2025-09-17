@@ -55,9 +55,9 @@ import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.intervalTab
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.SearchBarState
-import com.wheretogo.presentation.theme.PrimeBlue
-import com.wheretogo.presentation.theme.Gray320
 import com.wheretogo.presentation.theme.Gray150
+import com.wheretogo.presentation.theme.Gray320
+import com.wheretogo.presentation.theme.PrimeBlue
 import com.wheretogo.presentation.theme.White
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 import kotlinx.coroutines.CoroutineScope
@@ -68,11 +68,11 @@ import kotlinx.coroutines.launch
 @Composable
 fun SearchBar(
     modifier: Modifier = Modifier,
-    state: SearchBarState= SearchBarState(),
+    state: SearchBarState = SearchBarState(),
     onSearchBarItemClick: (SearchBarItem) -> Unit = {},
     onSearchBarClick: () -> Unit = {},
     onSearchSubmit: (String) -> Unit = {},
-    onSearchBarClose: ()-> Unit = {}
+    onSearchBarClose: () -> Unit = {}
 ) {
     val isPreview = LocalInspectionMode.current
     val focusManager = LocalFocusManager.current
@@ -83,7 +83,7 @@ fun SearchBar(
     val outDp = 12.dp
 
     LaunchedEffect(state.isActive) {
-        if(state.isActive) {
+        if (state.isActive) {
             alpha = 1f
         } else {
             alpha = 0.75f
@@ -113,7 +113,7 @@ fun SearchBar(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 BarTextField(
-                    Modifier.weight(1f),
+                    modifier = Modifier.weight(1f),
                     textValue = editText,
                     readOnly = !state.isActive,
                     focusRequester = focusRequester,
@@ -124,11 +124,12 @@ fun SearchBar(
                     },
                     onFocusChanged = {
                         isFocused = it.isFocused
-                        when{
-                            it.isFocused && editText.isBlank()->{
+                        when {
+                            it.isFocused && editText.isBlank() -> {
                                 onSearchBarClick()
                             }
-                            !it.isFocused && editText.isBlank()->{
+
+                            !it.isFocused && editText.isBlank() -> {
                                 onSearchBarClose()
                             }
                         }
@@ -166,24 +167,27 @@ fun SearchBar(
                 }
             })
 
-        Box{
-            val isAd = if (isPreview) state.isAdVisible else state.isAdVisible && state.isActive && state.searchBarItemGroup.isEmpty() && !state.isEmptyVisible
+        Box {
+            val isAd = if (isPreview) {
+                state.isAdVisible
+            } else {
+                state.isAdVisible && state.isActive && state.searchBarItemGroup.isEmpty() && !state.isEmptyVisible
+            }
 
-            if(!isAd)
+            if (!isAd)
                 BarDropList(
-                modifier = modifier.padding(horizontal = outDp),
-                isEmptyVisible = state.isEmptyVisible,
-                searchBarItemGroup = state.searchBarItemGroup,
-                onSearchBarItemClick = {
-                    if (it.label == CLEAR_ADDRESS) {
-                        onSearchBarClose()
-                        clearFocus()
-                    }
-                    else {
-                        clearFocus()
-                    }
-                    onSearchBarItemClick(it)
-                })
+                    modifier = modifier.padding(horizontal = outDp),
+                    isEmptyVisible = state.isEmptyVisible,
+                    searchBarItemGroup = state.searchBarItemGroup,
+                    onSearchBarItemClick = {
+                        if (it.label == CLEAR_ADDRESS) {
+                            onSearchBarClose()
+                            clearFocus()
+                        } else {
+                            clearFocus()
+                        }
+                        onSearchBarItemClick(it)
+                    })
 
             SlideAnimation(
                 visible = isAd,
@@ -248,8 +252,7 @@ fun BarTextField(
                 .focusRequester(focusRequester)
                 .onFocusChanged {
                     onFocusChanged(it)
-                }
-               ,
+                },
             textStyle = textStyle,
             value = textValue,
             maxLines = 1,
@@ -289,12 +292,13 @@ fun BarIcon(isLoading: Boolean) {
 }
 
 @Composable
-fun BarDropList(modifier: Modifier = Modifier,
+fun BarDropList(
+    modifier: Modifier = Modifier,
     isEmptyVisible: Boolean,
     searchBarItemGroup: List<SearchBarItem>,
     onSearchBarItemClick: (SearchBarItem) -> Unit
 ) {
-    Column(modifier= modifier, horizontalAlignment = Alignment.End) {
+    Column(modifier = modifier, horizontalAlignment = Alignment.End) {
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.End,
@@ -331,9 +335,8 @@ fun BarDropList(modifier: Modifier = Modifier,
 
 @Composable
 fun BarListItem(searchBarItem: SearchBarItem, onSearchBarItemClick: (SearchBarItem) -> Unit) {
-    val isCourse = searchBarItem.address.isBlank()
-    val textColor = if (isCourse) White else Gray320
-    val backgroundColor = if (isCourse) PrimeBlue else White
+    val textColor = if (searchBarItem.isCourse) White else Gray320
+    val backgroundColor = if (searchBarItem.isCourse) PrimeBlue else White
     val textStyle = TextStyle(
         fontFamily = hancomSansFontFamily,
         color = textColor

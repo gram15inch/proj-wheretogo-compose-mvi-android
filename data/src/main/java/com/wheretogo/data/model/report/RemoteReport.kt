@@ -12,5 +12,5 @@ data class RemoteReport(
     val targetUserName: String = "",
     val reason: String = "",
     val status: String = "",
-    val timestamp : Long = 0
+    val createAt: Long = 0
 )

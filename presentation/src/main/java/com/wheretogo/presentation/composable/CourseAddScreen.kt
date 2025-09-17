@@ -63,24 +63,24 @@ import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.naver.maps.map.NaverMap
 import com.wheretogo.domain.RouteAttr
-import com.wheretogo.domain.model.map.LatLng
-import com.wheretogo.domain.model.map.RouteCategory
+import com.wheretogo.domain.model.address.LatLng
+import com.wheretogo.domain.model.route.RouteCategory
 import com.wheretogo.presentation.BuildConfig
 import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.R
-import com.wheretogo.presentation.SheetState
+import com.wheretogo.presentation.SheetVisibleMode
 import com.wheretogo.presentation.composable.content.AnimationDirection
 import com.wheretogo.presentation.composable.content.BottomSheet
 import com.wheretogo.presentation.composable.content.DelayLottieAnimation
 import com.wheretogo.presentation.composable.content.FadeAnimation
-import com.wheretogo.presentation.composable.content.NaverMap
+import com.wheretogo.presentation.composable.content.NaverMapSheet
 import com.wheretogo.presentation.composable.content.SearchBar
 import com.wheretogo.presentation.composable.content.SlideAnimation
 import com.wheretogo.presentation.feature.intervalTab
 import com.wheretogo.presentation.feature.naver.setCurrentLocation
 import com.wheretogo.presentation.intent.CourseAddIntent
+import com.wheretogo.presentation.model.AppMarker
 import com.wheretogo.presentation.model.ContentPadding
-import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.BottomSheetState
 import com.wheretogo.presentation.state.CameraState
@@ -98,6 +98,7 @@ import com.wheretogo.presentation.theme.interFontFamily
 import com.wheretogo.presentation.toStrRes
 import com.wheretogo.presentation.viewmodel.CourseAddViewModel
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import kotlin.math.max
 
 @Composable
@@ -125,7 +126,6 @@ fun CourseAddScreen(
         onSearchBarItemClick = { viewModel.handleIntent(CourseAddIntent.SearchBarItemClick(it)) },
 
         //BottomSheet
-        onHeightChange = { viewModel.handleIntent(CourseAddIntent.ContentPaddingChanged(it.value.toInt())) },
         onSheetStateChange = { viewModel.handleIntent(CourseAddIntent.SheetStateChange(it)) },
 
         //CourseAddSheetContent
@@ -144,23 +144,22 @@ fun CourseAddScreen(
 
 @Composable
 fun CourseAddSheetContent(
-    state:CourseAddScreenState = CourseAddScreenState(),
+    state: CourseAddScreenState = CourseAddScreenState(),
 
     //NaverMap
     onMapAsync: (NaverMap) -> Unit = {},
     onCameraUpdate: (CameraState) -> Unit = {},
     onMapClick: (LatLng) -> Unit = {},
-    onCheckPointMarkerClick: (MapOverlay.MarkerContainer) -> Unit = {},
+    onCheckPointMarkerClick: (AppMarker) -> Unit = {},
 
     //SearchBar
     onSearchBarItemClick: (SearchBarItem) -> Unit = {},
     onSearchBarClick: () -> Unit = {},
     onSearchSubmit: (String) -> Unit = {},
-    onSearchBarClose: ()-> Unit = {},
+    onSearchBarClose: () -> Unit = {},
 
     //BottomSheet
-    onSheetStateChange: (SheetState) -> Unit = {},
-    onHeightChange: (Dp) -> Unit = {},
+    onSheetStateChange: (SheetVisibleMode) -> Unit = {},
 
     //CourseAddSheetContent
     onCategorySelect: (RouteCategory) -> Unit = {},
@@ -185,7 +184,7 @@ fun CourseAddSheetContent(
             val systemBarBottomPadding by remember {
                 derivedStateOf { systemBars.calculateBottomPadding() }
             }
-            NaverMap(
+            NaverMapSheet(
                 modifier = Modifier
                     .zIndex(0f)
                     .fillMaxSize(),
@@ -224,13 +223,14 @@ fun CourseAddSheetContent(
 
                 BottomSheet(
                     modifier = Modifier,
-                    state = state.bottomSheetState,
                     bottomSpace = systemBarBottomPadding,
+                    isVisible = CourseAddScreenState.isBottomSheetVisible.contains(state.stateMode),
                     onSheetHeightChange = { dp ->
                         bottomSheetHeight = dp
-                        onHeightChange(bottomSheetHeight)
                     },
-                    onSheetStateChange = onSheetStateChange
+                    onSheetStateChange = onSheetStateChange,
+                    minHeight = state.bottomSheetState.content.minHeight.dp,
+                    isSpaceVisibleWhenClose = true
                 ) {
                     CourseAddSheetContent(
                         state = state.bottomSheetState.courseAddSheetState,
@@ -690,9 +690,7 @@ fun CourseAddOneStepPreview() {
     CourseAddSheetContent(
         state = CourseAddScreenState(
             bottomSheetState = BottomSheetState(
-                minHeight = 400,
-                isVisible = true,
-                content = DriveBottomSheetContent.COURSE_ADD,
+                content = DriveBottomSheetContent.PREVIEW,
                 courseAddSheetState = CourseAddScreenState.CourseAddSheetState(
                     isTwoStep = false,
                     selectedCategoryCodeGroup = mapOf(
@@ -712,9 +710,7 @@ fun CourseAddTwoStepPreview() {
     CourseAddSheetContent(
         state = CourseAddScreenState(
             bottomSheetState = BottomSheetState(
-                minHeight = 400,
-                isVisible = true,
-                content = DriveBottomSheetContent.COURSE_ADD,
+                content = DriveBottomSheetContent.PREVIEW,
                 courseAddSheetState = CourseAddScreenState.CourseAddSheetState(
                     isTwoStep = true,
                     selectedCategoryCodeGroup = mapOf(
@@ -723,7 +719,7 @@ fun CourseAddTwoStepPreview() {
                         RouteAttr.RELATION to 9,
                     )
                 )
-            )
-        )
+            ),
+        ),
     )
 }

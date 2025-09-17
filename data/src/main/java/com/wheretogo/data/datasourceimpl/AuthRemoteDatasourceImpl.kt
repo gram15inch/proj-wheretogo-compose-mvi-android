@@ -67,14 +67,16 @@ class AuthRemoteDatasourceImpl @Inject constructor() : AuthRemoteDatasource {
         firebaseAuth.signOut()
     }
 
-    override suspend fun deleteUser(): Boolean {
-        val user = firebaseAuth.currentUser
-        return user?.delete()?.isSuccessful ?: false
+    override suspend fun deleteUser(): Result<Boolean> {
+        return runCatching {
+            val user = firebaseAuth.currentUser
+            user?.delete()?.isSuccessful ?: false
+        }
     }
 
     override suspend fun getApiToken(isForceRefresh: Boolean): Result<String> {
         val currentUser = firebaseAuth.currentUser
-        if(currentUser==null)
+        if (currentUser == null)
             return Result.failure(DataError.UserInvalid("user not found for token"))
 
         return suspendCancellableCoroutine<Result<String>> { continuation ->

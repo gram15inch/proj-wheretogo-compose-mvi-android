@@ -3,7 +3,6 @@ package com.wheretogo.data.datasourceimpl
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.net.Uri
 import androidx.core.net.toUri
 import androidx.exifinterface.media.ExifInterface
 import com.wheretogo.data.datasource.ImageLocalDatasource
@@ -24,8 +23,8 @@ class ImageLocalDatasourceImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     private val imageFile: File
 ) : ImageLocalDatasource {
-    override suspend fun getImage(fileName: String, size: ImageSize): File {
-        val localFile = File(imageFile.parentFile, "image/${size.pathName}/${fileName}").apply {
+    override suspend fun getImage(imageId: String, size: ImageSize): File {
+        val localFile = File(imageFile.parentFile, "image/${size.pathName}/${imageId}.jpg").apply {
             if (!parentFile!!.exists()) {
                 parentFile?.mkdirs()
             }
@@ -33,62 +32,73 @@ class ImageLocalDatasourceImpl @Inject constructor(
         return localFile
     }
 
-    override suspend fun saveImage(byteArray: ByteArray, fileName: String, size: ImageSize): Uri {
-        val file = getImage(fileName, size)
-        file.outputStream().use { steam ->
-            steam.write(byteArray)
+    override suspend fun saveImage(
+        byteArray: ByteArray,
+        imageId: String,
+        size: ImageSize
+    ): Result<File> {
+        return runCatching {
+            val file = getImage(imageId, size)
+            file.outputStream().use { steam ->
+                steam.write(byteArray)
+            }
+            file
         }
-        return file.toUri()
     }
 
 
-    override suspend fun removeImage(fileName: String, size: ImageSize) {
-        val localFile = getImage(fileName, size)
-        if (localFile.exists())
-            localFile.delete()
+    override suspend fun removeImage(imageId: String, size: ImageSize): Result<Unit> {
+        return runCatching {
+            val localFile = getImage(imageId, size)
+            if (localFile.exists())
+                localFile.delete()
+        }
     }
 
 
     override suspend fun openAndResizeImage(
-        sourceUri: Uri,
+        sourceUriString: String,
         sizeGroup: List<ImageSize>,
         compressionQuality: Int
-    ): List<Pair<ImageSize, ByteArray>> {
+    ): Result<List<Pair<ImageSize, ByteArray>>> {
 
-        val originalBitmap =
-            context.contentResolver.openInputStream(sourceUri)?.use { inputStream ->
-                BitmapFactory.decodeStream(inputStream)
-            }!!
+        return runCatching {
+            val originalBitmap =
+                context.contentResolver.openInputStream(sourceUriString.toUri())
+                    ?.use { inputStream ->
+                        BitmapFactory.decodeStream(inputStream)
+                    }!!
 
-        val exif =
-            context.contentResolver.openInputStream(sourceUri)?.use { inputStream ->
-                ExifInterface(inputStream)
-            }!!
+            val exif =
+                context.contentResolver.openInputStream(sourceUriString.toUri())
+                    ?.use { inputStream ->
+                        ExifInterface(inputStream)
+                    }!!
 
-
-        return coroutineScope {
-            sizeGroup.map { size ->
-                async {
-                    val newBitmap = originalBitmap
-                        .rotate(exif)
-                        .scale(size)
-                        .run {
-                            when (size) {
-                                ImageSize.SMALL -> scaleCrop()
-                                ImageSize.NORMAL -> fit(ImageSize.NORMAL)
+            coroutineScope {
+                sizeGroup.map { size ->
+                    async {
+                        val newBitmap = originalBitmap
+                            .rotate(exif)
+                            .scale(size)
+                            .run {
+                                when (size) {
+                                    ImageSize.SMALL -> scaleCrop()
+                                    ImageSize.NORMAL -> fit(ImageSize.NORMAL)
+                                }
                             }
-                        }
 
-                    size to ByteArrayOutputStream().use { stream ->
-                        newBitmap.compress(
-                            Bitmap.CompressFormat.JPEG,
-                            compressionQuality,
-                            stream
-                        )
-                        stream.toByteArray()
+                        size to ByteArrayOutputStream().use { stream ->
+                            newBitmap.compress(
+                                Bitmap.CompressFormat.JPEG,
+                                compressionQuality,
+                                stream
+                            )
+                            stream.toByteArray()
+                        }
                     }
-                }
-            }.awaitAll()
+                }.awaitAll()
+            }
         }
     }
 }

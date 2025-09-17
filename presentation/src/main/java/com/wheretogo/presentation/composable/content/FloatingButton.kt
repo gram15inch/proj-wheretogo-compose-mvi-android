@@ -47,7 +47,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wheretogo.domain.model.map.Course
+import com.wheretogo.domain.model.course.Course
+import com.wheretogo.domain.model.util.Navigation
+import com.wheretogo.presentation.DriveFloatingVisibleMode
 import com.wheretogo.presentation.ExportMap
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.callMap
@@ -55,6 +57,7 @@ import com.wheretogo.presentation.state.FloatingButtonState
 import com.wheretogo.presentation.theme.Gray100
 import com.wheretogo.presentation.theme.White85
 import com.wheretogo.presentation.theme.hancomSansFontFamily
+import com.wheretogo.presentation.toNavigation
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -63,8 +66,8 @@ import kotlinx.coroutines.launch
 fun FloatingButtons(
     modifier: Modifier = Modifier,
     state: FloatingButtonState = FloatingButtonState(),
-    course: Course,
-    isNotOtherVisible : Boolean,
+    isVisible: Boolean,
+    navigation: Navigation,
     onCommentClick: () -> Unit,
     onCheckpointAddClick: () -> Unit,
     onInfoClick: () -> Unit,
@@ -73,12 +76,18 @@ fun FloatingButtons(
     onFoldClick: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    val isCommentVisible = state.isCommentVisible && isNotOtherVisible && !state.isBackPlateVisible
-    val isCheckpointAddVisible =  state.isCheckpointAddVisible && isNotOtherVisible && !state.isBackPlateVisible
-    val isInfoVisible: Boolean = state.isInfoVisible && isNotOtherVisible && !state.isBackPlateVisible
-    val isExportVisible: Boolean = state.isExportVisible && isNotOtherVisible
-    val isBackPlateVisible: Boolean = state.isBackPlateVisible && state.isExportVisible
-    val isFoldVisible: Boolean = state.isFoldVisible && isNotOtherVisible
+    val isCommentVisible = isVisible && FloatingButtonState.commentVisible.contains(state.stateMode)
+    val isCheckpointAddVisible =
+        isVisible && FloatingButtonState.checkpointAddVisible.contains(state.stateMode)
+    val isInfoVisible: Boolean =
+        isVisible && FloatingButtonState.infoVisible.contains(state.stateMode)
+    val isExportVisible: Boolean =
+        isVisible && FloatingButtonState.exportVisible.contains(state.stateMode)
+    val isBackPlateVisible: Boolean =
+        isVisible && FloatingButtonState.backPlateVisible.contains(state.stateMode)
+    val isFoldVisible: Boolean =
+        isVisible && FloatingButtonState.foldVisible.contains(state.stateMode)
+
     Box(
         modifier = modifier,
         contentAlignment = Alignment.BottomEnd
@@ -89,15 +98,17 @@ fun FloatingButtons(
             modifier = Modifier
                 .fillMaxSize(),
             visible = isBackPlateVisible,
-            direction = AnimationDirection.CenterRight  
+            direction = AnimationDirection.CenterRight
         ) {
-            AdaptiveAd(modifier=Modifier.padding(
-                start = buttonEndPadding,
-                end = buttonEndPadding,
-                top = 10.dp,
-                bottom = buttonEndPadding + 10.dp
+            AdaptiveAd(
+                modifier = Modifier.padding(
+                    start = buttonEndPadding,
+                    end = buttonEndPadding,
+                    top = 10.dp,
+                    bottom = buttonEndPadding + 10.dp
 
-            ), nativeAd = state.adItemGroup.firstOrNull()?.nativeAd)
+                ), nativeAd = state.adItemGroup.firstOrNull()?.nativeAd
+            )
         }
 
         Column(
@@ -137,7 +148,7 @@ fun FloatingButtons(
 
             SlideAnimation(
                 modifier = Modifier,
-                visible = isInfoVisible ,
+                visible = isInfoVisible,
                 direction = AnimationDirection.RightCenter
             ) {
                 CircleButton(
@@ -161,17 +172,29 @@ fun FloatingButtons(
                     buttonEndPadding = buttonEndPadding,
                     onNaverClick = { isLongClick ->
                         scope.launch {
-                            onMapAppClick(context.callMap(ExportMap.NAVER, course, !isLongClick))
+                            onMapAppClick(
+                                context.callMap(
+                                    ExportMap.NAVER,
+                                    navigation,
+                                    !isLongClick
+                                )
+                            )
                         }
                     },
                     onKaKaoClick = { isLongClick ->
                         scope.launch {
-                            onMapAppClick(context.callMap(ExportMap.KAKAO, course, !isLongClick))
+                            onMapAppClick(
+                                context.callMap(
+                                    ExportMap.KAKAO,
+                                    navigation,
+                                    !isLongClick
+                                )
+                            )
                         }
                     },
                     onTClick = { isLongClick ->
                         scope.launch {
-                            onMapAppClick(context.callMap(ExportMap.SKT, course, !isLongClick))
+                            onMapAppClick(context.callMap(ExportMap.SKT, navigation, !isLongClick))
                         }
                     },
                 ) {
@@ -239,7 +262,7 @@ fun CirclePlateButton(
     targetOffset = if (isBackPlate) (-13).dp else 0.dp
 
     var lastClickTime by remember { mutableLongStateOf(0L) }
-    val onIntervalClick: ()->Unit = {
+    val onIntervalClick: () -> Unit = {
         val currentTime = System.currentTimeMillis()
         if (currentTime - lastClickTime >= 300L) {
             lastClickTime = currentTime
@@ -250,10 +273,12 @@ fun CirclePlateButton(
     Box(modifier = modifier) {
         if (isBackPlate) {
             //백플레이트
-            Backplate(backPlateHeight, buttonEndPadding, squareSize, circleSize,
-                onButtonClick = onIntervalClick)
+            Backplate(
+                backPlateHeight, buttonEndPadding, squareSize, circleSize,
+                onButtonClick = onIntervalClick
+            )
 
-            Column(modifier=Modifier) {
+            Column(modifier = Modifier) {
                 Row( // 사각형
                     modifier = Modifier
                         .graphicsLayer(
@@ -296,15 +321,16 @@ fun CirclePlateButton(
             }
         } else {
             CircleButton(
-                modifier=Modifier.padding(end = buttonEndPadding)
-                    .align(alignment = Alignment.CenterEnd),icon, onClick = onIntervalClick
+                modifier = Modifier
+                    .padding(end = buttonEndPadding)
+                    .align(alignment = Alignment.CenterEnd), icon, onClick = onIntervalClick
             )
         }
     }
 }
 
 @Composable
-fun InfoText(modifier: Modifier = Modifier, text:String){
+fun InfoText(modifier: Modifier = Modifier, text: String) {
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
@@ -381,7 +407,13 @@ fun SquareScaleButton(
 }
 
 @Composable
-fun Backplate(backPlateHeight: Dp, buttonEndPadding: Dp, squareSize: Dp, circleSize: Dp, onButtonClick:()->Unit={}) {
+fun Backplate(
+    backPlateHeight: Dp,
+    buttonEndPadding: Dp,
+    squareSize: Dp,
+    circleSize: Dp,
+    onButtonClick: () -> Unit = {}
+) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(40.dp))
@@ -400,29 +432,37 @@ fun Backplate(backPlateHeight: Dp, buttonEndPadding: Dp, squareSize: Dp, circleS
             }
             Spacer(modifier = Modifier.size(circleSize))
         }
-        CircleButton(modifier = Modifier.align(alignment = Alignment.CenterEnd), icon = R.drawable.ic_share, onClick = onButtonClick)
-        InfoText(Modifier.padding(start = 30.dp).align(alignment = Alignment.BottomStart),
-            text = stringResource(R.string.exclude_my_location_on_long_press))
+        CircleButton(
+            modifier = Modifier.align(alignment = Alignment.CenterEnd),
+            icon = R.drawable.ic_share,
+            onClick = onButtonClick
+        )
+        InfoText(
+            Modifier
+                .padding(start = 30.dp)
+                .align(alignment = Alignment.BottomStart),
+            text = stringResource(R.string.exclude_my_location_on_long_press)
+        )
     }
 }
 
-@Preview(name="portrait", widthDp = 400, heightDp = 600)
-@Preview(name="landscape", widthDp = 700, heightDp = 400)
+@Preview(name = "portrait", widthDp = 400, heightDp = 600)
+@Preview(name = "landscape", widthDp = 700, heightDp = 400)
 @Composable
 fun FloatingLandscapeButtonPreview() {
     FloatingButtons(
         modifier = Modifier.background(Gray100),
         state = FloatingButtonState(
             adItemGroup = emptyList(),
-            isCommentVisible = true,
-            isCheckpointAddVisible = true,
-            isExportVisible = true,
-            isFoldVisible = true,
-            isInfoVisible = true,
-            isBackPlateVisible = true,
+            stateMode = DriveFloatingVisibleMode.Default
         ),
-        course = Course(),
-        isNotOtherVisible = true,
-        {}, {}, {}, {}, {}, {}
+        isVisible = true,
+        navigation = Course().toNavigation(),
+        onCommentClick = {},
+        onCheckpointAddClick = {},
+        onInfoClick = {},
+        onExportMapClick = {},
+        onMapAppClick = {},
+        onFoldClick = {}
     )
 }

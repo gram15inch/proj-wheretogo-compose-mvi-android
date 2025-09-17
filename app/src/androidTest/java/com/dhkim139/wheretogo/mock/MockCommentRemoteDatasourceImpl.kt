@@ -2,70 +2,45 @@ package com.dhkim139.wheretogo.mock
 
 import com.wheretogo.data.datasource.CommentRemoteDatasource
 import com.wheretogo.data.model.comment.RemoteComment
-import com.wheretogo.data.model.comment.RemoteCommentGroupWrapper
+import com.wheretogo.data.model.content.ContentLike
 import javax.inject.Inject
 
 class MockCommentRemoteDatasourceImpl @Inject constructor() : CommentRemoteDatasource {
-    private val commentGroup= mutableMapOf<String,RemoteCommentGroupWrapper>()
-    override suspend fun getCommentGroupInCheckPoint(groupId: String): RemoteCommentGroupWrapper? {
-        return commentGroup.get(groupId)
+    private val _commentGroup = mutableMapOf<String, List<RemoteComment>>()
+
+    override suspend fun getCommentByGroupId(groupId: String): Result<List<RemoteComment>> {
+        val data = _commentGroup.getOrDefault(groupId, emptyList())
+        return Result.success(data)
     }
 
-    override suspend fun setCommentGroupInCheckPoint(wrapper: RemoteCommentGroupWrapper): Boolean {
-        commentGroup.set(wrapper.groupId, wrapper)
-        return true
+    override suspend fun addComment(comment: RemoteComment): Result<Unit> {
+        val data =
+            _commentGroup.getOrDefault(comment.commentGroupId, emptyList()) + comment
+        _commentGroup.put(comment.commentGroupId, data)
+        return Result.success(Unit)
     }
 
-    override suspend fun setCommentInCheckPoint(comment: RemoteComment, isInit: Boolean): Boolean {
-         val wrapper= commentGroup.getOrElse(comment.commentGroupId, { null })
-        if (wrapper == null) {
-            val wrapper = RemoteCommentGroupWrapper(
-                groupId = comment.commentGroupId,
-                remoteCommentGroup = listOf(comment)
-            )
-            commentGroup.put(
-                key = comment.commentGroupId,
-                value = wrapper
-            )
-        } else {
-            commentGroup.put(
-                key = comment.commentGroupId,
-                value = wrapper.copy(remoteCommentGroup = wrapper.remoteCommentGroup + comment)
-            )
-        }
-
-        return true
+    override suspend fun removeComment(
+        groupId: String,
+        contentId: String
+    ): Result<Unit> {
+        val data =
+            _commentGroup.getOrDefault(groupId, emptyList())
+                .filter { it.commentId != contentId }
+        _commentGroup.put(groupId, data)
+        return Result.success(Unit)
     }
 
-    override suspend fun updateCommentInCheckPoint(comment: RemoteComment): Boolean {
-        val wrapper= commentGroup.getOrElse(comment.commentGroupId, { null })
-        if(wrapper==null){
-            return false
-        }
-
-        commentGroup.put(
-            key = comment.commentGroupId,
-            value =
-                wrapper.copy(
-                    groupId = comment.commentGroupId,
-                    wrapper.remoteCommentGroup.map {
-                        if (it.commentId == comment.commentId)
-                            comment
-                        else
-                            it
-                    }
-                ))
-        return true
-    }
-
-    override suspend fun removeCommentGroupInCheckPoint(commentGroupId: String): Boolean {
-        val wrapper= commentGroup.getOrElse(commentGroupId, { null })
-         if (wrapper == null) {
-           return true
-        }
-
-        commentGroup.remove(commentGroupId)
-
-        return true
+    override suspend fun changeCommentLike(request: ContentLike): Result<Unit> {
+        val diff = if (request.isLike) 1 else -1
+        val data =
+            _commentGroup.getOrDefault(request.groupId, emptyList())
+                .map {
+                    if (it.commentId == request.contentId)
+                        it.copy(like = it.like + diff)
+                    else it
+                }
+        _commentGroup.put(request.groupId, data)
+        return Result.success(Unit)
     }
 }

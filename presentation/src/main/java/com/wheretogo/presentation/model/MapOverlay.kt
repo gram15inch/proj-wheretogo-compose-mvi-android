@@ -1,23 +1,21 @@
 package com.wheretogo.presentation.model
 
-import com.naver.maps.map.overlay.Marker
-import com.naver.maps.map.overlay.PathOverlay
 import com.wheretogo.presentation.MarkerType
 import com.wheretogo.presentation.PathType
 
 sealed class MapOverlay(
-    open val id: String // 컨텐츠 ID
+    open val contentId: String // 컨텐츠 ID
 ) {
     data class MarkerContainer(
-        override val id: String,
+        override val contentId: String,
         val type: MarkerType = MarkerType.SPOT,
-        val marker: Marker
-    ) : MapOverlay(id)
+        val marker: AppMarker
+    ) : MapOverlay(contentId)
 
     data class PathContainer(
-        override val id: String,
+        override val contentId: String,
         val type: PathType = PathType.FULL,
-        val path: PathOverlay
-    ) : MapOverlay(id)
+        val path: AppPath
+    ) : MapOverlay(contentId)
 }
 

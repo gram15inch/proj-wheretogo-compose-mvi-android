@@ -6,7 +6,7 @@ import com.wheretogo.data.toRemoteCourse
 import com.wheretogo.domain.AuthCompany
 import com.wheretogo.domain.feature.hashSha256
 import com.wheretogo.domain.model.dummy.getCourseDummy
-import com.wheretogo.domain.model.map.History
+import com.wheretogo.domain.model.user.History
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePrivate
 import dagger.Module

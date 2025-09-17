@@ -9,7 +9,7 @@ interface AuthRemoteDatasource {
 
     suspend fun signOutOnFirebase()
 
-    suspend fun deleteUser(): Boolean
+    suspend fun deleteUser(): Result<Boolean>
 
     suspend fun getApiToken(isForceRefresh: Boolean): Result<String?>
 }

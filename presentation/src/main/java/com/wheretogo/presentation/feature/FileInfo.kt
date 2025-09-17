@@ -1,8 +1,9 @@
 package com.wheretogo.presentation.feature
 
-import android.content.Context
+import android.content.ContentResolver
+import android.database.Cursor
 import android.net.Uri
-import java.io.File
+import android.provider.OpenableColumns
 
 
 fun formatFileSizeToMB(bytes: Long): String {
@@ -10,20 +11,17 @@ fun formatFileSizeToMB(bytes: Long): String {
     return "%.1f MB".format(mb)
 }
 
-fun getAssetFileUri(context: Context, assetFileName: String): Uri? {
-    val assetManager = context.assets
-    val file = File.createTempFile("test_image", ".jpg_pb")
-
-    try {
-        assetManager.open(assetFileName).use { inputStream ->
-            file.outputStream().use { outputStream ->
-                inputStream.copyTo(outputStream)
+fun getFileInfoFromUri(contentResolver: ContentResolver, uri: Uri): Result<Pair<String?, Long?>> {
+    return runCatching {
+        var fileName: String? = null
+        var fileSize: Long? = null
+        val cursor: Cursor? = contentResolver.query(uri, null, null, null, null)
+        cursor?.use {
+            if (it.moveToFirst()) {
+                fileName = it.getString(it.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
+                fileSize = it.getLong(it.getColumnIndexOrThrow(OpenableColumns.SIZE))
             }
         }
-    } catch (e: Exception) {
-        e.printStackTrace()
-        return null
+        Pair(fileName, fileSize)
     }
-
-    return Uri.fromFile(file)
 }

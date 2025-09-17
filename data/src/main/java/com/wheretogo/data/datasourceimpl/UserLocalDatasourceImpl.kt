@@ -8,10 +8,11 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import com.wheretogo.data.datasource.UserLocalDatasource
+import com.wheretogo.data.feature.dataErrorCatching
 import com.wheretogo.data.model.user.LocalProfile
 import com.wheretogo.data.model.user.LocalProfilePrivate
 import com.wheretogo.domain.HistoryType
-import com.wheretogo.domain.model.map.History
+import com.wheretogo.domain.model.user.History
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -37,39 +38,40 @@ class UserLocalDatasourceImpl @Inject constructor(
     private val checkpoint = stringSetPreferencesKey("checkpoint_profile")
     private val reportContent = stringSetPreferencesKey("report_content_profile")
 
-    override fun isRequestLoginFlow(): Flow<Boolean> {
-        return userDataStore.data.map { preferences ->
-            preferences[isRequestLoginKey] ?: true
+
+    override suspend fun addHistory(historyId: String, type: HistoryType): Result<Unit> {
+        return dataErrorCatching {
+            val key = getHistoryKey(type)
+            userDataStore.edit { preferences ->
+                preferences[key] =
+                    preferences[key]?.toMutableSet()?.apply { this += historyId }
+                        ?: setOf(historyId)
+            }
+            Unit
         }
     }
 
-    override suspend fun setRequestLogin(boolean: Boolean) {
-        userDataStore.edit { preferences ->
-            preferences[isRequestLoginKey] = boolean
+    override suspend fun setHistoryGroup(
+        historyIdGroup: HashSet<String>,
+        type: HistoryType
+    ): Result<Unit> {
+        return dataErrorCatching {
+            val key = getHistoryKey(type)
+            userDataStore.edit { preferences ->
+                preferences[key] = historyIdGroup
+            }
+            Unit
         }
     }
 
-
-    override suspend fun addHistory(historyId: String, type: HistoryType) {
-        val key = getHistoryKey(type)
-        userDataStore.edit { preferences ->
-            preferences[key] =
-                preferences[key]?.toMutableSet()?.apply { this += historyId } ?: setOf(historyId)
-        }
-    }
-
-    override suspend fun setHistoryGroup(historyIdGroup: HashSet<String>, type: HistoryType) {
-        val key = getHistoryKey(type)
-        userDataStore.edit { preferences ->
-            preferences[key] = historyIdGroup
-        }
-    }
-
-    override suspend fun removeHistory(historyId: String, type: HistoryType) {
-        val key = getHistoryKey(type)
-        userDataStore.edit { preferences ->
-            preferences[key] =
-                preferences[key]?.toMutableSet()?.apply { this -= historyId } ?: emptySet()
+    override suspend fun removeHistory(historyId: String, type: HistoryType): Result<Unit> {
+        return dataErrorCatching {
+            val key = getHistoryKey(type)
+            userDataStore.edit { preferences ->
+                preferences[key] =
+                    preferences[key]?.toMutableSet()?.apply { this -= historyId } ?: emptySet()
+            }
+            Unit
         }
     }
 
@@ -80,7 +82,7 @@ class UserLocalDatasourceImpl @Inject constructor(
             HistoryType.COMMENT -> comment
             HistoryType.COURSE -> course
             HistoryType.CHECKPOINT -> checkpoint
-            HistoryType.REPORT_CONTENT -> reportContent
+            HistoryType.REPORT -> reportContent
         }
     }
 
@@ -91,33 +93,42 @@ class UserLocalDatasourceImpl @Inject constructor(
         }
     }
 
-    override suspend fun setProfile(profile: LocalProfile) {
-        userDataStore.edit { preferences ->
-            preferences[uid] = profile.uid
-            preferences[name] = profile.name
-            preferences[hashMail] = profile.hashMail
-            preferences[mail] = profile.private.mail
-            preferences[authCompany] = profile.private.authCompany
-            preferences[lastVisitedDate] = profile.private.lastVisited
-            preferences[accountCreationDate] = profile.private.accountCreation
-            preferences[isAdRemove] = profile.private.isAdRemove
+    override suspend fun setProfile(profile: LocalProfile): Result<Unit> {
+        return dataErrorCatching {
+            userDataStore.edit { preferences ->
+                preferences[uid] = profile.uid
+                preferences[name] = profile.name
+                preferences[hashMail] = profile.hashMail
+                preferences[mail] = profile.private.mail
+                preferences[authCompany] = profile.private.authCompany
+                preferences[lastVisitedDate] = profile.private.lastVisited
+                preferences[accountCreationDate] = profile.private.accountCreation
+                preferences[isAdRemove] = profile.private.isAdRemove
+            }
+            Unit
         }
     }
 
-    override suspend fun setHistory(history: History) {
-        userDataStore.edit { preferences ->
-            preferences[bookmark] = history.bookmarkGroup
-            preferences[like] = history.likeGroup
-            preferences[comment] = history.commentGroup
-            preferences[checkpoint] = history.checkpointGroup
-            preferences[course] = history.courseGroup
-            preferences[reportContent] = history.reportGroup
+    override suspend fun setHistory(history: History): Result<Unit> {
+        return dataErrorCatching {
+            userDataStore.edit { preferences ->
+                preferences[bookmark] = history.bookmarkGroup
+                preferences[like] = history.likeGroup
+                preferences[comment] = history.commentGroup
+                preferences[checkpoint] = history.checkpointGroup
+                preferences[course] = history.courseGroup
+                preferences[reportContent] = history.reportGroup
+            }
+            Unit
         }
     }
 
-    override suspend fun clearUser() {
-        setProfile(LocalProfile())
-        setHistory(History())
+    override suspend fun clearUser(): Result<Unit> {
+        return dataErrorCatching {
+            setProfile(LocalProfile())
+            setHistory(History())
+            Unit
+        }
     }
 
     override fun getProfileFlow(): Flow<LocalProfile> {

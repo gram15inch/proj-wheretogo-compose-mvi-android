@@ -1,9 +1,9 @@
 package com.wheretogo.domain.repository
 
 
-import com.wheretogo.domain.model.map.Address
-import com.wheretogo.domain.model.map.LatLng
-import com.wheretogo.domain.model.map.SimpleAddress
+import com.wheretogo.domain.model.address.Address
+import com.wheretogo.domain.model.address.LatLng
+import com.wheretogo.domain.model.address.SimpleAddress
 
 interface AddressRepository {
     suspend fun getAddress(address: String): Result<Address>

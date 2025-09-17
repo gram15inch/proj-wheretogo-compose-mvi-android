@@ -1,63 +1,47 @@
 package com.wheretogo.domain.di
 
-import com.wheretogo.domain.usecase.community.AddCommentToCheckPointUseCase
-import com.wheretogo.domain.usecase.community.GetCommentForCheckPointUseCase
-import com.wheretogo.domain.usecase.community.GetImageInfoUseCase
-import com.wheretogo.domain.usecase.community.GetMyReportUseCase
-import com.wheretogo.domain.usecase.community.UpdateLikeUseCase
-import com.wheretogo.domain.usecase.community.RemoveCheckPointUseCase
-import com.wheretogo.domain.usecase.community.RemoveCommentToCheckPointUseCase
-import com.wheretogo.domain.usecase.community.RemoveCourseUseCase
-import com.wheretogo.domain.usecase.community.ReportCancelUseCase
-import com.wheretogo.domain.usecase.community.ReportCheckPointUseCase
-import com.wheretogo.domain.usecase.community.ReportCommentUseCase
-import com.wheretogo.domain.usecase.community.ReportCourseUseCase
-import com.wheretogo.domain.usecase.map.AddCheckpointToCourseUseCase
-import com.wheretogo.domain.usecase.map.AddCourseUseCase
-import com.wheretogo.domain.usecase.map.CreateRouteUseCase
-import com.wheretogo.domain.usecase.map.GetCheckpointForMarkerUseCase
-import com.wheretogo.domain.usecase.map.GetImageForPopupUseCase
-import com.wheretogo.domain.usecase.map.GetLatLngFromAddressUseCase
-import com.wheretogo.domain.usecase.map.GetNearByCourseUseCase
-import com.wheretogo.domain.usecase.map.SearchKeywordUseCase
+import com.wheretogo.domain.usecase.checkpoint.AddCheckpointToCourseUseCase
+import com.wheretogo.domain.usecase.checkpoint.GetCheckpointForMarkerUseCase
+import com.wheretogo.domain.usecase.checkpoint.RemoveCheckPointUseCase
+import com.wheretogo.domain.usecase.checkpoint.ReportCheckPointUseCase
+import com.wheretogo.domain.usecase.comment.AddCommentToCheckPointUseCase
+import com.wheretogo.domain.usecase.comment.GetCommentForCheckPointUseCase
+import com.wheretogo.domain.usecase.comment.RemoveCommentToCheckPointUseCase
+import com.wheretogo.domain.usecase.comment.ReportCommentUseCase
+import com.wheretogo.domain.usecase.course.AddCourseUseCase
+import com.wheretogo.domain.usecase.course.GetNearByCourseUseCase
+import com.wheretogo.domain.usecase.course.RemoveCourseUseCase
+import com.wheretogo.domain.usecase.course.ReportCourseUseCase
 import com.wheretogo.domain.usecase.user.DeleteUserUseCase
-import com.wheretogo.domain.usecase.user.GetHistoryStreamUseCase
 import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
-import com.wheretogo.domain.usecase.user.RemoveHistoryUseCase
-import com.wheretogo.domain.usecase.user.UpdateHistoryUseCase
-import com.wheretogo.domain.usecase.user.UserProfileUpdateUseCase
-import com.wheretogo.domain.usecase.user.UserSignInUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
 import com.wheretogo.domain.usecase.user.UserSignUpAndSignInUseCase
-import com.wheretogo.domain.usecaseimpl.community.AddCommentToCheckPointUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.community.GetCommentForCheckPointUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.community.GetImageInfoUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.community.GetMyMyReportUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.community.UpdateLikeUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.community.RemoveCheckPointUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.community.RemoveCommentToCheckPointUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.community.RemoveCourseUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.community.ReportCancelUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.community.ReportCheckPointUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.community.ReportCommentUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.community.ReportCourseUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.map.AddCheckpointToCourseUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.map.AddCourseUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.map.CreateRouteUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.map.SearchKeywordUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.map.GetCheckpointForMarkerUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.map.GetImageForPopupUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.map.GetLatLngFromAddressUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.map.GetNearByCourseUseCaseImpl
+import com.wheretogo.domain.usecase.util.CreateRouteUseCase
+import com.wheretogo.domain.usecase.util.GetImageForPopupUseCase
+import com.wheretogo.domain.usecase.util.GetLatLngFromAddressUseCase
+import com.wheretogo.domain.usecase.util.SearchKeywordUseCase
+import com.wheretogo.domain.usecase.util.UpdateLikeUseCase
+import com.wheretogo.domain.usecaseimpl.checkpoint.AddCheckpointToCourseUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.checkpoint.GetCheckpointForMarkerUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.checkpoint.RemoveCheckPointUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.checkpoint.ReportCheckPointUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.comment.AddCommentToCheckPointUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.comment.GetCommentForCheckPointUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.comment.RemoveCommentToCheckPointUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.comment.ReportCommentUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.course.AddCourseUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.course.GetNearByCourseUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.course.RemoveCourseUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.course.ReportCourseUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.DeleteUserUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.user.GetHistoryStreamUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.GetUserProfileStreamUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.user.RemoveHistoryUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.user.UpdateHistoryUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.user.UserProfileUpdateUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.user.UserSignInUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.UserSignOutUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.UserSignUpAndSignInUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.util.CreateRouteUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.util.GetImageForPopupUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.util.GetLatLngFromAddressUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.util.SearchKeywordUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.util.UpdateLikeUseCaseImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -72,16 +56,10 @@ abstract class UseCaseModule {
     abstract fun bindGetNearByJourneyUseCase(useCaseImpl: GetNearByCourseUseCaseImpl): GetNearByCourseUseCase
 
     @Binds
-    abstract fun bindUserSignInUseCase(useCaseImpl: UserSignInUseCaseImpl): UserSignInUseCase
-
-    @Binds
     abstract fun bindUserSignOutUseCase(useCaseImpl: UserSignOutUseCaseImpl): UserSignOutUseCase
 
     @Binds
     abstract fun bindUserSignUpAndSignInUseCase(useCaseImpl: UserSignUpAndSignInUseCaseImpl): UserSignUpAndSignInUseCase
-
-    @Binds
-    abstract fun bindUserProfileUpdateUseCase(useCaseImpl: UserProfileUpdateUseCaseImpl): UserProfileUpdateUseCase
 
     @Binds
     abstract fun bindGetCheckPointForMarkerUseCase(useCaseImpl: GetCheckpointForMarkerUseCaseImpl): GetCheckpointForMarkerUseCase
@@ -111,16 +89,7 @@ abstract class UseCaseModule {
     abstract fun bindReportCheckPointUseCase(useCaseImpl: ReportCheckPointUseCaseImpl): ReportCheckPointUseCase
 
     @Binds
-    abstract fun bindGetHistoryStreamUseCase(useCaseImpl: GetHistoryStreamUseCaseImpl): GetHistoryStreamUseCase
-
-    @Binds
     abstract fun bindGetImageForPopupUseCase(useCaseImpl: GetImageForPopupUseCaseImpl): GetImageForPopupUseCase
-
-    @Binds
-    abstract fun bindUpdateHistoryUseCase(useCaseImpl: UpdateHistoryUseCaseImpl): UpdateHistoryUseCase
-
-    @Binds
-    abstract fun bindRemoveHistoryUseCase(useCaseImpl: RemoveHistoryUseCaseImpl): RemoveHistoryUseCase
 
     @Binds
     abstract fun bindCreateRouteUseCase(useCaseImpl: CreateRouteUseCaseImpl): CreateRouteUseCase
@@ -132,9 +101,6 @@ abstract class UseCaseModule {
     abstract fun bindAddCheckpointUseCase(useCaseImpl: AddCheckpointToCourseUseCaseImpl): AddCheckpointToCourseUseCase
 
     @Binds
-    abstract fun bindGetImageInfoUseCase(useCaseImpl: GetImageInfoUseCaseImpl): GetImageInfoUseCase
-
-    @Binds
     abstract fun bindGetUserProfileUseCase(useCaseImpl: GetUserProfileStreamUseCaseImpl): GetUserProfileStreamUseCase
 
     @Binds
@@ -142,12 +108,6 @@ abstract class UseCaseModule {
 
     @Binds
     abstract fun bindUpdateLikeUseCase(useCaseImpl: UpdateLikeUseCaseImpl): UpdateLikeUseCase
-
-    @Binds
-    abstract fun bindGetReportUseCase(useCaseImpl: GetMyMyReportUseCaseImpl): GetMyReportUseCase
-
-    @Binds
-    abstract fun bindReportCancelUseCase(useCaseImpl: ReportCancelUseCaseImpl): ReportCancelUseCase
 
     @Binds
     abstract fun bindSearchAddressUseCase(useCaseImpl: SearchKeywordUseCaseImpl): SearchKeywordUseCase

@@ -4,70 +4,65 @@ package com.wheretogo.domain
 import com.firebase.geofire.GeoFireUtils
 import com.firebase.geofire.GeoLocation
 import com.wheretogo.domain.feature.hashSha256
-import com.wheretogo.domain.model.map.CheckPoint
-import com.wheretogo.domain.model.map.CheckPointAddRequest
-import com.wheretogo.domain.model.map.Course
-import com.wheretogo.domain.model.map.CourseAddRequest
-import com.wheretogo.domain.model.map.History
-import com.wheretogo.domain.model.map.LatLng
+import com.wheretogo.domain.model.address.LatLng
+import com.wheretogo.domain.model.checkpoint.CheckPointAddRequest
+import com.wheretogo.domain.model.checkpoint.CheckPointContent
+import com.wheretogo.domain.model.comment.CommentAddRequest
+import com.wheretogo.domain.model.comment.CommentContent
+import com.wheretogo.domain.model.course.CourseAddRequest
+import com.wheretogo.domain.model.course.CourseContent
 import com.wheretogo.domain.model.user.AuthProfile
+import com.wheretogo.domain.model.user.History
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePrivate
+import com.wheretogo.domain.model.util.Image
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 
-fun Course.toCourseAddRequest(): CourseAddRequest {
+fun CourseContent.toCourseAddRequest(
+    profile: Profile,
+    keyword: List<String>
+): CourseAddRequest {
     return CourseAddRequest(
-        courseName = courseName,
-        waypoints = waypoints,
-        points = points,
-        duration = duration,
-        type = type,
-        level = level,
-        relation = relation,
-        cameraLatLng = cameraLatLng,
-        zoom = zoom,
+        content = this,
+        profile = profile,
+        keyword = keyword
     )
 }
 
-fun CourseAddRequest.toCourse(
-    courseId: String,
-    userId: String,
-    userName: String
-): Course {
-    return Course(
-        courseId = courseId,
-        courseName = courseName,
-        userId = userId,
-        userName = userName,
-        waypoints = waypoints,
-        points = points,
-        duration = duration,
-        type = type,
-        level = level,
-        relation = relation,
-        cameraLatLng = cameraLatLng,
-        zoom = zoom,
+fun CheckPointContent.toCheckPointAddRequest(
+    profile: Profile,
+    image: Image
+): CheckPointAddRequest {
+    return CheckPointAddRequest(
+        content = this,
+        image = image,
+        profile = profile
     )
 }
 
-
-fun Profile.toAuthProfile(token:String): AuthProfile {
-    return AuthProfile(
-        uid = uid,
-        email = private.mail,
-        userName = name,
-        authCompany = AuthCompany.PROFILE,
-        token = token
+fun CommentContent.toCommentAddRequest(
+    profile: Profile
+): CommentAddRequest {
+    return CommentAddRequest(
+        content = this,
+        profile = profile
     )
 }
 
-fun List<Pair<HistoryType, HashSet<String>>>.toHistory(): History {
+fun Map<HistoryType, HashSet<String>>.toHistory(): History {
     var history = History()
-    this.forEach {
-        history = history.map(it.first, it.second)
+    forEach {
+        history = when (it.key) {
+            HistoryType.COURSE -> history.copy(courseGroup = it.value)
+            HistoryType.CHECKPOINT -> history.copy(checkpointGroup = it.value)
+            HistoryType.COMMENT -> history.copy(commentGroup = it.value)
+            HistoryType.LIKE -> history.copy(likeGroup = it.value)
+            HistoryType.REPORT -> history.copy(reportGroup = it.value)
+            HistoryType.BOOKMARK -> history.copy(bookmarkGroup = it.value)
+        }
     }
     return history
 }
@@ -86,7 +81,7 @@ fun History.map(type: HistoryType, data: HashSet<String>): History {
             copy(commentGroup = data)
         }
 
-        HistoryType.REPORT_CONTENT -> {
+        HistoryType.REPORT -> {
             copy(reportGroup = data)
         }
 
@@ -114,7 +109,7 @@ fun History.get(type: HistoryType): HashSet<String> {
             commentGroup
         }
 
-        HistoryType.REPORT_CONTENT -> {
+        HistoryType.REPORT -> {
             reportGroup
         }
 
@@ -148,23 +143,6 @@ fun parseDateToMillis(dateString: String, pattern: String = USER_DATE_FORMAT): L
     val dateFormat = SimpleDateFormat(pattern, Locale.getDefault())
     val date = dateFormat.parse(dateString)
     return date?.time ?: throw IllegalArgumentException("Invalid date format or value")
-}
-
-fun CheckPointAddRequest.toCheckpoint(
-    userId: String,
-    userName: String,
-    checkPointId: String,
-    imageName: String,
-): CheckPoint {
-    return CheckPoint(
-        checkPointId = checkPointId,
-        courseId = courseId,
-        userId = userId,
-        userName = userName,
-        imageName = imageName,
-        latLng = latLng,
-        description = description
-    )
 }
 
 fun AuthProfile.toProfile(): Profile {

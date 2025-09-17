@@ -1,11 +1,10 @@
 package com.wheretogo.domain.repository
 
-import android.net.Uri
 import com.wheretogo.domain.ImageSize
-import java.io.File
+import com.wheretogo.domain.model.util.Image
 
 interface ImageRepository {
-    suspend fun getImage(fileName: String, size: ImageSize): Result<File>
-    suspend fun setImage(imgUri: Uri, customName: String = ""): Result<String>
-    suspend fun removeImage(fileName: String): Result<Unit>
+    suspend fun getImage(imageId: String, size: ImageSize): Result<String>
+    suspend fun setImage(imgUriString: String): Result<Image>
+    suspend fun removeImage(imageId: String): Result<Unit>
 }

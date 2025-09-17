@@ -6,9 +6,10 @@ import com.wheretogo.data.BuildConfig
 import com.wheretogo.data.datasource.AddressRemoteDatasource
 import com.wheretogo.data.datasourceimpl.service.NaverFreeApiService
 import com.wheretogo.data.datasourceimpl.service.NaverMapApiService
-import com.wheretogo.domain.model.map.Address
-import com.wheretogo.domain.model.map.LatLng
-import com.wheretogo.domain.model.map.SimpleAddress
+import com.wheretogo.data.toDataError
+import com.wheretogo.domain.model.address.Address
+import com.wheretogo.domain.model.address.LatLng
+import com.wheretogo.domain.model.address.SimpleAddress
 import javax.inject.Inject
 
 class AddressRemoteDatasourceImpl @Inject constructor(
@@ -18,49 +19,46 @@ class AddressRemoteDatasourceImpl @Inject constructor(
 
     private fun convertLatLng(latlng: LatLng): String = "${latlng.longitude}, ${latlng.latitude}"
 
-    override suspend fun geocode(address: String): List<Address> {
-        val msg = naverApiService.geocode(
+    override suspend fun geocode(address: String): Result<List<Address>> {
+        val response = naverApiService.geocode(
             clientId = BuildConfig.NAVER_MAPS_APIGW_CLIENT_ID_KEY,
             clientSecret = BuildConfig.NAVER_MAPS_APIGW_CLIENT_SECRET_KEY,
             accept = "application/json",
             query = address,
             count = "1"
         )
-        if (msg.code() == 200) {
-            val addGroup = msg.body()?.addresses
-            return addGroup?.map {
-                Address(
-                    jibun = it.jibunAddress,
-                    road = it.roadAddress,
-                    eng = it.englishAddress,
-                    latLng = LatLng(it.y.toDouble(), it.x.toDouble())
-                )
-            } ?: emptyList()
+        if (!response.isSuccessful)
+            return Result.failure(response.toDataError())
 
-        } else {
-            return emptyList()
-        }
+        val addGroup = response.body()?.addresses?.map {
+            Address(
+                jibun = it.jibunAddress,
+                road = it.roadAddress,
+                eng = it.englishAddress,
+                latLng = LatLng(it.y.toDouble(), it.x.toDouble())
+            )
+        } ?: emptyList()
+        return Result.success(addGroup)
     }
 
-    override suspend fun reverseGeocode(latlng: LatLng): String {
-        val msg = naverApiService.reverseGeocode(
+    override suspend fun reverseGeocode(latlng: LatLng): Result<String> {
+        val response = naverApiService.reverseGeocode(
             clientId = BuildConfig.NAVER_MAPS_APIGW_CLIENT_ID_KEY,
             clientSecret = BuildConfig.NAVER_MAPS_APIGW_CLIENT_SECRET_KEY,
             coords = convertLatLng(latlng),
             output = "json"
         )
 
-        if (msg.code() == 200) {
-            val region = msg.body()?.results?.firstOrNull()?.region
-            val addr =
-                region?.run { "${area1.name} ${area2.name} ${area3.name} ${area4.name}" } ?: ""
-            return addr
-        } else {
-            return ""
-        }
+        if (!response.isSuccessful)
+            return Result.failure(response.toDataError())
+
+
+        val region = response.body()?.results?.firstOrNull()?.region
+        val addr = region?.run { "${area1.name} ${area2.name} ${area3.name} ${area4.name}" } ?: ""
+        return Result.success(addr)
     }
 
-    override suspend fun getSimpleAddressFromKeyword(keyword: String): List<SimpleAddress> {
+    override suspend fun getSimpleAddressFromKeyword(keyword: String): Result<List<SimpleAddress>> {
         val response = naverFreeApiService.getAddressFromKeyword(
             clientId = BuildConfig.NAVER_CLIENT_ID_KEY,
             clientSecret = BuildConfig.NAVER_CLIENT_SECRET_KEY,
@@ -70,14 +68,15 @@ class AddressRemoteDatasourceImpl @Inject constructor(
             sort = "random"
         )
 
-        return if (response.code() == 200) {
-            response.body()?.items?.map {
-                val latlng = convertMapXY(it.mapx, it.mapy)
-                SimpleAddress(removeHtmlTags(it.title), it.address, latlng)
-            } ?: emptyList()
-        } else {
-            emptyList()
-        }
+        if (!response.isSuccessful)
+            return Result.failure(response.toDataError())
+
+
+        val addrGroup = response.body()?.items?.map {
+            val latlng = convertMapXY(it.mapx, it.mapy)
+            SimpleAddress(removeHtmlTags(it.title), it.address, latlng)
+        } ?: emptyList()
+        return Result.success(addrGroup)
     }
 
     private fun removeHtmlTags(htmlText: String): String {
@@ -88,7 +87,7 @@ class AddressRemoteDatasourceImpl @Inject constructor(
         }
     }
 
-    private fun convertMapXY(x:String, y:String): LatLng {
-        return LatLng(y.toDouble()/10_000_000 , x.toDouble()/10_000_000)
+    private fun convertMapXY(x: String, y: String): LatLng {
+        return LatLng(y.toDouble() / 10_000_000, x.toDouble() / 10_000_000)
     }
 }

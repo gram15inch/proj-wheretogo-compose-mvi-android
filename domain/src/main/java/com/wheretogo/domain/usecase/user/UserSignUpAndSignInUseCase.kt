@@ -5,5 +5,4 @@ import com.wheretogo.domain.model.auth.AuthRequest
 
 interface UserSignUpAndSignInUseCase {
     suspend operator fun invoke(authRequest: AuthRequest): UseCaseResponse<String>
-    suspend fun signInPass()
 }

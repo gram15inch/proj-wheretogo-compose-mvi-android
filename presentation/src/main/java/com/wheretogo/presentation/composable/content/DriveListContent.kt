@@ -5,7 +5,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideInHorizontally
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,11 +16,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,7 +28,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.LineHeightStyle
@@ -41,9 +37,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wheretogo.domain.model.map.Course
-import com.wheretogo.domain.model.map.RouteCategory
-import com.wheretogo.presentation.R
+import com.wheretogo.domain.model.course.Course
+import com.wheretogo.domain.model.route.RouteCategory
 import com.wheretogo.presentation.state.ListState
 import com.wheretogo.presentation.theme.Gray250
 import com.wheretogo.presentation.theme.White100
@@ -74,7 +69,7 @@ fun DriveListPreview() {
 @Composable
 fun DriveListContent(
     modifier: Modifier,
-    state : ListState = ListState(),
+    state: ListState = ListState(),
     onItemClick: (ListState.ListItemState) -> Unit,
     onHeightChange: (Dp) -> Unit = {},
     onBookmarkClick: (ListState.ListItemState) -> Unit = {}
@@ -84,7 +79,7 @@ fun DriveListContent(
     val listState = rememberLazyListState()
     Box(modifier.onSizeChanged { size ->
         onHeightChange(with(density) { size.height.toDp() })
-    }){
+    }) {
         LazyColumn(
             modifier = modifier.heightIn(max = 280.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -129,7 +124,7 @@ fun DriveListItem(
                 .padding(8.dp)
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Row(modifier=Modifier.fillMaxWidth()) {
+                Row(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         modifier = Modifier.weight(1f),
                         text = listItem.course.courseName,
@@ -138,23 +133,6 @@ fun DriveListItem(
                         fontFamily = hancomSansFontFamily,
                         fontSize = 16.5.sp
                     )
-                    if(false) // todo 북마크 기능 추가
-                        Box(
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .clickable {
-                                    onBookmarkClick(listItem)
-                                }
-                        ) {
-                            Image(
-                                modifier = Modifier
-                                    .size(26.dp)
-                                    .padding(5.dp),
-                                painter = painterResource(if (listItem.isBookmark) R.drawable.ic_bookmark else R.drawable.ic_bookmark),
-                                contentDescription = "",
-                            )
-                        }
-
                 }
                 Row(
                     modifier = Modifier.fillMaxWidth()
@@ -167,7 +145,7 @@ fun DriveListItem(
                         type = "태그"
                     )
 
-                    if(false) // todo 평점 추가
+                    if (false) // todo 평점 추가
                         DriveItemAttribute(
                             modifier = Modifier.weight(1f),
                             content = listItem.course.like.toString(),

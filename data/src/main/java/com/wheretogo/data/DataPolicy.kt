@@ -5,10 +5,10 @@ import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.wheretogo.data.feature.safeErrorBody
 import com.wheretogo.domain.DomainError
+import okio.IOException
 import retrofit2.Response
 import java.util.concurrent.TimeUnit
 
-const val NAVER_OPEN_API_APIGW_URL = "https://naveropenapi.apigw.ntruss.com"
 const val NAVER_MAPS_NTRUSS_APIGW_URL = "https://maps.apigw.ntruss.com/"
 const val NAVER_OPEN_API_URL = "https://openapi.naver.com/"
 const val FIREBASE_CLOUD_API_URL = "https://asia-northeast3-where-to-go-35813.cloudfunctions.net/"
@@ -21,7 +21,7 @@ val CheckpointPolicy = DefaultPolicy(60, 15)
 val CommentPolicy = DefaultPolicy(20, 5)
 val CoursePolicy = DefaultPolicy(60, 15)
 
-sealed class DataError: Exception(){
+sealed class DataError: IOException(){
     data class NetworkError(val msg:String = ""): DataError()
     data class UserInvalid(val msg:String = ""): DataError()
     data class Unauthorized(val msg:String = ""): DataError()
@@ -37,7 +37,6 @@ sealed class DataError: Exception(){
 
 fun Response<*>.toDataError(): DataError {
     val body = safeErrorBody()
-
     val msg = body?.message?:"알 수 없는 오류"
     return when(code()){
         400 -> DataError.ArgumentInvalid(msg)
@@ -51,7 +50,7 @@ fun Response<*>.toDataError(): DataError {
 }
 
 
-fun Throwable?.toDataError():DataError{
+fun Throwable?.toDataError(): DataError{
     return when(this){
         is DataError -> this
         is FirebaseNetworkException -> DataError.NetworkError()
@@ -61,12 +60,13 @@ fun Throwable?.toDataError():DataError{
     }
 }
 
-fun DataError.toDomainError():DomainError{
+fun DataError.toDomainError(): DomainError{
     return when(this){
-        is DataError.NetworkError->{ DomainError.NetworkError() }
+        is DataError.NotFound->{ DomainError.NotFound(this.msg) }
+        is DataError.NetworkError->{ DomainError.NetworkError(this.msg) }
         is DataError.ServerError->{ DomainError.NetworkError("Server Error") }
-        is DataError.UserInvalid->{ DomainError.UserInvalid() }
-        is DataError.Unauthorized->{ DomainError.UserInvalid() }
+        is DataError.UserInvalid->{ DomainError.UserInvalid(this.msg) }
+        is DataError.Unauthorized->{ DomainError.UserInvalid(this.msg) }
         else -> {
             FirebaseCrashlytics.getInstance().recordException(this)
             DomainError.UnexpectedException(this)
@@ -75,9 +75,9 @@ fun DataError.toDomainError():DomainError{
 
 }
 
-fun<T> Result<T>.toDomainResult():Result<T>{
+fun<T> Result<T>.toDomainResult(): Result<T>{
     return fold(
-        onSuccess = { Result.success(it)},
+        onSuccess = { Result.success(it) },
         onFailure = {
             Result.failure((it as DataError).toDomainError())
         }
@@ -114,11 +114,9 @@ enum class FireStoreCollections {
     CHECKPOINT,
     ROUTE,
     LIKE,
-    META,
 
     COMMENT,
     REPORT,
-    REPORT_CONTENT,
 
     PRIVATE,
 }
@@ -135,8 +133,4 @@ fun firebaseApiUrlByBuild(): String{
         "RELEASE" -> FIREBASE_CLOUD_API_URL
         else -> FIREBASE_CLOUD_STAGING_API_URL
     }
-}
-
-enum class LikeObject {
-    COURSE_LIKE
 }

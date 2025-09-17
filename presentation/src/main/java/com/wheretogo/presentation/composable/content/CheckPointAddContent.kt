@@ -23,15 +23,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
-import com.wheretogo.domain.model.community.ImageInfo
+import com.wheretogo.domain.model.util.ImageInfo
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.formatFileSizeToMB
+import com.wheretogo.presentation.feature.getFileInfoFromUri
 import com.wheretogo.presentation.state.BottomSheetState
 import com.wheretogo.presentation.state.CheckPointAddState
 import com.wheretogo.presentation.state.InfoState
@@ -46,9 +48,10 @@ import com.wheretogo.presentation.theme.interFontFamily
 @Composable
 fun CheckPointAddContent(
     state: CheckPointAddState,
+    focusRequester: FocusRequester,
     onSubmitClick: () -> Unit,
     onSliderChange: (Float) -> Unit,
-    onImageChange: (Uri?) -> Unit
+    onImageChange: (ImageInfo) -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     Column(
@@ -67,10 +70,21 @@ fun CheckPointAddContent(
             percentage = state.sliderPercent,
             onSliderChange = onSliderChange
         )
+        val contentResolver = LocalContext.current.contentResolver
         val launcher = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.GetContent()
         ) { uri: Uri? ->
-            onImageChange(uri)
+            if (uri != null && uri.path != null) {
+                getFileInfoFromUri(contentResolver, uri)
+                    .onSuccess { fileInfo ->
+                        val imageInfo = ImageInfo(
+                            uriString = uri.toString(),
+                            fileName = fileInfo.first ?: "",
+                            byte = fileInfo.second ?: 0
+                        )
+                        onImageChange(imageInfo)
+                    }
+            }
         }
 
         Text(
@@ -123,7 +137,7 @@ fun CheckPointAddContent(
                     .fillMaxSize()
                     .padding(12.dp)
                     .clickable {
-                        state.focusRequester.requestFocus()
+                        focusRequester.requestFocus()
                         keyboardController?.show()
                     },
                 text = state.description,
@@ -191,29 +205,27 @@ fun LocationSlider(
 @Composable
 fun CheckpointAddBottomSheetPreview() {
     val state = BottomSheetState(
-        isVisible = true,
         infoState = InfoState(isRemoveButton = true),
         checkPointAddState = CheckPointAddState(
             isLoading = false, description = "안녕하세요",
-            imgInfo = ImageInfo("".toUri(), "새로운 사진.jpg", 30L)
+            imgInfo = ImageInfo("", "새로운 사진.jpg", 30L)
         )
     )
     WhereTogoTheme {
         Box(modifier = Modifier.width(400.dp)) {
             BottomSheet(
                 modifier = Modifier.height(400.dp),
-                state= BottomSheetState(
-                    isVisible = true,
-                    minHeight = 400
-                ),
+                isVisible = true,
+                minHeight = 400.dp,
                 bottomSpace = 0.dp,
                 onSheetStateChange = {},
-                onSheetHeightChange = {}
+                onSheetHeightChange = {},
+                isSpaceVisibleWhenClose = true
             ) {
-                if (state.isVisible) {
+                if (true) {
                     CheckPointAddContent(
                         state = state.checkPointAddState,
-                        {}, {}, {}
+                        FocusRequester(), {}, {}, {}
                     )
                 } else {
                     InfoContent(

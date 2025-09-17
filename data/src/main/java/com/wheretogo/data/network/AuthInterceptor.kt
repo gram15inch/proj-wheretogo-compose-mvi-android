@@ -1,7 +1,7 @@
 package com.wheretogo.data.network;
 
+import com.wheretogo.data.DataError
 import com.wheretogo.data.datasource.AuthRemoteDatasource
-import com.wheretogo.data.datasource.UserLocalDatasource
 import jakarta.inject.Inject
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
@@ -10,8 +10,7 @@ import okhttp3.Response
 
 
 class AuthInterceptor @Inject constructor(
-    private val auth: AuthRemoteDatasource,
-    private val user: UserLocalDatasource
+    private val auth: AuthRemoteDatasource
 ) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val authResponse = chain.proceed(chain.request().authRequest())
@@ -22,7 +21,7 @@ class AuthInterceptor @Inject constructor(
         // 만료시 재시도
         val refreshed = runBlocking { refreshToken() }
         if (!refreshed) {
-            runBlocking { logout() }
+            throw DataError.UserInvalid("refresh token expire")
         }
 
         return chain.proceed(chain.request().authRequest())
@@ -41,10 +40,5 @@ class AuthInterceptor @Inject constructor(
 
     private suspend fun refreshToken(): Boolean {
         return auth.getApiToken(true).isSuccess
-    }
-
-    private suspend fun logout() {
-        user.clearUser()
-        user.setRequestLogin(true)
     }
 }

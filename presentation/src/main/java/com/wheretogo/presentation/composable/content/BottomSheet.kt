@@ -21,7 +21,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,17 +29,18 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.wheretogo.presentation.SheetState
-import com.wheretogo.presentation.state.BottomSheetState
+import com.wheretogo.presentation.SheetVisibleMode
 import com.wheretogo.presentation.theme.Gray6080
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomSheet(
     modifier: Modifier = Modifier,
-    state: BottomSheetState = BottomSheetState(),
+    isVisible: Boolean = false,
+    minHeight: Dp,
+    isSpaceVisibleWhenClose: Boolean,
     bottomSpace: Dp = 0.dp,
-    onSheetStateChange: (SheetState) -> Unit,
+    onSheetStateChange: (SheetVisibleMode) -> Unit,
     onSheetHeightChange: (Dp) -> Unit,
     content: @Composable () -> Unit,
 ) {
@@ -49,8 +49,8 @@ fun BottomSheet(
     val scaffoldState = rememberBottomSheetScaffoldState()
     val sheetState = scaffoldState.bottomSheetState
 
-    LaunchedEffect(state.isVisible) {
-        if (state.isVisible) {
+    LaunchedEffect(isVisible) {
+        if (isVisible) {
             scaffoldState.bottomSheetState.expand()
         } else {
             if (scaffoldState.bottomSheetState.targetValue == SheetValue.Expanded)
@@ -59,39 +59,35 @@ fun BottomSheet(
     }
 
     LaunchedEffect(sheetState.targetValue) {
-        snapshotFlow { sheetState.targetValue }.collect { value ->
-            when (value) {
-                SheetValue.Expanded -> {
-                    onSheetStateChange(SheetState.Expand)
-                }
-
-                SheetValue.PartiallyExpanded -> {
-                    onSheetStateChange(SheetState.PartiallyExpand)
-                }
-
-                else -> {}
+        when (sheetState.targetValue) {
+            SheetValue.Expanded -> {
+                onSheetStateChange(SheetVisibleMode.Expand)
             }
+
+            SheetValue.PartiallyExpanded -> {
+                onSheetStateChange(SheetVisibleMode.PartiallyExpand)
+            }
+
+            else -> {}
         }
     }
 
     LaunchedEffect(sheetState.currentValue) {
-        snapshotFlow { sheetState.currentValue }.collect { value ->
-            when (value) {
-                SheetValue.Expanded -> {
-                    onSheetStateChange(SheetState.Expanded)
-                }
-
-                SheetValue.PartiallyExpanded -> {
-                    onSheetStateChange(SheetState.PartiallyExpanded)
-                }
-
-                else -> {}
+        when (sheetState.currentValue) {
+            SheetValue.Expanded -> {
+                onSheetStateChange(SheetVisibleMode.Expanded)
             }
+
+            SheetValue.PartiallyExpanded -> {
+                onSheetStateChange(SheetVisibleMode.PartiallyExpanded)
+            }
+
+            else -> {}
         }
     }
 
     val initHeightWithSpace =
-        state.minHeight.dp + if(state.isSpaceVisibleWhenClose) bottomSpace else 0.dp
+        minHeight + if (isSpaceVisibleWhenClose) bottomSpace else 0.dp
 
     Box(
         modifier = modifier
@@ -105,11 +101,10 @@ fun BottomSheet(
                         .onGloballyPositioned { coordinates ->
                             val heightPx = coordinates.size.height
                             val dp =
-                                if (state.isVisible)
+                                if (isVisible)
                                     with(density) { heightPx.toDp() + 20.dp }
                                 else
-                                    initHeightWithSpace.run { if(this<0.dp) 0.dp else this }
-
+                                    initHeightWithSpace.run { if (this < 0.dp) 0.dp else this }
                             if (dp != latestDp) {
                                 onSheetHeightChange(dp)
                                 latestDp = dp

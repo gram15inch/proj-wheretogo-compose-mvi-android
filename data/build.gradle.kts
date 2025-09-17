@@ -48,7 +48,7 @@ android {
             buildConfigField( "String", "FIREBASE", test)
         }
         create("qa") {
-            buildConfigField( "String", "FIREBASE", test)
+            buildConfigField( "String", "FIREBASE", release)
         }
         release {
             buildConfigField( "String", "FIREBASE", release)

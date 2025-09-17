@@ -1,38 +1,31 @@
 package com.wheretogo.presentation.feature.map
 
-import com.wheretogo.domain.model.map.CheckPoint
-import com.wheretogo.domain.model.map.Course
-import com.wheretogo.domain.model.map.RouteCategory
-import com.wheretogo.presentation.CHECKPOINT_ADD_MARKER
+import com.wheretogo.domain.model.checkpoint.CheckPoint
+import com.wheretogo.domain.model.course.Course
 import com.wheretogo.presentation.MarkerType
 import com.wheretogo.presentation.OverlayType
 import com.wheretogo.presentation.PathType
-import com.wheretogo.presentation.R
-import com.wheretogo.presentation.SEARCH_MARKER
 import com.wheretogo.presentation.feature.naver.NaverMapOverlayStore
 import com.wheretogo.presentation.minZoomLevel
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.MarkerInfo
 import com.wheretogo.presentation.model.PathInfo
-import com.wheretogo.presentation.toIcRes
-import com.wheretogo.presentation.toNaver
+import com.wheretogo.presentation.toMarkerContainer
+import com.wheretogo.presentation.toMarkerInfo
 import javax.inject.Inject
 
 class DriveMapOverlayService @Inject constructor(private val overlayStore: NaverMapOverlayStore) :
     MapOverlayService() {
 
+    fun getOverlays(): Collection<MapOverlay> = _overlays.values
+
     fun addCourse(courseGroup: List<Course>) {
         courseGroup.forEach { course ->
             // 마커 추가
             if (_overlays[course.toSpotKey()] == null) {
-                val markerContainer = MapOverlay.MarkerContainer(
-                    course.courseId, MarkerType.SPOT,
+                val markerContainer = course.toMarkerContainer(
                     overlayStore.getOrCreateMarker(
-                        markerInfo = MarkerInfo(
-                            contentId = course.courseId,
-                            position = course.waypoints.first(),
-                            iconRes = RouteCategory.fromCode(course.type)?.item.toIcRes()
-                        )
+                        course.toMarkerInfo()
                     )
                 )
                 _overlays[course.toSpotKey()] = markerContainer
@@ -41,7 +34,7 @@ class DriveMapOverlayService @Inject constructor(private val overlayStore: Naver
 
             // 경로 추가
             if (_overlays[course.toPathKey()] == null) {
-                overlayStore.getOrCreatePath(
+                overlayStore.createAppPath(
                     pathInfo = PathInfo(
                         contentId = course.courseId,
                         points = course.points,
@@ -61,21 +54,9 @@ class DriveMapOverlayService @Inject constructor(private val overlayStore: Naver
         _overlays.apply {
             checkPointGroup.forEach {
                 if (isForceRefresh || _overlays[it.toKey()] == null) {
-                    val icon = when (it.checkPointId) {
-                        CHECKPOINT_ADD_MARKER -> R.drawable.ic_mk_cm
-                        SEARCH_MARKER -> R.drawable.ic_mk_df
-                        else -> null
-                    }
-                    val marker = MapOverlay.MarkerContainer(
-                        it.checkPointId, MarkerType.CHECKPOINT,
+                    val marker = it.toMarkerContainer(
                         overlayStore.getOrCreateMarker(
-                            markerInfo = MarkerInfo(
-                                contentId = it.checkPointId,
-                                position = it.latLng,
-                                caption = it.caption,
-                                iconPath = it.imageLocalPath.ifEmpty { null },
-                                iconRes = icon
-                            )
+                            it.toMarkerInfo()
                         )
                     )
                     _overlays[it.toKey()] = marker
@@ -86,10 +67,15 @@ class DriveMapOverlayService @Inject constructor(private val overlayStore: Naver
 
     fun updateMarker(markerInfo: MarkerInfo) {
         if (markerInfo.type == MarkerType.CHECKPOINT) {
-            _overlays[OverlayType.CHECKPOINT.toKey(markerInfo.contentId)].apply {
+            val key = OverlayType.CHECKPOINT.toKey(markerInfo.contentId)
+            _overlays[key].apply {
                 if (this is MapOverlay.MarkerContainer) {
-                    markerInfo.caption?.let { marker.captionText = it }
-                    markerInfo.position?.let { marker.position = it.toNaver() }
+                    val appMarker = this.marker
+                    if (markerInfo.caption != null && markerInfo.caption != appMarker.markerInfo.caption)
+                        overlayStore.updateMarkerCaption(markerInfo.contentId, markerInfo.caption)
+
+                    if (markerInfo.position != null && markerInfo.position != appMarker.markerInfo.position)
+                        overlayStore.updateMarkerPosition(markerInfo.contentId, markerInfo.position)
                 }
             }
         }
@@ -100,23 +86,32 @@ class DriveMapOverlayService @Inject constructor(private val overlayStore: Naver
         _overlays.forEach {
             when (val overlay = it.value) {
                 is MapOverlay.MarkerContainer -> {
-                    overlay.marker.isVisible = overlay.id == course.courseId
+                    overlayStore.updateMarkerVisible(
+                        overlay.contentId,
+                        overlay.contentId == course.courseId
+                    )
                 }
 
                 is MapOverlay.PathContainer -> {
-                    overlay.path.isVisible = overlay.id == course.courseId
+                    overlayStore.updatePathVisible(
+                        overlay.contentId,
+                        overlay.contentId == course.courseId
+                    )
                 }
             }
         }
     }
 
     fun showAll() {
-        overlays.forEach {
+        _overlays.values.forEach {
             when (val overlay = it) {
                 is MapOverlay.MarkerContainer -> {
                     when (overlay.type) {
                         MarkerType.SPOT -> {
-                            overlay.marker.isVisible = true
+                            overlayStore.updateMarkerVisible(
+                                overlay.contentId,
+                                true
+                            )
                         }
 
                         MarkerType.CHECKPOINT -> {}
@@ -125,7 +120,10 @@ class DriveMapOverlayService @Inject constructor(private val overlayStore: Naver
                 }
 
                 is MapOverlay.PathContainer -> {
-                    overlay.path.isVisible = true
+                    overlayStore.updatePathVisible(
+                        overlay.contentId,
+                        true
+                    )
                 }
             }
         }
@@ -146,15 +144,20 @@ class DriveMapOverlayService @Inject constructor(private val overlayStore: Naver
         }
     }
 
-    fun clearCheckPoint(){
-        val checkPointIdGroup  = _overlays.mapNotNull {
+    fun clearCheckPoint() {
+        val checkPointIdGroup = _overlays.mapNotNull {
             val mapOverlay = it.value
-            if(mapOverlay is MapOverlay.MarkerContainer){
-                if(mapOverlay.type == MarkerType.CHECKPOINT)
-                   return@mapNotNull it.value.id
+            if (mapOverlay is MapOverlay.MarkerContainer) {
+                if (mapOverlay.type == MarkerType.CHECKPOINT)
+                    return@mapNotNull it.value.contentId
             }
             null
         }
         removeCheckPoint(checkPointIdGroup)
+    }
+
+    fun clear(){
+        overlayStore.clear()
+        _overlays.clear()
     }
 }

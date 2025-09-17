@@ -2,17 +2,15 @@ package com.wheretogo.data.datasource
 
 
 import com.wheretogo.data.model.comment.RemoteComment
-import com.wheretogo.data.model.comment.RemoteCommentGroupWrapper
+import com.wheretogo.data.model.content.ContentLike
 
 interface CommentRemoteDatasource {
 
-    suspend fun getCommentGroupInCheckPoint(groupId: String): RemoteCommentGroupWrapper?
+    suspend fun getCommentByGroupId(groupId: String): Result<List<RemoteComment>>
 
-    suspend fun setCommentGroupInCheckPoint(wrapper: RemoteCommentGroupWrapper): Boolean
+    suspend fun addComment(comment: RemoteComment): Result<Unit>
 
-    suspend fun setCommentInCheckPoint(comment: RemoteComment, isInit: Boolean): Boolean
+    suspend fun removeComment(groupId: String, contentId: String): Result<Unit>
 
-    suspend fun updateCommentInCheckPoint(comment: RemoteComment): Boolean
-
-    suspend fun removeCommentGroupInCheckPoint(commentGroupId:String):Boolean
+    suspend fun changeCommentLike(request: ContentLike): Result<Unit>
 }

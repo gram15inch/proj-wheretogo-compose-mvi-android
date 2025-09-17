@@ -24,10 +24,13 @@ import java.util.LinkedList
 import javax.inject.Inject
 
 @Suppress("MissingPermission")
-class NativeAdServiceImpl @Inject constructor (val context: Context, val adId: String):AdService {
+class NativeAdServiceImpl @Inject constructor(
+    val context: Context,
+    val adId: String,
+    val refreshAdNumbers: Int
+) : AdService {
     private val _mutexAdCache = Mutex()
     private val _nativeAdCache: Deque<NativeAd> = LinkedList()
-    private val refreshAdNumbers = 3
 
     private var serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var _error: Throwable? = null
@@ -37,8 +40,8 @@ class NativeAdServiceImpl @Inject constructor (val context: Context, val adId: S
     private val _adLifeCycle = MutableSharedFlow<AdLifecycle>()
     override val adLifeCycle: Flow<AdLifecycle> get() = _adLifeCycle
 
-    override suspend fun getAd():Result<List<NativeAd>>{
-        val isLoadSuccess= serviceScope.async {
+    override suspend fun getAd(): Result<List<NativeAd>> {
+        val isLoadSuccess = serviceScope.async {
             when {
                 _refreshTime != 0L -> {
                     return@async _nativeAdCache.waitUntilNotEmpty()
@@ -53,7 +56,8 @@ class NativeAdServiceImpl @Inject constructor (val context: Context, val adId: S
                     refreshAd()
                     return@async Result.success(true)
                 }
-                else->{
+
+                else -> {
                     return@async Result.success(true)
                 }
             }
@@ -65,13 +69,13 @@ class NativeAdServiceImpl @Inject constructor (val context: Context, val adId: S
             return@getAd Result.failure(it)
         }
 
-        val adGroup= _nativeAdCache.pollByMutex()
-       return Result.success(adGroup)
+        val adGroup = _nativeAdCache.pollByMutex()
+        return Result.success(adGroup)
     }
 
-    override fun refreshAd(){
+    override fun refreshAd() {
         serviceScope.launch(Dispatchers.IO) {
-            if(_refreshTime == 0L) {
+            if (_refreshTime == 0L) {
                 _refreshTime = System.currentTimeMillis()
                 val requestRefreshTime = _refreshTime
                 val callbackCoroutine = CoroutineScope(coroutineContext + SupervisorJob())
@@ -86,7 +90,7 @@ class NativeAdServiceImpl @Inject constructor (val context: Context, val adId: S
                     onFail = {
                         callbackCoroutine.launch {
                             _errorCount++
-                            if(_errorCount>=refreshAdNumbers)
+                            if (_errorCount >= refreshAdNumbers)
                                 _error = AppError.AdLoadError(it.message)
                             _refreshTime = 0L
                         }
@@ -94,9 +98,9 @@ class NativeAdServiceImpl @Inject constructor (val context: Context, val adId: S
                 )
 
                 launch {
-                    repeat(15){
+                    repeat(15) {
                         delay(1000)
-                        if(_refreshTime==0L)
+                        if (_refreshTime == 0L)
                             return@launch
                     }
                     if (_refreshTime == requestRefreshTime) {
@@ -125,10 +129,10 @@ class NativeAdServiceImpl @Inject constructor (val context: Context, val adId: S
         }).build().loadAds(AdRequest.Builder().build(), refreshAdNumbers)
     }
 
-    private suspend fun Deque<NativeAd>.pollByMutex():List<NativeAd>{
+    private suspend fun Deque<NativeAd>.pollByMutex(): List<NativeAd> {
         return _mutexAdCache.withLock {
-            val adGroup= poll().run {
-                if(this==null)
+            val adGroup = poll().run {
+                if (this == null)
                     emptyList()
                 else
                     listOf(this)
@@ -137,14 +141,14 @@ class NativeAdServiceImpl @Inject constructor (val context: Context, val adId: S
         }
     }
 
-    private suspend fun Deque<NativeAd>.waitUntilNotEmpty():Result<Unit>{
+    private suspend fun Deque<NativeAd>.waitUntilNotEmpty(): Result<Unit> {
         repeat(20) {
             delay(500)
-            when{
+            when {
                 isNotEmpty() -> return Result.success(Unit)
-                _error!=null -> {
+                _error != null -> {
                     val errorCopy = _error!!
-                    _error=null
+                    _error = null
                     return Result.failure(errorCopy)
                 }
             }
