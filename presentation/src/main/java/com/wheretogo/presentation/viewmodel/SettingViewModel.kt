@@ -120,11 +120,18 @@ class SettingViewModel @Inject constructor(
             _settingScreenState.update {
                 it.copy(
                     isLoading = true,
-                    isDialog = true
+                    isDialog = true,
                 )
             }
             withContext(Dispatchers.IO) { deleteUserUseCase() }.onFailure {
                 handleError(it)
+            }.onSuccess {
+                _settingScreenState.update {
+                    it.copy(
+                        isProfile = false,
+                        profile = Profile()
+                    )
+                }
             }
         }
         _settingScreenState.update {
