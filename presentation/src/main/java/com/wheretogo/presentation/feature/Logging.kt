@@ -1,6 +1,5 @@
 package com.wheretogo.presentation.feature
 
-import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class LoggingStateFlow<T>(private val flow: MutableStateFlow<T>, val log :(StackTraceElement?, T)->Unit) : MutableStateFlow<T> by flow {
@@ -22,9 +21,3 @@ fun <T> MutableStateFlow<T>.withLogging(log:(StackTraceElement?, T)->Unit): Muta
 }
 
 fun StackTraceElement.shortPath():String = "${fileName}:${lineNumber}.${methodName}"
-
-fun logCurrentTrace() {
-    Thread.currentThread().stackTrace.apply {
-        Log.d("tst_","${this.contentToString()}")
-    }
-}

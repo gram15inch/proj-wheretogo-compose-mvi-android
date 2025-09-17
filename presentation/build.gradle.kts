@@ -124,6 +124,7 @@ dependencies {
     implementation(Libraries.LOTTIE_COMPOSE)
     implementation(Libraries.LANDSCAPIST_GLIDE)
     implementation(Libraries.SHIMMER_COMPOSE)
+    implementation(Libraries.JAKEWHARTON_TIMBER)
 }
 
 fun getLocalProperties(key: String): String{

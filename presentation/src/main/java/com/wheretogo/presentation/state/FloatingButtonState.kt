@@ -1,13 +1,31 @@
 package com.wheretogo.presentation.state
 
+import com.wheretogo.presentation.DriveFloatingVisibleMode
 import com.wheretogo.presentation.model.AdItem
+import java.util.EnumSet
 
 data class FloatingButtonState(
     val adItemGroup: List<AdItem> = emptyList(),
-    val isCommentVisible: Boolean = false,
-    val isCheckpointAddVisible: Boolean = false,
-    val isInfoVisible: Boolean = false,
-    val isExportVisible: Boolean = false,
-    val isBackPlateVisible: Boolean = false,
-    val isFoldVisible: Boolean = false
-)
+    val stateMode: DriveFloatingVisibleMode = DriveFloatingVisibleMode.Default
+) {
+    companion object {
+        val commentVisible: EnumSet<DriveFloatingVisibleMode> =
+            EnumSet.of(DriveFloatingVisibleMode.Popup)
+        val checkpointAddVisible: EnumSet<DriveFloatingVisibleMode> =
+            EnumSet.of(DriveFloatingVisibleMode.Default)
+        val infoVisible: EnumSet<DriveFloatingVisibleMode> =
+            EnumSet.of(DriveFloatingVisibleMode.Default, DriveFloatingVisibleMode.Popup)
+        val exportVisible: EnumSet<DriveFloatingVisibleMode> = EnumSet.of(
+            DriveFloatingVisibleMode.Default,
+            DriveFloatingVisibleMode.Popup,
+            DriveFloatingVisibleMode.ExportExpand
+        )
+        val backPlateVisible: EnumSet<DriveFloatingVisibleMode> =
+            EnumSet.of(DriveFloatingVisibleMode.ExportExpand)
+        val foldVisible: EnumSet<DriveFloatingVisibleMode> = EnumSet.of(
+            DriveFloatingVisibleMode.Default,
+            DriveFloatingVisibleMode.Popup,
+            DriveFloatingVisibleMode.ExportExpand
+        )
+    }
+}

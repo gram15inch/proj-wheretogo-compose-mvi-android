@@ -37,7 +37,7 @@ suspend fun requestPermission(context: Context, permission: AppPermission): Bool
 
     if (isDenied) {
         val isRejected = withContext(Dispatchers.IO) {
-            !EventBus.send(AppEvent.Permission(permission))
+            !EventBus.sendWithResult(AppEvent.Permission(permission))
         }
 
         if (isRejected) {

@@ -13,13 +13,15 @@ class MockAuthRemoteDatasourceImpl @Inject constructor(
 ) : AuthRemoteDatasource {
     override suspend fun authGoogleWithFirebase(authToken: AuthToken): Result<AuthProfile> {
         return if (mockRemoteUser.token.isNotBlank()) {
-            Result.success(AuthProfile(
-                uid = mockRemoteUser.profile.uid,
-                email = mockRemoteUser.profile.private.mail,
-                userName = mockRemoteUser.profile.name,
-                authCompany = AuthCompany.GOOGLE,
-                token = ""
-            ))
+            Result.success(
+                AuthProfile(
+                    uid = mockRemoteUser.profile.uid,
+                    email = mockRemoteUser.profile.private.mail,
+                    userName = mockRemoteUser.profile.name,
+                    authCompany = AuthCompany.GOOGLE,
+                    token = ""
+                )
+            )
 
 
         } else {
@@ -31,8 +33,8 @@ class MockAuthRemoteDatasourceImpl @Inject constructor(
 
     }
 
-    override suspend fun deleteUser(): Boolean {
-        return true
+    override suspend fun deleteUser(): Result<Boolean> {
+        return Result.success(true)
     }
 
     override suspend fun getApiToken(isForceRefresh: Boolean): Result<String?> {

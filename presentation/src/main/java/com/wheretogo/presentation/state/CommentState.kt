@@ -1,36 +1,37 @@
 package com.wheretogo.presentation.state
 
-import androidx.compose.ui.text.input.TextFieldValue
-import com.wheretogo.domain.model.map.Comment
+import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.presentation.CommentType
+import com.wheretogo.presentation.defaultCommentEmogiGroup
 
 data class CommentState(
-    val isCommentVisible: Boolean = false,
-    val isCommentSettingVisible: Boolean = false,
-    val isLoading :Boolean = false,
-    val selectedCommentSettingItem: CommentItemState = CommentItemState(),
+    val isVisible: Boolean = false,
+    val isLoading: Boolean = false,
     val commentItemGroup: List<CommentItemState> = emptyList(),
+    val commentSettingState: CommentSettingState = CommentSettingState(),
     val commentAddState: CommentAddState = CommentAddState()
 ) {
     data class CommentItemState(
         val data: Comment = Comment(),
-        val isLike: Boolean = false,
-        val isFold: Boolean = true,
-        val isUserCreated: Boolean = false,
-        val isFocus: Boolean = false
+        val isFold: Boolean = false,
+        val isLoading: Boolean = false
     )
 
     data class CommentAddState(
-        //코멘트 ID 유즈케이스에서 생성
-        val groupId: String = "",
-        val largeEmoji: String = "",
-        val emogiGroup: List<String> = emptyList(),
+        val largeEmoji: String = defaultCommentEmogiGroup().firstOrNull() ?: "",
+        val emogiGroup: List<String> = defaultCommentEmogiGroup(),
         val oneLineReview: String = "",
         val detailReview: String = "",
         val oneLinePreview: String = "",
         val isLargeEmogi: Boolean = true,
         val isEmogiGroup: Boolean = true,
-        val commentType: CommentType = CommentType.ONE,
-        val editText: TextFieldValue = TextFieldValue()
+        val isLoading: Boolean = false,
+        val commentType: CommentType = CommentType.ONE
+    )
+
+    data class CommentSettingState(
+        val isLoading: Boolean = false,
+        val isVisible: Boolean = false,
+        val comment: Comment = Comment(),
     )
 }

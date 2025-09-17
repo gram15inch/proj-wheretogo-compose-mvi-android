@@ -8,17 +8,17 @@ class MockImageRemoteDatasourceImpl @Inject constructor() : ImageRemoteDatasourc
 
     override suspend fun uploadImage(
         imageByteArray: ByteArray,
-        imageName: String,
+        imageId: String,
         size: ImageSize
-    ) {
-
+    ): Result<Unit> {
+        return runCatching { }
     }
 
-    override suspend fun downloadImage(filename: String, size: ImageSize): ByteArray {
-        return byteArrayOf()
+    override suspend fun downloadImage(filename: String, size: ImageSize): Result<ByteArray> {
+        return runCatching { byteArrayOf() }
     }
 
-    override suspend fun removeImage(filename: String, size: ImageSize) {
-
+    override suspend fun removeImage(filename: String, size: ImageSize): Result<Unit> {
+        return runCatching { }
     }
 }

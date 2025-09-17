@@ -35,8 +35,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun DelayLottieAnimation(modifier: Modifier, ltRes: Int, isVisible: Boolean, delay: Long=0) {
-    var shouldShowAnimation by remember { mutableStateOf(true) }
+fun DelayLottieAnimation(modifier: Modifier, ltRes: Int, isVisible: Boolean, delay: Long = 0) {
+    var shouldShowAnimation by remember { mutableStateOf(false) }
     var animation by remember { mutableStateOf<Job?>(null) }
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(ltRes))
     val progress by animateLottieCompositionAsState(
@@ -103,13 +103,14 @@ fun RowAdPlaceholder(modifier: Modifier = Modifier) {
 
 @Composable
 fun CardAdPlaceholder() {
-    Column(modifier = Modifier
-        .clip(RoundedCornerShape(8.dp))
-        .background(White50)
-        .shimmer()
-        .widthIn(max = 500.dp)
-        .height(330.dp)
-        .padding(16.dp),
+    Column(
+        modifier = Modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(White50)
+            .shimmer()
+            .widthIn(max = 500.dp)
+            .height(330.dp)
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Box(
@@ -139,15 +140,15 @@ fun CardAdPlaceholder() {
 
 @Preview(widthDp = 400, heightDp = 600)
 @Composable
-fun CardAdPlaceHolderPreview(){
-    Box(modifier = Modifier.padding(12.dp)){
+fun CardAdPlaceHolderPreview() {
+    Box(modifier = Modifier.padding(12.dp)) {
         CardAdPlaceholder()
     }
 }
 
 @Preview(widthDp = 600, heightDp = 350)
 @Composable
-fun RowAdPlaceHolderPreview(){
+fun RowAdPlaceHolderPreview() {
     Box(modifier = Modifier.padding(12.dp)) {
         RowAdPlaceholder()
     }

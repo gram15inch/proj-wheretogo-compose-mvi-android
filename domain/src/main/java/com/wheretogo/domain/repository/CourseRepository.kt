@@ -1,7 +1,8 @@
 package com.wheretogo.domain.repository
 
-import com.wheretogo.domain.model.map.Course
-import com.wheretogo.domain.model.map.Snapshot
+import com.wheretogo.domain.model.course.Course
+import com.wheretogo.domain.model.course.CourseAddRequest
+import com.wheretogo.domain.model.util.Snapshot
 
 interface CourseRepository {
     suspend fun getCourse(courseId: String): Result<Course>
@@ -10,18 +11,17 @@ interface CourseRepository {
 
     suspend fun getCourseGroupByKeyword(keyword: String): Result<List<Course>>
 
-    suspend fun setCourse(
-        course: Course,
-        keyword: List<String> = emptyList()
-    ): Result<Unit>
+    suspend fun addCourse(request: CourseAddRequest): Result<Course>
 
     suspend fun removeCourse(courseId: String): Result<Unit>
 
-    suspend fun getSnapshot(courseId: String): Snapshot
+    suspend fun getSnapshot(courseId: String): Result<Snapshot>
 
     suspend fun updateSnapshot(snapshot: Snapshot): Result<Unit>
 
-    suspend fun appendIndex(snapshot: Snapshot): Result<Unit>
+    suspend fun appendIndexBySnapshot(refId: String, index: String): Result<Unit>
 
-    suspend fun removeIndex(snapshot: Snapshot): Result<Unit>
+    suspend fun removeIndexBySnapshot(refId: String, index: String): Result<Unit>
+
+    suspend fun clearCache(): Result<Unit>
 }

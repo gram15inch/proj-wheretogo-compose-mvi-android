@@ -125,15 +125,16 @@ object Google{
 }
 
 object Libraries {
-    const val MOCKK                 = "io.mockk:mockk:1.10.5"
+    const val MOCKK                 = "io.mockk:mockk:1.13.13"
     const val MOCKITO_JUNIT_JUPITER = "org.mockito:mockito-junit-jupiter:3.9.0"
     const val LOTTIE_COMPOSE        = "com.airbnb.android:lottie-compose:6.5.2"
     const val HUXHORN_SULKY_ULID        = "de.huxhorn.sulky:de.huxhorn.sulky.ulid:8.2.0"
     const val LIBRARIES_IDENTITY_GOOGLEID = "com.google.android.libraries.identity.googleid:googleid:1.1.1"
     const val KAKAO_MAPS = "com.kakao.maps.open:android:2.11.9"
-    const val NAVER_MAPS = "com.naver.maps:map-sdk:3.19.1"
+    const val NAVER_MAPS = "com.naver.maps:map-sdk:3.22.1"
     const val KOMORAN = "com.github.shin285:KOMORAN:3.3.9"
 
+    const val JAKEWHARTON_TIMBER = "com.jakewharton.timber:timber:5.0.1"
     const val SHIMMER_COMPOSE = "com.valentinilk.shimmer:compose-shimmer:1.3.3"
     const val LANDSCAPIST_GLIDE = "com.github.skydoves:landscapist-glide:2.4.0"
     const val FIREBASE_GEOFIRE = "com.firebase:geofire-android:${Versions.FILREBASE_GEOFIRE}"
@@ -149,6 +150,9 @@ object UnitTest {
 
     const val JUNIT5_TEST_CORE          = "de.mannodermaus.junit5:android-test-core:${Versions.JUNIT5_TEST}"
     const val JUNIT5_TEST_RUNNER        = "de.mannodermaus.junit5:android-test-runner:${Versions.JUNIT5_TEST}"
+
+    const val JETBRAINS_KOTLINX_COROUTINES_TEST = "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2"
+    const val CASH_TURBINE = "app.cash.turbine:turbine:1.2.1"
 }
 
 object AndroidTest {

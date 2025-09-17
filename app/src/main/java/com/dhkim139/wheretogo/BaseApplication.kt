@@ -13,6 +13,7 @@ import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltAndroidApp
@@ -29,6 +30,7 @@ class BaseApplication : Application(), Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
 
+        timberInit()
         strictModeInit()
         firebaseInit()
     }
@@ -40,6 +42,15 @@ class BaseApplication : Application(), Configuration.Provider {
             FirebaseStorage.getInstance()
             FirebaseAuth.getInstance()
             FirebaseFirestore.getInstance()
+        }
+    }
+
+    private fun timberInit(){
+        if (BuildConfig.DEBUG) {
+            Timber.uprootAll() // 혹시 중복 방지
+            Timber.plant(PrefixedDebugTree())
+        } else {
+            Timber.uprootAll()
         }
     }
 
@@ -60,6 +71,12 @@ class BaseApplication : Application(), Configuration.Provider {
                     .penaltyLog()
                     .build()
             )
+        }
+    }
+
+    class PrefixedDebugTree : Timber.DebugTree() {
+        override fun createStackElementTag(element: StackTraceElement): String {
+            return "${super.createStackElementTag(element)}"
         }
     }
 }

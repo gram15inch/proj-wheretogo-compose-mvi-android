@@ -13,10 +13,12 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,9 +30,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.wheretogo.presentation.AppEvent
+import com.wheretogo.presentation.AppPermission
 import com.wheretogo.presentation.AppScreen
 import com.wheretogo.presentation.composable.content.AnimationDirection
 import com.wheretogo.presentation.composable.content.SlideAnimation
+import com.wheretogo.presentation.composable.effect.AppEventReceiveEffect
+import com.wheretogo.presentation.composable.effect.AppEventSendEffect
 import com.wheretogo.presentation.feature.EventBus
 import com.wheretogo.presentation.feature.openUri
 import com.wheretogo.presentation.feature.shortShow
@@ -45,41 +50,57 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
         val state by viewModel.rootScreenState.collectAsState()
         val context = LocalContext.current
         val coroutine = rememberCoroutineScope()
+        var showLoginScreen by remember { mutableStateOf(false) }
         val multiplePermissionsLauncher = rememberLauncherForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
         ) { permissions ->
             coroutine.launch {
                 permissions.forEach { (permission, bool) ->
-                    EventBus.permissionResult(permission, bool)
+                    val result = AppPermission.parse(permission)
+                    EventBus.result(AppEvent.Permission(result), bool)
                 }
             }
         }
 
-        LaunchedEffect(Unit) {
-            EventBus.eventFlow.collect {
-                coroutine.launch {
-                    when (it) {
-                        is AppEvent.SnackBar -> {
-                            viewModel.snackbarHostState.shortShow(context, it.msg) { uri ->
-                                openUri(context, uri)
-                            }
-                        }
-
-                        is AppEvent.Navigation -> {
-                            navController.navigate(it.destination.toString())
-                        }
-
-                        is AppEvent.Permission -> {
-                            val isDenied = ContextCompat
-                                .checkSelfPermission(
-                                    context,
-                                    it.permission.name
-                                ) == PackageManager.PERMISSION_DENIED
-                            if (isDenied)
-                                multiplePermissionsLauncher.launch(arrayOf(it.permission.name))
+        AppEventSendEffect {
+            coroutine.launch {
+                viewModel.eventSend(it)
+                when (it) {
+                    is AppEvent.SnackBar -> {
+                        viewModel.snackbarHostState.shortShow(context, it.msg) { uri ->
+                            openUri(context, uri)
                         }
                     }
+
+                    is AppEvent.Navigation -> {
+                        navController.navigate(it.to.toString()){
+                            popUpTo(it.form.toString()) { inclusive = true }
+                        }
+                    }
+
+                    is AppEvent.Permission -> {
+                        val isDenied = ContextCompat
+                            .checkSelfPermission(
+                                context,
+                                it.permission.name
+                            ) == PackageManager.PERMISSION_DENIED
+                        if (isDenied)
+                            multiplePermissionsLauncher.launch(arrayOf(it.permission.name))
+                    }
+                    is AppEvent.SignIn -> {
+                        showLoginScreen = true
+                    }
                 }
+            }
+        }
+
+        AppEventReceiveEffect {event, result ->
+            viewModel.eventReceive(event, result)
+            when(event){
+                is AppEvent.SignIn ->{
+                    showLoginScreen = false
+                }
+                else -> {}
             }
         }
 
@@ -103,13 +124,15 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                     )
                 }
             )
+
             SlideAnimation(
                 modifier = Modifier.zIndex(1f),
-                visible = state.isRequestLogin,
+                visible = showLoginScreen,
                 direction = AnimationDirection.CenterDown
             ) {
                 LoginScreen()
             }
+
 
             Box(
                 modifier = Modifier

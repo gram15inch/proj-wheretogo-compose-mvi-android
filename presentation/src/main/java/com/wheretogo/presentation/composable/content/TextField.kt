@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
@@ -19,6 +20,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,17 +43,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.topShadow
-import com.wheretogo.presentation.theme.PrimeBlue
 import com.wheretogo.presentation.theme.Gray150
+import com.wheretogo.presentation.theme.PrimeBlue
+import timber.log.Timber
 
 
 @Composable
 fun CommentTextField(
     editText: TextFieldValue,
     isEmoji: Boolean,
+    isLoading: Boolean,
     emoji: String,
     onValueChange: (TextFieldValue) -> Unit,
-    onDone: () -> Unit,
+    onDone: () -> Unit
 ) {
     Row {
         Box(
@@ -61,15 +65,19 @@ fun CommentTextField(
                 .padding(start = 8.dp),
             contentAlignment = Alignment.CenterStart
         ) {
-            Text(
-                modifier = Modifier,
-                text = emoji,
-                textAlign = TextAlign.Center,
-                style = TextStyle(
-                    fontSize = 28.sp,
-                    lineHeight = 28.sp
-                ),
-            )
+            if (isLoading) {
+                DelayLottieAnimation(Modifier.size(30.dp), R.raw.lt_loading, true, 0)
+            } else {
+                Text(
+                    modifier = Modifier,
+                    text = if (isEmoji) emoji else "",
+                    textAlign = TextAlign.Center,
+                    style = TextStyle(
+                        fontSize = 28.sp,
+                        lineHeight = 28.sp
+                    ),
+                )
+            }
         }
         Box(
             modifier = Modifier
@@ -94,9 +102,9 @@ fun CommentTextField(
                         .fillMaxWidth(),
                     value = editText,
                     onValueChange = { newText ->
-                        if (!isDone) // 키보드 완료시 업데이트 막기
+                        if (!isDone) { // 키보드 완료시 업데이트 막기
                             onValueChange(newText)
-                        else
+                        } else
                             isDone = false
                     },
                     cursorBrush = SolidColor(Color.Black),
@@ -132,6 +140,12 @@ fun DescriptionTextField(
     onEnterClick: () -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
+    var textState by remember { mutableStateOf(TextFieldValue()) }
+
+    LaunchedEffect(text.isEmpty()) {
+        if(text.isEmpty())
+            textState = TextFieldValue("")
+    }
 
     Box(modifier = modifier.wrapContentHeight()) {
         Row(
@@ -162,9 +176,10 @@ fun DescriptionTextField(
                             .fillMaxWidth()
                             .padding(10.dp)
                             .focusRequester(focusRequester),
-                        value = text,
+                        value = textState,
                         onValueChange = {
-                            onTextChange(it)
+                            onTextChange(it.text)
+                            textState = it
                         }
                     )
                 }

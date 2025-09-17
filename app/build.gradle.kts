@@ -55,8 +55,6 @@ android {
             buildConfigField("String",  "GOOGLE_WEB_CLIENT_ID_KEY", getLocalProperties("googleStagingWebClientId"))
         }
         create("qa") {
-            applicationIdSuffix = ".debug"
-            versionNameSuffix = "-qa"
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
@@ -67,7 +65,7 @@ android {
             isDebuggable = true
 
             buildConfigField( "Boolean", "CRASHLYTICS", "false")
-            buildConfigField("String","GOOGLE_WEB_CLIENT_ID_KEY", getLocalProperties("googleStagingWebClientId"))
+            buildConfigField("String","GOOGLE_WEB_CLIENT_ID_KEY", getLocalProperties("googleWebClientId"))
         }
 
         release {
@@ -158,6 +156,9 @@ dependencies {
     implementation(Firebase.FIREBASE_STORAGE_KTX)
     implementation(Firebase.FIREBASE_AUTH_KTX)
 
+    // Libraries
+    implementation(Libraries.JAKEWHARTON_TIMBER)
+
     // Test
     androidTestImplementation(Dagger.HILT_ANDROID_TESTING)
     androidTestImplementation(UnitTest.JUNIT_JUPITER_API)
@@ -177,6 +178,15 @@ dependencies {
     testImplementation(UnitTest.JUNIT_VINTAGE_ENGINE)
     testImplementation(Dagger.HILT_ANDROID_TESTING)
     testImplementation(Libraries.MOCKK)
+
+
+
+    testImplementation(UnitTest.JUNIT_JUPITER_PARAMS)
+    testImplementation(UnitTest.JUNIT_JUPITER_ENGINE)
+    testImplementation(UnitTest.JUNIT_VINTAGE_ENGINE)
+    testImplementation(UnitTest.JETBRAINS_KOTLINX_COROUTINES_TEST)
+    testImplementation(UnitTest.CASH_TURBINE)
+    testImplementation(Libraries.NAVER_MAPS)
 }
 
 tasks.withType(Test::class) {

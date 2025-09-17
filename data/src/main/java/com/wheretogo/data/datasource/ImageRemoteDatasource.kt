@@ -7,11 +7,11 @@ interface ImageRemoteDatasource {
 
     suspend fun uploadImage(
         imageByteArray: ByteArray,
-        imageName: String,
+        imageId: String,
         size: ImageSize
-    )
+    ): Result<Unit>
 
-    suspend fun downloadImage(filename: String, size: ImageSize): ByteArray
+    suspend fun downloadImage(filename: String, size: ImageSize): Result<ByteArray>
 
-    suspend fun removeImage(filename: String, size: ImageSize)
+    suspend fun removeImage(filename: String, size: ImageSize): Result<Unit>
 }

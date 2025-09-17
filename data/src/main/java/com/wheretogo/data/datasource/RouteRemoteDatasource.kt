@@ -5,11 +5,11 @@ import com.wheretogo.data.model.route.RemoteRoute
 
 interface RouteRemoteDatasource {
 
-    suspend fun getRouteInCourse(courseId: String): RemoteRoute
+    suspend fun getRouteInCourse(courseId: String): Result<RemoteRoute>
 
-    suspend fun setRouteInCourse(remoteRoute: RemoteRoute): Boolean
+    suspend fun setRouteInCourse(remoteRoute: RemoteRoute): Result<Unit>
 
-    suspend fun removeRouteInCourse(courseId: String): Boolean
+    suspend fun removeRouteInCourse(courseId: String): Result<Unit>
 
-    suspend fun getRouteByNaver(waypoints: List<DataLatLng>): RemoteRoute
+    suspend fun getRouteByNaver(waypoints: List<DataLatLng>): Result<RemoteRoute>
 }

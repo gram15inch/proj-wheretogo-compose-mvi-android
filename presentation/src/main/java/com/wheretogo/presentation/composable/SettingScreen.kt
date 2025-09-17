@@ -48,16 +48,17 @@ import com.wheretogo.presentation.R
 import com.wheretogo.presentation.SettingInfoType
 import com.wheretogo.presentation.composable.content.AdaptiveAd
 import com.wheretogo.presentation.composable.content.DelayLottieAnimation
-import com.wheretogo.presentation.composable.content.LifecycleDisposer
+import com.wheretogo.presentation.composable.effect.AppEventReceiveEffect
+import com.wheretogo.presentation.composable.effect.LifecycleDisposer
 import com.wheretogo.presentation.feature.openActivity
 import com.wheretogo.presentation.feature.openWeb
 import com.wheretogo.presentation.intent.SettingIntent
 import com.wheretogo.presentation.model.AdItem
 import com.wheretogo.presentation.parseLogoImgRes
 import com.wheretogo.presentation.state.SettingScreenState
-import com.wheretogo.presentation.theme.PrimeBlue
 import com.wheretogo.presentation.theme.Gray280
 import com.wheretogo.presentation.theme.Gray6080
+import com.wheretogo.presentation.theme.PrimeBlue
 import com.wheretogo.presentation.theme.White50
 import com.wheretogo.presentation.theme.hancomMalangFontFamily
 import com.wheretogo.presentation.theme.hancomSansFontFamily
@@ -80,6 +81,7 @@ fun SettingScreen(navController: NavController, viewModel: SettingViewModel = hi
             SettingTopBar(navController)
             SettingContent(
                 settingState = state,
+                onEmptyProfileClick = { viewModel.handleIntent(SettingIntent.EmptyProfileClick) },
                 onUserNameChangeButtonClick = { viewModel.handleIntent(SettingIntent.UsernameChangeClick) },
                 onUserDeleteButtonClick = { viewModel.handleIntent(SettingIntent.UserDeleteClick) },
                 onWebInfoButtonClick = { viewModel.handleIntent(SettingIntent.InfoClick(it)) },
@@ -94,6 +96,10 @@ fun SettingScreen(navController: NavController, viewModel: SettingViewModel = hi
         )
     LifecycleDisposer(
         onEventChange = { viewModel.handleIntent(SettingIntent.LifecycleChange(it)) }
+    )
+
+    AppEventReceiveEffect(
+        onReceive = { event, result -> viewModel.handleIntent(SettingIntent.EventReceive(event, result)) }
     )
 }
 
@@ -126,6 +132,7 @@ fun SettingTopBar(navController: NavController) {
 @Composable
 fun SettingContent(
     settingState: SettingScreenState = SettingScreenState(),
+    onEmptyProfileClick: () -> Unit = {},
     onUserNameChangeButtonClick: () -> Unit = {},
     onLogoutButtonClick: () -> Unit = {},
     onWebInfoButtonClick: (SettingInfoType) -> Unit = {},
@@ -142,6 +149,7 @@ fun SettingContent(
             name = settingState.profile.name,
             authCompany = settingState.profile.private.authCompany,
             mail = settingState.profile.private.mail,
+            onEmptyProfileClick = onEmptyProfileClick,
             onUserNameChangeButtonClick = onUserNameChangeButtonClick,
             onLogoutButtonClick = onLogoutButtonClick
         )
@@ -159,6 +167,7 @@ fun ProfileSection(
     name: String,
     authCompany: String,
     mail: String,
+    onEmptyProfileClick: () -> Unit = {},
     onUserNameChangeButtonClick: () -> Unit,
     onLogoutButtonClick: () -> Unit
 ) {
@@ -166,7 +175,7 @@ fun ProfileSection(
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 20.dp, bottom = 10.dp, end = 20.dp)
-            .heightIn(min = 60.dp),
+            .heightIn(min = 80.dp),
         contentAlignment = Alignment.Center
     ) {
         if (isProfile) {
@@ -240,7 +249,7 @@ fun ProfileSection(
                         color = Gray6080
                     )
                     .clickable {
-                        onLogoutButtonClick()
+                        onEmptyProfileClick()
                     }
             ) {
                 Box(

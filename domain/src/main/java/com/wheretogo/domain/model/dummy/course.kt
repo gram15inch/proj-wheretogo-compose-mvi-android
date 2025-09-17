@@ -2,15 +2,15 @@ package com.wheretogo.domain.model.dummy
 
 import com.wheretogo.domain.RouteAttrItem
 import com.wheretogo.domain.feature.hashSha256
-import com.wheretogo.domain.model.map.CheckPoint
-import com.wheretogo.domain.model.map.Course
-import com.wheretogo.domain.model.map.LatLng
-import com.wheretogo.domain.model.map.RouteCategory
+import com.wheretogo.domain.model.address.LatLng
+import com.wheretogo.domain.model.checkpoint.CheckPoint
+import com.wheretogo.domain.model.course.Course
+import com.wheretogo.domain.model.route.RouteCategory
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePrivate
 
 
-fun getWaypointDummy(courseId:String):List<LatLng>{
+fun getWaypointDummy(courseId: String): List<LatLng> {
     val w1 = listOf(
         // 기흥호수공원 순환
         LatLng(37.24049254419747, 127.10069878544695),
@@ -57,16 +57,16 @@ fun getWaypointDummy(courseId:String):List<LatLng>{
         LatLng(37.293786578277825, 127.21912319980723),
     )
 
-   return  when(courseId){
-       "cs1"->w1
-       "cs2"->w2
-       "cs3"->w3
-       "cs4"->w4
-       "cs5"->w5
-       "cs6"->w6
-       "cs7"->w7
-       else-> emptyList()
-   }
+    return when (courseId) {
+        "cs1" -> w1
+        "cs2" -> w2
+        "cs3" -> w3
+        "cs4" -> w4
+        "cs5" -> w5
+        "cs6" -> w6
+        "cs7" -> w7
+        else -> emptyList()
+    }
 }
 
 fun getCourseDummy(): List<Course> {
@@ -180,7 +180,7 @@ fun getCheckPointDummy(courseId: String = ""): List<CheckPoint> {
     val profileGroup = getProfileDummy()
     when (courseId) {
         "cs1" -> {
-            getWaypointDummy("cs1").forEachIndexed {i,latlng->
+            getWaypointDummy("cs1").forEachIndexed { i, latlng ->
                 val user = profileGroup[0]
                 list.add(
                     CheckPoint(
@@ -196,7 +196,7 @@ fun getCheckPointDummy(courseId: String = ""): List<CheckPoint> {
 
         "cs2" -> {
             val user = profileGroup[1]
-            getWaypointDummy("cs2").forEachIndexed {i,latlng->
+            getWaypointDummy("cs2").forEachIndexed { i, latlng ->
                 list.add(
                     CheckPoint(
                         checkPointId = "cp${i}",
@@ -211,7 +211,7 @@ fun getCheckPointDummy(courseId: String = ""): List<CheckPoint> {
 
         "cs6" -> {
             val user = profileGroup[2]
-            getWaypointDummy("cs6").forEachIndexed {i,latlng->
+            getWaypointDummy("cs6").forEachIndexed { i, latlng ->
                 list.add(
                     CheckPoint(
                         checkPointId = "cp${i}",
@@ -228,12 +228,12 @@ fun getCheckPointDummy(courseId: String = ""): List<CheckPoint> {
     return list
 }
 
-fun getProfileDummy():List<Profile> {
+fun getProfileDummy(): List<Profile> {
     val list = mutableListOf<Profile>()
     (1..3).forEach {
         list.add(
             Profile(
-                uid="dummyUid$it",
+                uid = "dummyUid$it",
                 name = "dummyName$it",
                 hashMail = hashSha256("dummyMail$it@mail.com"),
                 private = ProfilePrivate(
@@ -244,9 +244,9 @@ fun getProfileDummy():List<Profile> {
             )
         )
     }
-    list.mapIndexed {i,p->
-        when(i){
-            0->{
+    list.mapIndexed { i, p ->
+        when (i) {
+            0 -> {
                 p.copy(
                     private = p.private.copy(
                         isAdmin = true,
@@ -254,7 +254,8 @@ fun getProfileDummy():List<Profile> {
                     )
                 )
             }
-            1->{
+
+            1 -> {
                 p.copy(
                     private = p.private.copy(
                         isAdmin = false,
@@ -262,7 +263,8 @@ fun getProfileDummy():List<Profile> {
                     )
                 )
             }
-            2->{
+
+            2 -> {
                 p.copy(
                     private = p.private.copy(
                         isAdmin = false,
@@ -270,7 +272,8 @@ fun getProfileDummy():List<Profile> {
                     )
                 )
             }
-            else->p
+
+            else -> p
         }
     }
     return list

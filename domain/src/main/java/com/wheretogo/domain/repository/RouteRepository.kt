@@ -1,8 +1,8 @@
 package com.wheretogo.domain.repository
 
 
-import com.wheretogo.domain.model.map.LatLng
-import com.wheretogo.domain.model.map.Route
+import com.wheretogo.domain.model.address.LatLng
+import com.wheretogo.domain.model.route.Route
 
 interface RouteRepository {
 

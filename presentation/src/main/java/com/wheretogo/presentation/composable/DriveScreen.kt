@@ -1,6 +1,5 @@
 package com.wheretogo.presentation.composable
 
-import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
@@ -34,27 +33,28 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.naver.maps.map.NaverMap
-import com.wheretogo.domain.model.community.ImageInfo
+import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.dummy.getCourseDummy
+import com.wheretogo.domain.model.util.ImageInfo
 import com.wheretogo.presentation.BuildConfig
-import com.wheretogo.presentation.CommentType
 import com.wheretogo.presentation.DriveBottomSheetContent
+import com.wheretogo.presentation.DriveFloatingVisibleMode
+import com.wheretogo.presentation.DriveVisibleMode
 import com.wheretogo.presentation.R
-import com.wheretogo.presentation.SheetState
+import com.wheretogo.presentation.SheetVisibleMode
 import com.wheretogo.presentation.WIDE_WIDTH
 import com.wheretogo.presentation.composable.content.AnimationDirection
 import com.wheretogo.presentation.composable.content.BottomSheet
@@ -65,28 +65,33 @@ import com.wheretogo.presentation.composable.content.DriveListContent
 import com.wheretogo.presentation.composable.content.FadeAnimation
 import com.wheretogo.presentation.composable.content.FloatingButtons
 import com.wheretogo.presentation.composable.content.InfoContent
-import com.wheretogo.presentation.composable.content.LifecycleDisposer
+import com.wheretogo.presentation.composable.effect.LifecycleDisposer
 import com.wheretogo.presentation.composable.content.MapPopup
-import com.wheretogo.presentation.composable.content.NaverMap
+import com.wheretogo.presentation.composable.content.NaverMapSheet
 import com.wheretogo.presentation.composable.content.SearchBar
 import com.wheretogo.presentation.composable.content.SlideAnimation
 import com.wheretogo.presentation.composable.content.screenSize
+import com.wheretogo.presentation.composable.effect.AppEventReceiveEffect
+import com.wheretogo.presentation.defaultCommentEmogiGroup
 import com.wheretogo.presentation.feature.ImeStickyBox
 import com.wheretogo.presentation.feature.naver.setCurrentLocation
-import com.wheretogo.presentation.getCommentEmogiGroup
 import com.wheretogo.presentation.intent.DriveScreenIntent
+import com.wheretogo.presentation.model.AppMarker
 import com.wheretogo.presentation.model.ContentPadding
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.SearchBarItem
+import com.wheretogo.presentation.model.TypeEditText
 import com.wheretogo.presentation.state.BottomSheetState
 import com.wheretogo.presentation.state.CameraState
 import com.wheretogo.presentation.state.CheckPointAddState
+import com.wheretogo.presentation.state.CommentState
 import com.wheretogo.presentation.state.CommentState.CommentAddState
-import com.wheretogo.presentation.state.CommentState.CommentItemState
 import com.wheretogo.presentation.state.DriveScreenState
+import com.wheretogo.presentation.state.FloatingButtonState
 import com.wheretogo.presentation.state.InfoState
 import com.wheretogo.presentation.state.ListState
 import com.wheretogo.presentation.theme.Gray6080
+import com.wheretogo.presentation.toNavigation
 import com.wheretogo.presentation.viewmodel.DriveViewModel
 import kotlinx.coroutines.launch
 
@@ -101,6 +106,10 @@ fun DriveScreen(
         onEventChange = { viewModel.handleIntent(DriveScreenIntent.LifecycleChange(it)) }
     )
 
+    AppEventReceiveEffect(
+        onReceive = {event, bool ->  viewModel.handleIntent(DriveScreenIntent.EventReceive(event,bool)) }
+    )
+
     BackHandler {
         navController.navigateUp()
     }
@@ -110,7 +119,6 @@ fun DriveScreen(
             state = driveState,
 
             //NaverMap
-            onMapAsync = { handleIntent(DriveScreenIntent.MapIsReady) },
             onCameraUpdate = { handleIntent(DriveScreenIntent.CameraUpdated(it)) },
             onCourseMarkerClick = { handleIntent(DriveScreenIntent.CourseMarkerClick(it)) },
             onCheckPointMarkerClick = { handleIntent(DriveScreenIntent.CheckPointMarkerClick(it)) },
@@ -131,17 +139,21 @@ fun DriveScreen(
             onPopupImageClick = { handleIntent(DriveScreenIntent.CommentFloatingButtonClick) },
             onPopupBlurClick = { handleIntent(DriveScreenIntent.DismissPopupComment) },
             onCommentListItemClick = { handleIntent(DriveScreenIntent.CommentListItemClick(it)) },
-            onCommentListItemLongClick = { handleIntent(DriveScreenIntent.CommentListItemLongClick(it)) },
+            onCommentListItemLongClick = {
+                handleIntent(
+                    DriveScreenIntent.CommentListItemLongClick(
+                        it
+                    )
+                )
+            },
             onCommentLikeClick = { handleIntent(DriveScreenIntent.CommentLikeClick(it)) },
             onCommentAddClick = { handleIntent(DriveScreenIntent.CommentAddClick(it)) },
             onCommentRemoveClick = { handleIntent(DriveScreenIntent.CommentRemoveClick(it)) },
             onCommentReportClick = { handleIntent(DriveScreenIntent.CommentReportClick(it)) },
-            onCommentEditValueChange = { handleIntent(DriveScreenIntent.CommentEditValueChange(it)) },
             onCommentEmogiPress = { handleIntent(DriveScreenIntent.CommentEmogiPress(it)) },
             onCommentTypePress = { handleIntent(DriveScreenIntent.CommentTypePress(it)) },
 
             //BottomSheet
-            onBottomSheetHeightChange = { handleIntent(DriveScreenIntent.ContentPaddingChanged(it.value.toInt())) },
             onBottomSheetStateChange = { handleIntent(DriveScreenIntent.BottomSheetChange(it)) },
 
             //CheckPointAddContent
@@ -150,13 +162,13 @@ fun DriveScreen(
             onImageChange = { handleIntent(DriveScreenIntent.CheckpointImageChange(it)) },
 
             //InfoContent
-            onInfoRemoveClick = { handleIntent(DriveScreenIntent.InfoRemoveClick(it)) },
+            onInfoRemoveClick = { handleIntent(DriveScreenIntent.InfoRemoveClick) },
             onInfoReportClick = { handleIntent(DriveScreenIntent.InfoReportClick(it)) },
 
             //FloatingButtons
             onCommentFloatClick = { handleIntent(DriveScreenIntent.CommentFloatingButtonClick) },
             onCheckpointAddFloatClick = { handleIntent(DriveScreenIntent.CheckpointAddFloatingButtonClick) },
-            onInfoFloatClick = { handleIntent(DriveScreenIntent.InfoFloatingButtonClick) },
+            onInfoFloatClick = { handleIntent(DriveScreenIntent.InfoFloatingButtonClick(it)) },
             onExportMapFloatClick = { handleIntent(DriveScreenIntent.ExportMapFloatingButtonClick) },
             onMapAppClick = { handleIntent(DriveScreenIntent.ExportMapAppButtonClick(it)) },
             onFoldFloatClick = { handleIntent(DriveScreenIntent.FoldFloatingButtonClick) },
@@ -171,13 +183,13 @@ fun DriveScreen(
 
 @Composable
 fun DriveContent(
-    state: DriveScreenState= DriveScreenState(),
+    state: DriveScreenState = DriveScreenState(),
 
     //Navermap
     onMapAsync: (NaverMap) -> Unit = {},
     onCameraUpdate: (CameraState) -> Unit = {},
     onCourseMarkerClick: (MapOverlay.MarkerContainer) -> Unit = {},
-    onCheckPointMarkerClick: (MapOverlay.MarkerContainer) -> Unit = {},
+    onCheckPointMarkerClick: (AppMarker) -> Unit = {},
 
     //Blur
     onBlurClick: () -> Unit = {},
@@ -186,7 +198,7 @@ fun DriveContent(
     onSearchBarItemClick: (SearchBarItem) -> Unit = {},
     onSearchBarClick: () -> Unit = {},
     onSearchSubmit: (String) -> Unit = {},
-    onSearchBarClose: ()-> Unit = {},
+    onSearchBarClose: () -> Unit = {},
 
     //DriveListContent
     onListItemClick: (ListState.ListItemState) -> Unit = {},
@@ -194,41 +206,39 @@ fun DriveContent(
     //MapPopup
     onPopupImageClick: () -> Unit = {},
     onPopupBlurClick: () -> Unit = {},
-    onCommentListItemClick: (CommentItemState) -> Unit = {},
-    onCommentListItemLongClick: (CommentItemState) -> Unit = {},
-    onCommentLikeClick: (CommentItemState) -> Unit = {},
-    onCommentAddClick: (CommentAddState) -> Unit = {},
-    onCommentRemoveClick: (CommentItemState) -> Unit = {},
-    onCommentReportClick: (CommentItemState) -> Unit = {},
-    onCommentEditValueChange: (TextFieldValue) -> Unit = {},
+    onCommentListItemClick: (CommentState.CommentItemState) -> Unit = {},
+    onCommentListItemLongClick: (Comment) -> Unit = {},
+    onCommentLikeClick: (CommentState.CommentItemState) -> Unit = {},
+    onCommentAddClick: (String) -> Unit = {},
+    onCommentRemoveClick: (Comment) -> Unit = {},
+    onCommentReportClick: (Comment) -> Unit = {},
     onCommentEmogiPress: (String) -> Unit = {},
-    onCommentTypePress: (CommentType) -> Unit = {},
+    onCommentTypePress: (TypeEditText) -> Unit = {},
 
     //CheckPointAddContent
     onCheckPointAddSubmitClick: () -> Unit = {},
     onSliderChange: (Float) -> Unit = {},
-    onImageChange: (Uri?) ->  Unit = {},
+    onImageChange: (ImageInfo) -> Unit = {},
 
     //InfoContent
-    onInfoReportClick: (InfoState) ->  Unit = {},
-    onInfoRemoveClick: (InfoState) ->  Unit = {},
+    onInfoReportClick: (String) -> Unit = {},
+    onInfoRemoveClick: () -> Unit = {},
 
     //FloatingButtons
-    onCommentFloatClick: () ->  Unit = {},
-    onCheckpointAddFloatClick: () ->  Unit = {},
-    onInfoFloatClick: () ->  Unit = {},
-    onExportMapFloatClick: () ->  Unit = {},
-    onMapAppClick: (Result<Unit>) ->  Unit = {},
-    onFoldFloatClick: () ->  Unit = {},
+    onCommentFloatClick: () -> Unit = {},
+    onCheckpointAddFloatClick: () -> Unit = {},
+    onInfoFloatClick: (DriveBottomSheetContent) -> Unit = {},
+    onExportMapFloatClick: () -> Unit = {},
+    onMapAppClick: (Result<Unit>) -> Unit = {},
+    onFoldFloatClick: () -> Unit = {},
 
     //BottomSheet
-    onBottomSheetStateChange: (SheetState) ->  Unit = {},
-    onBottomSheetHeightChange: (Dp) ->  Unit = {},
+    onBottomSheetStateChange: (SheetVisibleMode) -> Unit = {},
 
     //BottomSheetImeStickyBox
-    onTextChange: (String) ->  Unit = {},
+    onTextChange: (String) -> Unit = {},
     onTextFieldEnterClick: () -> Unit = {}
-){
+) {
     val isPreview = LocalInspectionMode.current
     val context = LocalContext.current
     var bottomSheetHeight by remember { mutableStateOf(0.dp) }
@@ -237,14 +247,14 @@ fun DriveContent(
         animationSpec = tween(durationMillis = 300)
     )
     val coroutineScope = rememberCoroutineScope()
-
+    val focusRequester: FocusRequester = remember { FocusRequester() }
     Scaffold(
         contentWindowInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout),
-        content = { systemBars->
+        content = { systemBars ->
             val systemBarBottomPadding by remember {
                 derivedStateOf { systemBars.calculateBottomPadding() }
             }
-            NaverMap(
+            NaverMapSheet(
                 modifier = Modifier
                     .fillMaxSize(),
                 state = state.naverMapState,
@@ -265,9 +275,11 @@ fun DriveContent(
             )
 
 
-            FadeAnimation(modifier = Modifier.zIndex(1f),
-                visible = state.popUpState.isVisible || state.floatingButtonState.isBackPlateVisible,
-                short = state.floatingButtonState.isBackPlateVisible) {
+            FadeAnimation(
+                modifier = Modifier.zIndex(1f),
+                visible = DriveScreenState.blurVisible.contains(state.stateMode),
+                short = FloatingButtonState.backPlateVisible.contains(state.floatingButtonState.stateMode)
+            ) {
                 BlurEffect(onClick = onBlurClick)
             }
 
@@ -283,7 +295,7 @@ fun DriveContent(
                 contentAlignment = Alignment.BottomEnd
             ) {
 
-                if(BuildConfig.TEST_UI && !isPreview)
+                if (BuildConfig.TEST_UI && !isPreview)
                     Text(
                         modifier = Modifier.align(alignment = Alignment.TopStart),
                         text = "${state.overlayGroup.size}",
@@ -301,12 +313,13 @@ fun DriveContent(
                 )
 
                 OneHandArea {
-                    Box(modifier = Modifier
-                        .sizeIn(WIDE_WIDTH.dp)
-                        .fillMaxWidth(), contentAlignment = Alignment.CenterEnd
+                    Box(
+                        modifier = Modifier
+                            .sizeIn(WIDE_WIDTH.dp)
+                            .fillMaxWidth(), contentAlignment = Alignment.CenterEnd
                     ) {
                         SlideAnimation(
-                            visible = state.searchBarState.isVisible,
+                            visible = DriveScreenState.searchBarVisible.contains(state.stateMode),
                             direction = AnimationDirection.CenterUp
                         ) {
                             SearchBar(
@@ -320,11 +333,12 @@ fun DriveContent(
                         }
                     }
 
-                    FadeAnimation(
+                    SlideAnimation(
                         modifier = Modifier
                             .padding(bottom = systemBarBottomPadding)
                             .align(alignment = Alignment.BottomEnd),
-                        visible = state.listState.isVisible
+                        visible = DriveScreenState.itemListVisible.contains(state.stateMode),
+                        direction = AnimationDirection.CenterDown,
                     ) {
                         DriveListContent(
                             modifier = Modifier
@@ -339,7 +353,7 @@ fun DriveContent(
                         modifier = Modifier
                             .padding(bottom = systemBarBottomPadding)
                             .align(alignment = Alignment.BottomStart),
-                        visible = state.popUpState.isVisible
+                        visible = DriveScreenState.popUpVisible.contains(state.stateMode)
                     ) {
                         MapPopup(
                             modifier = Modifier.align(Alignment.BottomStart),
@@ -353,37 +367,36 @@ fun DriveContent(
                             onCommentAddClick = onCommentAddClick,
                             onCommentRemoveClick = onCommentRemoveClick,
                             onCommentReportClick = onCommentReportClick,
-                            onCommentEditValueChange = onCommentEditValueChange,
                             onCommentEmogiPress = onCommentEmogiPress,
                             onCommentTypePress = onCommentTypePress
                         )
                     }
-
                     BottomSheet(
                         modifier = Modifier
                             .zIndex(3f),
-                        state = state.bottomSheetState,
+                        isVisible = DriveScreenState.bottomSheetVisible.contains(state.stateMode),
                         bottomSpace = systemBarBottomPadding,
                         onSheetHeightChange = {
-                            if (state.bottomSheetState.content != DriveBottomSheetContent.INFO) {
+                            if (state.bottomSheetState.content == DriveBottomSheetContent.CHECKPOINT_ADD) {
                                 bottomSheetHeight = it
-                                onBottomSheetHeightChange(it)
                             }
-
                         },
-                        onSheetStateChange = onBottomSheetStateChange
+                        onSheetStateChange = onBottomSheetStateChange,
+                        minHeight = state.bottomSheetState.content.minHeight.dp,
+                        isSpaceVisibleWhenClose = false
                     ) {
                         when (state.bottomSheetState.content) {
                             DriveBottomSheetContent.CHECKPOINT_ADD -> {
                                 CheckPointAddContent(
                                     state = state.bottomSheetState.checkPointAddState,
+                                    focusRequester = focusRequester,
                                     onSubmitClick = onCheckPointAddSubmitClick,
                                     onSliderChange = onSliderChange,
                                     onImageChange = onImageChange
                                 )
                             }
 
-                            DriveBottomSheetContent.INFO -> {
+                            DriveBottomSheetContent.COURSE_INFO, DriveBottomSheetContent.CHECKPOINT_INFO -> {
                                 InfoContent(
                                     state = state.bottomSheetState.infoState,
                                     onRemoveClick = onInfoRemoveClick,
@@ -394,17 +407,17 @@ fun DriveContent(
                             else -> {}
                         }
                     }
-                    val isNotOtherVisible = !state.popUpState.commentState.isCommentVisible && !state.bottomSheetState.isVisible
+
                     FloatingButtons(
                         modifier = Modifier
                             .padding(bottom = systemBars.calculateBottomPadding())
                             .fillMaxSize(),
                         state = state.floatingButtonState,
-                        isNotOtherVisible = isNotOtherVisible,
-                        course = state.listState.clickItem.course,
+                        isVisible = DriveScreenState.floatingVisible.contains(state.stateMode),
+                        navigation = state.selectedCourse.toNavigation(),
                         onCommentClick = onCommentFloatClick,
                         onCheckpointAddClick = onCheckpointAddFloatClick,
-                        onInfoClick = onInfoFloatClick,
+                        onInfoClick = { onInfoFloatClick(DriveScreenState.infoContent(state.stateMode)) },
                         onExportMapClick = onExportMapFloatClick,
                         onMapAppClick = onMapAppClick,
                         onFoldClick = onFoldFloatClick
@@ -416,6 +429,8 @@ fun DriveContent(
                         .padding(systemBars)
                         .align(alignment = Alignment.BottomCenter),
                     state = state.bottomSheetState,
+                    isVisible = DriveScreenState.imeBoxVisible.contains(state.stateMode),
+                    focusRequester = focusRequester,
                     onTextChange = onTextChange,
                     onTextFieldEnterClick = onTextFieldEnterClick
                 )
@@ -463,7 +478,10 @@ fun ExtendArea(
             moveContent()
         }
     } else {
-        Box(modifier = modifier.graphicsLayer(clip = true), contentAlignment = Alignment.BottomCenter) {
+        Box(
+            modifier = modifier.graphicsLayer(clip = true),
+            contentAlignment = Alignment.BottomCenter
+        ) {
             holdContent()
             moveContent()
         }
@@ -473,15 +491,18 @@ fun ExtendArea(
 
 @Composable
 fun BottomSheetImeStickyBox(
-    modifier: Modifier, state: BottomSheetState,
+    modifier: Modifier,
+    state: BottomSheetState,
+    isVisible: Boolean,
+    focusRequester: FocusRequester,
     onTextChange: (String) -> Unit = {},
     onTextFieldEnterClick: () -> Unit = {}
 ) {
-    ImeStickyBox(modifier = modifier){
+    ImeStickyBox(modifier = modifier) {
         DescriptionTextField(
             modifier = Modifier.heightIn(min = 60.dp),
-            isVisible = state.isVisible && it > 30.dp,
-            focusRequester = state.checkPointAddState.focusRequester,
+            isVisible = isVisible && it > 30.dp,
+            focusRequester = focusRequester,
             text = state.checkPointAddState.description,
             onTextChange = onTextChange,
             onEnterClick = onTextFieldEnterClick
@@ -490,22 +511,24 @@ fun BottomSheetImeStickyBox(
 }
 
 @Composable
-@Preview(name="default",widthDp = 400, heightDp = 600)
-fun DefaultContentPreview(){
+@Preview(name = "explorer", widthDp = 400, heightDp = 600)
+fun ExplorerContentPreview() {
     val newListItemGroup = listOf(ListState.ListItemState(course = getCourseDummy()[0]))
-    val searchBarItemGroup = listOf(SearchBarItem(
-        "기흥호수공원 순환",
-        "",
-    ),
+    val searchBarItemGroup = listOf(
+        SearchBarItem(
+            "기흥호수공원 순환",
+            "",
+        ),
         SearchBarItem(
             "기흥역 ak플라자",
             "경기도 용인시 기흥구 120",
-        ))
+        )
+    )
     DriveContent(
         state = DriveScreenState().run {
             copy(
-                listState= listState.copy(
-                    isVisible = true,
+                stateMode = DriveVisibleMode.Explorer,
+                listState = listState.copy(
                     listItemGroup = newListItemGroup
                 ),
                 searchBarState = searchBarState.copy(
@@ -518,76 +541,59 @@ fun DefaultContentPreview(){
 }
 
 @Composable
-@Preview(name="checkpointAdd",widthDp = 400, heightDp = 600)
-fun CheckpointAddContentPreview(){
+@Preview(name = "course", widthDp = 400, heightDp = 600)
+fun CourseContentPreview() {
     DriveContent(
         state = DriveScreenState().run {
             copy(
-                searchBarState = searchBarState.copy(
-                    isVisible = false
+                stateMode = DriveVisibleMode.CourseDetail,
+                popUpState = popUpState.copy(
+                    commentState = popUpState.commentState.copy(
+                        isVisible = true,
+                        commentAddState = CommentAddState(
+                            isEmogiGroup = true,
+                            emogiGroup = defaultCommentEmogiGroup()
+                        )
+                    )
                 ),
+                floatingButtonState = floatingButtonState.copy(
+                    stateMode = DriveFloatingVisibleMode.Default
+                )
+            )
+        }
+    )
+}
+
+@Composable
+@Preview(name = "checkpointAdd", widthDp = 400, heightDp = 600)
+fun CheckpointAddContentPreview() {
+    DriveContent(
+        state = DriveScreenState().run {
+            copy(
+                stateMode = DriveVisibleMode.CourseDetail,
                 bottomSheetState = bottomSheetState.copy(
-                    minHeight = 400,
                     infoState = InfoState(isRemoveButton = true),
                     content = DriveBottomSheetContent.CHECKPOINT_ADD,
                     checkPointAddState = CheckPointAddState(
                         isLoading = false,
                         description = "안녕하세요",
-                        imgInfo = ImageInfo("".toUri(), "새로운 사진.jpg", 30L)
+                        imgInfo = ImageInfo("", "새로운 사진.jpg", 30L)
                     )
-                )
+                ),
             )
         }
     )
 }
 
 @Composable
-@Preview(name="comment",widthDp = 400, heightDp = 600)
-fun CommentContentPreview(){
+@Preview(name = "checkpointImge", widthDp = 400, heightDp = 600)
+fun CheckpointImagePreview() {
     DriveContent(
         state = DriveScreenState().run {
             copy(
-                searchBarState = searchBarState.copy(
-                    isVisible = false
-                ),
-                popUpState = popUpState.copy(
-                    isVisible = true,
-                    commentState = popUpState.commentState.copy(
-                        isCommentVisible = true,
-                        commentAddState = CommentAddState(
-                            isEmogiGroup = true,
-                            emogiGroup = getCommentEmogiGroup()
-                        )
-                    )
-                ),
+                stateMode = DriveVisibleMode.BlurCheckpointDetail,
                 floatingButtonState = floatingButtonState.copy(
-                    isCheckpointAddVisible = true,
-                    isInfoVisible = true,
-                    isExportVisible = true,
-                    isFoldVisible = true,
-                )
-            )
-        }
-    )
-}
-
-@Composable
-@Preview(name="checkpoint",widthDp = 400, heightDp = 600)
-fun CheckpointContentPreview(){
-    DriveContent(
-        state = DriveScreenState().run {
-            copy(
-                searchBarState = searchBarState.copy(
-                    isVisible = false
-                ),
-                popUpState = popUpState.copy(
-                    isVisible = true
-                ),
-                floatingButtonState = floatingButtonState.copy(
-                    isCommentVisible = true,
-                    isInfoVisible = true,
-                    isExportVisible = true,
-                    isFoldVisible = true,
+                    stateMode = DriveFloatingVisibleMode.Popup
                 )
             )
         }

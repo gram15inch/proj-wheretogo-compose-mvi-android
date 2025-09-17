@@ -24,7 +24,7 @@
     <string name="banner_main">크리에이터 \n신청 하러 가기</string>
     <string name="banner_sub">나만의 코스를 등록하고 싶다면?</string>
 
-
+    <string name="created_by">✨ Created by %s</string>
 
     <string name="oneline_review">한줄평</string>
     <string name="detail_review">상세리뷰</string>
@@ -85,6 +85,7 @@
     <string name="login">로그인</string>
     <string name="login_cancel">로그인 취소</string>
     <string name="login_fail">로그인 실패</string>
+    <string name="login_fail_msg">로그인 실패: %s</string>
     <string name="logout"> 로그아웃 </string>
     <string name="need_login">로그인이 필요합니다</string>
     <string name="explore_without_login">로그인 없이 앱 둘러보기</string>
