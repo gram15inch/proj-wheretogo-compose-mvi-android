@@ -74,7 +74,7 @@ fun RowAdPlaceholder(modifier: Modifier = Modifier) {
             .background(White50)
             .shimmer()
             .fillMaxWidth()
-            .height(90.dp)
+            .height(120.dp)
             .padding(16.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {

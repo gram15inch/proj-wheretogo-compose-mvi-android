@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -28,6 +29,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.wheretogo.presentation.theme.Gray6080
@@ -114,5 +116,20 @@ fun Modifier.intervalTab(
                 }
             },
         )
+    }
+}
+
+@Composable
+fun FontMaxScale(
+    maxScale: Float = 1.0f,
+    content: @Composable () -> Unit
+) {
+    val density = LocalDensity.current
+    val capped = Density(
+        density = density.density,
+        fontScale = minOf(density.fontScale, maxScale)
+    )
+    CompositionLocalProvider(LocalDensity provides capped) {
+        content()
     }
 }

@@ -50,6 +50,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.wheretogo.presentation.AdMinSize
 import com.wheretogo.presentation.CLEAR_ADDRESS
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.intervalTab
@@ -70,7 +71,7 @@ fun SearchBar(
     modifier: Modifier = Modifier,
     state: SearchBarState = SearchBarState(),
     onSearchBarItemClick: (SearchBarItem) -> Unit = {},
-    onSearchBarClick: () -> Unit = {},
+    onSearchBarClick: (Boolean) -> Unit = {},
     onSearchSubmit: (String) -> Unit = {},
     onSearchBarClose: () -> Unit = {}
 ) {
@@ -80,8 +81,9 @@ fun SearchBar(
     var isFocused by remember { mutableStateOf(false) }
     var editText by remember { mutableStateOf("") }
     var alpha by remember { mutableFloatStateOf(0.75f) }
+    var isAdSkip by remember { mutableStateOf(false) }
+    val adSize = adSize()
     val outDp = 12.dp
-
     LaunchedEffect(state.isActive) {
         if (state.isActive) {
             alpha = 1f
@@ -89,6 +91,13 @@ fun SearchBar(
             alpha = 0.75f
             editText = ""
         }
+    }
+
+    LaunchedEffect(adSize) {
+        if(adSize == AdMinSize.Row)
+            isAdSkip = true
+        else
+            isAdSkip = false
     }
 
     fun clearFocus() {
@@ -126,7 +135,7 @@ fun SearchBar(
                         isFocused = it.isFocused
                         when {
                             it.isFocused && editText.isBlank() -> {
-                                onSearchBarClick()
+                                onSearchBarClick(isAdSkip)
                             }
 
                             !it.isFocused && editText.isBlank() -> {
@@ -195,10 +204,10 @@ fun SearchBar(
             ) {
                 AdaptiveAd(
                     modifier = Modifier.padding(bottom = outDp, start = outDp, end = outDp),
+                    isCompact = true,
                     nativeAd = state.adItemGroup.firstOrNull()?.nativeAd
                 )
             }
-
         }
     }
 }

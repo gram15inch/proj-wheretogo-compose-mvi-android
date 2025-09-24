@@ -154,7 +154,7 @@ fun CourseAddSheetContent(
 
     //SearchBar
     onSearchBarItemClick: (SearchBarItem) -> Unit = {},
-    onSearchBarClick: () -> Unit = {},
+    onSearchBarClick: (Boolean) -> Unit = {},
     onSearchSubmit: (String) -> Unit = {},
     onSearchBarClose: () -> Unit = {},
 

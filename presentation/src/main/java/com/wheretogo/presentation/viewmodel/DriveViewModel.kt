@@ -76,7 +76,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 import javax.inject.Inject
 import kotlin.math.round
 
@@ -118,7 +117,7 @@ class DriveViewModel @Inject constructor(
             when (intent) {
                 //서치바
                 is DriveScreenIntent.AddressItemClick -> searchBarItemClick(intent.searchBarItem)
-                is DriveScreenIntent.SearchBarClick -> searchBarClick()
+                is DriveScreenIntent.SearchBarClick -> searchBarClick(intent.isSkipAd)
                 is DriveScreenIntent.SearchBarClose -> searchBarClose()
                 is DriveScreenIntent.SearchSubmit -> searchSubmit(intent.submit) // ✅
 
@@ -180,7 +179,6 @@ class DriveViewModel @Inject constructor(
         }
     }
 
-
     //서치바
     private fun searchBarItemClick(item: SearchBarItem) {
         if (item.label == CLEAR_ADDRESS || item.latlng == null) {
@@ -231,7 +229,12 @@ class DriveViewModel @Inject constructor(
         }
     }
 
-    private fun searchBarClick() {
+    private fun searchBarClick(isSkipAd: Boolean) {
+        if(_driveScreenState.value.stateMode == DriveVisibleMode.SearchBarExpand) {
+            searchBarClose()
+            return
+        }
+
         mapOverlayService.removeCheckPoint(listOf(SEARCH_MARKER))
         _driveScreenState.update {
             it.run {
@@ -246,11 +249,12 @@ class DriveViewModel @Inject constructor(
 
         }
 
-        if (_driveScreenState.value.searchBarState.adItemGroup.isEmpty()) {
+
+        if (!isSkipAd && _driveScreenState.value.searchBarState.adItemGroup.isEmpty()) {
             loadAd()
-        } else {
-            searchBarClose()
         }
+
+
     }
 
     private fun searchBarClose() {

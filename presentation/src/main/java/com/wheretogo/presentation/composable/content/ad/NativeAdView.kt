@@ -58,7 +58,7 @@ fun NativeAdView(modifier: Modifier = Modifier, content: @Composable () -> Unit)
                 layoutParams =
                     ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
                     )
                 addView(
                     ComposeView(context).apply {
