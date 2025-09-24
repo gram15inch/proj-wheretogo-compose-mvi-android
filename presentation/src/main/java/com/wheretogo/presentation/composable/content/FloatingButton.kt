@@ -52,6 +52,7 @@ import com.wheretogo.domain.model.util.Navigation
 import com.wheretogo.presentation.DriveFloatingVisibleMode
 import com.wheretogo.presentation.ExportMap
 import com.wheretogo.presentation.R
+import com.wheretogo.presentation.feature.FontMaxScale
 import com.wheretogo.presentation.feature.callMap
 import com.wheretogo.presentation.state.FloatingButtonState
 import com.wheretogo.presentation.theme.Gray100
@@ -342,11 +343,13 @@ fun InfoText(modifier: Modifier = Modifier, text: String) {
             alignment = Alignment.Center
         )
         Spacer(modifier = Modifier.width(2.dp))
-        Text(
-            text = text,
-            fontSize = 12.sp,
-            color = Color.Gray
-        )
+        FontMaxScale {
+            Text(
+                text = text,
+                fontSize = 12.sp,
+                color = Color.Gray
+            )
+        }
     }
 }
 
@@ -397,12 +400,14 @@ fun SquareScaleButton(
                 modifier = Modifier.fillMaxSize()
             )
         }
-        Text(
-            text = caption,
-            fontFamily = hancomSansFontFamily,
-            fontSize = 10.sp,
-            textAlign = TextAlign.Center
-        )
+        FontMaxScale {
+            Text(
+                text = caption,
+                fontFamily = hancomSansFontFamily,
+                fontSize = 10.sp,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
 

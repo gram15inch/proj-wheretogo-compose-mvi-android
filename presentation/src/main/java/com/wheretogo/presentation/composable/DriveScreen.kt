@@ -128,7 +128,7 @@ fun DriveScreen(
 
             //Searchbar
             onSearchSubmit = { handleIntent(DriveScreenIntent.SearchSubmit(it)) },
-            onSearchBarClick = { handleIntent(DriveScreenIntent.SearchBarClick) },
+            onSearchBarClick = { handleIntent(DriveScreenIntent.SearchBarClick(it)) },
             onSearchBarItemClick = { handleIntent(DriveScreenIntent.AddressItemClick(it)) },
             onSearchBarClose = { handleIntent(DriveScreenIntent.SearchBarClose) },
 
@@ -196,7 +196,7 @@ fun DriveContent(
 
     //SearchBar
     onSearchBarItemClick: (SearchBarItem) -> Unit = {},
-    onSearchBarClick: () -> Unit = {},
+    onSearchBarClick: (Boolean) -> Unit = {},
     onSearchSubmit: (String) -> Unit = {},
     onSearchBarClose: () -> Unit = {},
 
