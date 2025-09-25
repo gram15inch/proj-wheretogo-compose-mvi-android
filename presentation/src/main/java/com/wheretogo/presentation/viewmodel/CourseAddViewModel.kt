@@ -137,17 +137,6 @@ class CourseAddViewModel @Inject constructor(
         _courseAddScreenState.update { it.searchBarInit() }
     }
 
-    private fun CourseAddScreenState.searchBarInit(): CourseAddScreenState {
-        return copy(
-            searchBarState = searchBarState.copy(
-                isActive = false,
-                isLoading = false,
-                isEmptyVisible = false,
-                searchBarItemGroup = emptyList()
-            )
-        )
-    }
-
     private suspend fun submitClick(submitValue: String) {
         if (submitValue.trim().isBlank()) {
             _courseAddScreenState.update { it.searchBarInit() }

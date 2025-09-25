@@ -6,7 +6,6 @@ import com.google.android.gms.ads.AdLoader
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.nativead.NativeAd
-import com.wheretogo.presentation.AdLifecycle
 import com.wheretogo.presentation.AppError
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -14,8 +13,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -37,9 +34,6 @@ class NativeAdServiceImpl @Inject constructor(
     private var _refreshTime: Long = 0
     private var _errorCount = 0
 
-    private val _adLifeCycle = MutableSharedFlow<AdLifecycle>()
-    override val adLifeCycle: Flow<AdLifecycle> get() = _adLifeCycle
-
     override suspend fun getAd(): Result<List<NativeAd>> {
         val isLoadSuccess = serviceScope.async {
             when {
@@ -48,12 +42,12 @@ class NativeAdServiceImpl @Inject constructor(
                 }
 
                 _nativeAdCache.isEmpty() -> {
-                    refreshAd()
+                    refreshAd(refreshAdNumbers)
                     return@async _nativeAdCache.waitUntilNotEmpty()
                 }
 
-                _nativeAdCache.size in (1..5) -> {
-                    refreshAd()
+                _nativeAdCache.size == 1 -> {
+                    refreshAd(refreshAdNumbers)
                     return@async Result.success(true)
                 }
 
@@ -73,29 +67,29 @@ class NativeAdServiceImpl @Inject constructor(
         return Result.success(adGroup)
     }
 
-    override fun refreshAd() {
+    override fun refreshAd(count: Int) {
         serviceScope.launch(Dispatchers.IO) {
             if (_refreshTime == 0L) {
                 _refreshTime = System.currentTimeMillis()
                 val requestRefreshTime = _refreshTime
                 val callbackCoroutine = CoroutineScope(coroutineContext + SupervisorJob())
                 adLoad(
+                    request = count,
                     onSuccess = {
                         callbackCoroutine.launch {
                             _nativeAdCache.offerLast(it)
                             _errorCount = 0
                             _refreshTime = 0L
                         }
-                    },
-                    onFail = {
-                        callbackCoroutine.launch {
-                            _errorCount++
-                            if (_errorCount >= refreshAdNumbers)
-                                _error = AppError.AdLoadError(it.message)
-                            _refreshTime = 0L
-                        }
                     }
-                )
+                ) {
+                    callbackCoroutine.launch {
+                        _errorCount++
+                        if (_errorCount >= count)
+                            _error = AppError.AdLoadError(it.message)
+                        _refreshTime = 0L
+                    }
+                }
 
                 launch {
                     repeat(15) {
@@ -113,20 +107,14 @@ class NativeAdServiceImpl @Inject constructor(
         }
     }
 
-    override fun lifeCycleChange(event: AdLifecycle) {
-        serviceScope.launch {
-            _adLifeCycle.emit(event)
-        }
-    }
-
-    private fun adLoad(onSuccess: (NativeAd) -> Unit, onFail: (LoadAdError) -> Unit) {
+    private fun adLoad(request: Int, onSuccess: (NativeAd) -> Unit, onFail: (LoadAdError) -> Unit) {
         return AdLoader.Builder(context, adId).forNativeAd {
             onSuccess(it)
         }.withAdListener(object : AdListener() {
             override fun onAdFailedToLoad(adError: LoadAdError) {
                 onFail(adError)
             }
-        }).build().loadAds(AdRequest.Builder().build(), refreshAdNumbers)
+        }).build().loadAds(AdRequest.Builder().build(), request)
     }
 
     private suspend fun Deque<NativeAd>.pollByMutex(): List<NativeAd> {

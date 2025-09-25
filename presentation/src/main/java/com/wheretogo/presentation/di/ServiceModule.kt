@@ -34,7 +34,7 @@ object ServiceModule {
         return NativeAdServiceImpl(context, BuildConfig.NATIVE_AD_ID, refreshSize).apply {
             CoroutineScope(Dispatchers.IO).launch {
                 MobileAds.initialize(context)
-                refreshAd()
+                refreshAd(1)
             }
         }
     }

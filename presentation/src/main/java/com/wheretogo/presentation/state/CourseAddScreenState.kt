@@ -46,4 +46,17 @@ data class CourseAddScreenState(
     companion object{
         val isBottomSheetVisible : EnumSet<CourseAddVisibleMode> = EnumSet.of(CourseAddVisibleMode.BottomSheetExpand)
     }
+
+    //초기화
+    fun searchBarInit(): CourseAddScreenState {
+        return copy(
+            searchBarState = searchBarState.copy(
+                isActive = false,
+                isLoading = false,
+                isEmptyVisible = false,
+                searchBarItemGroup = emptyList(),
+                adItemGroup = emptyList()
+            )
+        )
+    }
 }

@@ -107,11 +107,6 @@ class DriveViewModel @Inject constructor(
     val driveScreenState: StateFlow<DriveScreenState> = _driveScreenState
     private var isMapUpdate = true
 
-    override fun onCleared() {
-        super.onCleared()
-        _driveScreenState.value.destroyAd()
-    }
-
     fun handleIntent(intent: DriveScreenIntent) {
         viewModelScope.launch(dispatcher) {
             when (intent) {
@@ -173,6 +168,7 @@ class DriveViewModel @Inject constructor(
                 clearState()
             }
             is AppError.NeedSignIn->{
+                clearAd()
                 signOutUseCase()
             }
             else -> {}
@@ -183,7 +179,7 @@ class DriveViewModel @Inject constructor(
     private fun searchBarItemClick(item: SearchBarItem) {
         if (item.label == CLEAR_ADDRESS || item.latlng == null) {
             mapOverlayService.removeCheckPoint(listOf(SEARCH_MARKER))
-            _driveScreenState.update { it.searchBarInitAndClearAd() }
+            _driveScreenState.update { it.initSearchBar() }
             return
         }
 
@@ -260,7 +256,7 @@ class DriveViewModel @Inject constructor(
     private fun searchBarClose() {
         mapOverlayService.removeCheckPoint(listOf(SEARCH_MARKER))
         _driveScreenState.update {
-            it.clearAd().copy(
+            it.copy(
                 stateMode = DriveVisibleMode.Explorer,
                 searchBarState = stateInit.searchBarState
             )
@@ -289,10 +285,6 @@ class DriveViewModel @Inject constructor(
             handleError(it)
         }
         _driveScreenState.update { it.replaceSearchBarLoading(false) }
-    }
-
-    private fun DriveScreenState.searchBarInitAndClearAd(): DriveScreenState {
-        return clearAd().initSearchBar()
     }
 
 
@@ -1168,11 +1160,7 @@ class DriveViewModel @Inject constructor(
             }
 
             AppLifecycle.onPause -> {
-                _driveScreenState.update { it.clearAd() }
-            }
-
-            AppLifecycle.onDispose -> {
-                _driveScreenState.update { it.clearAd() }
+                clearAd()
             }
 
             else -> {}
@@ -1185,7 +1173,7 @@ class DriveViewModel @Inject constructor(
                 if(result){
                     clearState()
                 }
-
+                loadAd()
             }
             else -> {}
         }
@@ -1212,9 +1200,7 @@ class DriveViewModel @Inject constructor(
                                     it.copy(searchBarState = it.searchBarState.copy(adItemGroup = newAdItemGroup.toItem()))
                                 }
 
-                                else -> {
-                                    it.clearAd()
-                                }
+                                else -> { it }
                             }
                         }
                     }.onFailure {
@@ -1223,12 +1209,14 @@ class DriveViewModel @Inject constructor(
             }
     }
 
-    private fun DriveScreenState.clearAd(): DriveScreenState {
-        destroyAd()
-        return copy(
-            searchBarState = searchBarState.copy(adItemGroup = emptyList()),
-            floatingButtonState = floatingButtonState.copy(adItemGroup = emptyList())
-        )
+    private fun clearAd(){
+        _driveScreenState.value.destroyAd()
+        _driveScreenState.update {
+            it.copy(
+                searchBarState = it.searchBarState.copy(adItemGroup = emptyList()),
+                floatingButtonState = it.floatingButtonState.copy(adItemGroup = emptyList())
+            )
+        }
     }
 
     private fun DriveScreenState.destroyAd() {

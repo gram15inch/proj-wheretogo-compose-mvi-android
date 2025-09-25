@@ -28,7 +28,7 @@ const val CHECKPOINT_ADD_MARKER = "CHECKPOINT_ADD_MARKER_ID"
 const val SEARCH_MARKER = "SEARCH_MARKER_ID"
 const val CLEAR_ADDRESS = "CLEAR_ADDRESS"
 const val DEBUG_AD_REFRESH_SIZE = 1
-const val AD_REFRESH_SIZE = 3
+const val AD_REFRESH_SIZE = 2
 const val AD_MAX_FONT_SCALE = 1.2f
 
 enum class OverlayType {
@@ -126,8 +126,6 @@ enum class PathType {
 enum class AppLifecycle {
     onLaunch, onResume, onPause, onDispose, onDestory
 }
-
-enum class AdLifecycle { onResume, onPause }
 
 enum class DriveVisibleMode {
     Explorer, CourseDetail, BlurCourseDetail, BlurCheckpointDetail, SearchBarExpand, BottomSheetExpand, BlurBottomSheetExpand
