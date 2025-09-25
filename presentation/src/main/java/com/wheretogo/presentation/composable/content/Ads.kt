@@ -1,7 +1,6 @@
 package com.wheretogo.presentation.composable.content
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,7 +17,6 @@ import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -46,7 +44,6 @@ import com.skydoves.landscapist.glide.GlideImage
 import com.wheretogo.presentation.AD_MAX_FONT_SCALE
 import com.wheretogo.presentation.AdMinSize
 import com.wheretogo.presentation.R
-import com.wheretogo.presentation.composable.content.ad.LocalNativeAdView
 import com.wheretogo.presentation.composable.content.ad.NativeAdAdvertiserView
 import com.wheretogo.presentation.composable.content.ad.NativeAdBodyView
 import com.wheretogo.presentation.composable.content.ad.NativeAdCallToActionView
@@ -55,6 +52,7 @@ import com.wheretogo.presentation.composable.content.ad.NativeAdHeadlineView
 import com.wheretogo.presentation.composable.content.ad.NativeAdMediaView
 import com.wheretogo.presentation.composable.content.ad.NativeAdView
 import com.wheretogo.presentation.composable.effect.CardAdEffect
+import com.wheretogo.presentation.composable.effect.RowAdEffect
 import com.wheretogo.presentation.feature.FontMaxScale
 import com.wheretogo.presentation.theme.Blue100
 import com.wheretogo.presentation.theme.Blue50
@@ -165,7 +163,7 @@ fun CardAd(
             var bodyMaxLines by remember { mutableIntStateOf(if (isCompact) 0 else 3) }
             var tiltLines by remember { mutableIntStateOf(-1) }
 
-            CardAdEffect(nativeAd, isCompact, tiltLines) { maxLine->
+            CardAdEffect(nativeAd, isCompact, tiltLines) { maxLine ->
                 bodyMaxLines = maxLine
             }
 
@@ -250,11 +248,7 @@ fun RowAd(modifier: Modifier = Modifier, elevation: Dp = 8.dp, nativeAd: NativeA
         NativeAdView {
             val contentRatio = nativeAd?.mediaContent?.aspectRatio ?: (16f / 9f)
             val imageRatio = if (contentRatio > 1.5f) contentRatio else 16f / 9f
-            val nav = LocalNativeAdView.current
-            LaunchedEffect(nativeAd) {
-                if (nativeAd != null)
-                    nav?.setNativeAd(nativeAd)
-            }
+            RowAdEffect(nativeAd)
             Row(
                 modifier = Modifier
                     .height(155.dp)

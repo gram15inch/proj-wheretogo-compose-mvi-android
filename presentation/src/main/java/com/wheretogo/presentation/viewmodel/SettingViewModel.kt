@@ -7,7 +7,6 @@ import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.usecase.user.DeleteUserUseCase
 import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
-import com.wheretogo.presentation.AdLifecycle
 import com.wheretogo.presentation.AppError
 import com.wheretogo.presentation.AppEvent
 import com.wheretogo.presentation.AppLifecycle
@@ -22,7 +21,6 @@ import com.wheretogo.presentation.toItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -43,16 +41,10 @@ class SettingViewModel @Inject constructor(
     private val _settingScreenState = MutableStateFlow(SettingScreenState())
     val settingScreenState: StateFlow<SettingScreenState> = _settingScreenState
     private var _loadAdSkip = false
-    private var _screenLifecycleSkip = false
 
     init {
         profileInit()
         adInit()
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        _settingScreenState.value.destroyAd()
     }
 
     fun handleIntent(intent: SettingIntent) {
@@ -75,6 +67,8 @@ class SettingViewModel @Inject constructor(
     suspend fun handleError(error: Throwable) {
         when(errorHandler.handle(error.toAppError())){
             is AppError.NeedSignIn->{
+                _loadAdSkip = true
+                clearAd()
                 signOutUseCase()
             }
             else -> {}
@@ -143,31 +137,20 @@ class SettingViewModel @Inject constructor(
     }
 
     private fun lifecycleChange(event: AppLifecycle) {
-        if (!_screenLifecycleSkip) {
-            when (event) {
-                AppLifecycle.onResume -> {
-                    if (!_loadAdSkip) {
-                        viewModelScope.launch(Dispatchers.IO) {
-                            delay(50)
-                            loadAd()
-                        }
-                    }
-
-                    _loadAdSkip = false
-                }
-
-                AppLifecycle.onPause -> {
-                    clearAd()
-                }
-
-                AppLifecycle.onDispose -> {
-                    viewModelScope.launch {
-                        clearAd()
+        when (event) {
+            AppLifecycle.onResume -> {
+                if (_settingScreenState.value.adItemGroup.isEmpty()) {
+                    viewModelScope.launch(Dispatchers.IO) {
+                        loadAd()
                     }
                 }
-
-                else -> {}
             }
+
+            AppLifecycle.onPause -> {
+                clearAd()
+            }
+
+            else -> {}
         }
     }
 
@@ -177,7 +160,8 @@ class SettingViewModel @Inject constructor(
                 if(result) {
                     refreshProfile()
                 }
-
+                _loadAdSkip = false
+                loadAd()
             }
             else -> {}
         }
@@ -193,46 +177,23 @@ class SettingViewModel @Inject constructor(
 
     private fun adInit() {
         viewModelScope.launch(Dispatchers.IO) {
-            _loadAdSkip = true
-            launch {
-                delay(350)
-                loadAd()
-            }
-        }
-
-        viewModelScope.launch(Dispatchers.IO) {
-            adService.adLifeCycle.collect {
-                when (it) {
-                    AdLifecycle.onPause -> {
-                        _screenLifecycleSkip = true
-                        clearAd()
-                    }
-
-                    AdLifecycle.onResume -> {
-                        _screenLifecycleSkip = false
-                        delay(150)
-                        loadAd()
-                    }
-                }
-            }
+            launch { loadAd() }
         }
     }
 
     // 유틸
     private fun loadAd() {
+        if(_loadAdSkip)
+            return
         viewModelScope.launch(Dispatchers.IO) {
             adService.getAd()
                 .onSuccess { newAdGroup ->
-                    if (!_screenLifecycleSkip)
-                        _settingScreenState.update {
-                            it.copy(
-                                adItemGroup = newAdGroup.toItem()
-                            )
-                        }
-                    else
-                        clearAd()
+                    _settingScreenState.update {
+                        it.copy(adItemGroup = newAdGroup.toItem())
+                    }
                 }.onFailure {
-                    handleError(it)
+                    if(it !is AppError.NeedSignIn)
+                        handleError(it)
                 }
         }
     }

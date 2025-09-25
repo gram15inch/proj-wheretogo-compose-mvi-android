@@ -29,13 +29,16 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.google.android.gms.ads.MobileAds
 import com.wheretogo.presentation.AppEvent
 import com.wheretogo.presentation.AppPermission
 import com.wheretogo.presentation.AppScreen
+import com.wheretogo.presentation.BuildConfig
 import com.wheretogo.presentation.composable.content.AnimationDirection
 import com.wheretogo.presentation.composable.content.SlideAnimation
 import com.wheretogo.presentation.composable.effect.AppEventReceiveEffect
 import com.wheretogo.presentation.composable.effect.AppEventSendEffect
+import com.wheretogo.presentation.composable.effect.ShakeEffect
 import com.wheretogo.presentation.feature.EventBus
 import com.wheretogo.presentation.feature.openUri
 import com.wheretogo.presentation.feature.shortShow
@@ -61,6 +64,11 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                 }
             }
         }
+
+        if(BuildConfig.DEBUG)
+            ShakeEffect{
+               MobileAds.openDebugMenu(context, BuildConfig.NATIVE_AD_ID)
+            }
 
         AppEventSendEffect {
             coroutine.launch {
