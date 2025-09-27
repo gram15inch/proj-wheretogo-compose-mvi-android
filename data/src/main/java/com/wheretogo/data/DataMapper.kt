@@ -3,9 +3,11 @@ package com.wheretogo.data
 import com.wheretogo.data.model.checkpoint.LocalCheckPoint
 import com.wheretogo.data.model.checkpoint.RemoteCheckPoint
 import com.wheretogo.data.model.comment.RemoteComment
-import com.wheretogo.data.model.course.LocalSnapshot
 import com.wheretogo.data.model.course.LocalCourse
+import com.wheretogo.data.model.course.LocalSnapshot
 import com.wheretogo.data.model.course.RemoteCourse
+import com.wheretogo.data.model.history.LocalHistoryGroupWrapper
+import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
 import com.wheretogo.data.model.map.DataLatLng
 import com.wheretogo.data.model.report.LocalReport
 import com.wheretogo.data.model.report.RemoteReport
@@ -15,21 +17,24 @@ import com.wheretogo.data.model.user.LocalProfile
 import com.wheretogo.data.model.user.LocalProfilePrivate
 import com.wheretogo.data.model.user.RemoteProfilePrivate
 import com.wheretogo.data.model.user.RemoteProfilePublic
+import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.ReportStatus
 import com.wheretogo.domain.ReportType
-import com.wheretogo.domain.model.report.Report
-import com.wheretogo.domain.model.report.ReportAddRequest
+import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.checkpoint.CheckPoint
+import com.wheretogo.domain.model.checkpoint.CheckPointAddRequest
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.comment.CommentAddRequest
 import com.wheretogo.domain.model.course.Course
-import com.wheretogo.domain.model.address.LatLng
-import com.wheretogo.domain.model.checkpoint.CheckPointAddRequest
 import com.wheretogo.domain.model.course.CourseAddRequest
-import com.wheretogo.domain.model.util.Snapshot
+import com.wheretogo.domain.model.history.HistoryGroupWrapper
+import com.wheretogo.domain.model.report.Report
+import com.wheretogo.domain.model.report.ReportAddRequest
 import com.wheretogo.domain.model.route.Route
+import com.wheretogo.domain.model.user.History
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePrivate
+import com.wheretogo.domain.model.util.Snapshot
 import com.wheretogo.domain.toGeoHash
 
 
@@ -73,7 +78,7 @@ fun LocalProfilePrivate.toProfilePrivate(): ProfilePrivate {
     )
 }
 
-fun Profile.toProfilePublic():RemoteProfilePublic{
+fun Profile.toProfilePublic(): RemoteProfilePublic {
     return RemoteProfilePublic(
         uid = uid,
         name = name,
@@ -81,7 +86,7 @@ fun Profile.toProfilePublic():RemoteProfilePublic{
     )
 }
 
-fun RemoteProfilePublic.toProfile():Profile{
+fun RemoteProfilePublic.toProfile(): Profile {
     return Profile(
         uid = uid,
         name = name,
@@ -89,7 +94,7 @@ fun RemoteProfilePublic.toProfile():Profile{
     )
 }
 
-fun RemoteProfilePublic.toLocalProfile(private: RemoteProfilePrivate): LocalProfile{
+fun RemoteProfilePublic.toLocalProfile(private: RemoteProfilePrivate): LocalProfile {
     return LocalProfile(
         uid = uid,
         name = name,
@@ -98,7 +103,7 @@ fun RemoteProfilePublic.toLocalProfile(private: RemoteProfilePrivate): LocalProf
     )
 }
 
-fun RemoteProfilePrivate.toProfilePrivate():ProfilePrivate{
+fun RemoteProfilePrivate.toProfilePrivate(): ProfilePrivate {
     return ProfilePrivate(
         mail = mail,
         authCompany = authCompany,
@@ -109,7 +114,7 @@ fun RemoteProfilePrivate.toProfilePrivate():ProfilePrivate{
     )
 }
 
-fun RemoteProfilePrivate.toLocalProfilePrivate():LocalProfilePrivate{
+fun RemoteProfilePrivate.toLocalProfilePrivate(): LocalProfilePrivate {
     return LocalProfilePrivate(
         mail = mail,
         authCompany = authCompany,
@@ -120,7 +125,7 @@ fun RemoteProfilePrivate.toLocalProfilePrivate():LocalProfilePrivate{
     )
 }
 
-fun ProfilePrivate.toRemoteProfilePrivate():RemoteProfilePrivate{
+fun ProfilePrivate.toRemoteProfilePrivate(): RemoteProfilePrivate {
     return RemoteProfilePrivate(
         mail = mail,
         authCompany = authCompany,
@@ -131,13 +136,13 @@ fun ProfilePrivate.toRemoteProfilePrivate():RemoteProfilePrivate{
     )
 }
 
-fun ReportAddRequest.toRemoteReport(reportId:String): RemoteReport{
+fun ReportAddRequest.toRemoteReport(reportId: String): RemoteReport {
     return RemoteReport(
-        reportId= reportId,
+        reportId = reportId,
         type = type.name,
         userId = userId,
-        contentId=contentId,
-        targetUserId= targetUserId,
+        contentId = contentId,
+        targetUserId = targetUserId,
         targetUserName = targetUserName,
         reason = reason,
         status = status.name,
@@ -145,13 +150,13 @@ fun ReportAddRequest.toRemoteReport(reportId:String): RemoteReport{
     )
 }
 
-fun RemoteReport.toLocalReport(): LocalReport{
+fun RemoteReport.toLocalReport(): LocalReport {
     return LocalReport(
-        reportId= reportId,
+        reportId = reportId,
         type = type,
         userId = userId,
-        contentId=contentId,
-        targetUserId= targetUserId,
+        contentId = contentId,
+        targetUserId = targetUserId,
         targetUserName = targetUserName,
         reason = reason,
         status = status,
@@ -160,7 +165,7 @@ fun RemoteReport.toLocalReport(): LocalReport{
     )
 }
 
-fun LocalReport.toReport():Report {
+fun LocalReport.toReport(): Report {
     return Report(
         reportId = reportId,
         type = ReportType.valueOf(type),
@@ -176,13 +181,13 @@ fun LocalReport.toReport():Report {
 }
 
 
-fun Report.toLocalReport():LocalReport{
+fun Report.toLocalReport(): LocalReport {
     return LocalReport(
-        reportId= reportId,
+        reportId = reportId,
         type = type.name,
         userId = userId,
-        contentId=contentId,
-        targetUserId= targetUserId,
+        contentId = contentId,
+        targetUserId = targetUserId,
         targetUserName = targetUserName,
         reason = reason,
         status = status.name,
@@ -326,7 +331,7 @@ fun CheckPoint.toRemoteCheckPoint(): RemoteCheckPoint {
 }
 
 fun CheckPointAddRequest.toRemoteCheckPoint(
-    checkPointId:String
+    checkPointId: String
 ): RemoteCheckPoint {
     return RemoteCheckPoint(
         checkPointId = checkPointId,
@@ -344,8 +349,8 @@ fun RemoteCheckPoint.toLocalCheckPoint(): LocalCheckPoint {
     return LocalCheckPoint(
         checkPointId = checkPointId,
         courseId = courseId,
-        userId= userId,
-        userName= userName,
+        userId = userId,
+        userName = userName,
         latLng = latLng,
         captionId = captionId,
         caption = caption,
@@ -355,10 +360,10 @@ fun RemoteCheckPoint.toLocalCheckPoint(): LocalCheckPoint {
     )
 }
 
-fun LocalCheckPoint.toCheckPoint(imageLocalPath:String=""): CheckPoint {
+fun LocalCheckPoint.toCheckPoint(imageLocalPath: String = ""): CheckPoint {
     return CheckPoint(
         checkPointId = checkPointId,
-        courseId= courseId,
+        courseId = courseId,
         userId = userId,
         userName = userName,
         latLng = latLng.toLatLng(),
@@ -370,12 +375,13 @@ fun LocalCheckPoint.toCheckPoint(imageLocalPath:String=""): CheckPoint {
 
 @JvmName("fromRemoteCheckPointToLocal")
 fun List<RemoteCheckPoint>.toLocal() = map { it.toLocalCheckPoint() }
+
 @JvmName("fromLocalCheckPointToDomain")
 fun List<LocalCheckPoint>.toDomain() = map { it.toCheckPoint() }
 
 fun CourseAddRequest.toCourse(
     courseId: String,
-): RemoteCourse{
+): RemoteCourse {
     return RemoteCourse(
         courseId = courseId,
         courseName = content.courseName,
@@ -418,7 +424,7 @@ fun LocalCourse.toCourse(
     )
 }
 
-fun LocalCourse.toCourse(): Course{
+fun LocalCourse.toCourse(): Course {
     return Course(
         courseId = courseId,
         courseName = courseName,
@@ -459,7 +465,7 @@ fun RemoteCourse.toLocalCourse(): LocalCourse {
 }
 
 fun Course.toRemoteCourse(
-    keyword:List<String> = emptyList()
+    keyword: List<String> = emptyList()
 ): RemoteCourse {
     return RemoteCourse(
         courseId = courseId,
@@ -515,9 +521,77 @@ fun LatLng.toDataLatLng(): DataLatLng {
     return DataLatLng(this.latitude, this.longitude)
 }
 
-fun List<DataLatLng>.toLatLngGroup():List<LatLng>{
+fun List<DataLatLng>.toLatLngGroup(): List<LatLng> {
     return map { it.toLatLng() }
 }
-fun List<LatLng>.toDataLatLngGroup():List<DataLatLng>{
+
+fun List<LatLng>.toDataLatLngGroup(): List<DataLatLng> {
     return map { it.toDataLatLng() }
+}
+
+fun LocalHistoryGroupWrapper.toHistoryGroupWrapper(): HistoryGroupWrapper {
+    return HistoryGroupWrapper(
+        type = type,
+        historyIdGroup = historyIdGroup,
+        lastAddedAt = lastAddedAt
+    )
+}
+
+fun RemoteHistoryGroupWrapper.toLocalHistoryGroupWrapper(): LocalHistoryGroupWrapper {
+    return LocalHistoryGroupWrapper(
+        type = type,
+        historyIdGroup = historyIdGroup.toHashSet(),
+        lastAddedAt = lastAddedAt
+    )
+}
+
+fun HistoryGroupWrapper.toRemoteHistoryGroupWrapper(): RemoteHistoryGroupWrapper {
+    return RemoteHistoryGroupWrapper(
+        type = type,
+        historyIdGroup = historyIdGroup.toList(),
+        lastAddedAt = lastAddedAt
+    )
+}
+
+fun List<RemoteHistoryGroupWrapper>.toHistory(): History {
+    var history = History()
+    forEach {
+        history = when (it.type) {
+            HistoryType.COURSE -> history.copy(
+                course = it.toLocalHistoryGroupWrapper().toHistoryGroupWrapper()
+            )
+
+            HistoryType.CHECKPOINT -> history.copy(
+                checkpoint = it.toLocalHistoryGroupWrapper().toHistoryGroupWrapper()
+            )
+
+            HistoryType.COMMENT -> history.copy(
+                comment = it.toLocalHistoryGroupWrapper().toHistoryGroupWrapper()
+            )
+
+            HistoryType.LIKE -> history.copy(
+                like = it.toLocalHistoryGroupWrapper().toHistoryGroupWrapper()
+            )
+
+            HistoryType.REPORT -> history.copy(
+                report = it.toLocalHistoryGroupWrapper().toHistoryGroupWrapper()
+            )
+
+            HistoryType.BOOKMARK -> history.copy(
+                bookmark = it.toLocalHistoryGroupWrapper().toHistoryGroupWrapper()
+            )
+        }
+    }
+    return history
+}
+
+fun History.remoteGroupWrapper(): List<RemoteHistoryGroupWrapper> {
+    return listOf(
+        course.toRemoteHistoryGroupWrapper(),
+        checkpoint.toRemoteHistoryGroupWrapper(),
+        comment.toRemoteHistoryGroupWrapper(),
+        like.toRemoteHistoryGroupWrapper(),
+        bookmark.toRemoteHistoryGroupWrapper(),
+        report.toRemoteHistoryGroupWrapper(),
+    )
 }

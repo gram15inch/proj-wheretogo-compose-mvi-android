@@ -52,45 +52,30 @@ fun CommentContent.toCommentAddRequest(
     )
 }
 
-fun Map<HistoryType, HashSet<String>>.toHistory(): History {
-    var history = History()
-    forEach {
-        history = when (it.key) {
-            HistoryType.COURSE -> history.copy(courseGroup = it.value)
-            HistoryType.CHECKPOINT -> history.copy(checkpointGroup = it.value)
-            HistoryType.COMMENT -> history.copy(commentGroup = it.value)
-            HistoryType.LIKE -> history.copy(likeGroup = it.value)
-            HistoryType.REPORT -> history.copy(reportGroup = it.value)
-            HistoryType.BOOKMARK -> history.copy(bookmarkGroup = it.value)
-        }
-    }
-    return history
-}
-
 fun History.map(type: HistoryType, data: HashSet<String>): History {
     return when (type) {
         HistoryType.COURSE -> {
-            copy(courseGroup = data)
+            copy(course=course.copy(type,data))
         }
 
         HistoryType.CHECKPOINT -> {
-            copy(checkpointGroup = data)
+            copy(checkpoint = checkpoint.copy(type,data))
         }
 
         HistoryType.COMMENT -> {
-            copy(commentGroup = data)
+            copy(comment = comment.copy(type,data))
         }
 
         HistoryType.REPORT -> {
-            copy(reportGroup = data)
+            copy(checkpoint = checkpoint.copy(type,data))
         }
 
         HistoryType.LIKE -> {
-            copy(likeGroup = data)
+            copy(like = like.copy(type,data))
         }
 
         HistoryType.BOOKMARK -> {
-            copy(bookmarkGroup = data)
+            copy(bookmark = bookmark.copy(type,data))
         }
     }
 }
@@ -98,27 +83,27 @@ fun History.map(type: HistoryType, data: HashSet<String>): History {
 fun History.get(type: HistoryType): HashSet<String> {
     return when (type) {
         HistoryType.COURSE -> {
-            courseGroup
+            course.historyIdGroup
         }
 
         HistoryType.CHECKPOINT -> {
-            checkpointGroup
+            checkpoint.historyIdGroup
         }
 
         HistoryType.COMMENT -> {
-            commentGroup
+            comment.historyIdGroup
         }
 
         HistoryType.REPORT -> {
-            reportGroup
+            report.historyIdGroup
         }
 
         HistoryType.LIKE -> {
-            likeGroup
+            like.historyIdGroup
         }
 
         HistoryType.BOOKMARK -> {
-            bookmarkGroup
+            bookmark.historyIdGroup
         }
     }
 }
