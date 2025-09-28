@@ -576,10 +576,6 @@ fun List<RemoteHistoryGroupWrapper>.toHistory(): History {
             HistoryType.REPORT -> history.copy(
                 report = it.toLocalHistoryGroupWrapper().toHistoryGroupWrapper()
             )
-
-            HistoryType.BOOKMARK -> history.copy(
-                bookmark = it.toLocalHistoryGroupWrapper().toHistoryGroupWrapper()
-            )
         }
     }
     return history

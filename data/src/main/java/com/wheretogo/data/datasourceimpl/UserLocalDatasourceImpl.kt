@@ -33,7 +33,6 @@ class UserLocalDatasourceImpl @Inject constructor(
     private val isAdRemove = booleanPreferencesKey("isAdRemove_profile")
     private val isAdmin = booleanPreferencesKey("isAdmin_profile")
 
-    private val bookmark = stringSetPreferencesKey("bookmark_profile")
     private val like = stringSetPreferencesKey("like_profile")
     private val comment = stringSetPreferencesKey("comment_profile")
     private val course = stringSetPreferencesKey("course_profile")
@@ -50,11 +49,12 @@ class UserLocalDatasourceImpl @Inject constructor(
             val historyKey = getHistoryKey(type)
             val addedAtKey = getHistoryAddedAtKey(type)
             userDataStore.edit { preferences ->
-                historyKey.let { key ->
-                    preferences[key] =
-                        preferences[key]?.toMutableSet()?.apply { this += historyId }
-                            ?: setOf(historyId)
-                }
+                if(historyId.isNotBlank())
+                    historyKey.let { key ->
+                        preferences[key] =
+                            preferences[key]?.toMutableSet()?.apply { this += historyId }
+                                ?: setOf(historyId)
+                    }
 
                 addedAtKey?.let { key ->
                     preferences[key] = addedAt
@@ -78,7 +78,6 @@ class UserLocalDatasourceImpl @Inject constructor(
     private fun getHistoryKey(type: HistoryType): Preferences.Key<Set<String>> {
         return when (type) {
             HistoryType.LIKE -> like
-            HistoryType.BOOKMARK -> bookmark
             HistoryType.COMMENT -> comment
             HistoryType.COURSE -> course
             HistoryType.CHECKPOINT -> checkpoint
@@ -138,7 +137,6 @@ class UserLocalDatasourceImpl @Inject constructor(
                 preferences[comment] = history.comment.historyIdGroup
                 preferences[like] = history.like.historyIdGroup
                 preferences[reportContent] = history.report.historyIdGroup
-                preferences[bookmark] = history.bookmark.historyIdGroup
 
                 preferences[courseAddedAt] = history.course.lastAddedAt
                 preferences[commentAddedAt] = history.comment.lastAddedAt

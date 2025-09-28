@@ -14,6 +14,7 @@ import com.wheretogo.data.toProfilePrivate
 import com.wheretogo.data.toProfilePublic
 import com.wheretogo.data.toRemoteProfilePrivate
 import com.wheretogo.domain.HistoryType
+import com.wheretogo.domain.feature.domainFlatMap
 import com.wheretogo.domain.feature.hashSha256
 import com.wheretogo.domain.feature.zip
 import com.wheretogo.domain.model.history.HistoryGroupWrapper
@@ -21,6 +22,7 @@ import com.wheretogo.domain.model.user.AuthProfile
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.repository.UserRepository
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -50,7 +52,23 @@ class UserRepositoryImpl @Inject constructor(
                     remotePrivate
                 )
             ) { _, _ -> userLocalDatasource.setProfile(local) }
-                .mapCatching { }
+                .mapSuccess {
+                    coroutineScope {
+                        val resultGroup= HistoryType.entries.mapNotNull { type->
+                            if(type in listOf(HistoryType.COURSE, HistoryType.CHECKPOINT, HistoryType.COMMENT))
+                                async {
+                                    userRemoteDatasource.addHistory(uid = profile.uid, historyId = "", type = type)
+                                        .mapSuccess { addedAt ->
+                                        userLocalDatasource.addHistory(type = type, historyId = "", addedAt = addedAt)
+                                        }
+                                }
+                            else null
+                        }.awaitAll()
+                        resultGroup.domainFlatMap {
+                            Result.success(Unit)
+                        }
+                    }
+                }
         }.mapDomainError()
     }
 

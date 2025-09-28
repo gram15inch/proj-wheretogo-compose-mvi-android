@@ -68,7 +68,7 @@ fun <T> DomainError.toUseCaseResponse(): UseCaseResponse<T> {
 enum class AuthCompany { GOOGLE, PROFILE }
 
 enum class HistoryType {
-    COMMENT, COURSE, CHECKPOINT, LIKE, BOOKMARK, REPORT
+    COMMENT, COURSE, CHECKPOINT, LIKE, REPORT
 }
 
 enum class ReportType {

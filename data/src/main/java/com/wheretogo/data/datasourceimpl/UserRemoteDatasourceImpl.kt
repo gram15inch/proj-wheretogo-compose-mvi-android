@@ -195,16 +195,18 @@ class UserRemoteDatasourceImpl @Inject constructor(
         historyId: String,
         type: HistoryType
     ): Result<Long> {
-        val updateAt= System.currentTimeMillis()
+        val addedAt= System.currentTimeMillis()
         return dataErrorCatching {
             suspendCancellableCoroutine { continuation ->
                 firestore.collection(FireStoreCollections.USER.name()).document(uid)
                     .collection(FireStoreCollections.HISTORY.name)
                     .document(type.toCollectionName())
-                    .update(mapOf(
-                        RemoteHistoryGroupWrapper::historyIdGroup.name to FieldValue.arrayUnion(historyId),
-                        RemoteHistoryGroupWrapper::lastAddedAt.name to System.currentTimeMillis()
-                    ))
+                    .update(
+                        mapOf(
+                            RemoteHistoryGroupWrapper::historyIdGroup.name to FieldValue.arrayUnion(historyId),
+                            RemoteHistoryGroupWrapper::lastAddedAt.name to addedAt
+                        )
+                    )
                     .addOnSuccessListener {
                         continuation.resume(false)
                     }.addOnFailureListener { e ->
@@ -223,9 +225,10 @@ class UserRemoteDatasourceImpl @Inject constructor(
                     }
             }
         }.mapSuccess { isNull ->
+            val historyGroup = if(historyId.isBlank()) emptyList() else listOf(historyId)
             if (isNull)
-                setHistoryGroup(uid, RemoteHistoryGroupWrapper(type, listOf(historyId), updateAt))
-            Result.success(updateAt)
+                setHistoryGroup(uid, RemoteHistoryGroupWrapper(type, historyGroup, addedAt))
+            Result.success(addedAt)
         }
     }
 
@@ -252,7 +255,6 @@ class UserRemoteDatasourceImpl @Inject constructor(
             HistoryType.CHECKPOINT -> FireStoreCollections.CHECKPOINT.name
             HistoryType.COMMENT -> FireStoreCollections.COMMENT.name
             HistoryType.LIKE -> FireStoreCollections.LIKE.name
-            HistoryType.BOOKMARK -> FireStoreCollections.BOOKMARK.name
             HistoryType.REPORT -> FireStoreCollections.REPORT.name
         }
     }

@@ -73,10 +73,6 @@ fun History.map(type: HistoryType, data: HashSet<String>): History {
         HistoryType.LIKE -> {
             copy(like = like.copy(type,data))
         }
-
-        HistoryType.BOOKMARK -> {
-            copy(bookmark = bookmark.copy(type,data))
-        }
     }
 }
 
@@ -100,10 +96,6 @@ fun History.get(type: HistoryType): HashSet<String> {
 
         HistoryType.LIKE -> {
             like.historyIdGroup
-        }
-
-        HistoryType.BOOKMARK -> {
-            bookmark.historyIdGroup
         }
     }
 }

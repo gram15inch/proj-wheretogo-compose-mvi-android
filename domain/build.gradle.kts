@@ -21,7 +21,15 @@ android {
     }
 
     buildTypes{
-        create("qa") {}
+        debug {
+            buildConfigField( "Boolean", "COOLDOWN", "false")
+        }
+        create("qa") {
+            buildConfigField( "Boolean", "COOLDOWN", "true")
+        }
+        release {
+            buildConfigField( "Boolean", "COOLDOWN", "true")
+        }
     }
 
     compileOptions {
