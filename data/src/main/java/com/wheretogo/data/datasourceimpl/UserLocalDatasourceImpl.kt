@@ -31,6 +31,7 @@ class UserLocalDatasourceImpl @Inject constructor(
     private val lastVisitedDate = longPreferencesKey("lastVisitedDate_profile")
     private val accountCreationDate = longPreferencesKey("accountCreationDate_profile")
     private val isAdRemove = booleanPreferencesKey("isAdRemove_profile")
+    private val isAdmin = booleanPreferencesKey("isAdmin_profile")
 
     private val bookmark = stringSetPreferencesKey("bookmark_profile")
     private val like = stringSetPreferencesKey("like_profile")
@@ -123,6 +124,7 @@ class UserLocalDatasourceImpl @Inject constructor(
                 preferences[lastVisitedDate] = profile.private.lastVisited
                 preferences[accountCreationDate] = profile.private.accountCreation
                 preferences[isAdRemove] = profile.private.isAdRemove
+                preferences[isAdmin] = profile.private.isAdmin
             }
             Unit
         }
@@ -165,7 +167,8 @@ class UserLocalDatasourceImpl @Inject constructor(
                     authCompany = preferences[authCompany] ?: "",
                     lastVisited = preferences[lastVisitedDate] ?: 0L,
                     accountCreation = preferences[accountCreationDate] ?: 0L,
-                    isAdRemove = preferences[isAdRemove] ?: false
+                    isAdRemove = preferences[isAdRemove] ?: false,
+                    isAdmin = preferences[isAdmin] ?: false
                 )
             )
         }

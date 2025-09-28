@@ -120,5 +120,6 @@
     <string name="invalid_data">잘못된 데이터</string>
     <string name="network_error">네트워크가 원활하지 않아요. 연결 상태를 확인해 주세요.</string>
     <string name="unexpect_error">요청을 완료할 수 없습니다. 앱을 다시 시작하거나 캐시를 지우고 시도해 주세요.</string>
+    <string name="cool_down_error">🏝️더 좋은 여행 정보를 위해 잠깐만 기다려 주세요.\n %s분 뒤에 다시 등록할 수 있어요.</string>
 
 </resources>

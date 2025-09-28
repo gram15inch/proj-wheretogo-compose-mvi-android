@@ -109,8 +109,8 @@ fun RemoteProfilePrivate.toProfilePrivate(): ProfilePrivate {
         authCompany = authCompany,
         lastVisited = lastVisited,
         accountCreation = accountCreation,
-        isAdRemove = isAdRemove,
-        isAdmin = isAdmin
+        isAdRemove = adRemove,
+        isAdmin = admin
     )
 }
 
@@ -120,8 +120,8 @@ fun RemoteProfilePrivate.toLocalProfilePrivate(): LocalProfilePrivate {
         authCompany = authCompany,
         lastVisited = lastVisited,
         accountCreation = accountCreation,
-        isAdRemove = isAdRemove,
-        isAdmin = isAdmin
+        isAdRemove = adRemove,
+        isAdmin = admin
     )
 }
 
@@ -131,8 +131,8 @@ fun ProfilePrivate.toRemoteProfilePrivate(): RemoteProfilePrivate {
         authCompany = authCompany,
         lastVisited = lastVisited,
         accountCreation = accountCreation,
-        isAdRemove = isAdRemove,
-        isAdmin = isAdmin
+        adRemove = isAdRemove,
+        admin = isAdmin
     )
 }
 

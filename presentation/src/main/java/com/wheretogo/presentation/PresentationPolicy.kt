@@ -71,6 +71,7 @@ sealed class AppError : Exception() {
     data class CredentialError(val msg: String = "") : AppError()
     data class Ignore(val msg: String = "") : AppError()
     data class AdLoadError(val msg: String = "") : AppError()
+    data class WaitCoolDown(val remainTimeInMinute: Int = 0) : AppError()
     data class UnexpectedException(val throwable: Throwable) : AppError()
 }
 
@@ -213,12 +214,13 @@ fun UseCaseResponse<*>.toAppError(): AppError {
 fun Throwable.toAppError(): AppError {
     return when (this) {
         is AppError -> this
-        is DomainError.NetworkError -> AppError.NetworkError()
-        is DomainError.UserInvalid -> AppError.NeedSignIn()
-        is DomainError.ExpireData -> AppError.InvalidState()
-        is GetCredentialCancellationException -> AppError.Ignore()
-        is GetCredentialCustomException -> AppError.CredentialError()
-        is NoCredentialException -> AppError.CredentialError()
+        is DomainError.NetworkError -> AppError.NetworkError(msg)
+        is DomainError.UserInvalid -> AppError.NeedSignIn(msg)
+        is DomainError.ExpireData -> AppError.InvalidState(msg)
+        is DomainError.CoolDownData -> AppError.WaitCoolDown(remainingMinutes)
+        is GetCredentialCancellationException -> AppError.Ignore(message?:"")
+        is GetCredentialCustomException -> AppError.CredentialError(errorMessage.toString())
+        is NoCredentialException -> AppError.CredentialError(errorMessage.toString())
         else -> {
             AppError.UnexpectedException(this)
         }
@@ -255,6 +257,10 @@ class DefaultErrorHandler() : ViewModelErrorHandler {
 
             is AppError.MapNotSupportExcludeLocation ->
                 EventBus.send(AppEvent.SnackBar(EventMsg(R.string.no_supprot_app_exclude_my_loction)))
+
+            is AppError.WaitCoolDown->{
+                EventBus.send(AppEvent.SnackBar(EventMsg(R.string.cool_down_error, arg = "${error.remainTimeInMinute}")))
+            }
 
             is AppError.Ignore -> {}
 

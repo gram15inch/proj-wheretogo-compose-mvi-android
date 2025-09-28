@@ -6,6 +6,6 @@ data class RemoteProfilePrivate(
     val authCompany: String = "",
     val lastVisited: Long = 0L,
     val accountCreation: Long = 0L,
-    val isAdRemove: Boolean = false,
-    val isAdmin: Boolean = false
+    val adRemove: Boolean = false,
+    val admin: Boolean = false
 )

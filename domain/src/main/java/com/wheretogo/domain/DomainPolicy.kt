@@ -2,6 +2,7 @@ package com.wheretogo.domain
 
 import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.route.RouteCategory
+import java.util.concurrent.TimeUnit
 
 const val SECOND = 1000L
 const val MIN = 60 * SECOND
@@ -16,12 +17,17 @@ const val ROUTE_MIN_ZOOM = 9.5
 const val CHECKPOINT_MIN_ZOOM = 9.5
 const val LIST_ITEM_ZOOM = 12.0
 
+val CourseCooldown = DefaultCoolDownPolicy(600)
+val CheckpointCooldown = DefaultCoolDownPolicy(15)
+val CommentCooldown = DefaultCoolDownPolicy(1)
+
 sealed class DomainError : Exception() {
     data class NetworkError(val msg: String = "") : DomainError()
     data class UserInvalid(val msg: String = "") : DomainError()
     data class NotFound(val msg: String = "") : DomainError()
     data class InternalError(val msg: String = "") : DomainError()
     data class ExpireData(val msg: String = "") : DomainError()
+    data class CoolDownData(val remainingMinutes: Int = 0) : DomainError()
     data class UnexpectedException(val throwable: Throwable) : DomainError()
 }
 
@@ -148,5 +154,21 @@ fun zoomToGeohashLength(zoom: Double): Int {
         in 10.5..<12.5 -> 4
         else -> 5
 
+    }
+}
+
+sealed interface CoolDownPolicy {
+    fun isCoolDown(timestamp: Long): Result<Unit>
+}
+
+class DefaultCoolDownPolicy(
+   private val minCoolDownMinutes:Int
+) : CoolDownPolicy {
+    override fun isCoolDown(timestamp: Long): Result<Unit> {
+        val waitingMinutes=
+            TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - timestamp).toInt()
+        return if (minCoolDownMinutes > waitingMinutes)
+            Result.failure(DomainError.CoolDownData(minCoolDownMinutes - waitingMinutes))
+        else Result.success(Unit)
     }
 }
