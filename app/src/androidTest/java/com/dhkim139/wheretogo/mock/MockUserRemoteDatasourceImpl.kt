@@ -7,6 +7,7 @@ import com.wheretogo.data.feature.dataErrorCatching
 import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
 import com.wheretogo.data.model.user.RemoteProfilePrivate
 import com.wheretogo.data.model.user.RemoteProfilePublic
+import com.wheretogo.data.remoteGroupWrapper
 import com.wheretogo.data.toProfile
 import com.wheretogo.data.toProfilePrivate
 import com.wheretogo.data.toProfilePublic
@@ -17,7 +18,7 @@ import com.wheretogo.domain.map
 import javax.inject.Inject
 
 class MockUserRemoteDatasourceImpl @Inject constructor(
-    private val mockRemoteUser: MockRemoteUser
+    mockRemoteUser: MockRemoteUser
 ) : UserRemoteDatasource {
     private var userRemoteGroup =
         mutableMapOf<String, MockRemoteUser>(mockRemoteUser.profile.uid to mockRemoteUser) // userId
@@ -80,7 +81,7 @@ class MockUserRemoteDatasourceImpl @Inject constructor(
         uid: String,
         historyId: String,
         type: HistoryType
-    ): Result<Unit> {
+    ): Result<Long> {
         return dataErrorCatching {
             val user = userRemoteGroup.get(uid)
             if (user != null) {
@@ -89,10 +90,15 @@ class MockUserRemoteDatasourceImpl @Inject constructor(
                 val newUser = user.copy(history = newHistory)
                 userRemoteGroup[uid] = newUser
             }
+            System.currentTimeMillis()
         }
     }
 
-    override suspend fun deleteHistory(uid: String, type: HistoryType): Result<Unit> {
+    override suspend fun removeHistory(
+        uid: String,
+        historyId: String,
+        type: HistoryType
+    ): Result<Unit> {
         return dataErrorCatching {
             val user = userRemoteGroup.get(uid)
             if (user != null) {
@@ -104,16 +110,13 @@ class MockUserRemoteDatasourceImpl @Inject constructor(
         }
     }
 
-    override suspend fun getHistoryGroup(uid: String): Result<Map<HistoryType, HashSet<String>>> {
+    override suspend fun getHistoryGroup(uid: String): Result<List<RemoteHistoryGroupWrapper>> {
         return dataErrorCatching {
             val user = userRemoteGroup[uid]
             if (user == null)
-                return Result.success(emptyMap())
-            val historyMap = mutableMapOf<HistoryType, HashSet<String>>()
-            HistoryType.entries.forEach {
-                historyMap[it] = user.history.get(it)
-            }
-            historyMap
+                return Result.success(emptyList())
+
+            user.history.remoteGroupWrapper()
         }
     }
 

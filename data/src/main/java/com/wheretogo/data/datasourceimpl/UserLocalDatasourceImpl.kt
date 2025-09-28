@@ -9,19 +9,20 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import com.wheretogo.data.datasource.UserLocalDatasource
 import com.wheretogo.data.feature.dataErrorCatching
+import com.wheretogo.data.model.history.LocalHistoryGroupWrapper
 import com.wheretogo.data.model.user.LocalProfile
 import com.wheretogo.data.model.user.LocalProfilePrivate
 import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.model.user.History
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
+import kotlin.let
 
 class UserLocalDatasourceImpl @Inject constructor(
     private val userDataStore: DataStore<Preferences>
 ) : UserLocalDatasource {
-    private val isRequestLoginKey = booleanPreferencesKey("isRequestLoginKey")
-
     private val uid = stringPreferencesKey("uid_profile")
     private val mail = stringPreferencesKey("mail_profile")
     private val hashMail = stringPreferencesKey("hashmail_profile")
@@ -30,46 +31,45 @@ class UserLocalDatasourceImpl @Inject constructor(
     private val lastVisitedDate = longPreferencesKey("lastVisitedDate_profile")
     private val accountCreationDate = longPreferencesKey("accountCreationDate_profile")
     private val isAdRemove = booleanPreferencesKey("isAdRemove_profile")
+    private val isAdmin = booleanPreferencesKey("isAdmin_profile")
 
-    private val bookmark = stringSetPreferencesKey("bookmark_profile")
     private val like = stringSetPreferencesKey("like_profile")
     private val comment = stringSetPreferencesKey("comment_profile")
     private val course = stringSetPreferencesKey("course_profile")
     private val checkpoint = stringSetPreferencesKey("checkpoint_profile")
     private val reportContent = stringSetPreferencesKey("report_content_profile")
 
+    private val commentAddedAt = longPreferencesKey("comment_added_at_profile")
+    private val courseAddedAt = longPreferencesKey("course_added_at_profile")
+    private val checkpointAddedAt = longPreferencesKey("checkpoint_added_at_profile")
 
-    override suspend fun addHistory(historyId: String, type: HistoryType): Result<Unit> {
+
+    override suspend fun addHistory(type: HistoryType, historyId: String, addedAt: Long): Result<Unit> {
         return dataErrorCatching {
-            val key = getHistoryKey(type)
+            val historyKey = getHistoryKey(type)
+            val addedAtKey = getHistoryAddedAtKey(type)
             userDataStore.edit { preferences ->
-                preferences[key] =
-                    preferences[key]?.toMutableSet()?.apply { this += historyId }
-                        ?: setOf(historyId)
+                if(historyId.isNotBlank())
+                    historyKey.let { key ->
+                        preferences[key] =
+                            preferences[key]?.toMutableSet()?.apply { this += historyId }
+                                ?: setOf(historyId)
+                    }
+
+                addedAtKey?.let { key ->
+                    preferences[key] = addedAt
+                }
             }
+
             Unit
         }
     }
 
-    override suspend fun setHistoryGroup(
-        historyIdGroup: HashSet<String>,
-        type: HistoryType
-    ): Result<Unit> {
+    override suspend fun removeHistory(type: HistoryType, historyId: String): Result<Unit> {
         return dataErrorCatching {
-            val key = getHistoryKey(type)
+            val historyKey = getHistoryKey(type)
             userDataStore.edit { preferences ->
-                preferences[key] = historyIdGroup
-            }
-            Unit
-        }
-    }
-
-    override suspend fun removeHistory(historyId: String, type: HistoryType): Result<Unit> {
-        return dataErrorCatching {
-            val key = getHistoryKey(type)
-            userDataStore.edit { preferences ->
-                preferences[key] =
-                    preferences[key]?.toMutableSet()?.apply { this -= historyId } ?: emptySet()
+                preferences[historyKey] = preferences[historyKey]?.toMutableSet()?.apply { this -= historyId } ?: emptySet()
             }
             Unit
         }
@@ -78,7 +78,6 @@ class UserLocalDatasourceImpl @Inject constructor(
     private fun getHistoryKey(type: HistoryType): Preferences.Key<Set<String>> {
         return when (type) {
             HistoryType.LIKE -> like
-            HistoryType.BOOKMARK -> bookmark
             HistoryType.COMMENT -> comment
             HistoryType.COURSE -> course
             HistoryType.CHECKPOINT -> checkpoint
@@ -86,11 +85,31 @@ class UserLocalDatasourceImpl @Inject constructor(
         }
     }
 
-    override fun getHistoryFlow(type: HistoryType): Flow<HashSet<String>> {
-        val key = getHistoryKey(type)
-        return userDataStore.data.map { preferences ->
-            preferences[key]?.toHashSet() ?: hashSetOf()
+    private fun getHistoryAddedAtKey(type: HistoryType): Preferences.Key<Long>?{
+        return when (type) {
+            HistoryType.COMMENT -> commentAddedAt
+            HistoryType.COURSE -> courseAddedAt
+            HistoryType.CHECKPOINT -> checkpointAddedAt
+            else -> null
         }
+    }
+
+    override suspend fun getHistory(type: HistoryType): LocalHistoryGroupWrapper {
+        val historyKey = getHistoryKey(type)
+        val addedAtKey = getHistoryAddedAtKey(type)
+        val historyId = userDataStore.data.map { preferences ->
+            preferences[historyKey]?.toHashSet() ?: hashSetOf()
+        }.first()
+
+        val addedAt = if(addedAtKey==null) 0L else  userDataStore.data.map { preferences ->
+            preferences[addedAtKey]?:0L
+        }.first()
+
+        return LocalHistoryGroupWrapper(
+            type = type,
+            historyIdGroup = historyId,
+            lastAddedAt = addedAt
+        )
     }
 
     override suspend fun setProfile(profile: LocalProfile): Result<Unit> {
@@ -104,6 +123,7 @@ class UserLocalDatasourceImpl @Inject constructor(
                 preferences[lastVisitedDate] = profile.private.lastVisited
                 preferences[accountCreationDate] = profile.private.accountCreation
                 preferences[isAdRemove] = profile.private.isAdRemove
+                preferences[isAdmin] = profile.private.isAdmin
             }
             Unit
         }
@@ -112,12 +132,15 @@ class UserLocalDatasourceImpl @Inject constructor(
     override suspend fun setHistory(history: History): Result<Unit> {
         return dataErrorCatching {
             userDataStore.edit { preferences ->
-                preferences[bookmark] = history.bookmarkGroup
-                preferences[like] = history.likeGroup
-                preferences[comment] = history.commentGroup
-                preferences[checkpoint] = history.checkpointGroup
-                preferences[course] = history.courseGroup
-                preferences[reportContent] = history.reportGroup
+                preferences[course] = history.course.historyIdGroup
+                preferences[checkpoint] = history.checkpoint.historyIdGroup
+                preferences[comment] = history.comment.historyIdGroup
+                preferences[like] = history.like.historyIdGroup
+                preferences[reportContent] = history.report.historyIdGroup
+
+                preferences[courseAddedAt] = history.course.lastAddedAt
+                preferences[commentAddedAt] = history.comment.lastAddedAt
+                preferences[checkpointAddedAt] = history.checkpoint.lastAddedAt
             }
             Unit
         }
@@ -142,7 +165,8 @@ class UserLocalDatasourceImpl @Inject constructor(
                     authCompany = preferences[authCompany] ?: "",
                     lastVisited = preferences[lastVisitedDate] ?: 0L,
                     accountCreation = preferences[accountCreationDate] ?: 0L,
-                    isAdRemove = preferences[isAdRemove] ?: false
+                    isAdRemove = preferences[isAdRemove] ?: false,
+                    isAdmin = preferences[isAdmin] ?: false
                 )
             )
         }
