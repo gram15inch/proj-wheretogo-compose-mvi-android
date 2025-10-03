@@ -48,8 +48,8 @@ object Versions {
 
 object Kotlin {
     const val KOTLIN_BOM = "org.jetbrains.kotlin:kotlin-bom:${Versions.KOTLIN_VERSION}"
-    const val KOTLIN_COROUTINES_PLAY_SERVICES = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0"
-
+    const val KOTLINX_COROUTINES_PLAY_SERVICES = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0"
+    const val KOTLINX_SERIALIZATION_CBOR = "org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.8.0"
 }
 
 object AndroidX {

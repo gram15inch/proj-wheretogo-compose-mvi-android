@@ -8,6 +8,7 @@ import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
 import com.wheretogo.data.model.user.RemoteProfilePrivate
 import com.wheretogo.data.model.user.RemoteProfilePublic
 import com.wheretogo.data.remoteGroupWrapper
+import com.wheretogo.data.toLocalHistoryIdGroup
 import com.wheretogo.data.toProfile
 import com.wheretogo.data.toProfilePrivate
 import com.wheretogo.data.toProfilePublic
@@ -78,15 +79,19 @@ class MockUserRemoteDatasourceImpl @Inject constructor(
     }
 
     override suspend fun addHistory(
+        type: HistoryType,
         uid: String,
-        historyId: String,
-        type: HistoryType
+        groupId: String,
+        historyId: String
     ): Result<Long> {
         return dataErrorCatching {
             val user = userRemoteGroup.get(uid)
             if (user != null) {
-                val newContent = (user.history.get(type) + historyId).toHashSet()
-                val newHistory = user.history.map(type, newContent)
+                val old = user.history.get(type).groupById.toMutableMap()
+                old[groupId] = (old[groupId]?:hashSetOf()).apply {
+                    add(historyId)
+                }
+                val newHistory = user.history.map(type, old)
                 val newUser = user.copy(history = newHistory)
                 userRemoteGroup[uid] = newUser
             }
@@ -95,15 +100,19 @@ class MockUserRemoteDatasourceImpl @Inject constructor(
     }
 
     override suspend fun removeHistory(
+        type: HistoryType,
         uid: String,
-        historyId: String,
-        type: HistoryType
+        groupId: String,
+        historyId: String
     ): Result<Unit> {
         return dataErrorCatching {
             val user = userRemoteGroup.get(uid)
             if (user != null) {
-                val newContent = hashSetOf<String>()
-                val newHistory = user.history.map(type, newContent)
+                val old = user.history.get(type).groupById.toMutableMap()
+                old[groupId] = (old[groupId]?:hashSetOf()).apply {
+                    remove(historyId)
+                }
+                val newHistory = user.history.map(type, old)
                 val newUser = user.copy(history = newHistory)
                 userRemoteGroup[uid] = newUser
             }
@@ -130,7 +139,7 @@ class MockUserRemoteDatasourceImpl @Inject constructor(
                 val newUser = user.copy(
                     history = user.history.map(
                         wrapper.type,
-                        wrapper.historyIdGroup.toHashSet()
+                        wrapper.historyIdGroup.toLocalHistoryIdGroup().groupById
                     )
                 )
                 userRemoteGroup[uid] = newUser

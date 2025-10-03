@@ -14,8 +14,8 @@ interface UserRemoteDatasource {
     suspend fun deleteProfile(uid: String): Result<Unit>
     suspend fun deleteUser(userId: String): Result<String>
 
-    suspend fun addHistory(uid: String, historyId: String, type: HistoryType): Result<Long>
-    suspend fun removeHistory(uid: String, historyId: String, type: HistoryType): Result<Unit>
     suspend fun getHistoryGroup(uid: String): Result<List<RemoteHistoryGroupWrapper>>
     suspend fun setHistoryGroup(uid: String, wrapper: RemoteHistoryGroupWrapper): Result<Unit>
+    suspend fun addHistory(type: HistoryType, uid: String, groupId: String, historyId: String): Result<Long>
+    suspend fun removeHistory(type: HistoryType, uid: String, groupId: String, historyId: String): Result<Unit>
 }

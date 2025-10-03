@@ -79,7 +79,7 @@ dependencies {
     implementation(platform(Compose.COMPOSE_BOM))
 
     // KOTLIN
-    implementation(Kotlin.KOTLIN_COROUTINES_PLAY_SERVICES)
+    implementation(Kotlin.KOTLINX_COROUTINES_PLAY_SERVICES)
 
     // Compose
     implementation(Compose.COMPOSE_UI)

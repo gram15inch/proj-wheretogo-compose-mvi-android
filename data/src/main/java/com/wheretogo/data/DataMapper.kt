@@ -6,7 +6,9 @@ import com.wheretogo.data.model.comment.RemoteComment
 import com.wheretogo.data.model.course.LocalCourse
 import com.wheretogo.data.model.course.LocalSnapshot
 import com.wheretogo.data.model.course.RemoteCourse
+import com.wheretogo.data.model.history.LocalHistory
 import com.wheretogo.data.model.history.LocalHistoryGroupWrapper
+import com.wheretogo.data.model.history.LocalHistoryIdGroup
 import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
 import com.wheretogo.data.model.map.DataLatLng
 import com.wheretogo.data.model.report.LocalReport
@@ -28,6 +30,7 @@ import com.wheretogo.domain.model.comment.CommentAddRequest
 import com.wheretogo.domain.model.course.Course
 import com.wheretogo.domain.model.course.CourseAddRequest
 import com.wheretogo.domain.model.history.HistoryGroupWrapper
+import com.wheretogo.domain.model.history.HistoryIdGroup
 import com.wheretogo.domain.model.report.Report
 import com.wheretogo.domain.model.report.ReportAddRequest
 import com.wheretogo.domain.model.route.Route
@@ -180,21 +183,6 @@ fun LocalReport.toReport(): Report {
     )
 }
 
-
-fun Report.toLocalReport(): LocalReport {
-    return LocalReport(
-        reportId = reportId,
-        type = type.name,
-        userId = userId,
-        contentId = contentId,
-        targetUserId = targetUserId,
-        targetUserName = targetUserName,
-        reason = reason,
-        status = status.name,
-        timestamp = timestamp
-    )
-}
-
 fun RemoteRoute.toLocalRoute(): LocalRoute {
     return LocalRoute(
         courseId = courseId,
@@ -203,16 +191,6 @@ fun RemoteRoute.toLocalRoute(): LocalRoute {
         distance = distance
     )
 }
-
-fun Route.toLocalRoute(): LocalRoute {
-    return LocalRoute(
-        courseId = courseId,
-        points = points.toDataLatLngGroup(),
-        duration = duration,
-        distance = distance
-    )
-}
-
 
 fun LocalRoute.toRoute(): Route {
     return Route(
@@ -317,19 +295,6 @@ fun LocalSnapshot.toSnapshot(): Snapshot {
     )
 }
 
-fun CheckPoint.toRemoteCheckPoint(): RemoteCheckPoint {
-    return RemoteCheckPoint(
-        checkPointId = checkPointId,
-        courseId = courseId,
-        userId = userId,
-        userName = userName,
-        latLng = latLng.toDataLatLng(),
-        caption = caption,
-        imageId = imageId,
-        description = description
-    )
-}
-
 fun CheckPointAddRequest.toRemoteCheckPoint(
     checkPointId: String
 ): RemoteCheckPoint {
@@ -399,28 +364,6 @@ fun CourseAddRequest.toCourse(
         cameraLatLng = content.cameraLatLng.toDataLatLng(),
         zoom = content.zoom,
         createAt = System.currentTimeMillis()
-    )
-}
-
-fun LocalCourse.toCourse(
-    points: List<LatLng> = emptyList(),
-    like: Int = this.like
-): Course {
-    return Course(
-        courseId = courseId,
-        courseName = courseName,
-        userId = userId,
-        userName = userName,
-        waypoints = waypoints.toLatLngGroup(),
-        checkpointIdGroup = checkpointSnapshot.indexIdGroup,
-        points = points,
-        duration = duration,
-        type = type,
-        level = level,
-        relation = relation,
-        cameraLatLng = cameraLatLng.toLatLng(),
-        zoom = zoom,
-        like = like
     )
 }
 
@@ -532,15 +475,27 @@ fun List<LatLng>.toDataLatLngGroup(): List<DataLatLng> {
 fun LocalHistoryGroupWrapper.toHistoryGroupWrapper(): HistoryGroupWrapper {
     return HistoryGroupWrapper(
         type = type,
-        historyIdGroup = historyIdGroup,
+        historyIdGroup = HistoryIdGroup(
+            groupById = historyIdGroup.groupById
+        ),
         lastAddedAt = lastAddedAt
     )
+}
+
+fun Map<String, List<String>>.toLocalHistoryIdGroup(): LocalHistoryIdGroup {
+    return LocalHistoryIdGroup(this.mapValues {
+        it.value.toHashSet()
+    })
+}
+
+fun HistoryIdGroup.toRemoteHistoryIdGroup(): Map<String, List<String>> {
+    return this.groupById.mapValues { it.value.toList() }
 }
 
 fun RemoteHistoryGroupWrapper.toLocalHistoryGroupWrapper(): LocalHistoryGroupWrapper {
     return LocalHistoryGroupWrapper(
         type = type,
-        historyIdGroup = historyIdGroup.toHashSet(),
+        historyIdGroup = historyIdGroup.toLocalHistoryIdGroup(),
         lastAddedAt = lastAddedAt
     )
 }
@@ -548,33 +503,33 @@ fun RemoteHistoryGroupWrapper.toLocalHistoryGroupWrapper(): LocalHistoryGroupWra
 fun HistoryGroupWrapper.toRemoteHistoryGroupWrapper(): RemoteHistoryGroupWrapper {
     return RemoteHistoryGroupWrapper(
         type = type,
-        historyIdGroup = historyIdGroup.toList(),
+        historyIdGroup = historyIdGroup.toRemoteHistoryIdGroup(),
         lastAddedAt = lastAddedAt
     )
 }
 
-fun List<RemoteHistoryGroupWrapper>.toHistory(): History {
-    var history = History()
+fun List<RemoteHistoryGroupWrapper>.toLocalHistory(): LocalHistory {
+    var history = LocalHistory()
     forEach {
         history = when (it.type) {
             HistoryType.COURSE -> history.copy(
-                course = it.toLocalHistoryGroupWrapper().toHistoryGroupWrapper()
+                course = it.toLocalHistoryGroupWrapper()
             )
 
             HistoryType.CHECKPOINT -> history.copy(
-                checkpoint = it.toLocalHistoryGroupWrapper().toHistoryGroupWrapper()
+                checkpoint = it.toLocalHistoryGroupWrapper()
             )
 
             HistoryType.COMMENT -> history.copy(
-                comment = it.toLocalHistoryGroupWrapper().toHistoryGroupWrapper()
+                comment = it.toLocalHistoryGroupWrapper()
             )
 
             HistoryType.LIKE -> history.copy(
-                like = it.toLocalHistoryGroupWrapper().toHistoryGroupWrapper()
+                like = it.toLocalHistoryGroupWrapper()
             )
 
             HistoryType.REPORT -> history.copy(
-                report = it.toLocalHistoryGroupWrapper().toHistoryGroupWrapper()
+                report = it.toLocalHistoryGroupWrapper()
             )
         }
     }

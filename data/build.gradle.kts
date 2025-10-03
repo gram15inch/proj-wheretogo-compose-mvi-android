@@ -12,6 +12,7 @@ plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
     id("com.google.dagger.hilt.android")
+    kotlin("plugin.serialization")
     id("com.google.devtools.ksp")
 }
 
@@ -75,6 +76,9 @@ dependencies {
 
     // Bom
     implementation(platform(Kotlin.KOTLIN_BOM))
+
+    // Kotlin
+    implementation(Kotlin.KOTLINX_SERIALIZATION_CBOR)
 
     // Androidx
     api(AndroidX.ROOM_KTX)

@@ -2,10 +2,12 @@ package com.dhkim139.wheretogo.di
 
 import com.dhkim139.wheretogo.mock.model.MockRemoteUser
 import com.wheretogo.data.model.course.RemoteCourse
+import com.wheretogo.data.toLocalHistoryIdGroup
 import com.wheretogo.data.toRemoteCourse
 import com.wheretogo.domain.AuthCompany
 import com.wheretogo.domain.feature.hashSha256
 import com.wheretogo.domain.model.dummy.getCourseDummy
+import com.wheretogo.domain.model.history.HistoryIdGroup
 import com.wheretogo.domain.model.user.History
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePrivate
@@ -23,6 +25,11 @@ class MockModelModule {
     @Provides
     @Singleton
     fun provideRemoteUser(): MockRemoteUser {
+        val remoteCourseGroup =
+            courseGroup.associateBy({it.courseId},{listOf(it.courseId)})
+        val remoteCheckpointGroup =
+            courseGroup.associateBy({it.courseId},{it.checkpointIdGroup})
+
         return MockRemoteUser(
             token = "token1",
             profile = Profile(
@@ -34,14 +41,16 @@ class MockModelModule {
                     authCompany = AuthCompany.GOOGLE.name
                 )
             ),
-            history = History(
-                commentGroup = hashSetOf(),
-                courseGroup = courseGroup.map { it.courseId }.toHashSet(),
-                checkpointGroup = courseGroup.flatMap { it.checkpointIdGroup }.toHashSet(),
-                likeGroup = hashSetOf(),
-                bookmarkGroup = hashSetOf(),
-                reportGroup = hashSetOf(),
-            )
+            history = History().run {
+                copy(
+                    course = course.copy(
+                        historyIdGroup = HistoryIdGroup(remoteCourseGroup.toLocalHistoryIdGroup().groupById)
+                    ),
+                    checkpoint = checkpoint.copy(
+                        historyIdGroup = HistoryIdGroup(remoteCheckpointGroup.toLocalHistoryIdGroup().groupById)
+                    )
+                )
+            }
         )
     }
 
