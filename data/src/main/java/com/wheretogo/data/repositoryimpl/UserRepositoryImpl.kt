@@ -6,8 +6,8 @@ import com.wheretogo.data.datasource.UserRemoteDatasource
 import com.wheretogo.data.feature.dataErrorCatching
 import com.wheretogo.data.feature.mapDomainError
 import com.wheretogo.data.feature.mapSuccess
-import com.wheretogo.data.toHistory
 import com.wheretogo.data.toHistoryGroupWrapper
+import com.wheretogo.data.toLocalHistory
 import com.wheretogo.data.toLocalProfile
 import com.wheretogo.data.toProfile
 import com.wheretogo.data.toProfilePrivate
@@ -57,10 +57,19 @@ class UserRepositoryImpl @Inject constructor(
                         val resultGroup= HistoryType.entries.mapNotNull { type->
                             if(type in listOf(HistoryType.COURSE, HistoryType.CHECKPOINT, HistoryType.COMMENT))
                                 async {
-                                    userRemoteDatasource.addHistory(uid = profile.uid, historyId = "", type = type)
-                                        .mapSuccess { addedAt ->
-                                        userLocalDatasource.addHistory(type = type, historyId = "", addedAt = addedAt)
-                                        }
+                                    userRemoteDatasource.addHistory(
+                                        type = type,
+                                        uid = profile.uid,
+                                        groupId = "",
+                                        historyId = ""
+                                    ).mapSuccess { addedAt ->
+                                        userLocalDatasource.addHistory(
+                                            type = type,
+                                            groupId = "",
+                                            historyId = "",
+                                            addedAt = addedAt
+                                        )
+                                    }
                                 }
                             else null
                         }.awaitAll()
@@ -101,8 +110,7 @@ class UserRepositoryImpl @Inject constructor(
 
                        val history= async {
                            userRemoteDatasource.getHistoryGroup(authProfile.uid)
-                               .mapCatching { it.toHistory() }
-                               .mapSuccess { history -> userLocalDatasource.setHistory(history) }
+                               .mapSuccess { history -> userLocalDatasource.iniHistory(history.toLocalHistory()) }
                        }
 
                         visitUpdate.await()
@@ -141,7 +149,6 @@ class UserRepositoryImpl @Inject constructor(
 
 
     // history
-
     override suspend fun getHistory(type: HistoryType): Result<HistoryGroupWrapper> {
         return dataErrorCatching {
             userLocalDatasource.getHistory(type).toHistoryGroupWrapper()
@@ -152,6 +159,7 @@ class UserRepositoryImpl @Inject constructor(
 
     override suspend fun addHistory(
         type: HistoryType,
+        groupId:String,
         historyId: String
     ): Result<Unit> {
         return dataErrorCatching {
@@ -159,14 +167,15 @@ class UserRepositoryImpl @Inject constructor(
             require(historyId.isNotEmpty()) { "inValid historyId: $historyId" }
             profile
         }.mapSuccess { profile ->
-            userRemoteDatasource.addHistory(profile.uid, historyId, type)
+            userRemoteDatasource.addHistory(type, profile.uid, groupId, historyId)
         }.mapSuccess {
-            userLocalDatasource.addHistory(type, historyId,it)
+            userLocalDatasource.addHistory(type, groupId, historyId,it)
         }.mapDomainError()
     }
 
     override suspend fun addHistoryToLocal(
         type: HistoryType,
+        groupId: String,
         historyId: String,
         addedAt: Long
     ): Result<Unit> {
@@ -174,12 +183,13 @@ class UserRepositoryImpl @Inject constructor(
             validateUser()
             require(historyId.isNotEmpty()) { "inValid historyId: $historyId" }
         }.mapSuccess {
-            userLocalDatasource.addHistory(type, historyId, addedAt)
+            userLocalDatasource.addHistory(type, groupId, historyId, addedAt)
         }.mapDomainError()
     }
 
     override suspend fun removeHistory(
         type: HistoryType,
+        groupId:String,
         historyId: String
     ): Result<Unit> {
         return dataErrorCatching {
@@ -187,12 +197,13 @@ class UserRepositoryImpl @Inject constructor(
             require(historyId.isNotEmpty()) { "inValid historyId: $historyId" }
             profile
         }.mapSuccess { profile ->
-            userLocalDatasource.removeHistory(type, historyId)
+            userLocalDatasource.removeHistory(type, groupId, historyId)
                 .mapSuccess {
                     userRemoteDatasource.removeHistory(
+                        type = type,
                         uid = profile.uid,
-                        historyId = historyId,
-                        type = type
+                        groupId = groupId,
+                        historyId = historyId
                     )
                 }
         }.mapDomainError()
@@ -200,13 +211,14 @@ class UserRepositoryImpl @Inject constructor(
 
     override suspend fun removeHistoryToLocal(
         type: HistoryType,
+        groupId: String,
         historyId: String
     ): Result<Unit> {
         return dataErrorCatching {
             validateUser()
             require(historyId.isNotEmpty()) { "inValid historyId: $historyId" }
         }.mapSuccess {
-            userLocalDatasource.removeHistory(type, historyId,)
+            userLocalDatasource.removeHistory(type, groupId, historyId)
         }.mapDomainError()
     }
 

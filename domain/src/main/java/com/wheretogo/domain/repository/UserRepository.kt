@@ -21,22 +21,26 @@ interface UserRepository {
 
     suspend fun addHistory(
         type: HistoryType,
+        groupId: String,
         historyId: String
     ): Result<Unit>
 
     suspend fun addHistoryToLocal(
         type: HistoryType,
+        groupId: String,
         historyId: String,
         addedAt: Long = 0
     ): Result<Unit>
 
     suspend fun removeHistory(
         type: HistoryType,
+        groupId: String,
         historyId: String
     ): Result<Unit>
 
     suspend fun removeHistoryToLocal(
         type: HistoryType,
+        groupId: String,
         historyId: String
     ): Result<Unit>
 

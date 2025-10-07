@@ -152,6 +152,22 @@ class UserRemoteDatasourceImpl @Inject constructor(
         }
     }
 
+    override suspend fun getHistoryGroup(uid: String): Result<List<RemoteHistoryGroupWrapper>> {
+        return dataErrorCatching {
+            val snapshot = suspendCancellableCoroutine { continuation ->
+                firestore.collection(FireStoreCollections.USER.name()).document(uid)
+                    .collection(FireStoreCollections.HISTORY.name)
+                    .get()
+                    .addOnSuccessListener {
+                        continuation.resume(it)
+                    }
+                    .addOnFailureListener { e ->
+                        continuation.resumeWithException(e)
+                    }
+            }
+            snapshot.toObjects(RemoteHistoryGroupWrapper::class.java)
+        }
+    }
 
     override suspend fun setHistoryGroup(
         uid: String,
@@ -172,38 +188,22 @@ class UserRemoteDatasourceImpl @Inject constructor(
         }
     }
 
-    override suspend fun removeHistory(uid: String, historyId: String, type: HistoryType): Result<Unit> {
-        return dataErrorCatching {
-            suspendCancellableCoroutine { continuation ->
-                firestore.collection(FireStoreCollections.USER.name()).document(uid)
-                    .collection(FireStoreCollections.HISTORY.name)
-                    .document(type.toCollectionName())
-                    .update(
-                        RemoteHistoryGroupWrapper::historyIdGroup.name,
-                        FieldValue.arrayRemove(historyId)
-                    ).addOnSuccessListener { _ ->
-                        continuation.resume(Unit)
-                    }.addOnFailureListener { e ->
-                        continuation.resumeWithException(e)
-                    }
-            }
-        }
-    }
-
     override suspend fun addHistory(
+        type: HistoryType,
         uid: String,
-        historyId: String,
-        type: HistoryType
+        groupId: String,
+        historyId: String
     ): Result<Long> {
         val addedAt= System.currentTimeMillis()
         return dataErrorCatching {
             suspendCancellableCoroutine { continuation ->
+                val field = "${RemoteHistoryGroupWrapper::historyIdGroup.name}.$groupId"
                 firestore.collection(FireStoreCollections.USER.name()).document(uid)
                     .collection(FireStoreCollections.HISTORY.name)
                     .document(type.toCollectionName())
                     .update(
                         mapOf(
-                            RemoteHistoryGroupWrapper::historyIdGroup.name to FieldValue.arrayUnion(historyId),
+                            field to FieldValue.arrayUnion(historyId),
                             RemoteHistoryGroupWrapper::lastAddedAt.name to addedAt
                         )
                     )
@@ -227,25 +227,33 @@ class UserRemoteDatasourceImpl @Inject constructor(
         }.mapSuccess { isNull ->
             val historyGroup = if(historyId.isBlank()) emptyList() else listOf(historyId)
             if (isNull)
-                setHistoryGroup(uid, RemoteHistoryGroupWrapper(type, historyGroup, addedAt))
+                setHistoryGroup(uid, RemoteHistoryGroupWrapper(type, mapOf(groupId to historyGroup), addedAt))
             Result.success(addedAt)
         }
     }
 
-    override suspend fun getHistoryGroup(uid: String): Result<List<RemoteHistoryGroupWrapper>> {
+    override suspend fun removeHistory(
+        type: HistoryType,
+        uid: String,
+        groupId: String,
+        historyId: String
+    ): Result<Unit> {
         return dataErrorCatching {
-            val snapshot = suspendCancellableCoroutine { continuation ->
+            suspendCancellableCoroutine { continuation ->
+                val field = "${RemoteHistoryGroupWrapper::historyIdGroup.name}.$groupId"
                 firestore.collection(FireStoreCollections.USER.name()).document(uid)
                     .collection(FireStoreCollections.HISTORY.name)
-                    .get()
-                    .addOnSuccessListener {
-                        continuation.resume(it)
-                    }
-                    .addOnFailureListener { e ->
+                    .document(type.toCollectionName())
+                    .update(
+                        mapOf(
+                            field to FieldValue.arrayRemove(historyId)
+                        )
+                    ).addOnSuccessListener { _ ->
+                        continuation.resume(Unit)
+                    }.addOnFailureListener { e ->
                         continuation.resumeWithException(e)
                     }
             }
-            snapshot.toObjects(RemoteHistoryGroupWrapper::class.java)
         }
     }
 

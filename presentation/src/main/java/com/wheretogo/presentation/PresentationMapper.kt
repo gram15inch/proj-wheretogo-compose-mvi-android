@@ -36,11 +36,6 @@ fun List<LatLng>.toNaver(): List<NaverLatLng> {
     return this.map { NaverLatLng(it.latitude, it.longitude) }
 }
 
-
-fun List<NaverLatLng>.toDomain(): List<LatLng> {
-    return map { it.toDomainLatLng() }
-}
-
 fun NaverLatLng.toDomainLatLng(): LatLng {
     return LatLng(latitude, longitude)
 }
@@ -50,7 +45,12 @@ fun LatLng.toNaver(): NaverLatLng {
 }
 
 fun SimpleAddress.toSearchBarItem(): SearchBarItem {
-    return SearchBarItem(label = title, address = address, latlng = latlng, isCourse = type == SearchType.COURSE)
+    return SearchBarItem(
+        label = title,
+        address = address,
+        latlng = latlng,
+        isCourse = type == SearchType.COURSE
+    )
 }
 
 fun RouteAttr.toStrRes(): Int {
@@ -58,7 +58,6 @@ fun RouteAttr.toStrRes(): Int {
         RouteAttr.TYPE -> R.string.category
         RouteAttr.LEVEL -> R.string.level
         RouteAttr.RELATION -> R.string.recommend
-        else -> R.string.unknown
     }
 }
 
@@ -101,7 +100,7 @@ fun CheckPointAddState.toCheckPointContent(courseId: String): CheckPointContent 
     )
 }
 
-fun CommentAddState.toCommentContent(groupId: String, editText:String): CommentContent {
+fun CommentAddState.toCommentContent(groupId: String, editText: String): CommentContent {
     return CommentContent(
         groupId = groupId,
         emoji = this.largeEmoji.ifEmpty { emogiGroup.firstOrNull() ?: "" },
@@ -118,14 +117,10 @@ fun Comment.toCommentItemState(): CommentState.CommentItemState {
     )
 }
 
-fun CommentState.CommentItemState.toComment(): Comment {
-    return data
-}
-
 fun parseLogoImgRes(company: String): Int {
     val auth = try {
         AuthCompany.valueOf(company)
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         AuthCompany.GOOGLE
     }
 

@@ -11,6 +11,7 @@ import com.wheretogo.domain.model.comment.CommentAddRequest
 import com.wheretogo.domain.model.comment.CommentContent
 import com.wheretogo.domain.model.course.CourseAddRequest
 import com.wheretogo.domain.model.course.CourseContent
+import com.wheretogo.domain.model.history.HistoryIdGroup
 import com.wheretogo.domain.model.user.AuthProfile
 import com.wheretogo.domain.model.user.History
 import com.wheretogo.domain.model.user.Profile
@@ -52,31 +53,31 @@ fun CommentContent.toCommentAddRequest(
     )
 }
 
-fun History.map(type: HistoryType, data: HashSet<String>): History {
+fun History.map(type: HistoryType, data: Map<String, HashSet<String>>): History {
     return when (type) {
         HistoryType.COURSE -> {
-            copy(course=course.copy(type,data))
+            copy(course = course.copy(type, HistoryIdGroup(data)))
         }
 
         HistoryType.CHECKPOINT -> {
-            copy(checkpoint = checkpoint.copy(type,data))
+            copy(checkpoint = checkpoint.copy(type, HistoryIdGroup(data)))
         }
 
         HistoryType.COMMENT -> {
-            copy(comment = comment.copy(type,data))
+            copy(comment = comment.copy(type, HistoryIdGroup(data)))
         }
 
         HistoryType.REPORT -> {
-            copy(checkpoint = checkpoint.copy(type,data))
+            copy(checkpoint = checkpoint.copy(type, HistoryIdGroup(data)))
         }
 
         HistoryType.LIKE -> {
-            copy(like = like.copy(type,data))
+            copy(like = like.copy(type, HistoryIdGroup(data)))
         }
     }
 }
 
-fun History.get(type: HistoryType): HashSet<String> {
+fun History.get(type: HistoryType): HistoryIdGroup {
     return when (type) {
         HistoryType.COURSE -> {
             course.historyIdGroup

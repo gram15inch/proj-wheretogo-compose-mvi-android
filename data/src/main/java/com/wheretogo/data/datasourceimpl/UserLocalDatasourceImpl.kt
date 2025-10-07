@@ -3,22 +3,26 @@ package com.wheretogo.data.datasourceimpl
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.byteArrayPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.core.stringSetPreferencesKey
 import com.wheretogo.data.datasource.UserLocalDatasource
 import com.wheretogo.data.feature.dataErrorCatching
+import com.wheretogo.data.model.history.LocalHistory
 import com.wheretogo.data.model.history.LocalHistoryGroupWrapper
+import com.wheretogo.data.model.history.LocalHistoryIdGroup
 import com.wheretogo.data.model.user.LocalProfile
 import com.wheretogo.data.model.user.LocalProfilePrivate
 import com.wheretogo.domain.HistoryType
-import com.wheretogo.domain.model.user.History
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.cbor.Cbor
+import kotlinx.serialization.decodeFromByteArray
+import kotlinx.serialization.encodeToByteArray
 import javax.inject.Inject
-import kotlin.let
 
 class UserLocalDatasourceImpl @Inject constructor(
     private val userDataStore: DataStore<Preferences>
@@ -33,27 +37,42 @@ class UserLocalDatasourceImpl @Inject constructor(
     private val isAdRemove = booleanPreferencesKey("isAdRemove_profile")
     private val isAdmin = booleanPreferencesKey("isAdmin_profile")
 
-    private val like = stringSetPreferencesKey("like_profile")
-    private val comment = stringSetPreferencesKey("comment_profile")
-    private val course = stringSetPreferencesKey("course_profile")
-    private val checkpoint = stringSetPreferencesKey("checkpoint_profile")
-    private val reportContent = stringSetPreferencesKey("report_content_profile")
+    private val like = byteArrayPreferencesKey("like_profile")
+    private val comment = byteArrayPreferencesKey("comment_profile")
+    private val course = byteArrayPreferencesKey("course_profile")
+    private val checkpoint = byteArrayPreferencesKey("checkpoint_profile")
+    private val reportContent = byteArrayPreferencesKey("report_content_profile")
 
     private val commentAddedAt = longPreferencesKey("comment_added_at_profile")
     private val courseAddedAt = longPreferencesKey("course_added_at_profile")
     private val checkpointAddedAt = longPreferencesKey("checkpoint_added_at_profile")
 
-
-    override suspend fun addHistory(type: HistoryType, historyId: String, addedAt: Long): Result<Unit> {
+    @OptIn(ExperimentalSerializationApi::class)
+    override suspend fun addHistory(
+        type: HistoryType,
+        groupId: String,
+        historyId: String,
+        addedAt: Long
+    ): Result<Unit> {
         return dataErrorCatching {
             val historyKey = getHistoryKey(type)
             val addedAtKey = getHistoryAddedAtKey(type)
             userDataStore.edit { preferences ->
-                if(historyId.isNotBlank())
+                if (historyId.isNotBlank())
                     historyKey.let { key ->
-                        preferences[key] =
-                            preferences[key]?.toMutableSet()?.apply { this += historyId }
-                                ?: setOf(historyId)
+                        val old = preferences[key]?.run {
+                            Cbor.decodeFromByteArray(this)
+                        } ?: LocalHistoryIdGroup()
+                        val new = old.run {
+                            copy(
+                                groupById = groupById.toMutableMap().apply {
+                                    this[groupId] = this[groupId]?.toMutableSet()?.apply {
+                                        add(historyId)
+                                    }?.toHashSet() ?: hashSetOf(historyId)
+                                }
+                            )
+                        }
+                        preferences[key] = Cbor.encodeToByteArray(new)
                     }
 
                 addedAtKey?.let { key ->
@@ -65,17 +84,37 @@ class UserLocalDatasourceImpl @Inject constructor(
         }
     }
 
-    override suspend fun removeHistory(type: HistoryType, historyId: String): Result<Unit> {
+    @OptIn(ExperimentalSerializationApi::class)
+    override suspend fun removeHistory(
+        type: HistoryType,
+        groupId: String,
+        historyId: String
+    ): Result<Unit> {
         return dataErrorCatching {
             val historyKey = getHistoryKey(type)
             userDataStore.edit { preferences ->
-                preferences[historyKey] = preferences[historyKey]?.toMutableSet()?.apply { this -= historyId } ?: emptySet()
+                if (historyId.isNotBlank())
+                    historyKey.let { key ->
+                        val old = preferences[key]?.run {
+                            Cbor.decodeFromByteArray(this)
+                        } ?: LocalHistoryIdGroup()
+                        val new = old.run {
+                            copy(
+                                groupById = groupById.toMutableMap().apply {
+                                    this[groupId] = this[groupId]?.toMutableSet()?.apply {
+                                        remove(historyId)
+                                    }?.toHashSet() ?: hashSetOf(historyId)
+                                }
+                            )
+                        }
+                        preferences[key] = Cbor.encodeToByteArray(new)
+                    }
             }
             Unit
         }
     }
 
-    private fun getHistoryKey(type: HistoryType): Preferences.Key<Set<String>> {
+    private fun getHistoryKey(type: HistoryType): Preferences.Key<ByteArray> {
         return when (type) {
             HistoryType.LIKE -> like
             HistoryType.COMMENT -> comment
@@ -85,7 +124,7 @@ class UserLocalDatasourceImpl @Inject constructor(
         }
     }
 
-    private fun getHistoryAddedAtKey(type: HistoryType): Preferences.Key<Long>?{
+    private fun getHistoryAddedAtKey(type: HistoryType): Preferences.Key<Long>? {
         return when (type) {
             HistoryType.COMMENT -> commentAddedAt
             HistoryType.COURSE -> courseAddedAt
@@ -94,20 +133,21 @@ class UserLocalDatasourceImpl @Inject constructor(
         }
     }
 
+    @OptIn(ExperimentalSerializationApi::class)
     override suspend fun getHistory(type: HistoryType): LocalHistoryGroupWrapper {
         val historyKey = getHistoryKey(type)
         val addedAtKey = getHistoryAddedAtKey(type)
-        val historyId = userDataStore.data.map { preferences ->
-            preferences[historyKey]?.toHashSet() ?: hashSetOf()
+        val historyIdGroup = userDataStore.data.map { preferences ->
+            preferences[historyKey]?.run { Cbor.decodeFromByteArray(this) } ?: LocalHistoryIdGroup()
         }.first()
 
-        val addedAt = if(addedAtKey==null) 0L else  userDataStore.data.map { preferences ->
-            preferences[addedAtKey]?:0L
+        val addedAt = if (addedAtKey == null) 0L else userDataStore.data.map { preferences ->
+            preferences[addedAtKey] ?: 0L
         }.first()
 
         return LocalHistoryGroupWrapper(
             type = type,
-            historyIdGroup = historyId,
+            historyIdGroup = historyIdGroup,
             lastAddedAt = addedAt
         )
     }
@@ -129,14 +169,15 @@ class UserLocalDatasourceImpl @Inject constructor(
         }
     }
 
-    override suspend fun setHistory(history: History): Result<Unit> {
+    @OptIn(ExperimentalSerializationApi::class)
+    override suspend fun iniHistory(history: LocalHistory): Result<Unit> {
         return dataErrorCatching {
             userDataStore.edit { preferences ->
-                preferences[course] = history.course.historyIdGroup
-                preferences[checkpoint] = history.checkpoint.historyIdGroup
-                preferences[comment] = history.comment.historyIdGroup
-                preferences[like] = history.like.historyIdGroup
-                preferences[reportContent] = history.report.historyIdGroup
+                preferences[course] = Cbor.encodeToByteArray(history.course.historyIdGroup)
+                preferences[checkpoint] = Cbor.encodeToByteArray(history.checkpoint.historyIdGroup)
+                preferences[comment] = Cbor.encodeToByteArray(history.comment.historyIdGroup)
+                preferences[like] = Cbor.encodeToByteArray(history.like.historyIdGroup)
+                preferences[reportContent] = Cbor.encodeToByteArray(history.report.historyIdGroup)
 
                 preferences[courseAddedAt] = history.course.lastAddedAt
                 preferences[commentAddedAt] = history.comment.lastAddedAt
@@ -149,7 +190,7 @@ class UserLocalDatasourceImpl @Inject constructor(
     override suspend fun clearUser(): Result<Unit> {
         return dataErrorCatching {
             setProfile(LocalProfile())
-            setHistory(History())
+            iniHistory(LocalHistory())
             Unit
         }
     }
