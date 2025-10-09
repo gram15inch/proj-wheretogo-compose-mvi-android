@@ -15,7 +15,7 @@ interface UserRepository {
 
     suspend fun deleteUser(): Result<Unit>
 
-    suspend fun checkUser(mail: String): Result<Profile>
+    suspend fun checkUserExist(mail: String): Result<Profile>
 
     suspend fun getHistory(type: HistoryType): Result<HistoryGroupWrapper>
 

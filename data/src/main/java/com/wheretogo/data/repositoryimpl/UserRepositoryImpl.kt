@@ -6,6 +6,7 @@ import com.wheretogo.data.datasource.UserRemoteDatasource
 import com.wheretogo.data.feature.dataErrorCatching
 import com.wheretogo.data.feature.mapDomainError
 import com.wheretogo.data.feature.mapSuccess
+import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
 import com.wheretogo.data.toHistoryGroupWrapper
 import com.wheretogo.data.toLocalHistory
 import com.wheretogo.data.toLocalProfile
@@ -41,39 +42,44 @@ class UserRepositoryImpl @Inject constructor(
     override suspend fun createUser(profile: Profile): Result<Unit> {
         return runCatching {
             val userId = profile.uid
-            userId.isBlank().let { if (it) throw DataError.UserInvalid() }
+            userId.isBlank().let { if (it) throw DataError.UserInvalid("userId.isBlank") }
         }.mapSuccess {
             val remotePublic = profile.toProfilePublic()
             val remotePrivate = profile.private.toRemoteProfilePrivate()
             val local = remotePublic.toLocalProfile(remotePrivate)
-            userRemoteDatasource.setProfilePublic(remotePublic).zip(
+            userRemoteDatasource.setProfilePublic(remotePublic)
                 userRemoteDatasource.setProfilePrivate(
                     profile.uid,
                     remotePrivate
-                )
-            ) { _, _ -> userLocalDatasource.setProfile(local) }
-                .mapSuccess {
+                ).mapSuccess {
+                    userLocalDatasource.setProfile(local)
+                }.mapSuccess {
                     coroutineScope {
-                        val resultGroup= HistoryType.entries.mapNotNull { type->
-                            if(type in listOf(HistoryType.COURSE, HistoryType.CHECKPOINT, HistoryType.COMMENT))
-                                async {
-                                    userRemoteDatasource.addHistory(
+                        HistoryType.entries.mapNotNull { type ->
+                            if (type in listOf(
+                                    HistoryType.COURSE,
+                                    HistoryType.CHECKPOINT,
+                                    HistoryType.COMMENT
+                                )
+                            )
+                            async {
+                                userRemoteDatasource.setHistoryGroup(
+                                    uid = profile.uid,
+                                    RemoteHistoryGroupWrapper(
                                         type = type,
-                                        uid = profile.uid,
+                                        lastAddedAt = System.currentTimeMillis()
+                                    )
+                                ).mapSuccess { addedAt ->
+                                    userLocalDatasource.addHistory(
+                                        type = type,
                                         groupId = "",
-                                        historyId = ""
-                                    ).mapSuccess { addedAt ->
-                                        userLocalDatasource.addHistory(
-                                            type = type,
-                                            groupId = "",
-                                            historyId = "",
-                                            addedAt = addedAt
-                                        )
-                                    }
+                                        historyId = "",
+                                        addedAt = addedAt
+                                    )
                                 }
+                            }
                             else null
-                        }.awaitAll()
-                        resultGroup.domainFlatMap {
+                        }.awaitAll().domainFlatMap {
                             Result.success(Unit)
                         }
                     }
@@ -124,7 +130,7 @@ class UserRepositoryImpl @Inject constructor(
         userLocalDatasource.clearUser()
     }
 
-    override suspend fun checkUser(mail: String): Result<Profile> {
+    override suspend fun checkUserExist(mail: String): Result<Profile> {
         return runCatching {
             hashSha256(mail)
         }.mapSuccess { hashMail ->

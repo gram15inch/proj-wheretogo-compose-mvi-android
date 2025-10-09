@@ -29,10 +29,6 @@ class MockAuthRemoteDatasourceImpl @Inject constructor(
         }
     }
 
-    override suspend fun signOutOnFirebase() {
-
-    }
-
     override suspend fun deleteUser(): Result<Boolean> {
         return Result.success(true)
     }

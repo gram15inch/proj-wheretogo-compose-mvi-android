@@ -216,6 +216,7 @@ fun Throwable.toAppError(): AppError {
         is AppError -> this
         is DomainError.NetworkError -> AppError.NetworkError(msg)
         is DomainError.UserInvalid -> AppError.NeedSignIn(msg)
+        is DomainError.SignInError -> AppError.CredentialError(msg)
         is DomainError.ExpireData -> AppError.InvalidState(msg)
         is DomainError.CoolDownData -> AppError.WaitCoolDown(remainingMinutes)
         is GetCredentialCancellationException -> AppError.Ignore(message?:"")

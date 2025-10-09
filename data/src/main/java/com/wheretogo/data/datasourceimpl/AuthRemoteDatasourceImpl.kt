@@ -5,6 +5,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.wheretogo.data.DataError
 import com.wheretogo.data.datasource.AuthRemoteDatasource
+import com.wheretogo.data.feature.dataErrorCatching
 import com.wheretogo.data.toDataError
 import com.wheretogo.domain.AuthCompany
 import com.wheretogo.domain.model.auth.AuthToken
@@ -62,15 +63,10 @@ class AuthRemoteDatasourceImpl @Inject constructor() : AuthRemoteDatasource {
         }
     }
 
-    override suspend fun signOutOnFirebase() {
-        checkUserStatus()
-        firebaseAuth.signOut()
-    }
-
-    override suspend fun deleteUser(): Result<Boolean> {
-        return runCatching {
-            val user = firebaseAuth.currentUser
-            user?.delete()?.isSuccessful ?: false
+    override suspend fun signOutOnFirebase(): Result<Unit> {
+       return dataErrorCatching {
+            checkUserStatus()
+            firebaseAuth.signOut()
         }
     }
 

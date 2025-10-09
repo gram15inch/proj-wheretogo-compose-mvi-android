@@ -7,9 +7,7 @@ interface AuthRemoteDatasource {
 
     suspend fun authGoogleWithFirebase(authToken: AuthToken): Result<AuthProfile>
 
-    suspend fun signOutOnFirebase()
-
-    suspend fun deleteUser(): Result<Boolean>
+    suspend fun signOutOnFirebase(): Result<Unit>
 
     suspend fun getApiToken(isForceRefresh: Boolean): Result<String?>
 }
