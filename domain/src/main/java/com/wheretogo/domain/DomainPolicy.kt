@@ -1,6 +1,5 @@
 package com.wheretogo.domain
 
-import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.route.RouteCategory
 import java.util.concurrent.TimeUnit
 
@@ -39,30 +38,6 @@ fun Throwable?.toDomainError(): DomainError {
         is IllegalStateException -> DomainError.InternalError(this.message ?: "상태 오류")
         null -> DomainError.InternalError("알수없는 오류")
         else -> DomainError.UnexpectedException(this)
-    }
-}
-
-fun <T> DomainError.toUseCaseResponse(): UseCaseResponse<T> {
-    return when (this) {
-        is DomainError.NetworkError -> {
-            UseCaseResponse(
-                UseCaseResponse.Status.Fail,
-                failType = UseCaseFailType.NETWORK_ERROR
-            )
-        }
-
-        is DomainError.UserInvalid -> {
-            UseCaseResponse(
-                UseCaseResponse.Status.Fail,
-                failType = UseCaseFailType.GOOGLE_AUTH
-            )
-        }
-
-        else -> {
-            UseCaseResponse(
-                UseCaseResponse.Status.Fail
-            )
-        }
     }
 }
 
