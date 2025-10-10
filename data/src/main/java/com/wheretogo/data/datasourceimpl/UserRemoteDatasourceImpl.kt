@@ -172,7 +172,7 @@ class UserRemoteDatasourceImpl @Inject constructor(
     override suspend fun setHistoryGroup(
         uid: String,
         wrapper: RemoteHistoryGroupWrapper
-    ): Result<Unit> {
+    ): Result<Long> {
         return dataErrorCatching {
             suspendCancellableCoroutine { continuation ->
                 firestore.collection(FireStoreCollections.USER.name()).document(uid)
@@ -180,7 +180,7 @@ class UserRemoteDatasourceImpl @Inject constructor(
                     .document(wrapper.type.toCollectionName())
                     .set(wrapper)
                     .addOnSuccessListener { _ ->
-                        continuation.resume(Unit)
+                        continuation.resume(wrapper.lastAddedAt)
                     }.addOnFailureListener { e ->
                         continuation.resumeWithException(e)
                     }
@@ -223,12 +223,19 @@ class UserRemoteDatasourceImpl @Inject constructor(
                         }
                         continuation.resumeWithException(e)
                     }
-            }
-        }.mapSuccess { isNull ->
-            val historyGroup = if(historyId.isBlank()) emptyList() else listOf(historyId)
-            if (isNull)
-                setHistoryGroup(uid, RemoteHistoryGroupWrapper(type, mapOf(groupId to historyGroup), addedAt))
-            Result.success(addedAt)
+                }
+        }.mapSuccess { isNotFound ->
+            if (isNotFound)
+                setHistoryGroup(
+                    uid = uid,
+                    wrapper = RemoteHistoryGroupWrapper(
+                        type = type,
+                        historyIdGroup = mapOf(groupId to listOf(historyId)),
+                        lastAddedAt = addedAt
+                    )
+                )
+            else
+                Result.success(addedAt)
         }
     }
 

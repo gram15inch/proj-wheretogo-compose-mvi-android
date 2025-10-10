@@ -1,6 +1,5 @@
 package com.wheretogo.domain
 
-import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.route.RouteCategory
 import java.util.concurrent.TimeUnit
 
@@ -24,6 +23,7 @@ val CommentCooldown = DefaultCoolDownPolicy(1)
 sealed class DomainError : Exception() {
     data class NetworkError(val msg: String = "") : DomainError()
     data class UserInvalid(val msg: String = "") : DomainError()
+    data class SignInError(val msg: String = "") : DomainError()
     data class NotFound(val msg: String = "") : DomainError()
     data class InternalError(val msg: String = "") : DomainError()
     data class ExpireData(val msg: String = "") : DomainError()
@@ -38,30 +38,6 @@ fun Throwable?.toDomainError(): DomainError {
         is IllegalStateException -> DomainError.InternalError(this.message ?: "상태 오류")
         null -> DomainError.InternalError("알수없는 오류")
         else -> DomainError.UnexpectedException(this)
-    }
-}
-
-fun <T> DomainError.toUseCaseResponse(): UseCaseResponse<T> {
-    return when (this) {
-        is DomainError.NetworkError -> {
-            UseCaseResponse(
-                UseCaseResponse.Status.Fail,
-                failType = UseCaseFailType.NETWORK_ERROR
-            )
-        }
-
-        is DomainError.UserInvalid -> {
-            UseCaseResponse(
-                UseCaseResponse.Status.Fail,
-                failType = UseCaseFailType.GOOGLE_AUTH
-            )
-        }
-
-        else -> {
-            UseCaseResponse(
-                UseCaseResponse.Status.Fail
-            )
-        }
     }
 }
 

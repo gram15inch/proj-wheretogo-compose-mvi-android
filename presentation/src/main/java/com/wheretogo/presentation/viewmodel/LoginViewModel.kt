@@ -3,9 +3,9 @@ package com.wheretogo.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
-import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.auth.AuthRequest
 import com.wheretogo.domain.usecase.user.UserSignUpAndSignInUseCase
+import com.wheretogo.presentation.AppError
 import com.wheretogo.presentation.AppEvent
 import com.wheretogo.presentation.MainDispatcher
 import com.wheretogo.presentation.R
@@ -34,27 +34,30 @@ class LoginViewModel @Inject constructor(
     private val _loginScreenState = MutableStateFlow(LoginScreenState())
     val loginScreenState: StateFlow<LoginScreenState> = _loginScreenState
 
+    suspend fun handleError(error: AppError) {
+        when(errorHandler.handle(error)){
+            else -> {}
+        }
+    }
+
     fun signUpAndSignIn(authRequest: Result<AuthRequest>) {
         viewModelScope.launch {
             _loginScreenState.update { it.copy(isLoading = true) }
             authRequest.onFailure {
-                errorHandler.handle(it.toAppError())
+                handleError(it.toAppError())
                 _loginScreenState.update { it.copy(isLoading = false) }
             }.onSuccess {
                 val result =
                     withContext(Dispatchers.IO) { userSignUpAndSignInUseCase(it) }
-                when (result.status) {
-                    UseCaseResponse.Status.Success -> {
-                        _loginScreenState.update { it.copy(isExit = true, isLoading = false) }
-                        EventBus.result(AppEvent.SignIn,true)
-                        EventBus.send(AppEvent.SnackBar(EventMsg(R.string.welcome_user, result.data ?: "unknown")))
-                    }
 
-                    UseCaseResponse.Status.Fail -> {
-                        _loginScreenState.update { it.copy(isLoading = false) }
-                        EventBus.result(AppEvent.SignIn,false)
-                        errorHandler.handle(result)
-                    }
+                result.onSuccess { name->
+                    _loginScreenState.update { it.copy(isExit = true, isLoading = false) }
+                    EventBus.result(AppEvent.SignIn,true)
+                    EventBus.send(AppEvent.SnackBar(EventMsg(R.string.welcome_user, name)))
+                }.onFailure {
+                    _loginScreenState.update { it.copy(isLoading = false) }
+                    EventBus.result(AppEvent.SignIn,false)
+                    handleError(it.toAppError())
                 }
             }
         }

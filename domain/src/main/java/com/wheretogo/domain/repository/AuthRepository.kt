@@ -6,5 +6,4 @@ import com.wheretogo.domain.model.user.AuthProfile
 interface AuthRepository {
     suspend fun signInWithToken(authToken: AuthToken): Result<AuthProfile>
     suspend fun signOut(): Result<Unit>
-    suspend fun deleteUser(): Result<Unit>
 }

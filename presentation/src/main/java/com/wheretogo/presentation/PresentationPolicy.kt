@@ -11,8 +11,6 @@ import com.naver.maps.map.app.LegalNoticeActivity
 import com.naver.maps.map.app.OpenSourceLicenseActivity
 import com.wheretogo.domain.DomainError
 import com.wheretogo.domain.RouteAttrItem
-import com.wheretogo.domain.UseCaseFailType
-import com.wheretogo.domain.model.UseCaseResponse
 import com.wheretogo.domain.model.util.Viewport
 import com.wheretogo.presentation.feature.EventBus
 import com.wheretogo.presentation.model.EventMsg
@@ -200,22 +198,12 @@ fun defaultCommentEmogiGroup(): List<String> {
     return listOf("😊", "😍", "🔥", "👏", "👍", "😂", "🙌", "😮", "🤔", "🤭", "🥹", "😭", "😢", "😡", "😞")
 }
 
-fun UseCaseResponse<*>.toAppError(): AppError {
-    return when (this.failType) {
-        UseCaseFailType.INVALID_USER -> AppError.NeedSignIn(log)
-        UseCaseFailType.GOOGLE_AUTH -> AppError.AuthInvalid("GOOGLE_AUTH")
-        UseCaseFailType.NETWORK_ERROR -> AppError.NetworkError()
-        else -> {
-            AppError.UnexpectedException(Exception(this.log))
-        }
-    }
-}
-
 fun Throwable.toAppError(): AppError {
     return when (this) {
         is AppError -> this
         is DomainError.NetworkError -> AppError.NetworkError(msg)
         is DomainError.UserInvalid -> AppError.NeedSignIn(msg)
+        is DomainError.SignInError -> AppError.CredentialError(msg)
         is DomainError.ExpireData -> AppError.InvalidState(msg)
         is DomainError.CoolDownData -> AppError.WaitCoolDown(remainingMinutes)
         is GetCredentialCancellationException -> AppError.Ignore(message?:"")
@@ -237,7 +225,6 @@ annotation class MainDispatcher
 
 interface ViewModelErrorHandler {
     suspend fun handle(error: AppError): AppError
-    suspend fun handle(response: UseCaseResponse<*>): AppError
 }
 
 class DefaultErrorHandler() : ViewModelErrorHandler {
@@ -270,28 +257,5 @@ class DefaultErrorHandler() : ViewModelErrorHandler {
             }
         }
         return error
-    }
-
-    override suspend fun handle(response: UseCaseResponse<*>): AppError {
-        val appError = response.toAppError()
-        Timber.tag("policy_").d("Throwable -> AppError: $response")
-
-        when (appError) {
-            is AppError.NeedSignIn ->
-                EventBus.send(AppEvent.SnackBar(EventMsg(R.string.need_login)))
-
-            is AppError.NetworkError ->
-                EventBus.send(AppEvent.SnackBar(EventMsg(R.string.network_error)))
-
-            is AppError.MapNotSupportExcludeLocation ->
-                EventBus.send(AppEvent.SnackBar(EventMsg(R.string.no_supprot_app_exclude_my_loction)))
-
-            else -> {
-                Timber.e(response.toString())
-                AppError.UnexpectedException(Exception(response.log))
-            }
-        }
-
-        return appError
     }
 }
