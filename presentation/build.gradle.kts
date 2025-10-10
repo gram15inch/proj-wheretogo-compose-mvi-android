@@ -37,7 +37,8 @@ android {
         }
         release {
             buildConfigField( "Boolean", "TEST_UI", "false")
-            buildConfigField( "String", "NATIVE_AD_ID", getLocalProperties("nativeAdId"))
+            buildConfigField( "String", "NATIVE_AD_ID", testNativeAdId)
+            //buildConfigField( "String", "NATIVE_AD_ID", getLocalProperties("nativeAdId"))
         }
     }
 
