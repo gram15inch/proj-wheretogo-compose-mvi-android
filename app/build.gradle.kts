@@ -29,8 +29,8 @@ android {
         applicationId = "com.dhkim139.wheretogo"
         minSdk = AndroidConfig.MIN_SDK
         targetSdk = AndroidConfig.TARGET_SDK
-        versionCode = 32
-        versionName = "1.0-rc3"
+        versionCode = 33
+        versionName = "1.0-rc4"
 
         testInstrumentationRunner = "com.dhkim139.wheretogo.TestRunner"
         vectorDrawables {
@@ -53,6 +53,8 @@ android {
             applicationIdSuffix = ".debug"
             buildConfigField( "Boolean", "CRASHLYTICS", "false")
             buildConfigField("String",  "GOOGLE_WEB_CLIENT_ID_KEY", getLocalProperties("googleStagingWebClientId"))
+            buildConfigField("String",  "APP_TOKEN", getLocalProperties("appToken"))
+
         }
         create("qa") {
             isMinifyEnabled = true
@@ -66,6 +68,7 @@ android {
 
             buildConfigField( "Boolean", "CRASHLYTICS", "false")
             buildConfigField("String","GOOGLE_WEB_CLIENT_ID_KEY", getLocalProperties("googleWebClientId"))
+            buildConfigField("String",  "APP_TOKEN", getLocalProperties("appToken"))
         }
 
         release {
@@ -79,6 +82,7 @@ android {
 
             buildConfigField( "Boolean", "CRASHLYTICS", "true")
             buildConfigField("String", "GOOGLE_WEB_CLIENT_ID_KEY", getLocalProperties("googleWebClientId"))
+            buildConfigField("String",  "APP_TOKEN", getLocalProperties("appToken"))
         }
     }
     compileOptions {
