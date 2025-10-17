@@ -123,11 +123,11 @@ fun parseDateToMillis(dateString: String, pattern: String = USER_DATE_FORMAT): L
     return date?.time ?: throw IllegalArgumentException("Invalid date format or value")
 }
 
-fun AuthProfile.toProfile(): Profile {
+fun AuthProfile.toProfile(hashMail:String): Profile {
     return Profile(
         uid = uid,
         name = userName,
-        hashMail = hashSha256(email),
+        hashMail = hashMail,
         private = ProfilePrivate(
             mail = email,
             authCompany = authCompany.name,

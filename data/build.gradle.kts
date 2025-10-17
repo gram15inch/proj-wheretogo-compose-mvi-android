@@ -79,12 +79,14 @@ dependencies {
 
     // Kotlin
     implementation(Kotlin.KOTLINX_SERIALIZATION_CBOR)
+    implementation(Kotlin.KOTLINX_SERIALIZATION_JSON)
 
     // Androidx
     api(AndroidX.ROOM_KTX)
     implementation(AndroidX.CORE_KTX)
     implementation(AndroidX.EXIFINTERFACE)
     implementation(AndroidX.DATASTORE_PREFERENCES)
+    implementation(AndroidX.SECURITY_CRYPTO)
 
     // Dagger
     implementation(Dagger.HILT_ANDROID)

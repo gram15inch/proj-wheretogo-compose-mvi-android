@@ -30,6 +30,7 @@ object Versions {
 
     const val RETROFIT     = "2.9.0"
     const val MOSHI     = "1.13.0"
+    const val SERIALIZATION     = "1.8.0"
 
 
     const val JUPITER       = "5.11.4"
@@ -49,7 +50,8 @@ object Versions {
 object Kotlin {
     const val KOTLIN_BOM = "org.jetbrains.kotlin:kotlin-bom:${Versions.KOTLIN_VERSION}"
     const val KOTLINX_COROUTINES_PLAY_SERVICES = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0"
-    const val KOTLINX_SERIALIZATION_CBOR = "org.jetbrains.kotlinx:kotlinx-serialization-cbor:1.8.0"
+    const val KOTLINX_SERIALIZATION_CBOR = "org.jetbrains.kotlinx:kotlinx-serialization-cbor:${Versions.SERIALIZATION}"
+    const val KOTLINX_SERIALIZATION_JSON = "org.jetbrains.kotlinx:kotlinx-serialization-json:${Versions.SERIALIZATION}"
 }
 
 object AndroidX {
@@ -66,6 +68,7 @@ object AndroidX {
     const val CREDENTIALS_AUTH          = "androidx.credentials:credentials-play-services-auth:${Versions.CREDENTIALS}"
     const val EXIFINTERFACE             = "androidx.exifinterface:exifinterface:1.3.7"
     const val BROWSER                   = "androidx.browser:browser:1.8.0"
+    const val SECURITY_CRYPTO           = "androidx.security:security-crypto:1.1.0"
 
     const val HILT_NAVIGATION_COMPOSE   = "androidx.hilt:hilt-navigation-compose:${Versions.HILT}"
     const val HILT_COMPILER             = "androidx.hilt:hilt-compiler:${Versions.HILT}"

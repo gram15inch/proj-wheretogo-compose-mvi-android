@@ -7,6 +7,8 @@ import com.wheretogo.data.feature.safeErrorBody
 import com.wheretogo.domain.DomainError
 import okio.IOException
 import retrofit2.Response
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
 
 const val NAVER_MAPS_NTRUSS_APIGW_URL = "https://maps.apigw.ntruss.com/"
@@ -25,6 +27,7 @@ sealed class DataError: IOException(){
     data class NetworkError(val msg:String = ""): DataError()
     data class UserInvalid(val msg:String = ""): DataError()
     data class AuthInvalid(val msg:String = ""): DataError()
+    data class PublicTokenInvalid(val msg:String = ""): DataError()
     data class Unauthorized(val msg:String = ""): DataError()
     data class ArgumentInvalid(val msg:String = ""): DataError()
     data class Forbidden(val msg:String = ""): DataError()
@@ -54,6 +57,9 @@ fun Response<*>.toDataError(): DataError {
 fun Throwable?.toDataError(): DataError{
     return when(this){
         is DataError -> this
+        is UnknownHostException -> DataError.NetworkError("UnknownHostException")
+        is SocketTimeoutException -> DataError.NetworkError("SocketTimeoutException")
+        is java.io.IOException -> DataError.NetworkError("IOException")
         is FirebaseNetworkException -> DataError.NetworkError()
         is FirebaseAuthInvalidUserException -> DataError.AuthInvalid()
         null -> DataError.InternalError("알수없는 오류")

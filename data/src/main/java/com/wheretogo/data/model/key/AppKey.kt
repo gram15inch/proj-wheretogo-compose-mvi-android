@@ -1,3 +1,3 @@
 package com.wheretogo.data.model.key
 
-data class AppKey(val googleWebClientId:String)
+data class AppKey(val googleWebClientId: String, val apiAccessKey: String)

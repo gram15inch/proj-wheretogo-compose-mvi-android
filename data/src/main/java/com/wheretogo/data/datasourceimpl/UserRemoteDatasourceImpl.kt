@@ -5,7 +5,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.wheretogo.data.FireStoreCollections
 import com.wheretogo.data.datasource.UserRemoteDatasource
-import com.wheretogo.data.datasourceimpl.service.FirebaseApiService
+import com.wheretogo.data.datasourceimpl.service.UserApiService
 import com.wheretogo.data.feature.dataErrorCatching
 import com.wheretogo.data.feature.mapSuccess
 import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
@@ -20,13 +20,13 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 class UserRemoteDatasourceImpl @Inject constructor(
-    private val firebaseApiService: FirebaseApiService
+    private val userApiService: UserApiService
 ) : UserRemoteDatasource {
     private val firestore by lazy { FirebaseFirestore.getInstance() }
 
     override suspend fun deleteUser(userId: String): Result<String> {
        return dataErrorCatching {
-            firebaseApiService.deleteUser(userId = userId)
+            userApiService.deleteUser(userId = userId)
         }.mapSuccess {
            if (!it.isSuccessful)
                 Result.failure(it.toDataError())

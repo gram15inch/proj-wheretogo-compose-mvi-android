@@ -108,6 +108,8 @@
 
     <string name="no_search_data">검색 결과 없음</string>
 
+    <string name="wellcome">환영합니다.</string>
+
 
     // 이미지 설명
     <string name="google_logo">google logo</string>
