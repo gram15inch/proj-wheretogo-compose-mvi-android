@@ -14,7 +14,10 @@ object KeyModule {
     @Singleton
     @Provides
     fun provideAppKey(): AppKey {
-        return AppKey(googleWebClientId = BuildConfig.GOOGLE_WEB_CLIENT_ID_KEY)
+        return AppKey(
+            googleWebClientId = BuildConfig.GOOGLE_WEB_CLIENT_ID_KEY,
+            apiAccessKey = BuildConfig.API_ACCESS_KEY
+        )
     }
 
 }

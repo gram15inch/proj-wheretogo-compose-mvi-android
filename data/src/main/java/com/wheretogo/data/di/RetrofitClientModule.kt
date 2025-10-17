@@ -5,7 +5,8 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.wheretogo.data.NAVER_MAPS_NTRUSS_APIGW_URL
 import com.wheretogo.data.NAVER_OPEN_API_URL
 import com.wheretogo.data.firebaseApiUrlByBuild
-import com.wheretogo.data.network.AuthInterceptor
+import com.wheretogo.data.network.PrivateInterceptor
+import com.wheretogo.data.network.PublicInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -49,10 +50,37 @@ object RetrofitClientModule {
 
     @Singleton
     @Provides
-    @Named("firebase")
-    fun provideFirebaseApiRetrofit(
+    @Named("privateRetrofit")
+    fun providePrivateFirebaseApiRetrofit(
         moshi: Moshi,
-        @Named("authHttp") client: OkHttpClient
+        @Named("privateHttp") client: OkHttpClient
+    ): Retrofit {
+        return Retrofit.Builder()
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .client(client)
+            .baseUrl(firebaseApiUrlByBuild())
+            .build()
+    }
+
+    @Singleton
+    @Provides
+    @Named("publicRetrofit")
+    fun providePublicFirebaseApiRetrofit(
+        moshi: Moshi,
+        @Named("privateHttp") client: OkHttpClient
+    ): Retrofit {
+        return Retrofit.Builder()
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .client(client)
+            .baseUrl(firebaseApiUrlByBuild())
+            .build()
+    }
+
+    @Singleton
+    @Provides
+    fun provideDefaultRetrofit(
+        moshi: Moshi,
+        client: OkHttpClient
     ): Retrofit {
         return Retrofit.Builder()
             .addConverterFactory(MoshiConverterFactory.create(moshi))
@@ -66,14 +94,27 @@ object RetrofitClientModule {
 
     @Singleton
     @Provides
-    @Named("authHttp")
-    fun provideAuthHttpClient(authInterceptor: AuthInterceptor): OkHttpClient {
+    @Named("privateHttp")
+    fun providePrivateHttpClient(privateInterceptor: PrivateInterceptor): OkHttpClient {
         return OkHttpClient.Builder()
             .connectTimeout(5, TimeUnit.SECONDS)
             .readTimeout(10, TimeUnit.SECONDS)
-            .writeTimeout(10,TimeUnit.SECONDS)
+            .writeTimeout(10, TimeUnit.SECONDS)
             .callTimeout(30, TimeUnit.SECONDS)
-            .addInterceptor(authInterceptor)
+            .addInterceptor(privateInterceptor)
+            .build()
+    }
+
+    @Singleton
+    @Provides
+    @Named("publicHttp")
+    fun providePublicHttpClient(publicInterceptor: PublicInterceptor): OkHttpClient {
+        return OkHttpClient.Builder()
+            .connectTimeout(5, TimeUnit.SECONDS)
+            .readTimeout(10, TimeUnit.SECONDS)
+            .writeTimeout(10, TimeUnit.SECONDS)
+            .callTimeout(30, TimeUnit.SECONDS)
+            .addInterceptor(publicInterceptor)
             .build()
     }
 
@@ -84,7 +125,7 @@ object RetrofitClientModule {
         return OkHttpClient.Builder()
             .connectTimeout(5, TimeUnit.SECONDS)
             .readTimeout(10, TimeUnit.SECONDS)
-            .writeTimeout(10,TimeUnit.SECONDS)
+            .writeTimeout(10, TimeUnit.SECONDS)
             .callTimeout(30, TimeUnit.SECONDS)
             .build()
     }

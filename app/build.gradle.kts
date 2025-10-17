@@ -53,7 +53,7 @@ android {
             applicationIdSuffix = ".debug"
             buildConfigField( "Boolean", "CRASHLYTICS", "false")
             buildConfigField("String",  "GOOGLE_WEB_CLIENT_ID_KEY", getLocalProperties("googleStagingWebClientId"))
-            buildConfigField("String",  "APP_TOKEN", getLocalProperties("appToken"))
+            buildConfigField("String",  "API_ACCESS_KEY", getLocalProperties("apiAccessKey"))
 
         }
         create("qa") {
@@ -68,7 +68,7 @@ android {
 
             buildConfigField( "Boolean", "CRASHLYTICS", "false")
             buildConfigField("String","GOOGLE_WEB_CLIENT_ID_KEY", getLocalProperties("googleWebClientId"))
-            buildConfigField("String",  "APP_TOKEN", getLocalProperties("appToken"))
+            buildConfigField("String",  "API_ACCESS_KEY", getLocalProperties("apiAccessKey"))
         }
 
         release {
@@ -82,7 +82,7 @@ android {
 
             buildConfigField( "Boolean", "CRASHLYTICS", "true")
             buildConfigField("String", "GOOGLE_WEB_CLIENT_ID_KEY", getLocalProperties("googleWebClientId"))
-            buildConfigField("String",  "APP_TOKEN", getLocalProperties("appToken"))
+            buildConfigField("String",  "API_ACCESS_KEY", getLocalProperties("apiAccessKey"))
         }
     }
     compileOptions {

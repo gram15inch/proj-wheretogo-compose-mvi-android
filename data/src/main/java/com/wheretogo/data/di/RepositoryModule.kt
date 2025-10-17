@@ -1,6 +1,7 @@
 package com.wheretogo.data.di
 
 import com.wheretogo.data.repositoryimpl.AddressRepositoryImpl
+import com.wheretogo.data.repositoryimpl.AppRepositoryImpl
 import com.wheretogo.data.repositoryimpl.AuthRepositoryImpl
 import com.wheretogo.data.repositoryimpl.CheckPointRepositoryImpl
 import com.wheretogo.data.repositoryimpl.CommentRepositoryImpl
@@ -10,6 +11,7 @@ import com.wheretogo.data.repositoryimpl.ReportRepositoryImpl
 import com.wheretogo.data.repositoryimpl.RouteRepositoryImpl
 import com.wheretogo.data.repositoryimpl.UserRepositoryImpl
 import com.wheretogo.domain.repository.AddressRepository
+import com.wheretogo.domain.repository.AppRepository
 import com.wheretogo.domain.repository.AuthRepository
 import com.wheretogo.domain.repository.CheckPointRepository
 import com.wheretogo.domain.repository.CommentRepository
@@ -27,6 +29,11 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
+
+    @Singleton
+    @Binds
+    abstract fun bindAppRepository(repositoryImpl: AppRepositoryImpl): AppRepository
+
 
     @Singleton
     @Binds

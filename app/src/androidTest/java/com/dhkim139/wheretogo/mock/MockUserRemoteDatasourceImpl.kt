@@ -132,7 +132,7 @@ class MockUserRemoteDatasourceImpl @Inject constructor(
     override suspend fun setHistoryGroup(
         uid: String,
         wrapper: RemoteHistoryGroupWrapper
-    ): Result<Unit> {
+    ): Result<Long> {
         return dataErrorCatching {
             val user = userRemoteGroup.get(uid)
             if (user != null) {
@@ -144,6 +144,7 @@ class MockUserRemoteDatasourceImpl @Inject constructor(
                 )
                 userRemoteGroup[uid] = newUser
             }
+            0L
         }
     }
 
@@ -152,5 +153,9 @@ class MockUserRemoteDatasourceImpl @Inject constructor(
             userRemoteGroup.toList()
                 .firstOrNull { it.second.profile.hashMail == hashMail }?.second?.profile?.toProfilePublic()
         }
+    }
+
+    override suspend fun resisterUser(public: RemoteProfilePublic): Result<RemoteProfilePrivate> {
+        return Result.success(RemoteProfilePrivate()) // todo 수정
     }
 }

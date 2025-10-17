@@ -1,6 +1,7 @@
 package com.dhkim139.wheretogo.di
 
 import com.dhkim139.wheretogo.mock.MockAddressRemoteDatasourceImpl
+import com.dhkim139.wheretogo.mock.MockAppRemoteDatasourceImpl
 import com.dhkim139.wheretogo.mock.MockAuthRemoteDatasourceImpl
 import com.dhkim139.wheretogo.mock.MockCheckPointRemoteDatasourceImpl
 import com.dhkim139.wheretogo.mock.MockCommentRemoteDatasourceImpl
@@ -10,6 +11,8 @@ import com.dhkim139.wheretogo.mock.MockReportRemoteDatasourceImpl
 import com.dhkim139.wheretogo.mock.MockRouteRemoteDatasourceImpl
 import com.dhkim139.wheretogo.mock.MockUserRemoteDatasourceImpl
 import com.wheretogo.data.datasource.AddressRemoteDatasource
+import com.wheretogo.data.datasource.AppLocalDatasource
+import com.wheretogo.data.datasource.AppRemoteDatasource
 import com.wheretogo.data.datasource.AuthRemoteDatasource
 import com.wheretogo.data.datasource.CheckPointLocalDatasource
 import com.wheretogo.data.datasource.CheckPointRemoteDatasource
@@ -24,6 +27,8 @@ import com.wheretogo.data.datasource.RouteLocalDatasource
 import com.wheretogo.data.datasource.RouteRemoteDatasource
 import com.wheretogo.data.datasource.UserLocalDatasource
 import com.wheretogo.data.datasource.UserRemoteDatasource
+import com.wheretogo.data.datasourceimpl.AppLocalDatasourceImpl
+import com.wheretogo.data.datasourceimpl.AppRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.CheckPointLocalDatasourceImpl
 import com.wheretogo.data.datasourceimpl.CourseLocalDatasourceImpl
 import com.wheretogo.data.datasourceimpl.ImageLocalDatasourceImpl
@@ -46,6 +51,9 @@ abstract class MockDatasourceModule {
 
     //local
     @Binds
+    abstract fun bindAppLocalDatasource(datasource: AppLocalDatasourceImpl): AppLocalDatasource
+
+    @Binds
     abstract fun bindUserLocalDatasource(datasource: UserLocalDatasourceImpl): UserLocalDatasource
 
     @Binds
@@ -64,6 +72,9 @@ abstract class MockDatasourceModule {
     abstract fun bindRouteLocalDatasource(datasource: RouteLocalDatasourceImpl): RouteLocalDatasource
 
     //remote
+    @Binds
+    abstract fun bindAppRemoteDatasource(datasource: MockAppRemoteDatasourceImpl): AppRemoteDatasource
+
     @Binds
     abstract fun bindImageRemoteDatasource(datasource: MockImageRemoteDatasourceImpl): ImageRemoteDatasource
 
