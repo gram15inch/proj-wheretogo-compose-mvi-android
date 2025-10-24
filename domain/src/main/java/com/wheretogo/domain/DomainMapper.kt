@@ -3,8 +3,9 @@ package com.wheretogo.domain
 
 import com.firebase.geofire.GeoFireUtils
 import com.firebase.geofire.GeoLocation
-import com.wheretogo.domain.feature.hashSha256
 import com.wheretogo.domain.model.address.LatLng
+import com.wheretogo.domain.model.auth.SyncProfile
+import com.wheretogo.domain.model.auth.SyncToken
 import com.wheretogo.domain.model.checkpoint.CheckPointAddRequest
 import com.wheretogo.domain.model.checkpoint.CheckPointContent
 import com.wheretogo.domain.model.comment.CommentAddRequest
@@ -12,10 +13,8 @@ import com.wheretogo.domain.model.comment.CommentContent
 import com.wheretogo.domain.model.course.CourseAddRequest
 import com.wheretogo.domain.model.course.CourseContent
 import com.wheretogo.domain.model.history.HistoryIdGroup
-import com.wheretogo.domain.model.user.AuthProfile
 import com.wheretogo.domain.model.user.History
 import com.wheretogo.domain.model.user.Profile
-import com.wheretogo.domain.model.user.ProfilePrivate
 import com.wheretogo.domain.model.util.Image
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -123,15 +122,9 @@ fun parseDateToMillis(dateString: String, pattern: String = USER_DATE_FORMAT): L
     return date?.time ?: throw IllegalArgumentException("Invalid date format or value")
 }
 
-fun AuthProfile.toProfile(hashMail:String): Profile {
-    return Profile(
-        uid = uid,
-        name = userName,
-        hashMail = hashMail,
-        private = ProfilePrivate(
-            mail = email,
-            authCompany = authCompany.name,
-            accountCreation = System.currentTimeMillis()
-        )
+fun SyncProfile.toSyncToken(): SyncToken {
+    return SyncToken(
+        authCompany = authCompany,
+        token = token
     )
 }

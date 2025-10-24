@@ -19,6 +19,7 @@ import com.wheretogo.data.model.user.LocalProfile
 import com.wheretogo.data.model.user.LocalProfilePrivate
 import com.wheretogo.data.model.user.RemoteProfilePrivate
 import com.wheretogo.data.model.user.RemoteProfilePublic
+import com.wheretogo.data.model.user.RemoteSyncUser
 import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.ReportStatus
 import com.wheretogo.domain.ReportType
@@ -40,6 +41,11 @@ import com.wheretogo.domain.model.user.ProfilePrivate
 import com.wheretogo.domain.model.util.Snapshot
 import com.wheretogo.domain.toGeoHash
 
+fun RemoteSyncUser.toProfileHistoryPair(): Pair<Profile, History> {
+    val profile = public.toProfile(private)
+    val history = history.toLocalHistory().toHistory()
+    return profile to history
+}
 
 fun Profile.toLocalProfile(): LocalProfile {
     return LocalProfile(
@@ -89,12 +95,17 @@ fun Profile.toProfilePublic(): RemoteProfilePublic {
     )
 }
 
-fun RemoteProfilePublic.toProfile(): Profile {
+fun RemoteProfilePublic.toProfile(private: RemoteProfilePrivate? = null): Profile {
     return Profile(
         uid = uid,
         name = name,
         hashMail = hashMail
-    )
+    ).run {
+        if (private == null)
+            this
+        else
+            copy(private = private.toProfilePrivate())
+    }
 }
 
 fun RemoteProfilePublic.toLocalProfile(private: RemoteProfilePrivate): LocalProfile {
@@ -482,6 +493,16 @@ fun LocalHistoryGroupWrapper.toHistoryGroupWrapper(): HistoryGroupWrapper {
     )
 }
 
+fun HistoryGroupWrapper.toLocalHistoryGroupWrapper(): LocalHistoryGroupWrapper {
+    return LocalHistoryGroupWrapper(
+        type = type,
+        historyIdGroup = LocalHistoryIdGroup(
+            groupById = historyIdGroup.groupById
+        ),
+        lastAddedAt = lastAddedAt
+    )
+}
+
 fun Map<String, List<String>>.toLocalHistoryIdGroup(): LocalHistoryIdGroup {
     return LocalHistoryIdGroup(this.mapValues {
         it.value.toHashSet()
@@ -535,6 +556,30 @@ fun List<RemoteHistoryGroupWrapper>.toLocalHistory(): LocalHistory {
     }
     return history
 }
+
+fun LocalHistory.toHistory(): History {
+    return History(
+        course = course.toHistoryGroupWrapper(),
+        checkpoint = checkpoint.toHistoryGroupWrapper(),
+        comment = comment.toHistoryGroupWrapper(),
+        like = like.toHistoryGroupWrapper(),
+        bookmark = bookmark.toHistoryGroupWrapper(),
+        report = report.toHistoryGroupWrapper(),
+    )
+}
+
+
+fun History.toHistory(): LocalHistory {
+    return LocalHistory(
+        course = course.toLocalHistoryGroupWrapper(),
+        checkpoint = checkpoint.toLocalHistoryGroupWrapper(),
+        comment = comment.toLocalHistoryGroupWrapper(),
+        like = like.toLocalHistoryGroupWrapper(),
+        bookmark = bookmark.toLocalHistoryGroupWrapper(),
+        report = report.toLocalHistoryGroupWrapper(),
+    )
+}
+
 
 fun History.remoteGroupWrapper(): List<RemoteHistoryGroupWrapper> {
     return listOf(

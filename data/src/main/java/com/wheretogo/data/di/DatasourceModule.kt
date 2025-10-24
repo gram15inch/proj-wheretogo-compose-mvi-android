@@ -9,6 +9,7 @@ import com.wheretogo.data.datasource.CheckPointRemoteDatasource
 import com.wheretogo.data.datasource.CommentRemoteDatasource
 import com.wheretogo.data.datasource.CourseLocalDatasource
 import com.wheretogo.data.datasource.CourseRemoteDatasource
+import com.wheretogo.data.datasource.GuestRemoteDatasource
 import com.wheretogo.data.datasource.ImageLocalDatasource
 import com.wheretogo.data.datasource.ImageRemoteDatasource
 import com.wheretogo.data.datasource.ReportLocalDatasource
@@ -26,6 +27,7 @@ import com.wheretogo.data.datasourceimpl.CheckPointRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.CommentRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.CourseLocalDatasourceImpl
 import com.wheretogo.data.datasourceimpl.CourseRemoteDatasourceImpl
+import com.wheretogo.data.datasourceimpl.GuestRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.ImageLocalDatasourceImpl
 import com.wheretogo.data.datasourceimpl.ImageRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.ReportLocalDatasourceImpl
@@ -70,6 +72,9 @@ abstract class DatasourceModule {
     //remote
     @Binds
     abstract fun bindAppRemoteDatasource(datasource: AppRemoteDatasourceImpl): AppRemoteDatasource
+
+    @Binds
+    abstract fun bindGuestRemoteDatasource(datasource: GuestRemoteDatasourceImpl): GuestRemoteDatasource
 
     @Binds
     abstract fun bindImageRemoteDatasource(datasource: ImageRemoteDatasourceImpl): ImageRemoteDatasource

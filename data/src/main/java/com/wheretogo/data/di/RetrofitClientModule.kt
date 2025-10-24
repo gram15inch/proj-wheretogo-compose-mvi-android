@@ -67,7 +67,7 @@ object RetrofitClientModule {
     @Named("publicRetrofit")
     fun providePublicFirebaseApiRetrofit(
         moshi: Moshi,
-        @Named("privateHttp") client: OkHttpClient
+        @Named("publicHttp") client: OkHttpClient
     ): Retrofit {
         return Retrofit.Builder()
             .addConverterFactory(MoshiConverterFactory.create(moshi))

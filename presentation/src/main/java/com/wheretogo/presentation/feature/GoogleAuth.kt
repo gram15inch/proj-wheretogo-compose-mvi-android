@@ -6,9 +6,10 @@ import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.wheretogo.domain.AuthCompany
 import com.wheretogo.domain.AuthType
 import com.wheretogo.domain.model.auth.AuthRequest
-import com.wheretogo.domain.model.auth.AuthToken
+import com.wheretogo.domain.model.auth.SignToken
 
 
 suspend fun googleAuthOnDevice(idOption: GetGoogleIdOption, context: Context): Result<AuthRequest> {
@@ -24,7 +25,7 @@ suspend fun googleAuthOnDevice(idOption: GetGoogleIdOption, context: Context): R
         )
         AuthRequest(
             authType = AuthType.TOKEN,
-            authToken = getGoogleIdTokenCredential(result.credential)?.toAuthToken()
+            signToken = getGoogleIdTokenCredential(result.credential)?.toAuthToken()
         )
     }
 }
@@ -39,9 +40,9 @@ private fun getGoogleIdTokenCredential(credential: Credential): GoogleIdTokenCre
     }
 }
 
-private fun GoogleIdTokenCredential.toAuthToken(): AuthToken {
-    return AuthToken(
-        idToken = idToken,
-        mail = id,
+private fun GoogleIdTokenCredential.toAuthToken(): SignToken {
+    return SignToken(
+        token = idToken,
+        authCompany = AuthCompany.GOOGLE,
     )
 }
