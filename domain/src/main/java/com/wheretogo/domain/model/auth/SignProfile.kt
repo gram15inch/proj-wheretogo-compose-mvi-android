@@ -1,11 +1,11 @@
-package com.wheretogo.domain.model.user
+package com.wheretogo.domain.model.auth
 
 import com.wheretogo.domain.AuthCompany
 
-data class AuthProfile(
+data class SignProfile(
     val uid: String,
-    val email: String,
-    val userName: String,
+    val mail: String,
+    val name: String,
     val authCompany: AuthCompany = AuthCompany.PROFILE,
     val token: String
 )

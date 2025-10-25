@@ -1,11 +1,11 @@
 package com.wheretogo.data.datasource
 
-import com.wheretogo.domain.model.auth.AuthToken
-import com.wheretogo.domain.model.user.AuthProfile
+import com.wheretogo.domain.model.auth.SignToken
+import com.wheretogo.domain.model.auth.SyncProfile
 
 interface AuthRemoteDatasource {
 
-    suspend fun authGoogleWithFirebase(authToken: AuthToken): Result<AuthProfile>
+    suspend fun authGoogleWithFirebase(signToken: SignToken): Result<SyncProfile>
 
     suspend fun signOutOnFirebase(): Result<Unit>
 

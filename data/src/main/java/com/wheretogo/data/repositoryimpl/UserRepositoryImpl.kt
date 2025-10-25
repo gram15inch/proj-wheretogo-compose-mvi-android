@@ -6,25 +6,16 @@ import com.wheretogo.data.datasource.UserRemoteDatasource
 import com.wheretogo.data.feature.dataErrorCatching
 import com.wheretogo.data.feature.mapDomainError
 import com.wheretogo.data.feature.mapSuccess
-import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
+import com.wheretogo.data.toDomainResult
+import com.wheretogo.data.toHistory
 import com.wheretogo.data.toHistoryGroupWrapper
-import com.wheretogo.data.toLocalHistory
 import com.wheretogo.data.toLocalProfile
 import com.wheretogo.data.toProfile
-import com.wheretogo.data.toProfilePrivate
-import com.wheretogo.data.toProfilePublic
-import com.wheretogo.data.toRemoteProfilePrivate
 import com.wheretogo.domain.HistoryType
-import com.wheretogo.domain.feature.domainFlatMap
-import com.wheretogo.domain.feature.hashSha256
-import com.wheretogo.domain.feature.zip
 import com.wheretogo.domain.model.history.HistoryGroupWrapper
-import com.wheretogo.domain.model.user.AuthProfile
+import com.wheretogo.domain.model.user.History
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.repository.UserRepository
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -39,54 +30,6 @@ class UserRepositoryImpl @Inject constructor(
         return userLocalDatasource.getProfileFlow().map { it.toProfile() }
     }
 
-    override suspend fun createUser(profile: Profile): Result<Unit> {
-        return runCatching {
-            val userId = profile.uid
-            userId.isBlank().let { if (it) throw DataError.UserInvalid("userId.isBlank") }
-        }.mapSuccess {
-            val remotePublic = profile.toProfilePublic()
-            val remotePrivate = profile.private.toRemoteProfilePrivate()
-            val local = remotePublic.toLocalProfile(remotePrivate)
-            userRemoteDatasource.setProfilePublic(remotePublic)
-                userRemoteDatasource.setProfilePrivate(
-                    profile.uid,
-                    remotePrivate
-                ).mapSuccess {
-                    userLocalDatasource.setProfile(local)
-                }.mapSuccess {
-                    coroutineScope {
-                        HistoryType.entries.mapNotNull { type ->
-                            if (type in listOf(
-                                    HistoryType.COURSE,
-                                    HistoryType.CHECKPOINT,
-                                    HistoryType.COMMENT
-                                )
-                            )
-                            async {
-                                userRemoteDatasource.setHistoryGroup(
-                                    uid = profile.uid,
-                                    RemoteHistoryGroupWrapper(
-                                        type = type,
-                                        lastAddedAt = System.currentTimeMillis()
-                                    )
-                                ).mapSuccess { addedAt ->
-                                    userLocalDatasource.addHistory(
-                                        type = type,
-                                        groupId = "",
-                                        historyId = "",
-                                        addedAt = addedAt
-                                    )
-                                }
-                            }
-                            else null
-                        }.awaitAll().domainFlatMap {
-                            Result.success(Unit)
-                        }
-                    }
-                }
-        }.mapDomainError()
-    }
-
     override suspend fun deleteUser(): Result<Unit> {
         return runCatching {
             val uid = userLocalDatasource.getProfileFlow().first().uid
@@ -99,60 +42,18 @@ class UserRepositoryImpl @Inject constructor(
         }.mapDomainError()
     }
 
-    override suspend fun syncUser(authProfile: AuthProfile): Result<Profile> {
-        return getRemoteProfile(authProfile.uid)
-            .mapSuccess { profile ->
-                val newProfile = profile.copy(
-                    private = profile.private.copy(lastVisited = System.currentTimeMillis())
-                )
-                userLocalDatasource.setProfile(newProfile.toLocalProfile()).mapSuccess {
-                    coroutineScope {
-                       val visitUpdate= async {
-                            userRemoteDatasource.setProfilePrivate(
-                                newProfile.uid,
-                                newProfile.private.toRemoteProfilePrivate()
-                            )
-                        }
-
-                       val history= async {
-                           userRemoteDatasource.getHistoryGroup(authProfile.uid)
-                               .mapSuccess { history -> userLocalDatasource.iniHistory(history.toLocalHistory()) }
-                       }
-
-                        visitUpdate.await()
-                        history.await()
-                    }
-                }.mapCatching { newProfile }
-            }.mapDomainError()
+    override suspend fun cacheUser(
+        profile: Profile,
+        history: History
+    ): Result<Unit> {
+        return userLocalDatasource.setProfile(profile.toLocalProfile()).mapSuccess {
+            userLocalDatasource.iniHistory(history.toHistory())
+        }.toDomainResult()
     }
 
     override suspend fun clearCache() {
         userLocalDatasource.clearUser()
     }
-
-    override suspend fun checkUserExist(mail: String): Result<Profile> {
-        return runCatching {
-            hashSha256(mail)
-        }.mapSuccess { hashMail ->
-            userRemoteDatasource.getProfilePublicWithMail(hashMail)
-                .mapCatching { it.toProfile() }
-        }.mapDomainError()
-    }
-
-
-    private suspend fun getRemoteProfile(userId: String): Result<Profile> {
-        return coroutineScope {
-            val public = async { userRemoteDatasource.getProfilePublic(userId) }
-            val private = async { userRemoteDatasource.getProfilePrivate(userId) }
-
-            public.await().zip(private.await(), { public, private ->
-                public.toProfile().copy(
-                    private = private.toProfilePrivate()
-                )
-            })
-        }.mapDomainError()
-    }
-
 
     // history
     override suspend fun getHistory(type: HistoryType): Result<HistoryGroupWrapper> {
@@ -160,8 +61,6 @@ class UserRepositoryImpl @Inject constructor(
             userLocalDatasource.getHistory(type).toHistoryGroupWrapper()
         }.mapDomainError()
     }
-
-
 
     override suspend fun addHistory(
         type: HistoryType,

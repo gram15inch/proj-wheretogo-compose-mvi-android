@@ -6,6 +6,7 @@ import com.wheretogo.data.repositoryimpl.AuthRepositoryImpl
 import com.wheretogo.data.repositoryimpl.CheckPointRepositoryImpl
 import com.wheretogo.data.repositoryimpl.CommentRepositoryImpl
 import com.wheretogo.data.repositoryimpl.CourseRepositoryImpl
+import com.wheretogo.data.repositoryimpl.GuestRepositoryImpl
 import com.wheretogo.data.repositoryimpl.ImageRepositoryImpl
 import com.wheretogo.data.repositoryimpl.ReportRepositoryImpl
 import com.wheretogo.data.repositoryimpl.RouteRepositoryImpl
@@ -16,6 +17,7 @@ import com.wheretogo.domain.repository.AuthRepository
 import com.wheretogo.domain.repository.CheckPointRepository
 import com.wheretogo.domain.repository.CommentRepository
 import com.wheretogo.domain.repository.CourseRepository
+import com.wheretogo.domain.repository.GuestRepository
 import com.wheretogo.domain.repository.ImageRepository
 import com.wheretogo.domain.repository.ReportRepository
 import com.wheretogo.domain.repository.RouteRepository
@@ -33,6 +35,10 @@ abstract class RepositoryModule {
     @Singleton
     @Binds
     abstract fun bindAppRepository(repositoryImpl: AppRepositoryImpl): AppRepository
+
+    @Singleton
+    @Binds
+    abstract fun bindGuestRepository(repositoryImpl: GuestRepositoryImpl): GuestRepository
 
 
     @Singleton

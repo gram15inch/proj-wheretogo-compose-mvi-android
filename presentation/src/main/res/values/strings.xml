@@ -118,6 +118,7 @@
     //오류
     <string name="google_auth">구글 인증 오류</string>
     <string name="user_create_error">계정 생성 오류</string>
+    <string name="unavailable_user">이용할 수 없는 계정 : %s</string>
     <string name="invalid_user">유효하지 않은 계정</string>
     <string name="invalid_data">잘못된 데이터</string>
     <string name="network_error">네트워크가 원활하지 않아요. 연결 상태를 확인해 주세요.</string>

@@ -19,6 +19,7 @@ import com.wheretogo.data.datasource.CheckPointRemoteDatasource
 import com.wheretogo.data.datasource.CommentRemoteDatasource
 import com.wheretogo.data.datasource.CourseLocalDatasource
 import com.wheretogo.data.datasource.CourseRemoteDatasource
+import com.wheretogo.data.datasource.GuestRemoteDatasource
 import com.wheretogo.data.datasource.ImageLocalDatasource
 import com.wheretogo.data.datasource.ImageRemoteDatasource
 import com.wheretogo.data.datasource.ReportLocalDatasource
@@ -31,6 +32,7 @@ import com.wheretogo.data.datasourceimpl.AppLocalDatasourceImpl
 import com.wheretogo.data.datasourceimpl.AppRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.CheckPointLocalDatasourceImpl
 import com.wheretogo.data.datasourceimpl.CourseLocalDatasourceImpl
+import com.wheretogo.data.datasourceimpl.GuestRemoteDatasourceImpl
 import com.wheretogo.data.datasourceimpl.ImageLocalDatasourceImpl
 import com.wheretogo.data.datasourceimpl.ReportLocalDatasourceImpl
 import com.wheretogo.data.datasourceimpl.RouteLocalDatasourceImpl
@@ -74,6 +76,10 @@ abstract class MockDatasourceModule {
     //remote
     @Binds
     abstract fun bindAppRemoteDatasource(datasource: MockAppRemoteDatasourceImpl): AppRemoteDatasource
+
+    @Binds
+    abstract fun bindGuestRemoteDatasource(datasource: GuestRemoteDatasourceImpl): GuestRemoteDatasource
+
 
     @Binds
     abstract fun bindImageRemoteDatasource(datasource: MockImageRemoteDatasourceImpl): ImageRemoteDatasource

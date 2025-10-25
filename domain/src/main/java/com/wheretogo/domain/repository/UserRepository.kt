@@ -2,20 +2,16 @@ package com.wheretogo.domain.repository
 
 import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.model.history.HistoryGroupWrapper
-import com.wheretogo.domain.model.user.AuthProfile
+import com.wheretogo.domain.model.user.History
 import com.wheretogo.domain.model.user.Profile
 import kotlinx.coroutines.flow.Flow
 
 interface UserRepository {
     suspend fun getProfileStream(): Flow<Profile>
 
-    suspend fun createUser(profile: Profile): Result<Unit>
-
-    suspend fun syncUser(authProfile: AuthProfile): Result<Profile>
+    suspend fun cacheUser(profile: Profile, history: History): Result<Unit>
 
     suspend fun deleteUser(): Result<Unit>
-
-    suspend fun checkUserExist(mail: String): Result<Profile>
 
     suspend fun getHistory(type: HistoryType): Result<HistoryGroupWrapper>
 

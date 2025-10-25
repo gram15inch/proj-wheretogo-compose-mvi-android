@@ -24,42 +24,6 @@ class MockUserRemoteDatasourceImpl @Inject constructor(
     private var userRemoteGroup =
         mutableMapOf<String, MockRemoteUser>(mockRemoteUser.profile.uid to mockRemoteUser) // userId
 
-    override suspend fun setProfilePublic(public: RemoteProfilePublic): Result<Unit> {
-        return dataErrorCatching {
-            val uid = public.uid
-            val newUser = userRemoteGroup.getOrPut(uid) {
-                MockRemoteUser(
-                    uid,
-                    profile = public.toProfile()
-                )
-            }.run {
-                copy(profile = profile)
-            }
-            userRemoteGroup.put(uid, newUser)
-        }.mapCatching { Unit }
-    }
-
-    override suspend fun setProfilePrivate(
-        uid: String,
-        privateProfile: RemoteProfilePrivate
-    ): Result<Unit> {
-        return dataErrorCatching {
-            val newUser = userRemoteGroup.getOrPut(uid) {
-                MockRemoteUser(
-                    uid,
-                    getProfilePublic(uid).getOrNull()?.toProfile()
-                        ?.copy(uid = uid, private = privateProfile.toProfilePrivate())
-                        ?: return Result.failure(
-                            DataError.UserInvalid()
-                        )
-                )
-            }.run {
-                copy(profile = profile.copy(private = privateProfile.toProfilePrivate()))
-            }
-            userRemoteGroup.put(uid, newUser)
-        }.mapCatching { Unit }
-    }
-
     override suspend fun getProfilePublic(uid: String): Result<RemoteProfilePublic> {
         return dataErrorCatching { userRemoteGroup.get(uid)?.profile?.toProfilePublic() }
     }
@@ -153,9 +117,5 @@ class MockUserRemoteDatasourceImpl @Inject constructor(
             userRemoteGroup.toList()
                 .firstOrNull { it.second.profile.hashMail == hashMail }?.second?.profile?.toProfilePublic()
         }
-    }
-
-    override suspend fun resisterUser(public: RemoteProfilePublic): Result<RemoteProfilePrivate> {
-        return Result.success(RemoteProfilePrivate()) // todo 수정
     }
 }

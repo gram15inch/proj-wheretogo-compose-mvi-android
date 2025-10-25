@@ -6,8 +6,6 @@ import com.wheretogo.data.model.user.RemoteProfilePublic
 import com.wheretogo.domain.HistoryType
 
 interface UserRemoteDatasource {
-    suspend fun setProfilePublic(public: RemoteProfilePublic): Result<Unit>
-    suspend fun setProfilePrivate(uid: String, privateProfile: RemoteProfilePrivate): Result<Unit>
     suspend fun getProfilePublic(uid: String): Result<RemoteProfilePublic>
     suspend fun getProfilePublicWithMail(hashMail: String): Result<RemoteProfilePublic>
     suspend fun getProfilePrivate(uid: String): Result<RemoteProfilePrivate>

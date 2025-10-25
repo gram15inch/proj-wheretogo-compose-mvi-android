@@ -26,6 +26,7 @@ val CoursePolicy = DefaultPolicy(60, 15)
 sealed class DataError: IOException(){
     data class NetworkError(val msg:String = ""): DataError()
     data class UserInvalid(val msg:String = ""): DataError()
+    data class UserUnavailable(val msg:String = ""): DataError()
     data class AuthInvalid(val msg:String = ""): DataError()
     data class PublicTokenInvalid(val msg:String = ""): DataError()
     data class Unauthorized(val msg:String = ""): DataError()
@@ -49,6 +50,7 @@ fun Response<*>.toDataError(): DataError {
         404 -> DataError.NotFound(msg)
         409 -> DataError.Conflict(msg)
         429 -> DataError.TooManyRequests(msg)
+        503 -> DataError.UserUnavailable(msg)
         else -> DataError.ServerError(msg)
     }
 }
@@ -73,7 +75,8 @@ fun DataError.toDomainError(): DomainError{
         is DataError.NetworkError->{ DomainError.NetworkError(this.msg) }
         is DataError.ServerError->{ DomainError.NetworkError("Server Error") }
         is DataError.UserInvalid->{ DomainError.UserInvalid(this.msg) }
-        is DataError.Unauthorized->{ DomainError.UserInvalid(this.msg) }
+        is DataError.Unauthorized->{ DomainError.Unauthorized(this.msg) }
+        is DataError.UserUnavailable->{ DomainError.UserUnavailable(this.msg) }
         is DataError.AuthInvalid->{ DomainError.SignInError(this.msg) }
         else -> {
             FirebaseCrashlytics.getInstance().recordException(this)

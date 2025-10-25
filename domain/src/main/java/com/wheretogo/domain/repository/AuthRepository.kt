@@ -1,9 +1,9 @@
 package com.wheretogo.domain.repository
 
-import com.wheretogo.domain.model.auth.AuthToken
-import com.wheretogo.domain.model.user.AuthProfile
+import com.wheretogo.domain.model.auth.SignToken
+import com.wheretogo.domain.model.auth.SyncProfile
 
 interface AuthRepository {
-    suspend fun signInWithToken(authToken: AuthToken): Result<AuthProfile>
+    suspend fun signInWithToken(signToken: SignToken): Result<SyncProfile>
     suspend fun signOut(): Result<Unit>
 }

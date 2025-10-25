@@ -1,16 +1,16 @@
 package com.wheretogo.data.datasourceimpl.service
 
-import com.wheretogo.data.model.firebase.MessageResponse
+import com.wheretogo.data.model.firebase.DataResponse
+import com.wheretogo.data.model.user.RemoteSyncUser
+import com.wheretogo.domain.model.auth.SyncToken
 import retrofit2.Response
-import retrofit2.http.GET
-import retrofit2.http.Header
+import retrofit2.http.Body
+import retrofit2.http.POST
 
 interface GuestApiService {
 
-    @GET("api/guest/")
-    suspend fun getGuestSomething(
-        @Header("X-api-key") apiKey: String,
-    ): Response<MessageResponse>
-
-
+    @POST("api/guest/syncUser")
+    suspend fun syncUser(
+        @Body body: SyncToken,
+    ): Response<DataResponse<RemoteSyncUser>>
 }

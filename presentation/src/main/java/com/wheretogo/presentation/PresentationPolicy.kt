@@ -61,7 +61,7 @@ sealed class AppError : Exception() {
     data class ImgEmpty(val msg: String = "") : AppError()
     data class NeedSignIn(val msg: String = "") : AppError()
     data class InvalidState(val msg: String = "") : AppError()
-    data class AuthInvalid(val msg: String = "") : AppError()
+    data class Unavailable(val msg: String = "") : AppError()
     data class NetworkError(val msg: String = "") : AppError()
     data class DescriptionEmpty(val msg: String = "") : AppError()
     data class LocationPermissionRequire(val msg: String = "") : AppError()
@@ -205,6 +205,7 @@ fun Throwable.toAppError(): AppError {
         is DomainError.UserInvalid -> AppError.NeedSignIn(msg)
         is DomainError.SignInError -> AppError.CredentialError(msg)
         is DomainError.ExpireData -> AppError.InvalidState(msg)
+        is DomainError.UserUnavailable -> AppError.Unavailable(msg)
         is DomainError.CoolDownData -> AppError.WaitCoolDown(remainingMinutes)
         is GetCredentialCancellationException -> AppError.Ignore(message?:"")
         is GetCredentialCustomException -> AppError.CredentialError(errorMessage.toString())
@@ -238,6 +239,10 @@ class DefaultErrorHandler() : ViewModelErrorHandler {
 
             is AppError.CredentialError ->
                 EventBus.send(AppEvent.SnackBar(EventMsg(R.string.google_auth)))
+
+            is AppError.Unavailable ->
+                EventBus.send(AppEvent.SnackBar(EventMsg(R.string.unavailable_user, arg = error.msg)))
+
 
             is AppError.NetworkError ->
                 EventBus.send(AppEvent.SnackBar(EventMsg(R.string.network_error)))

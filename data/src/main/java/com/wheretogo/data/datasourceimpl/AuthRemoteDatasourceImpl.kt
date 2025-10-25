@@ -8,8 +8,8 @@ import com.wheretogo.data.datasource.AuthRemoteDatasource
 import com.wheretogo.data.feature.dataErrorCatching
 import com.wheretogo.data.toDataError
 import com.wheretogo.domain.AuthCompany
-import com.wheretogo.domain.model.auth.AuthToken
-import com.wheretogo.domain.model.user.AuthProfile
+import com.wheretogo.domain.model.auth.SignToken
+import com.wheretogo.domain.model.auth.SyncProfile
 import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
 import kotlin.coroutines.resume
@@ -18,9 +18,9 @@ import kotlin.coroutines.resumeWithException
 class AuthRemoteDatasourceImpl @Inject constructor() : AuthRemoteDatasource {
     private val firebaseAuth by lazy { FirebaseAuth.getInstance() }
 
-    override suspend fun authGoogleWithFirebase(authToken: AuthToken): Result<AuthProfile> {
+    override suspend fun authGoogleWithFirebase(signToken: SignToken): Result<SyncProfile> {
         return runCatching {
-            val credential = GoogleAuthProvider.getCredential(authToken.idToken, null)
+            val credential = GoogleAuthProvider.getCredential(signToken.token, null)
             val user = suspendCancellableCoroutine { continuation ->
                 firebaseAuth.signInWithCredential(credential)
                     .addOnSuccessListener { task ->
@@ -36,8 +36,7 @@ class AuthRemoteDatasourceImpl @Inject constructor() : AuthRemoteDatasource {
                     }
             }
 
-
-            val authProfile = suspendCancellableCoroutine { continuation ->
+            suspendCancellableCoroutine { continuation ->
                 user.getIdToken(true)
                     .addOnSuccessListener { result ->
                         val token = result.token
@@ -46,10 +45,10 @@ class AuthRemoteDatasourceImpl @Inject constructor() : AuthRemoteDatasource {
                             return@addOnSuccessListener
                         }
                         continuation.resume(
-                            AuthProfile(
+                            SyncProfile(
                                 uid = user.uid,
-                                email = user.email ?: "",
-                                userName = user.displayName ?: "",
+                                mail = user.email ?: "",
+                                name = user.displayName ?: "",
                                 authCompany = AuthCompany.GOOGLE,
                                 token = token,
                             )
@@ -58,13 +57,11 @@ class AuthRemoteDatasourceImpl @Inject constructor() : AuthRemoteDatasource {
                         continuation.resumeWithException(it.toDataError())
                     }
             }
-
-            authProfile
         }
     }
 
     override suspend fun signOutOnFirebase(): Result<Unit> {
-       return dataErrorCatching {
+        return dataErrorCatching {
             checkUserStatus()
             firebaseAuth.signOut()
         }

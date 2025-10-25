@@ -35,40 +35,6 @@ class UserRemoteDatasourceImpl @Inject constructor(
         }
     }
 
-    override suspend fun setProfilePublic(public: RemoteProfilePublic): Result<Unit> {
-        return dataErrorCatching {
-            suspendCancellableCoroutine { continuation ->
-                firestore.collection(FireStoreCollections.USER.name())
-                    .document(public.uid)
-                    .set(public)
-                    .addOnSuccessListener { _ ->
-                        continuation.resume(Unit)
-                    }.addOnFailureListener { e ->
-                        continuation.resumeWithException(e)
-                    }
-            }
-        }
-    }
-
-    override suspend fun setProfilePrivate(
-        uid: String,
-        privateProfile: RemoteProfilePrivate
-    ): Result<Unit> {
-        return dataErrorCatching {
-            suspendCancellableCoroutine { continuation ->
-                firestore.collection(FireStoreCollections.USER.name()).document(uid)
-                    .collection(FireStoreCollections.PRIVATE.name)
-                    .document(FireStoreCollections.PRIVATE.name)
-                    .set(privateProfile)
-                    .addOnSuccessListener { _ ->
-                        continuation.resume(Unit)
-                    }.addOnFailureListener { e ->
-                        continuation.resumeWithException(e)
-                    }
-            }
-        }
-    }
-
     override suspend fun getProfilePublic(uid: String): Result<RemoteProfilePublic> {
         return dataErrorCatching {
             val snapshot = suspendCancellableCoroutine { continuation ->

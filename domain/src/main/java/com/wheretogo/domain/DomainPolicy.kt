@@ -23,6 +23,8 @@ val CommentCooldown = DefaultCoolDownPolicy(1)
 sealed class DomainError : Exception() {
     data class NetworkError(val msg: String = "") : DomainError()
     data class UserInvalid(val msg: String = "") : DomainError()
+    data class Unauthorized(val msg: String = "") : DomainError()
+    data class UserUnavailable(val msg: String = "") : DomainError()
     data class SignInError(val msg: String = "") : DomainError()
     data class NotFound(val msg: String = "") : DomainError()
     data class InternalError(val msg: String = "") : DomainError()
