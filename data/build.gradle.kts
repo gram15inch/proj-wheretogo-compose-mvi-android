@@ -113,6 +113,7 @@ dependencies {
     // Libraries
     implementation(Google.IDENTITY_GOOGLEID)
     implementation(Libraries.HUXHORN_SULKY_ULID)
+    implementation(Libraries.JAKEWHARTON_TIMBER)
 }
 
 fun getLocalProperties(key: String): String {

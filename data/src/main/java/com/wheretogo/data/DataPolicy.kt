@@ -3,6 +3,8 @@ package com.wheretogo.data
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import com.wheretogo.data.feature.safeErrorBody
 import com.wheretogo.domain.DomainError
 import okio.IOException
@@ -22,6 +24,29 @@ const val IMAGE_DOWN_MAX_MB = 10
 val CheckpointPolicy = DefaultPolicy(60, 15)
 val CommentPolicy = DefaultPolicy(20, 5)
 val CoursePolicy = DefaultPolicy(60, 15)
+
+@JsonClass(generateAdapter = false)
+enum class DataAuthCompany {
+    @Json(name = "GOOGLE") GOOGLE,
+    @Json(name = "PROFILE") PROFILE
+}
+
+@JsonClass(generateAdapter = false)
+enum class DataHistoryType {
+    @Json(name = "COMMENT") COMMENT,
+    @Json(name = "COURSE") COURSE,
+    @Json(name = "CHECKPOINT") CHECKPOINT,
+    @Json(name = "LIKE") LIKE,
+    @Json(name = "REPORT") REPORT
+}
+
+@JsonClass(generateAdapter = false)
+enum class DataReportType {
+    @Json(name = "USER") USER,
+    @Json(name = "COURSE") COURSE,
+    @Json(name = "COMMENT") COMMENT,
+    @Json(name = "CHECKPOINT") CHECKPOINT
+}
 
 sealed class DataError: IOException(){
     data class NetworkError(val msg:String = ""): DataError()

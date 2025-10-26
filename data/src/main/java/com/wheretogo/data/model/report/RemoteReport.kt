@@ -1,11 +1,12 @@
 package com.wheretogo.data.model.report
 
 import com.wheretogo.data.DATA_NULL
+import com.wheretogo.data.DataReportType
 
 
 data class RemoteReport(
     val reportId: String = DATA_NULL,
-    val type: String = DATA_NULL,
+    val type: DataReportType = DataReportType.CHECKPOINT,
     val userId: String = DATA_NULL,
     val contentId: String = DATA_NULL,
     val targetUserId: String = "",

@@ -3,6 +3,7 @@ package com.wheretogo.data.datasourceimpl
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
+import com.wheretogo.data.DataHistoryType
 import com.wheretogo.data.FireStoreCollections
 import com.wheretogo.data.datasource.UserRemoteDatasource
 import com.wheretogo.data.datasourceimpl.service.UserApiService
@@ -13,7 +14,6 @@ import com.wheretogo.data.model.user.RemoteProfilePrivate
 import com.wheretogo.data.model.user.RemoteProfilePublic
 import com.wheretogo.data.name
 import com.wheretogo.data.toDataError
-import com.wheretogo.domain.HistoryType
 import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
 import kotlin.coroutines.resume
@@ -155,7 +155,7 @@ class UserRemoteDatasourceImpl @Inject constructor(
     }
 
     override suspend fun addHistory(
-        type: HistoryType,
+        type: DataHistoryType,
         uid: String,
         groupId: String,
         historyId: String
@@ -206,7 +206,7 @@ class UserRemoteDatasourceImpl @Inject constructor(
     }
 
     override suspend fun removeHistory(
-        type: HistoryType,
+        type: DataHistoryType,
         uid: String,
         groupId: String,
         historyId: String
@@ -230,13 +230,13 @@ class UserRemoteDatasourceImpl @Inject constructor(
         }
     }
 
-    private fun HistoryType.toCollectionName(): String {
+    private fun DataHistoryType.toCollectionName(): String {
         return when (this) {
-            HistoryType.COURSE -> FireStoreCollections.COURSE.name
-            HistoryType.CHECKPOINT -> FireStoreCollections.CHECKPOINT.name
-            HistoryType.COMMENT -> FireStoreCollections.COMMENT.name
-            HistoryType.LIKE -> FireStoreCollections.LIKE.name
-            HistoryType.REPORT -> FireStoreCollections.REPORT.name
+            DataHistoryType.COURSE -> FireStoreCollections.COURSE.name
+            DataHistoryType.CHECKPOINT -> FireStoreCollections.CHECKPOINT.name
+            DataHistoryType.COMMENT -> FireStoreCollections.COMMENT.name
+            DataHistoryType.LIKE -> FireStoreCollections.LIKE.name
+            DataHistoryType.REPORT -> FireStoreCollections.REPORT.name
         }
     }
 }
