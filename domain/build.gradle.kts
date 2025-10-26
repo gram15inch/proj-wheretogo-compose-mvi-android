@@ -3,6 +3,7 @@ import wheretogo.AndroidX
 import wheretogo.Dagger
 import wheretogo.Kotlin
 import wheretogo.Libraries
+import wheretogo.Squareup
 import wheretogo.UnitTest
 
 plugins {
@@ -62,6 +63,7 @@ dependencies {
     implementation(Libraries.FIREBASE_GEOFIRE_COMMON)
     implementation(Libraries.HUXHORN_SULKY_ULID)
     implementation(Libraries.KOMORAN)
+    implementation(Libraries.JAKEWHARTON_TIMBER)
 
     //Test
     testImplementation(UnitTest.JUNIT_JUPITER)

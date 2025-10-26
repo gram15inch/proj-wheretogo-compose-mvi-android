@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.byteArrayPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.wheretogo.data.DataHistoryType
 import com.wheretogo.data.datasource.UserLocalDatasource
 import com.wheretogo.data.feature.dataErrorCatching
 import com.wheretogo.data.model.history.LocalHistory
@@ -14,7 +15,6 @@ import com.wheretogo.data.model.history.LocalHistoryGroupWrapper
 import com.wheretogo.data.model.history.LocalHistoryIdGroup
 import com.wheretogo.data.model.user.LocalProfile
 import com.wheretogo.data.model.user.LocalProfilePrivate
-import com.wheretogo.domain.HistoryType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -49,7 +49,7 @@ class UserLocalDatasourceImpl @Inject constructor(
 
     @OptIn(ExperimentalSerializationApi::class)
     override suspend fun addHistory(
-        type: HistoryType,
+        type: DataHistoryType,
         groupId: String,
         historyId: String,
         addedAt: Long
@@ -86,7 +86,7 @@ class UserLocalDatasourceImpl @Inject constructor(
 
     @OptIn(ExperimentalSerializationApi::class)
     override suspend fun removeHistory(
-        type: HistoryType,
+        type: DataHistoryType,
         groupId: String,
         historyId: String
     ): Result<Unit> {
@@ -114,27 +114,27 @@ class UserLocalDatasourceImpl @Inject constructor(
         }
     }
 
-    private fun getHistoryKey(type: HistoryType): Preferences.Key<ByteArray> {
+    private fun getHistoryKey(type: DataHistoryType): Preferences.Key<ByteArray> {
         return when (type) {
-            HistoryType.LIKE -> like
-            HistoryType.COMMENT -> comment
-            HistoryType.COURSE -> course
-            HistoryType.CHECKPOINT -> checkpoint
-            HistoryType.REPORT -> reportContent
+            DataHistoryType.LIKE -> like
+            DataHistoryType.COMMENT -> comment
+            DataHistoryType.COURSE -> course
+            DataHistoryType.CHECKPOINT -> checkpoint
+            DataHistoryType.REPORT -> reportContent
         }
     }
 
-    private fun getHistoryAddedAtKey(type: HistoryType): Preferences.Key<Long>? {
+    private fun getHistoryAddedAtKey(type: DataHistoryType): Preferences.Key<Long>? {
         return when (type) {
-            HistoryType.COMMENT -> commentAddedAt
-            HistoryType.COURSE -> courseAddedAt
-            HistoryType.CHECKPOINT -> checkpointAddedAt
+            DataHistoryType.COMMENT -> commentAddedAt
+            DataHistoryType.COURSE -> courseAddedAt
+            DataHistoryType.CHECKPOINT -> checkpointAddedAt
             else -> null
         }
     }
 
     @OptIn(ExperimentalSerializationApi::class)
-    override suspend fun getHistory(type: HistoryType): LocalHistoryGroupWrapper {
+    override suspend fun getHistory(type: DataHistoryType): LocalHistoryGroupWrapper {
         val historyKey = getHistoryKey(type)
         val addedAtKey = getHistoryAddedAtKey(type)
         val historyIdGroup = userDataStore.data.map { preferences ->

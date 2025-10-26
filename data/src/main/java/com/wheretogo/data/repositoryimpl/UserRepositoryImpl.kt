@@ -6,6 +6,7 @@ import com.wheretogo.data.datasource.UserRemoteDatasource
 import com.wheretogo.data.feature.dataErrorCatching
 import com.wheretogo.data.feature.mapDomainError
 import com.wheretogo.data.feature.mapSuccess
+import com.wheretogo.data.toDataHistoryType
 import com.wheretogo.data.toDomainResult
 import com.wheretogo.data.toHistory
 import com.wheretogo.data.toHistoryGroupWrapper
@@ -58,7 +59,7 @@ class UserRepositoryImpl @Inject constructor(
     // history
     override suspend fun getHistory(type: HistoryType): Result<HistoryGroupWrapper> {
         return dataErrorCatching {
-            userLocalDatasource.getHistory(type).toHistoryGroupWrapper()
+            userLocalDatasource.getHistory(type.toDataHistoryType()).toHistoryGroupWrapper()
         }.mapDomainError()
     }
 
@@ -72,9 +73,9 @@ class UserRepositoryImpl @Inject constructor(
             require(historyId.isNotEmpty()) { "inValid historyId: $historyId" }
             profile
         }.mapSuccess { profile ->
-            userRemoteDatasource.addHistory(type, profile.uid, groupId, historyId)
+            userRemoteDatasource.addHistory(type.toDataHistoryType(), profile.uid, groupId, historyId)
         }.mapSuccess {
-            userLocalDatasource.addHistory(type, groupId, historyId,it)
+            userLocalDatasource.addHistory(type.toDataHistoryType(), groupId, historyId,it)
         }.mapDomainError()
     }
 
@@ -88,7 +89,7 @@ class UserRepositoryImpl @Inject constructor(
             validateUser()
             require(historyId.isNotEmpty()) { "inValid historyId: $historyId" }
         }.mapSuccess {
-            userLocalDatasource.addHistory(type, groupId, historyId, addedAt)
+            userLocalDatasource.addHistory(type.toDataHistoryType(), groupId, historyId, addedAt)
         }.mapDomainError()
     }
 
@@ -102,10 +103,10 @@ class UserRepositoryImpl @Inject constructor(
             require(historyId.isNotEmpty()) { "inValid historyId: $historyId" }
             profile
         }.mapSuccess { profile ->
-            userLocalDatasource.removeHistory(type, groupId, historyId)
+            userLocalDatasource.removeHistory(type.toDataHistoryType(), groupId, historyId)
                 .mapSuccess {
                     userRemoteDatasource.removeHistory(
-                        type = type,
+                        type = type.toDataHistoryType(),
                         uid = profile.uid,
                         groupId = groupId,
                         historyId = historyId
@@ -123,7 +124,7 @@ class UserRepositoryImpl @Inject constructor(
             validateUser()
             require(historyId.isNotEmpty()) { "inValid historyId: $historyId" }
         }.mapSuccess {
-            userLocalDatasource.removeHistory(type, groupId, historyId)
+            userLocalDatasource.removeHistory(type.toDataHistoryType(), groupId, historyId)
         }.mapDomainError()
     }
 

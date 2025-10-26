@@ -150,7 +150,7 @@ class CourseAddViewModel @Inject constructor(
         val keywordResult = withContext(Dispatchers.IO) {
             searchKeywordUseCase(
                 submitValue,
-                SearchType.ADRESS
+                SearchType.ADDRESS
             )
         }
         keywordResult.onSuccess { addressGroup ->

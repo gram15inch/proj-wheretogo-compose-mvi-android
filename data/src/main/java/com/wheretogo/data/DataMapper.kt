@@ -1,5 +1,6 @@
 package com.wheretogo.data
 
+import com.wheretogo.data.model.auth.DataSyncToken
 import com.wheretogo.data.model.checkpoint.LocalCheckPoint
 import com.wheretogo.data.model.checkpoint.RemoteCheckPoint
 import com.wheretogo.data.model.comment.RemoteComment
@@ -20,10 +21,12 @@ import com.wheretogo.data.model.user.LocalProfilePrivate
 import com.wheretogo.data.model.user.RemoteProfilePrivate
 import com.wheretogo.data.model.user.RemoteProfilePublic
 import com.wheretogo.data.model.user.RemoteSyncUser
+import com.wheretogo.domain.AuthCompany
 import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.ReportStatus
 import com.wheretogo.domain.ReportType
 import com.wheretogo.domain.model.address.LatLng
+import com.wheretogo.domain.model.auth.SyncToken
 import com.wheretogo.domain.model.checkpoint.CheckPoint
 import com.wheretogo.domain.model.checkpoint.CheckPointAddRequest
 import com.wheretogo.domain.model.comment.Comment
@@ -42,7 +45,7 @@ import com.wheretogo.domain.model.util.Snapshot
 import com.wheretogo.domain.toGeoHash
 
 fun RemoteSyncUser.toProfileHistoryPair(): Pair<Profile, History> {
-    val profile = public.toProfile(private)
+    val profile = publicUser.toProfile(privateUser)
     val history = history.toLocalHistory().toHistory()
     return profile to history
 }
@@ -153,7 +156,7 @@ fun ProfilePrivate.toRemoteProfilePrivate(): RemoteProfilePrivate {
 fun ReportAddRequest.toRemoteReport(reportId: String): RemoteReport {
     return RemoteReport(
         reportId = reportId,
-        type = type.name,
+        type = type.toDataReportType(),
         userId = userId,
         contentId = contentId,
         targetUserId = targetUserId,
@@ -182,7 +185,7 @@ fun RemoteReport.toLocalReport(): LocalReport {
 fun LocalReport.toReport(): Report {
     return Report(
         reportId = reportId,
-        type = ReportType.valueOf(type),
+        type = type.toReportType(),
         userId = userId,
         contentId = contentId,
         targetUserId = targetUserId,
@@ -234,7 +237,7 @@ fun RemoteRoute.toRoute(): Route {
 fun RemoteReport.toReport(): Report {
     return Report(
         reportId = reportId,
-        type = ReportType.valueOf(type),
+        type = type.toReportType(),
         userId = userId,
         contentId = contentId,
         targetUserId = targetUserId,
@@ -245,6 +248,23 @@ fun RemoteReport.toReport(): Report {
     )
 }
 
+fun ReportType.toDataReportType(): DataReportType{
+    return when(this){
+        ReportType.USER -> DataReportType.USER
+        ReportType.COURSE -> DataReportType.COURSE
+        ReportType.COMMENT -> DataReportType.COMMENT
+        ReportType.CHECKPOINT -> DataReportType.CHECKPOINT
+    }
+}
+
+fun DataReportType.toReportType(): ReportType{
+    return when(this){
+        DataReportType.USER -> ReportType.USER
+        DataReportType.COURSE -> ReportType.COURSE
+        DataReportType.COMMENT -> ReportType.COMMENT
+        DataReportType.CHECKPOINT -> ReportType.CHECKPOINT
+    }
+}
 fun RemoteComment.toComment(): Comment {
     return Comment(
         commentId = commentId,
@@ -485,7 +505,7 @@ fun List<LatLng>.toDataLatLngGroup(): List<DataLatLng> {
 
 fun LocalHistoryGroupWrapper.toHistoryGroupWrapper(): HistoryGroupWrapper {
     return HistoryGroupWrapper(
-        type = type,
+        type = type.toHistoryType(),
         historyIdGroup = HistoryIdGroup(
             groupById = historyIdGroup.groupById
         ),
@@ -495,7 +515,7 @@ fun LocalHistoryGroupWrapper.toHistoryGroupWrapper(): HistoryGroupWrapper {
 
 fun HistoryGroupWrapper.toLocalHistoryGroupWrapper(): LocalHistoryGroupWrapper {
     return LocalHistoryGroupWrapper(
-        type = type,
+        type = type.toDataHistoryType(),
         historyIdGroup = LocalHistoryIdGroup(
             groupById = historyIdGroup.groupById
         ),
@@ -523,33 +543,68 @@ fun RemoteHistoryGroupWrapper.toLocalHistoryGroupWrapper(): LocalHistoryGroupWra
 
 fun HistoryGroupWrapper.toRemoteHistoryGroupWrapper(): RemoteHistoryGroupWrapper {
     return RemoteHistoryGroupWrapper(
-        type = type,
+        type = type.toDataHistoryType(),
         historyIdGroup = historyIdGroup.toRemoteHistoryIdGroup(),
         lastAddedAt = lastAddedAt
     )
+}
+
+fun AuthCompany.toDataAuthCompany(): DataAuthCompany{
+    return when(this){
+        AuthCompany.PROFILE -> DataAuthCompany.PROFILE
+        AuthCompany.GOOGLE -> DataAuthCompany.GOOGLE
+    }
+}
+
+fun DataAuthCompany.toAuthCompany(): AuthCompany{
+    return when(this){
+        DataAuthCompany.PROFILE -> AuthCompany.PROFILE
+        DataAuthCompany.GOOGLE -> AuthCompany.GOOGLE
+    }
+}
+
+
+fun HistoryType.toDataHistoryType(): DataHistoryType{
+    return when(this){
+        HistoryType.COURSE -> DataHistoryType.COURSE
+        HistoryType.CHECKPOINT -> DataHistoryType.CHECKPOINT
+        HistoryType.COMMENT -> DataHistoryType.COMMENT
+        HistoryType.LIKE -> DataHistoryType.LIKE
+        HistoryType.REPORT -> DataHistoryType.REPORT
+    }
+}
+
+fun DataHistoryType.toHistoryType(): HistoryType{
+    return when(this){
+        DataHistoryType.COURSE -> HistoryType.COURSE
+        DataHistoryType.CHECKPOINT -> HistoryType.CHECKPOINT
+        DataHistoryType.COMMENT -> HistoryType.COMMENT
+        DataHistoryType.LIKE -> HistoryType.LIKE
+        DataHistoryType.REPORT -> HistoryType.REPORT
+    }
 }
 
 fun List<RemoteHistoryGroupWrapper>.toLocalHistory(): LocalHistory {
     var history = LocalHistory()
     forEach {
         history = when (it.type) {
-            HistoryType.COURSE -> history.copy(
+            DataHistoryType.COURSE -> history.copy(
                 course = it.toLocalHistoryGroupWrapper()
             )
 
-            HistoryType.CHECKPOINT -> history.copy(
+            DataHistoryType.CHECKPOINT -> history.copy(
                 checkpoint = it.toLocalHistoryGroupWrapper()
             )
 
-            HistoryType.COMMENT -> history.copy(
+            DataHistoryType.COMMENT -> history.copy(
                 comment = it.toLocalHistoryGroupWrapper()
             )
 
-            HistoryType.LIKE -> history.copy(
+            DataHistoryType.LIKE -> history.copy(
                 like = it.toLocalHistoryGroupWrapper()
             )
 
-            HistoryType.REPORT -> history.copy(
+            DataHistoryType.REPORT -> history.copy(
                 report = it.toLocalHistoryGroupWrapper()
             )
         }
@@ -580,7 +635,6 @@ fun History.toHistory(): LocalHistory {
     )
 }
 
-
 fun History.remoteGroupWrapper(): List<RemoteHistoryGroupWrapper> {
     return listOf(
         course.toRemoteHistoryGroupWrapper(),
@@ -589,5 +643,12 @@ fun History.remoteGroupWrapper(): List<RemoteHistoryGroupWrapper> {
         like.toRemoteHistoryGroupWrapper(),
         bookmark.toRemoteHistoryGroupWrapper(),
         report.toRemoteHistoryGroupWrapper(),
+    )
+}
+
+fun SyncToken.toDataSyncToken(): DataSyncToken{
+    return DataSyncToken(
+        authCompany = authCompany.toDataAuthCompany(),
+        token = token
     )
 }

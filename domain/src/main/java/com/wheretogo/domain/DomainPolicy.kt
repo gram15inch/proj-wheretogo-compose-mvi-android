@@ -54,7 +54,11 @@ enum class ReportType {
 }
 
 enum class SearchType {
-    ADRESS, COURSE, ALL
+    ADDRESS, COURSE, ALL
+}
+
+enum class AuthType {
+    TOKEN, PROFILE
 }
 
 enum class RouteAttr {
@@ -113,16 +117,6 @@ enum class ReportStatus {
 enum class ImageSize(val pathName: String, val width: Int, val height: Int) {
     NORMAL("normal", 1500, 1500),
     SMALL("small", 200, 200)
-}
-
-enum class UseCaseFailType {
-    INVALID_USER,
-    GOOGLE_AUTH,
-    NETWORK_ERROR
-}
-
-enum class AuthType {
-    TOKEN, PROFILE
 }
 
 fun zoomToGeohashLength(zoom: Double): Int {
