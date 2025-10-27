@@ -47,7 +47,7 @@ class BaseApplication : Application(), Configuration.Provider {
 
     private fun timberInit(){
         if (BuildConfig.DEBUG) {
-            Timber.uprootAll() // 혹시 중복 방지
+            Timber.uprootAll()
             Timber.plant(PrefixedDebugTree())
         } else {
             Timber.uprootAll()
