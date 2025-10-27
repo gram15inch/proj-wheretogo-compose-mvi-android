@@ -35,8 +35,8 @@ class RootViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             appCheckBySignatureUseCase().onSuccess {
-                if(it)
-                    EventBus.send(AppEvent.SnackBar(EventMsg(R.string.wellcome)))
+                if (it)
+                    EventBus.send(AppEvent.SnackBar(EventMsg(R.string.app_check_success)))
             }.onFailure {
                 handleError(it)
             }

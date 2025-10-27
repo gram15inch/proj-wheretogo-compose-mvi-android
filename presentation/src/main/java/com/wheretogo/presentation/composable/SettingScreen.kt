@@ -146,6 +146,7 @@ fun SettingContent(
     ) {
         ProfileSection(
             isProfile = settingState.isProfile,
+            isAdminIcon = settingState.profile.private.isAdmin,
             name = settingState.profile.name,
             authCompany = settingState.profile.private.authCompany,
             mail = settingState.profile.private.mail,
@@ -164,6 +165,7 @@ fun SettingContent(
 @Composable
 fun ProfileSection(
     isProfile: Boolean,
+    isAdminIcon: Boolean,
     name: String,
     authCompany: String,
     mail: String,
@@ -196,13 +198,14 @@ fun ProfileSection(
                                 fontFamily = hancomMalangFontFamily,
                                 fontSize = 24.sp
                             )
-                            Image(
-                                modifier = Modifier
-                                    .size(0.dp) //todo 수정 기능 추가
-                                    .padding(start = 3.dp),
-                                painter = painterResource(R.drawable.ic_edit),
-                                contentDescription = ""
-                            )
+                            if(isAdminIcon)
+                                Image(
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .padding(start = 3.dp),
+                                    painter = painterResource(R.drawable.ic_edit),
+                                    contentDescription = ""
+                                )
                         }
                     }
 
@@ -459,32 +462,16 @@ fun SettingDialog(
 }
 
 @Preview("landscape", widthDp = 800, heightDp = 380)
-@Composable
-fun SettingContentLandscapePreview() {
-    SettingContent(
-        settingState = SettingScreenState().copy(
-            isProfile = true,
-            profile = Profile(
-                name = "어디갈까",
-                private = ProfilePrivate(
-                    mail = "wheretogohelp@gmail.com"
-                )
-            ),
-            isLoading = false,
-            isDialog = false
-        )
-    )
-}
-
 @Preview(name = "portrait", widthDp = 380, heightDp = 800)
 @Composable
-fun SettingContentPortraitPreview() {
+fun SettingContentPreview() {
     SettingContent(
         settingState = SettingScreenState().copy(
             isProfile = true,
             profile = Profile(
                 name = "어디갈까",
                 private = ProfilePrivate(
+                    isAdmin = true,
                     mail = "wheretogohelp@gmail.com"
                 )
             ),
