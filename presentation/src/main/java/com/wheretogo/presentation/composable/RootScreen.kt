@@ -53,8 +53,8 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
         val state by viewModel.rootScreenState.collectAsState()
         val context = LocalContext.current
         val coroutine = rememberCoroutineScope()
-        var showLoginScreen by remember { mutableStateOf(false) }
-        val multiplePermissionsLauncher = rememberLauncherForActivityResult(
+        val multiplePermissionsLauncher
+        = rememberLauncherForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
         ) { permissions ->
             coroutine.launch {
@@ -95,8 +95,8 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                         if (isDenied)
                             multiplePermissionsLauncher.launch(arrayOf(it.permission.name))
                     }
-                    is AppEvent.SignIn -> {
-                        showLoginScreen = true
+                    is AppEvent.SignInScreen -> {
+                        viewModel.setSignInScreenVisible(true)
                     }
                 }
             }
@@ -105,8 +105,8 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
         AppEventReceiveEffect {event, result ->
             viewModel.eventReceive(event, result)
             when(event){
-                is AppEvent.SignIn ->{
-                    showLoginScreen = false
+                is AppEvent.SignInScreen ->{
+                    viewModel.setSignInScreenVisible(false)
                 }
                 else -> {}
             }
@@ -135,7 +135,7 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
 
             SlideAnimation(
                 modifier = Modifier.zIndex(1f),
-                visible = showLoginScreen,
+                visible = state.isSignInScreenVisible,
                 direction = AnimationDirection.CenterDown
             ) {
                 LoginScreen()

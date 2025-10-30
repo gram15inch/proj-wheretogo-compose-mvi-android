@@ -77,7 +77,7 @@ sealed class AppEvent {
     data class Navigation(val form: AppScreen, val to: AppScreen) : AppEvent()
     data class SnackBar(val msg: EventMsg) : AppEvent()
     data class Permission(val permission: AppPermission) : AppEvent()
-    data object SignIn : AppEvent()
+    data object SignInScreen : AppEvent()
 }
 
 sealed class AppScreen {
@@ -234,7 +234,7 @@ class DefaultErrorHandler() : ViewModelErrorHandler {
         when (error) {
             is AppError.NeedSignIn -> {
                 EventBus.send(AppEvent.SnackBar(EventMsg(R.string.need_login)))
-                EventBus.send(AppEvent.SignIn)
+                EventBus.send(AppEvent.SignInScreen)
             }
 
             is AppError.CredentialError ->

@@ -52,11 +52,10 @@ class LoginViewModel @Inject constructor(
 
                 result.onSuccess { name->
                     _loginScreenState.update { it.copy(isExit = true, isLoading = false) }
-                    EventBus.result(AppEvent.SignIn,true)
+                    EventBus.result(AppEvent.SignInScreen,true)
                     EventBus.send(AppEvent.SnackBar(EventMsg(R.string.welcome_user, name)))
                 }.onFailure {
                     _loginScreenState.update { it.copy(isLoading = false) }
-                    EventBus.result(AppEvent.SignIn,false)
                     handleError(it.toAppError())
                 }
             }
@@ -65,7 +64,7 @@ class LoginViewModel @Inject constructor(
 
     fun signInPass() {
         viewModelScope.launch(dispatcher) {
-            EventBus.result(AppEvent.SignIn,false)
+            EventBus.result(AppEvent.SignInScreen,false)
             _loginScreenState.update { it.copy(isExit = true) }
         }
     }
