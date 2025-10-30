@@ -1169,11 +1169,11 @@ class DriveViewModel @Inject constructor(
 
     private fun eventReceive(event: AppEvent, result: Boolean) {
         when (event) {
-            AppEvent.SignIn -> {
+            AppEvent.SignInScreen -> {
                 if(result){
                     clearState()
+                    loadAd()
                 }
-                loadAd()
             }
             else -> {}
         }

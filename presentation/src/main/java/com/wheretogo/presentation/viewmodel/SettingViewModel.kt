@@ -40,7 +40,8 @@ class SettingViewModel @Inject constructor(
 ) : ViewModel() {
     private val _settingScreenState = MutableStateFlow(SettingScreenState())
     val settingScreenState: StateFlow<SettingScreenState> = _settingScreenState
-    private var _loadAdSkip = false
+    private var _loadAdSkipOnResume = false
+    private var _isCoverScreen = false
 
     init {
         profileInit()
@@ -67,7 +68,7 @@ class SettingViewModel @Inject constructor(
     suspend fun handleError(error: Throwable) {
         when(errorHandler.handle(error.toAppError())){
             is AppError.NeedSignIn->{
-                _loadAdSkip = true
+                _isCoverScreen = true
                 clearAd()
                 signOutUseCase()
             }
@@ -139,6 +140,11 @@ class SettingViewModel @Inject constructor(
     private fun lifecycleChange(event: AppLifecycle) {
         when (event) {
             AppLifecycle.onResume -> {
+                if(_loadAdSkipOnResume) {
+                    _loadAdSkipOnResume = false
+                    return
+                }
+
                 if (_settingScreenState.value.adItemGroup.isEmpty()) {
                     viewModelScope.launch(Dispatchers.IO) {
                         loadAd()
@@ -156,15 +162,16 @@ class SettingViewModel @Inject constructor(
 
     private suspend fun eventReceive(event: AppEvent, result: Boolean) {
         when (event) {
-            AppEvent.SignIn -> {
+            AppEvent.SignInScreen -> {
+                _isCoverScreen = false
                 if(result) {
                     refreshProfile()
                 }
-                _loadAdSkip = false
-                loadAd()
+                viewModelScope.launch(Dispatchers.IO){ loadAd() }
             }
             else -> {}
         }
+
     }
 
 
@@ -177,25 +184,26 @@ class SettingViewModel @Inject constructor(
 
     private fun adInit() {
         viewModelScope.launch(Dispatchers.IO) {
-            launch { loadAd() }
+            launch {
+                loadAd()
+                _loadAdSkipOnResume = true
+            }
         }
     }
 
     // 유틸
-    private fun loadAd() {
-        if(_loadAdSkip)
+    private suspend fun loadAd() {
+        if(_loadAdSkipOnResume || _isCoverScreen)
             return
-        viewModelScope.launch(Dispatchers.IO) {
-            adService.getAd()
-                .onSuccess { newAdGroup ->
-                    _settingScreenState.update {
-                        it.copy(adItemGroup = newAdGroup.toItem())
-                    }
-                }.onFailure {
-                    if(it !is AppError.NeedSignIn)
-                        handleError(it)
+        adService.getAd()
+            .onSuccess { newAdGroup ->
+                _settingScreenState.update {
+                    it.copy(adItemGroup = newAdGroup.toItem())
                 }
-        }
+            }.onFailure {
+                if(it !is AppError.NeedSignIn)
+                    handleError(it)
+            }
     }
 
     private fun clearAd() {

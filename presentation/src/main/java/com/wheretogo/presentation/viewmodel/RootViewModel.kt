@@ -15,6 +15,7 @@ import com.wheretogo.presentation.toAppError
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -39,6 +40,14 @@ class RootViewModel @Inject constructor(
                     EventBus.send(AppEvent.SnackBar(EventMsg(R.string.app_check_success)))
             }.onFailure {
                 handleError(it)
+            }
+        }
+    }
+
+    fun setSignInScreenVisible(isVisible: Boolean){
+        viewModelScope.launch {
+            _rootScreenState.update {
+                it.copy(isSignInScreenVisible = isVisible)
             }
         }
     }
