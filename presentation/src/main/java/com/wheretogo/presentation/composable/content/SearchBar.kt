@@ -82,7 +82,7 @@ fun SearchBar(
     var editText by remember { mutableStateOf("") }
     var alpha by remember { mutableFloatStateOf(0.75f) }
     var isAdSkip by remember { mutableStateOf(false) }
-    val adSize = adSize(true)
+    val adSize = adSize()
     val outDp = 12.dp
     LaunchedEffect(state.isActive) {
         if (state.isActive) {
@@ -92,8 +92,9 @@ fun SearchBar(
             editText = ""
         }
     }
+
     LaunchedEffect(adSize) {
-        if(adSize == AdMinSize.INVISIBLE)
+        if(adSize == AdMinSize.Row)
             isAdSkip = true
         else
             isAdSkip = false

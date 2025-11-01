@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
@@ -100,12 +99,13 @@ fun AdaptiveAd(
     isCompact: Boolean = false,
     nativeAd: NativeAd?
 ) {
-    val adSize = adSize(isCompact)
+    val adSize = adSize()
 
     Box(modifier = modifier) {
         when (adSize) {
             AdMinSize.Row -> {
                 when {
+                    isCompact -> { }
                     nativeAd != null -> {
                         RowAd(elevation = elevation, nativeAd = nativeAd)
                     }
@@ -119,7 +119,6 @@ fun AdaptiveAd(
                 when {
                     nativeAd != null -> {
                         CardAd(
-                            modifier = modifier.widthIn(max=500.dp),
                             elevation = elevation,
                             isCompact = isCompact,
                             nativeAd = nativeAd

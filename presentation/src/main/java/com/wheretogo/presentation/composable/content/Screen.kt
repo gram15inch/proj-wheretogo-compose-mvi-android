@@ -16,20 +16,15 @@ fun screenSize(isWidth: Boolean): Dp {
 }
 
 @Composable
-fun adSize(isKeyboardUp: Boolean= false): AdMinSize {
+fun adSize(): AdMinSize {
     val configuration = LocalConfiguration.current
-    val ratio = configuration.screenWidthDp/configuration.screenHeightDp.toFloat()
     val widthDp = configuration.screenWidthDp
-    val heightDp = when{
-        ratio<0.65f -> configuration.screenHeightDp
-        isKeyboardUp -> (configuration.screenHeightDp * 0.6f).toInt()
-        else -> configuration.screenHeightDp
-    }
-    val isCard = widthDp >= AdMinSize.Card.widthDp && heightDp >= AdMinSize.Card.heightDp
-    val isRow = widthDp >= AdMinSize.Row.widthDp && heightDp >= AdMinSize.Row.heightDp
+    val heightDp = configuration.screenHeightDp
+
     return when{
-        isCard-> AdMinSize.Card
-        isRow->  AdMinSize.Row
+        widthDp >= AdMinSize.Card.widthDp && heightDp >= AdMinSize.Card.heightDp-> AdMinSize.Card
+        widthDp >= AdMinSize.Row.widthDp && heightDp >= AdMinSize.Row.heightDp-> AdMinSize.Row
         else-> AdMinSize.INVISIBLE
+
     }
 }
