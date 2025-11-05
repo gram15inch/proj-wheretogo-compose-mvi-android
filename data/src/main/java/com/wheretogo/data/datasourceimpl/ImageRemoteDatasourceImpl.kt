@@ -1,21 +1,17 @@
 package com.wheretogo.data.datasourceimpl
 
 
-import android.content.Context
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.wheretogo.data.IMAGE_DOWN_MAX_MB
 import com.wheretogo.data.datasource.ImageRemoteDatasource
 import com.wheretogo.domain.ImageSize
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-class ImageRemoteDatasourceImpl @Inject constructor(
-    @ApplicationContext private val context: Context
-) : ImageRemoteDatasource {
+class ImageRemoteDatasourceImpl @Inject constructor() : ImageRemoteDatasource {
     private val firebaseStorage by lazy { FirebaseStorage.getInstance() }
 
     override suspend fun uploadImage(
@@ -25,7 +21,7 @@ class ImageRemoteDatasourceImpl @Inject constructor(
     ): Result<Unit> {
         return runCatching {
             val storageRef: StorageReference =
-                firebaseStorage.reference.child("image/${size.pathName}/$imageId")
+                firebaseStorage.reference.child("image/${size.pathName}/$imageId.jpg")
             suspendCancellableCoroutine { con ->
                 storageRef.putBytes(imageByteArray)
                     .addOnSuccessListener {
@@ -41,7 +37,7 @@ class ImageRemoteDatasourceImpl @Inject constructor(
     override suspend fun downloadImage(filename: String, size: ImageSize): Result<ByteArray> {
         return runCatching {
             val storageRef: StorageReference =
-                firebaseStorage.reference.child("image/${size.pathName}/$filename")
+                firebaseStorage.reference.child("image/${size.pathName}/$filename.jpg")
             suspendCancellableCoroutine { con ->
                 storageRef.getBytes(IMAGE_DOWN_MAX_MB.toLong() * 1024 * 1024)
                     .addOnSuccessListener { byteArray ->
@@ -56,7 +52,7 @@ class ImageRemoteDatasourceImpl @Inject constructor(
     override suspend fun removeImage(filename: String, size: ImageSize): Result<Unit> {
         return runCatching {
             val storageRef: StorageReference =
-                firebaseStorage.reference.child("image/${size.pathName}/$filename")
+                firebaseStorage.reference.child("image/${size.pathName}/$filename.jpg")
             suspendCancellableCoroutine { con ->
                 storageRef.delete().addOnSuccessListener { _ ->
                     con.resume(Unit)
