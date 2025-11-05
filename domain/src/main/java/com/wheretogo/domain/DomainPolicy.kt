@@ -43,6 +43,13 @@ fun Throwable?.toDomainError(): DomainError {
     }
 }
 
+enum class TutorialStep {
+    SKIP, HOME_TO_DRIVE, DRIVE_LIST_ITEM_CLICK;
+    fun next(): TutorialStep{
+        return TutorialStep.entries.getOrNull(ordinal+1)?:SKIP
+    }
+}
+
 enum class AuthCompany { GOOGLE, PROFILE }
 
 enum class HistoryType {

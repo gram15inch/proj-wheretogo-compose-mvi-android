@@ -23,9 +23,10 @@ import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
 import kotlinx.serialization.encodeToByteArray
 import javax.inject.Inject
+import javax.inject.Named
 
 class UserLocalDatasourceImpl @Inject constructor(
-    private val userDataStore: DataStore<Preferences>
+    @Named("userDataStore") private val userDataStore: DataStore<Preferences>
 ) : UserLocalDatasource {
     private val uid = stringPreferencesKey("uid_profile")
     private val mail = stringPreferencesKey("mail_profile")

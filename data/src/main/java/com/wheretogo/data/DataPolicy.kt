@@ -48,6 +48,11 @@ enum class DataReportType {
     @Json(name = "CHECKPOINT") CHECKPOINT
 }
 
+@JsonClass(generateAdapter = false)
+enum class DataSettingAttr {
+    @Json(name = "TUTORIAL") TUTORIAL
+}
+
 sealed class DataError: IOException(){
     data class NetworkError(val msg:String = ""): DataError()
     data class UserInvalid(val msg:String = ""): DataError()
