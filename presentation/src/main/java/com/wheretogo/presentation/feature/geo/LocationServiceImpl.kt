@@ -19,4 +19,19 @@ class LocationServiceImpl @Inject constructor() : LocationService {
             )
         }[0].toInt()
     }
+
+    override fun distanceFloat(
+        form: LatLng,
+        to: LatLng
+    ): Float {
+        return FloatArray(1).apply {
+            Location.distanceBetween(
+                form.latitude,
+                form.longitude,
+                to.latitude,
+                to.longitude,
+                this
+            )
+        }[0]
+    }
 }

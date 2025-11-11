@@ -1,6 +1,11 @@
 package com.wheretogo.presentation.feature.map
 
+import com.wheretogo.domain.DomainError
+import com.wheretogo.domain.FieldInvalidReason
+import com.wheretogo.domain.RouteFieldType
+import com.wheretogo.domain.feature.domainMap
 import com.wheretogo.domain.model.address.LatLng
+import com.wheretogo.presentation.AppError
 import com.wheretogo.presentation.MarkerType
 import com.wheretogo.presentation.PathType
 import com.wheretogo.presentation.R
@@ -10,8 +15,10 @@ import com.wheretogo.presentation.model.MarkerInfo
 import com.wheretogo.presentation.model.PathInfo
 import javax.inject.Inject
 
-class CourseAddMapOverlayService @Inject constructor(private val overlayStore: NaverMapOverlayStore) :
-    MapOverlayService() {
+class CourseAddMapOverlayService @Inject constructor(
+    private val overlayStore: NaverMapOverlayStore,
+    private val overlayModifier: NaverMapOverlayModifier
+) : MapOverlayService() {
     val overlays: Collection<MapOverlay> = _overlays.values
 
     private val WAYPOINT_PATH_ID = "WAYPOINT_PATH"
@@ -22,13 +29,17 @@ class CourseAddMapOverlayService @Inject constructor(private val overlayStore: N
             val id = "WAYPOINT_MARKER${System.currentTimeMillis()}"
             val marker = MapOverlay.MarkerContainer(
                 id, MarkerType.CHECKPOINT,
-                overlayStore.getOrCreateMarker(
-                    MarkerInfo(
-                        id,
-                        latlng,
-                        iconRes = R.drawable.ic_mk_df
+                overlayStore.getMarker(
+                    id
+                ) {
+                    overlayModifier.createMarker(
+                        MarkerInfo(
+                            id,
+                            latlng,
+                            iconRes = R.drawable.ic_mk_df
+                        )
                     )
-                )
+                }
             )
             _overlays[id] = marker
             return true
@@ -52,13 +63,17 @@ class CourseAddMapOverlayService @Inject constructor(private val overlayStore: N
             overlayStore.updateMarkerPosition(id, latlng)
             val marker = MapOverlay.MarkerContainer(
                 id, MarkerType.CHECKPOINT,
-                overlayStore.getOrCreateMarker(
-                    MarkerInfo(
-                        id,
-                        latlng,
-                        iconRes = R.drawable.ic_mk_df
+                overlayStore.getMarker(
+                    id
+                ) {
+                    overlayModifier.createMarker(
+                        MarkerInfo(
+                            contentId = id,
+                            position = latlng,
+                            iconRes = R.drawable.ic_mk_df
+                        )
                     )
-                )
+                }
             )
             _overlays.replace(id, marker)
         }
@@ -86,49 +101,69 @@ class CourseAddMapOverlayService @Inject constructor(private val overlayStore: N
         }
     }
 
-    fun createScaffoldPath(): Boolean {
-        val waypoints = _overlays.mapNotNull {
-            if (it.value is MapOverlay.MarkerContainer) {
-                (it.value as MapOverlay.MarkerContainer).marker.markerInfo.position
-            } else {
-                null
-            }
-        }
-        if (waypoints.size >= 2) {
-            val id = WAYPOINT_PATH_ID
-            overlayStore.createAppPath(
-                PathInfo(
-                    contentId = id,
-                    points = waypoints,
-                    minZoomLevel = 0.0,
-                )
-            )?.let {
-                val pathContainer = MapOverlay.PathContainer(id, PathType.SCAFFOLD, it)
-                _overlays[id] = pathContainer
-            }
-            return true
-        }
+    fun createScaffoldPath(): Result<Unit> {
+        return runCatching {
+            val waypoints =
+                _overlays.mapNotNull { (it.value as? MapOverlay.MarkerContainer)?.marker?.markerInfo?.position }
 
-        return false
+            if (waypoints.isEmpty()) {
+                return Result.failure(AppError.Ignore())
+            }
+            val id = WAYPOINT_PATH_ID
+            PathInfo(
+                contentId = id,
+                points = waypoints,
+                minZoomLevel = 0.0,
+            )
+        }.domainMap { pathInfo ->
+            overlayStore.updatePath(pathInfo).run {
+                if (this.exceptionOrNull() is DomainError.NotFound)
+                    overlayStore.getPath(
+                        contentId = pathInfo.contentId,
+                        initPath = { overlayModifier.createPath(pathInfo) }
+                    )
+                else
+                    this
+            }.onSuccess {
+                val pathContainer =
+                    MapOverlay.PathContainer(pathInfo.contentId, PathType.SCAFFOLD, it)
+                _overlays[pathInfo.contentId] = pathContainer
+            }
+        }.map{}
     }
 
-    fun createFullPath(points: List<LatLng> = emptyList()): Boolean {
-        if (points.size > 2) {
-            val id = WAYPOINT_PATH_ID
-
-            overlayStore.createAppPath(
-                PathInfo(
-                    contentId = id,
-                    points = points,
-                    minZoomLevel = 0.0,
+    fun createFullPath(points: List<LatLng> = emptyList()): Result<Unit> {
+        return runCatching {
+            if (points.size < 2) {
+                return Result.failure(
+                    DomainError.RouteFieldInvalid(
+                        RouteFieldType.POINT,
+                        FieldInvalidReason.MIN
+                    )
                 )
-            )?.let {
-                val pathContainer = MapOverlay.PathContainer(id, PathType.FULL, it)
-                _overlays[id] = pathContainer
             }
-            return true
-        }
 
-        return false
+            val id = WAYPOINT_PATH_ID
+            val pathInfo = PathInfo(
+                contentId = id,
+                points = points,
+                minZoomLevel = 0.0,
+            )
+            pathInfo
+        }.domainMap { pathInfo ->
+            overlayStore.updatePath(pathInfo).run {
+                if (this.exceptionOrNull() is DomainError.NotFound)
+                    overlayStore.getPath(
+                        contentId = pathInfo.contentId,
+                        initPath = { overlayModifier.createPath(pathInfo) }
+                    )
+                else
+                    this
+            }.onSuccess {
+                val pathContainer =
+                    MapOverlay.PathContainer(pathInfo.contentId, PathType.FULL, it)
+                _overlays[pathInfo.contentId] = pathContainer
+            }
+        }.map { }
     }
 }

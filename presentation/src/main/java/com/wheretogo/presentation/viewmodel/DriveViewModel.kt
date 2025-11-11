@@ -312,6 +312,12 @@ class DriveViewModel @Inject constructor(
                 )
             }
 
+        if (_driveScreenState.value.stateMode == DriveVisibleMode.CourseDetail)
+            mapOverlayService.scaleToPointMarker(
+                cameraState.latLng,
+                _driveScreenState.value.overlayGroup
+            )
+
         if (isContentsUpdate) {
             isMapUpdate = false
             _driveScreenState.update { it.replaceScreenLoading(true) }
@@ -1288,6 +1294,7 @@ class DriveViewModel @Inject constructor(
         mapOverlayService.removeCheckPoint(listOf(selectedCheckPoint.checkPointId))
         return copy(
             stateMode = DriveVisibleMode.CourseDetail,
+            overlayGroup = overlayGroup.filter { it.contentId != selectedCheckPoint.checkPointId },
             floatingButtonState = floatingButtonState.copy(
                 stateMode = DriveFloatingVisibleMode.Default
             ),

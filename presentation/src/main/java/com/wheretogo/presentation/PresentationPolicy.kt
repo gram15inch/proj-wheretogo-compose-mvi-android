@@ -11,6 +11,7 @@ import com.naver.maps.map.app.LegalNoticeActivity
 import com.naver.maps.map.app.OpenSourceLicenseActivity
 import com.wheretogo.domain.DomainError
 import com.wheretogo.domain.RouteAttrItem
+import com.wheretogo.domain.RouteFieldType
 import com.wheretogo.domain.model.util.Viewport
 import com.wheretogo.presentation.feature.EventBus
 import com.wheretogo.presentation.model.EventMsg
@@ -142,6 +143,10 @@ enum class SheetVisibleMode {
     PartiallyExpand, PartiallyExpanded, Expand, Expanded
 }
 
+enum class MarkerZIndex{
+   ICON, PHOTO, PHOTO_ZOOM, ADD
+}
+
 fun OverlayType.minZoomLevel(): Double {
     return when (this) {
         OverlayType.SPOT -> 8.0
@@ -225,13 +230,14 @@ annotation class IoDispatcher
 annotation class MainDispatcher
 
 interface ViewModelErrorHandler {
-    suspend fun handle(error: AppError): AppError
+    suspend fun handle(error: Throwable): Throwable
 }
 
 class DefaultErrorHandler() : ViewModelErrorHandler {
-    override suspend fun handle(error: AppError): AppError {
+    override suspend fun handle(error: Throwable): Throwable {
         Timber.tag("policy_").d("Throwable -> AppError: ${error.stackTraceToString()}")
-        when (error) {
+        val appError = error.toAppError()
+        when (appError) {
             is AppError.NeedSignIn -> {
                 EventBus.send(AppEvent.SnackBar(EventMsg(R.string.need_login)))
                 EventBus.send(AppEvent.SignInScreen)
@@ -241,7 +247,7 @@ class DefaultErrorHandler() : ViewModelErrorHandler {
                 EventBus.send(AppEvent.SnackBar(EventMsg(R.string.google_auth)))
 
             is AppError.Unavailable ->
-                EventBus.send(AppEvent.SnackBar(EventMsg(R.string.unavailable_user, arg = error.msg)))
+                EventBus.send(AppEvent.SnackBar(EventMsg(R.string.unavailable_user, arg = appError.msg)))
 
 
             is AppError.NetworkError ->
@@ -251,7 +257,7 @@ class DefaultErrorHandler() : ViewModelErrorHandler {
                 EventBus.send(AppEvent.SnackBar(EventMsg(R.string.no_supprot_app_exclude_my_loction)))
 
             is AppError.WaitCoolDown->{
-                EventBus.send(AppEvent.SnackBar(EventMsg(R.string.cool_down_error, arg = "${error.remainTimeInMinute}")))
+                EventBus.send(AppEvent.SnackBar(EventMsg(R.string.cool_down_error, arg = "${appError.remainTimeInMinute}")))
             }
 
             is AppError.Ignore -> {}
@@ -259,6 +265,26 @@ class DefaultErrorHandler() : ViewModelErrorHandler {
             else -> {
                 Timber.e(error.stackTraceToString())
                 FirebaseCrashlytics.getInstance().recordException(error)
+            }
+        }
+        return error
+    }
+}
+
+class CourseAddErrorHandler() : ViewModelErrorHandler {
+    override suspend fun handle(error: Throwable): Throwable {
+        when (error) {
+            is DomainError.RouteFieldInvalid ->{
+                when(error.type){
+                    RouteFieldType.NAME, RouteFieldType.KEYWORD ->
+                        EventBus.send(AppEvent.SnackBar(EventMsg(R.string.invalid_name)))
+                    RouteFieldType.POINT ->
+                        EventBus.send(AppEvent.SnackBar(EventMsg(R.string.click_need_more_marker)))
+                }
+            }
+
+            else -> {
+                DefaultErrorHandler().handle(error)
             }
         }
         return error

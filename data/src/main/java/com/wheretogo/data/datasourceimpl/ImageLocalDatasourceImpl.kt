@@ -5,7 +5,9 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.core.net.toUri
 import androidx.exifinterface.media.ExifInterface
+import com.wheretogo.data.ImageFormat
 import com.wheretogo.data.datasource.ImageLocalDatasource
+import com.wheretogo.data.model.confg.ImageConfig
 import com.wheretogo.domain.ImageSize
 import com.wheretogo.domain.feature.fit
 import com.wheretogo.domain.feature.rotate
@@ -21,14 +23,20 @@ import javax.inject.Inject
 
 class ImageLocalDatasourceImpl @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val imageFile: File
+    private val imageFile: File,
+    private val imageConfig: ImageConfig
 ) : ImageLocalDatasource {
+    private val ext = imageConfig.format.ext
     override suspend fun getImage(imageId: String, size: ImageSize): File {
-        val localFile = File(imageFile.parentFile, "image/${size.pathName}/${imageId}.jpg").apply {
-            if (!parentFile!!.exists()) {
-                parentFile?.mkdirs()
+        val localFile =
+            File(
+                imageFile.parentFile,
+                "image/${size.pathName}/${imageId}.$ext"
+            ).apply {
+                if (!parentFile!!.exists()) {
+                    parentFile?.mkdirs()
+                }
             }
-        }
         return localFile
     }
 
@@ -90,7 +98,7 @@ class ImageLocalDatasourceImpl @Inject constructor(
 
                         size to ByteArrayOutputStream().use { stream ->
                             newBitmap.compress(
-                                Bitmap.CompressFormat.JPEG,
+                                imageConfig.format.toCompressFormat(),
                                 compressionQuality,
                                 stream
                             )
@@ -99,6 +107,13 @@ class ImageLocalDatasourceImpl @Inject constructor(
                     }
                 }.awaitAll()
             }
+        }
+    }
+
+    private fun ImageFormat.toCompressFormat(): Bitmap.CompressFormat {
+        return when (this) {
+            ImageFormat.JPEG -> Bitmap.CompressFormat.JPEG
+            ImageFormat.WEBP -> Bitmap.CompressFormat.WEBP
         }
     }
 }
