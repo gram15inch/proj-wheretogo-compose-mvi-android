@@ -17,6 +17,7 @@ import com.naver.maps.map.overlay.OverlayImage
 import com.naver.maps.map.overlay.PathOverlay
 import com.wheretogo.presentation.CHECKPOINT_ADD_MARKER
 import com.wheretogo.presentation.MarkerType
+import com.wheretogo.presentation.MarkerZIndex
 import com.wheretogo.presentation.OverlayType
 import com.wheretogo.presentation.minZoomLevel
 import com.wheretogo.presentation.model.AppMarker
@@ -60,18 +61,18 @@ class NaverMapOverlayModifier @Inject constructor(
                         createOverlayImage(markerInfo, dpPair.first, dpPair.second)
                     icon = overlayImage
 
-                    zIndex = 10
+                    zIndex = MarkerZIndex.PHOTO.ordinal
 
                 }
                 //마커가 아이콘
                 markerInfo.iconRes != null -> {
                     icon = OverlayImage.fromResource(markerInfo.iconRes)
-                    zIndex = 9
+                    zIndex = MarkerZIndex.ICON.ordinal
                 }
             }
 
             if (markerInfo.contentId == CHECKPOINT_ADD_MARKER) {
-                zIndex = 999
+                zIndex = MarkerZIndex.ADD.ordinal
             }
 
             captionOffset = 20

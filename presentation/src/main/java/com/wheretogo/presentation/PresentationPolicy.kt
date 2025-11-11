@@ -143,6 +143,10 @@ enum class SheetVisibleMode {
     PartiallyExpand, PartiallyExpanded, Expand, Expanded
 }
 
+enum class MarkerZIndex{
+   ICON, PHOTO, PHOTO_ZOOM, ADD
+}
+
 fun OverlayType.minZoomLevel(): Double {
     return when (this) {
         OverlayType.SPOT -> 8.0

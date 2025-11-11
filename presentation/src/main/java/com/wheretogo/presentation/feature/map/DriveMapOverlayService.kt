@@ -6,6 +6,7 @@ import com.wheretogo.domain.model.checkpoint.CheckPoint
 import com.wheretogo.domain.model.course.Course
 import com.wheretogo.presentation.CHECKPOINT_ADD_MARKER
 import com.wheretogo.presentation.MarkerType
+import com.wheretogo.presentation.MarkerZIndex
 import com.wheretogo.presentation.OverlayType
 import com.wheretogo.presentation.PathType
 import com.wheretogo.presentation.feature.geo.LocationService
@@ -248,12 +249,12 @@ class DriveMapOverlayService @Inject constructor(
     private fun MapOverlay.MarkerContainer.setUpIcon(oi: OverlayImage) {
         marker.coreMarker?.icon = oi
         marker.coreMarker?.tag = true
-        marker.coreMarker?.zIndex = 999
+        marker.coreMarker?.zIndex = MarkerZIndex.PHOTO_ZOOM.ordinal
     }
 
     private fun MapOverlay.MarkerContainer.setDownIcon(oi: OverlayImage) {
         marker.coreMarker?.icon = oi
         marker.coreMarker?.tag = false
-        marker.coreMarker?.zIndex = 1
+        marker.coreMarker?.zIndex = MarkerZIndex.PHOTO.ordinal
     }
 }
