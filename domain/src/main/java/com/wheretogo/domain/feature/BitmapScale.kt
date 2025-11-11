@@ -7,10 +7,11 @@ import android.graphics.Matrix
 import android.graphics.Paint
 import androidx.exifinterface.media.ExifInterface
 import com.wheretogo.domain.ImageSize
+import androidx.core.graphics.createBitmap
 
 
 fun Bitmap.fit(size: ImageSize): Bitmap {
-    val squareBitmap = Bitmap.createBitmap(size.width, size.height, Bitmap.Config.ARGB_8888)
+    val squareBitmap = createBitmap(size.width, size.height)
     val canvas = Canvas(squareBitmap)
     val paint = Paint().apply { color = Color.BLACK }
 

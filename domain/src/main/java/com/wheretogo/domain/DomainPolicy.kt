@@ -124,7 +124,7 @@ enum class ReportStatus {
 
 enum class ImageSize(val pathName: String, val width: Int, val height: Int) {
     NORMAL("normal", 1500, 1500),
-    SMALL("small", 200, 200)
+    SMALL("small", 400, 400)
 }
 
 fun zoomToGeohashLength(zoom: Double): Int {
