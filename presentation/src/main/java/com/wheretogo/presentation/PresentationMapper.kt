@@ -152,8 +152,9 @@ fun Course.toMarkerInfo(): MarkerInfo {
 
 fun CheckPoint.toMarkerContainer(marker: AppMarker): MapOverlay.MarkerContainer {
     return MapOverlay.MarkerContainer(
-        courseId, MarkerType.CHECKPOINT,
-        marker
+        contentId = checkPointId,
+        type = MarkerType.CHECKPOINT,
+        marker = marker
     )
 }
 
@@ -167,6 +168,7 @@ fun CheckPoint.toMarkerInfo(): MarkerInfo {
         contentId = checkPointId,
         position = latLng,
         caption = caption,
+        type = MarkerType.CHECKPOINT,
         iconPath = thumbnail.ifEmpty { null },
         iconRes = icon
     )
