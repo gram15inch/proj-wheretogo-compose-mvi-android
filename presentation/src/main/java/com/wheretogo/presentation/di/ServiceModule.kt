@@ -10,6 +10,7 @@ import com.wheretogo.presentation.feature.ads.AdService
 import com.wheretogo.presentation.feature.ads.NativeAdServiceImpl
 import com.wheretogo.presentation.feature.geo.LocationService
 import com.wheretogo.presentation.feature.geo.LocationServiceImpl
+import com.wheretogo.presentation.feature.map.NaverMapOverlayModifier
 import com.wheretogo.presentation.feature.naver.NaverMapOverlayStore
 import dagger.Module
 import dagger.Provides
@@ -48,6 +49,12 @@ object ServiceModule {
     @Singleton
     @Provides
     fun provideNaverMapOverlayStore(): NaverMapOverlayStore {
-        return NaverMapOverlayStore(true)
+        return NaverMapOverlayStore()
+    }
+
+    @Singleton
+    @Provides
+    fun provideNaverMapOverlayCreater(@ApplicationContext context: Context): NaverMapOverlayModifier {
+        return NaverMapOverlayModifier(context, true)
     }
 }

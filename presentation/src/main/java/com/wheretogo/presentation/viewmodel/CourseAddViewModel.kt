@@ -32,7 +32,6 @@ import com.wheretogo.presentation.state.BottomSheetState
 import com.wheretogo.presentation.state.CameraState
 import com.wheretogo.presentation.state.CourseAddScreenState
 import com.wheretogo.presentation.state.NaverMapState
-import com.wheretogo.presentation.toAppError
 import com.wheretogo.presentation.toCourseContent
 import com.wheretogo.presentation.toSearchBarItem
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -44,11 +43,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import javax.inject.Named
 
 
 @HiltViewModel
 class CourseAddViewModel @Inject constructor(
-    private val errorHandler: ViewModelErrorHandler,
+    @Named("courseAddError") private val errorHandler: ViewModelErrorHandler,
     @MainDispatcher private val dispatcher: CoroutineDispatcher,
     private val createRouteUseCase: CreateRouteUseCase,
     private val addCourseUseCase: AddCourseUseCase,
@@ -96,7 +96,7 @@ class CourseAddViewModel @Inject constructor(
     }
 
     suspend fun handleError(error: Throwable) {
-        errorHandler.handle(error.toAppError())
+        errorHandler.handle(error)
     }
 
 
@@ -289,9 +289,11 @@ class CourseAddViewModel @Inject constructor(
         val route = withContext(Dispatchers.IO) { createRouteUseCase(waypoints) }
 
         route.onSuccess { route ->
-            val isCreatePath = mapOverlayService.createFullPath(route.points)
-            if (!isCreatePath) {
-                EventBus.send(AppEvent.SnackBar(EventMsg(R.string.add_marker_by_click_map)))
+            val pathResult = mapOverlayService.createFullPath(route.points).onFailure {
+                handleError(it)
+            }
+
+            if (!pathResult.isSuccess) {
                 return@onSuccess
             }
 

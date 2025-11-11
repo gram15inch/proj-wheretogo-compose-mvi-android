@@ -1,5 +1,8 @@
 package com.wheretogo.domain.model.course
 
+import com.wheretogo.domain.DomainError
+import com.wheretogo.domain.FieldInvalidReason
+import com.wheretogo.domain.RouteFieldType
 import com.wheretogo.domain.model.user.Profile
 
 data class CourseAddRequest(
@@ -10,9 +13,13 @@ data class CourseAddRequest(
     fun valid(): CourseAddRequest {
         require(profile.uid.isNotBlank()) { "inValid user id" }
         require(content.courseName.isNotBlank()) { "inValid groupId id" }
-        require(keyword.isNotEmpty()) { "empty keyword" }
-        require(content.waypoints.isNotEmpty()) { "empty waypoints" }
-        require(content.points.isNotEmpty()) { "empty points" }
+        when {
+            keyword.isEmpty() ->
+                throw DomainError.RouteFieldInvalid(RouteFieldType.KEYWORD, FieldInvalidReason.MIN)
+
+            content.waypoints.isEmpty() || content.points.isEmpty() ->
+                throw DomainError.RouteFieldInvalid(RouteFieldType.POINT, FieldInvalidReason.MIN)
+        }
         return this
     }
 }

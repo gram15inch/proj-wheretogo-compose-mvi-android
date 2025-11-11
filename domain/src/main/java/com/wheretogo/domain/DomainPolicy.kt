@@ -26,12 +26,20 @@ sealed class DomainError : Exception() {
     data class Unauthorized(val msg: String = "") : DomainError()
     data class UserUnavailable(val msg: String = "") : DomainError()
     data class SignInError(val msg: String = "") : DomainError()
+    data class RouteFieldInvalid(
+        val type: RouteFieldType,
+        val reason: FieldInvalidReason = FieldInvalidReason.NONE
+    ) : DomainError()
     data class NotFound(val msg: String = "") : DomainError()
     data class InternalError(val msg: String = "") : DomainError()
     data class ExpireData(val msg: String = "") : DomainError()
     data class CoolDownData(val remainingMinutes: Int = 0) : DomainError()
     data class UnexpectedException(val throwable: Throwable) : DomainError()
 }
+
+enum class RouteFieldType { NAME, POINT, KEYWORD }
+
+enum class FieldInvalidReason { NONE, MAX, MIN, FORMAT }
 
 fun Throwable?.toDomainError(): DomainError {
     return when (this) {
@@ -116,7 +124,7 @@ enum class ReportStatus {
 
 enum class ImageSize(val pathName: String, val width: Int, val height: Int) {
     NORMAL("normal", 1500, 1500),
-    SMALL("small", 200, 200)
+    SMALL("small", 400, 400)
 }
 
 fun zoomToGeohashLength(zoom: Double): Int {

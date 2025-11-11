@@ -19,7 +19,6 @@ const val FIREBASE_CLOUD_API_URL = "https://asia-northeast3-where-to-go-35813.cl
 const val FIREBASE_CLOUD_STAGING_API_URL = "https://asia-northeast3-where-to-go-staging.cloudfunctions.net/"
 
 const val DATA_NULL = ""
-const val IMAGE_DOWN_MAX_MB = 10
 
 val CheckpointPolicy = DefaultPolicy(60, 15)
 val CommentPolicy = DefaultPolicy(20, 5)
@@ -46,6 +45,10 @@ enum class DataReportType {
     @Json(name = "COURSE") COURSE,
     @Json(name = "COMMENT") COMMENT,
     @Json(name = "CHECKPOINT") CHECKPOINT
+}
+
+enum class ImageFormat(val ext: String) {
+    JPEG("jpg"), WEBP("webp")
 }
 
 sealed class DataError: IOException(){

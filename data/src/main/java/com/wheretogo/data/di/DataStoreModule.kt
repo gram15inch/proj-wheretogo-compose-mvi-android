@@ -23,10 +23,4 @@ object DataStoreModule {
     fun provideUserDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
         return context.userDataStore
     }
-
-    @Provides
-    @Singleton
-    fun provideImageFile(@ApplicationContext context: Context): File {
-        return File(context.cacheDir, "")
-    }
 }
