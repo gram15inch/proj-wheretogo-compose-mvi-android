@@ -64,6 +64,9 @@ fun NaverMapSheet(
     var mapView: MapView? by remember { mutableStateOf(null) }
     var isMoving by remember { mutableStateOf(false) }
 
+    // 지도 기본 주소
+    val initLatlng = LatLng(latitude = 37.566914081334204, longitude = 126.97838809999871)
+
     //맵 초기화
     LaunchedEffect(Unit) {
         mapView = MapView(context).apply {
@@ -73,8 +76,10 @@ fun NaverMapSheet(
                     naverMap.setUiSetting()
                     naverMap.locationSetting(context)
                     addOnCameraIdleListener {
-                        if (state.cameraState.updateSource == CameraUpdateSource.USER)
-                            onCameraUpdate(naverMap.toCameraState())
+                        val cameraSate= naverMap.toCameraState()
+                        if (state.cameraState.updateSource == CameraUpdateSource.USER
+                            && cameraSate.latLng != initLatlng
+                        ) onCameraUpdate(cameraSate)
                     }
 
                     setOnMapClickListener { _, latlng ->
@@ -123,7 +128,7 @@ fun NaverMapSheet(
         }
 
         LaunchedEffect(state.cameraState) {
-            if (!isMoving && state.cameraState.updateSource != CameraUpdateSource.USER)
+            if (!isMoving && state.cameraState.updateSource != CameraUpdateSource.USER) {
                 mapView?.getMapAsync { naverMap ->
                     isMoving = true
                     naverMap.setGesture(false)
@@ -132,6 +137,7 @@ fun NaverMapSheet(
                         naverMap.setGesture(true)
                     }
                 }
+            }
         }
 
         mapView?.apply {

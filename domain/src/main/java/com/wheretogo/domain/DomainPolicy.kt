@@ -139,7 +139,7 @@ fun zoomToGeohashLength(zoom: Double): Int {
         in 0.0..<9.5 -> 3
         in 9.5..<10.5 -> 4
         in 10.5..<12.5 -> 4
-        else -> 5
+        else -> 4
 
     }
 }

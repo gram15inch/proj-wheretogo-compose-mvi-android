@@ -4,11 +4,14 @@ import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wheretogo.domain.LIST_ITEM_ZOOM
+import com.wheretogo.domain.TutorialStep
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.checkpoint.CheckPoint
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.course.Course
+import com.wheretogo.domain.model.dummy.guideCourse
 import com.wheretogo.domain.model.util.ImageInfo
+import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
 import com.wheretogo.domain.usecase.checkpoint.AddCheckpointToCourseUseCase
 import com.wheretogo.domain.usecase.checkpoint.GetCheckpointForMarkerUseCase
 import com.wheretogo.domain.usecase.checkpoint.RemoveCheckPointUseCase
@@ -29,6 +32,7 @@ import com.wheretogo.presentation.AppEvent
 import com.wheretogo.presentation.AppLifecycle
 import com.wheretogo.presentation.CHECKPOINT_ADD_MARKER
 import com.wheretogo.presentation.CLEAR_ADDRESS
+import com.wheretogo.presentation.COURSE_DETAIL_MIN_ZOOM
 import com.wheretogo.presentation.CameraUpdateSource
 import com.wheretogo.presentation.CommentType
 import com.wheretogo.presentation.DRIVE_LIST_MIN_ZOOM
@@ -295,6 +299,7 @@ class DriveViewModel @Inject constructor(
                 val oldCamera = naverMapState.cameraState
                 stateMode == DriveVisibleMode.Explorer &&
                         (locationService.distance(oldCamera.latLng, cameraState.latLng) >= 1 ||
+                                oldCamera.zoom - cameraState.zoom >= 1 ||
                                 oldCamera.updateSource != cameraState.updateSource)
 
             }
@@ -307,7 +312,10 @@ class DriveViewModel @Inject constructor(
             _driveScreenState.update {
                 it.copy(
                     naverMapState = it.naverMapState.copy(
-                        cameraState = cameraState.copy(updateSource = CameraUpdateSource.USER)
+                        cameraState = cameraState.copy(
+                            updateSource = CameraUpdateSource.USER,
+                            zoom = cameraState.zoom
+                        )
                     )
                 )
             }
@@ -326,6 +334,11 @@ class DriveViewModel @Inject constructor(
             _driveScreenState.update { it.replaceScreenLoading(false) }
         }
 
+        if (_driveScreenState.value.stateMode == DriveVisibleMode.CourseDetail &&
+            cameraState.zoom <= COURSE_DETAIL_MIN_ZOOM
+        ) {
+            foldFloatingButtonClick()
+        }
     }
 
     private fun courseMarkerClick(overlay: MapOverlay.MarkerContainer) {
@@ -471,6 +484,10 @@ class DriveViewModel @Inject constructor(
             )
         }
 
+        mapOverlayService.scaleToPointMarker(
+            _driveScreenState.value.naverMapState.cameraState.latLng,
+            _driveScreenState.value.overlayGroup
+        )
     }
 
     //팝업
