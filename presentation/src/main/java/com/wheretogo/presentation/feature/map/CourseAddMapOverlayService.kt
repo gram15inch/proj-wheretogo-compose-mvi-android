@@ -9,6 +9,7 @@ import com.wheretogo.presentation.AppError
 import com.wheretogo.presentation.MarkerType
 import com.wheretogo.presentation.PathType
 import com.wheretogo.presentation.R
+import com.wheretogo.presentation.feature.naver.NaverMapOverlayModifier
 import com.wheretogo.presentation.feature.naver.NaverMapOverlayStore
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.MarkerInfo
@@ -27,33 +28,31 @@ class CourseAddMapOverlayService @Inject constructor(
         val markerGroup = _overlays.filter { it.value is MapOverlay.MarkerContainer }
         if (markerGroup.size < 5) {
             val id = "WAYPOINT_MARKER${System.currentTimeMillis()}"
-            val marker = MapOverlay.MarkerContainer(
-                id, MarkerType.CHECKPOINT,
-                overlayStore.getMarker(
-                    id
-                ) {
-                    overlayModifier.createMarker(
-                        MarkerInfo(
-                            id,
-                            latlng,
-                            iconRes = R.drawable.ic_mk_df
-                        )
+            return overlayStore.getMarker(id) {
+                overlayModifier.createMarker(
+                    MarkerInfo(
+                        id,
+                        latlng,
+                        iconRes = R.drawable.ic_mk_df
                     )
-                }
-            )
-            _overlays[id] = marker
-            return true
+                )
+            }.onSuccess {
+                _overlays[id] = MapOverlay.MarkerContainer(
+                    id, MarkerType.DEFAULT,
+                    it
+                )
+            }.isSuccess
         }
         return false
     }
 
     fun removeWaypoint(id: String) {
         _overlays.remove(id)
-        overlayStore.remove(id)
+        overlayStore.removeMarker(listOf(id))
         val markerGroup = _overlays.filter { it.value is MapOverlay.MarkerContainer }
         if (markerGroup.size < 2) {
             _overlays.remove(WAYPOINT_PATH_ID)
-            overlayStore.remove(WAYPOINT_PATH_ID)
+            overlayStore.removeMarker(listOf(WAYPOINT_PATH_ID))
         }
     }
 
@@ -61,21 +60,20 @@ class CourseAddMapOverlayService @Inject constructor(
         val old = _overlays[id]
         if (old != null && old is MapOverlay.MarkerContainer) {
             overlayStore.updateMarkerPosition(id, latlng)
-            val marker = MapOverlay.MarkerContainer(
-                id, MarkerType.CHECKPOINT,
-                overlayStore.getMarker(
-                    id
-                ) {
-                    overlayModifier.createMarker(
-                        MarkerInfo(
-                            contentId = id,
-                            position = latlng,
-                            iconRes = R.drawable.ic_mk_df
-                        )
+            overlayStore.getMarker(
+                id
+            ) {
+                overlayModifier.createMarker(
+                    MarkerInfo(
+                        contentId = id, position = latlng, iconRes = R.drawable.ic_mk_df
                     )
-                }
-            )
-            _overlays.replace(id, marker)
+                )
+            }.onSuccess {
+                val overlay = MapOverlay.MarkerContainer(
+                    id, MarkerType.DEFAULT, it
+                )
+                _overlays.replace(id, overlay)
+            }
         }
 
     }
@@ -86,7 +84,7 @@ class CourseAddMapOverlayService @Inject constructor(
             marker.marker.replaceVisible(false)
         }
         _overlays.remove(WAYPOINT_PATH_ID)
-        overlayStore.remove(WAYPOINT_PATH_ID)
+        overlayStore.removePath(listOf(WAYPOINT_PATH_ID))
 
     }
 

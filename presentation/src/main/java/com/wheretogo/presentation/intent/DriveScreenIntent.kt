@@ -24,8 +24,7 @@ sealed class DriveScreenIntent {
 
     //지도
     data class CameraUpdated(val cameraState: CameraState) : DriveScreenIntent()
-    data class CourseMarkerClick(val overlay: MapOverlay.MarkerContainer) : DriveScreenIntent()
-    data class CheckPointMarkerClick(val overlay: AppMarker) : DriveScreenIntent()
+    data class MarkerClick(val appMarker: AppMarker) : DriveScreenIntent()
 
 
     //목록

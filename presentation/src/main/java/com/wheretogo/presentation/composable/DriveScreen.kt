@@ -39,7 +39,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -120,8 +119,7 @@ fun DriveScreen(
 
             //NaverMap
             onCameraUpdate = { handleIntent(DriveScreenIntent.CameraUpdated(it)) },
-            onCourseMarkerClick = { handleIntent(DriveScreenIntent.CourseMarkerClick(it)) },
-            onCheckPointMarkerClick = { handleIntent(DriveScreenIntent.CheckPointMarkerClick(it)) },
+            onMarkerClick = { handleIntent(DriveScreenIntent.MarkerClick(it))},
 
             //Blur
             onBlurClick = { handleIntent(DriveScreenIntent.BlurClick) },
@@ -188,8 +186,7 @@ fun DriveContent(
     //Navermap
     onMapAsync: (NaverMap) -> Unit = {},
     onCameraUpdate: (CameraState) -> Unit = {},
-    onCourseMarkerClick: (MapOverlay.MarkerContainer) -> Unit = {},
-    onCheckPointMarkerClick: (AppMarker) -> Unit = {},
+    onMarkerClick: (AppMarker) -> Unit = {},
 
     //Blur
     onBlurClick: () -> Unit = {},
@@ -264,8 +261,7 @@ fun DriveContent(
                     coroutineScope.launch { it.setCurrentLocation(context) }
                 },
                 onCameraUpdate = onCameraUpdate,
-                onCourseMarkerClick = onCourseMarkerClick,
-                onCheckPointMarkerClick = onCheckPointMarkerClick,
+                onMarkerClick = onMarkerClick,
                 contentPadding = ContentPadding(
                     start = systemBars.calculateStartPadding(LocalLayoutDirection.current),
                     end = systemBars.calculateEndPadding(LocalLayoutDirection.current),

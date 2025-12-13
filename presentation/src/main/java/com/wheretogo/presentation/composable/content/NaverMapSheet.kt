@@ -29,9 +29,7 @@ import com.naver.maps.map.NaverMap
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.presentation.BuildConfig
 import com.wheretogo.presentation.CameraUpdateSource
-import com.wheretogo.presentation.MarkerType
 import com.wheretogo.presentation.MoveAnimation
-import com.wheretogo.presentation.SEARCH_MARKER
 import com.wheretogo.presentation.feature.geo.FollowLocationSource
 import com.wheretogo.presentation.model.AppMarker
 import com.wheretogo.presentation.model.ContentPadding
@@ -53,8 +51,7 @@ fun NaverMapSheet(
     onMapAsync: (NaverMap) -> Unit = {},
     onCameraUpdate: (CameraState) -> Unit = {},
     onMapClick: (LatLng) -> Unit = {},
-    onCourseMarkerClick: (MapOverlay.MarkerContainer) -> Unit = {},
-    onCheckPointMarkerClick: (AppMarker) -> Unit = {},
+    onMarkerClick: (AppMarker) -> Unit = {},
     onOverlayRenderComplete: (Boolean) -> Unit = {}
 ) {
     val isPreview = LocalInspectionMode.current
@@ -63,6 +60,9 @@ fun NaverMapSheet(
     val lifecycleOwner = LocalLifecycleOwner.current
     var mapView: MapView? by remember { mutableStateOf(null) }
     var isMoving by remember { mutableStateOf(false) }
+
+    // 지도 기본 주소
+    val initLatlng = LatLng(latitude = 37.566914081334204, longitude = 126.97838809999871)
 
     //맵 초기화
     LaunchedEffect(Unit) {
@@ -73,8 +73,10 @@ fun NaverMapSheet(
                     naverMap.setUiSetting()
                     naverMap.locationSetting(context)
                     addOnCameraIdleListener {
-                        if (state.cameraState.updateSource == CameraUpdateSource.USER)
-                            onCameraUpdate(naverMap.toCameraState())
+                        val cameraSate= naverMap.toCameraState()
+                        if (state.cameraState.updateSource == CameraUpdateSource.USER
+                            && cameraSate.latLng != initLatlng
+                        ) onCameraUpdate(cameraSate)
                     }
 
                     setOnMapClickListener { _, latlng ->
@@ -115,15 +117,14 @@ fun NaverMapSheet(
             mapView?.getMapAsync { naverMap ->
                 naverMap.overlayUpdate(
                     overlayGroup = overlayGroup,
-                    onCourseMarkerClick = onCourseMarkerClick,
-                    onCheckPointMarkerClick = onCheckPointMarkerClick,
+                    onMarkerClick = onMarkerClick,
                     onOverlayRenderComplete = onOverlayRenderComplete
                 )
             }
         }
 
         LaunchedEffect(state.cameraState) {
-            if (!isMoving && state.cameraState.updateSource != CameraUpdateSource.USER)
+            if (!isMoving && state.cameraState.updateSource != CameraUpdateSource.USER) {
                 mapView?.getMapAsync { naverMap ->
                     isMoving = true
                     naverMap.setGesture(false)
@@ -132,6 +133,7 @@ fun NaverMapSheet(
                         naverMap.setGesture(true)
                     }
                 }
+            }
         }
 
         mapView?.apply {
@@ -165,6 +167,7 @@ private fun NaverMap.setUiSetting() {
             isZoomControlEnabled = false
     }
     minZoom = 8.0
+    setLayerGroupEnabled(NaverMap.LAYER_GROUP_BUILDING, false)
 }
 
 private fun NaverMap.contentPaddingUpdate(density: Density, contentPadding: ContentPadding) {
@@ -181,13 +184,11 @@ private fun NaverMap.contentPaddingUpdate(density: Density, contentPadding: Cont
 
 private fun NaverMap.overlayUpdate(
     overlayGroup: List<MapOverlay>,
-    onCourseMarkerClick: (MapOverlay.MarkerContainer) -> Unit = {},
-    onCheckPointMarkerClick: (AppMarker) -> Unit = {},
+    onMarkerClick: (AppMarker) -> Unit = {},
     onOverlayRenderComplete: (Boolean) -> Unit = {}
 ) {
     val naverMap = this@overlayUpdate
     var isRendered = overlayGroup.isEmpty()
-
     overlayGroup.forEachIndexed { i, overlay ->
         when (overlay) {
             is MapOverlay.MarkerContainer -> {
@@ -196,16 +197,7 @@ private fun NaverMap.overlayUpdate(
                 if (marker != null) {
                     marker.map = naverMap
                     marker.setOnClickListener {
-                        when (overlay.type) {
-                            MarkerType.SPOT -> {
-                                onCourseMarkerClick(overlay)
-                            }
-
-                            MarkerType.CHECKPOINT -> {
-                                if (overlay.contentId != SEARCH_MARKER)
-                                    onCheckPointMarkerClick(overlay.marker)
-                            }
-                        }
+                        onMarkerClick(overlay.marker)
                         true
                     }
                 }
@@ -214,6 +206,9 @@ private fun NaverMap.overlayUpdate(
 
             is MapOverlay.PathContainer -> {
                 overlay.path.corePathOverlay?.map = naverMap
+            }
+            is MapOverlay.ClusterContainer -> {
+                overlay.cluster.cluster?.map = naverMap
             }
         }
         if (i == overlayGroup.size - 1)

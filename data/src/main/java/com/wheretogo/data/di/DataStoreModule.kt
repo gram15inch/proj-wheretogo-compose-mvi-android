@@ -9,7 +9,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import java.io.File
+import javax.inject.Named
 import javax.inject.Singleton
 
 /// 수정시 테스트를 위해 MockDataStoreModule 과 맞춤
@@ -17,10 +17,20 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object DataStoreModule {
     private val Context.userDataStore: DataStore<Preferences> by preferencesDataStore(name = "user")
+    private val Context.appDataStore: DataStore<Preferences> by preferencesDataStore(name = "app")
 
     @Provides
     @Singleton
+    @Named("userDataStore")
     fun provideUserDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
         return context.userDataStore
     }
+
+    @Provides
+    @Singleton
+    @Named("appDataStore")
+    fun provideAppDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
+        return context.appDataStore
+    }
+
 }

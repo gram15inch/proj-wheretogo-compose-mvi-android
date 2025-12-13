@@ -10,7 +10,7 @@ import com.wheretogo.presentation.feature.ads.AdService
 import com.wheretogo.presentation.feature.ads.NativeAdServiceImpl
 import com.wheretogo.presentation.feature.geo.LocationService
 import com.wheretogo.presentation.feature.geo.LocationServiceImpl
-import com.wheretogo.presentation.feature.map.NaverMapOverlayModifier
+import com.wheretogo.presentation.feature.naver.NaverMapOverlayModifier
 import com.wheretogo.presentation.feature.naver.NaverMapOverlayStore
 import dagger.Module
 import dagger.Provides
@@ -35,7 +35,8 @@ object ServiceModule {
         return NativeAdServiceImpl(context, BuildConfig.NATIVE_AD_ID, refreshSize).apply {
             CoroutineScope(Dispatchers.IO).launch {
                 MobileAds.initialize(context)
-                refreshAd(1)
+                if(BuildConfig.BUILD_TYPE == "release")
+                    refreshAd(1)
             }
         }
     }
