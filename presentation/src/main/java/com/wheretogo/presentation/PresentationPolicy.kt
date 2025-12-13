@@ -20,6 +20,7 @@ import timber.log.Timber
 import javax.inject.Qualifier
 
 const val DRIVE_LIST_MIN_ZOOM = 9.5
+const val COURSE_DETAIL_MIN_ZOOM = 10.5
 const val COURSE_NAME_MAX_LENGTH = 17
 const val WIDE_WIDTH = 600
 
@@ -31,7 +32,7 @@ const val AD_REFRESH_SIZE = 1
 const val AD_MAX_FONT_SCALE = 1.2f
 
 enum class OverlayType {
-    SPOT, CHECKPOINT, PATH
+    SPOT_MARKER, CLUSTER_MARKER, ONE_TIME_MARKER, PATH
 }
 
 enum class CommentType(@StringRes val typeRes: Int) {
@@ -116,7 +117,7 @@ enum class DriveBottomSheetContent(val minHeight: Int) {
 }
 
 enum class MarkerType {
-    SPOT, CHECKPOINT
+    DEFAULT, SPOT, CHECKPOINT
 }
 
 enum class PathType {
@@ -144,14 +145,15 @@ enum class SheetVisibleMode {
 }
 
 enum class MarkerZIndex{
-   ICON, PHOTO, PHOTO_ZOOM, ADD
+   ICON, PHOTO, PHOTO_ZOOM, CLUSTER, ADD
 }
 
 fun OverlayType.minZoomLevel(): Double {
     return when (this) {
-        OverlayType.SPOT -> 8.0
+        OverlayType.SPOT_MARKER -> 8.0
         OverlayType.PATH -> 9.5
-        OverlayType.CHECKPOINT -> 9.5
+        OverlayType.CLUSTER_MARKER -> 9.5
+        OverlayType.ONE_TIME_MARKER -> 9.5
     }
 }
 

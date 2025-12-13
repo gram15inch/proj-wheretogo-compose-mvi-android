@@ -17,5 +17,10 @@ sealed class MapOverlay(
         val type: PathType = PathType.FULL,
         val path: AppPath
     ) : MapOverlay(contentId)
+
+    data class ClusterContainer(
+        override val contentId: String,
+        val cluster: AppCluster
+    ) : MapOverlay(contentId)
 }
 

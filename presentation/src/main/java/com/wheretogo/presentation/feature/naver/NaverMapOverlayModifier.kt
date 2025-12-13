@@ -1,4 +1,4 @@
-package com.wheretogo.presentation.feature.map
+package com.wheretogo.presentation.feature.naver
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -19,6 +19,7 @@ import com.wheretogo.presentation.CHECKPOINT_ADD_MARKER
 import com.wheretogo.presentation.MarkerType
 import com.wheretogo.presentation.MarkerZIndex
 import com.wheretogo.presentation.OverlayType
+import com.wheretogo.presentation.R
 import com.wheretogo.presentation.minZoomLevel
 import com.wheretogo.presentation.model.AppMarker
 import com.wheretogo.presentation.model.AppPath
@@ -58,7 +59,7 @@ class NaverMapOverlayModifier @Inject constructor(
                 //마커가 사진
                 markerInfo.iconPath != null -> {
                     val overlayImage =
-                        createOverlayImage(markerInfo, dpPair.first, dpPair.second)
+                        createOverlayImage(markerInfo.iconPath, dpPair.first, dpPair.second)
                     icon = overlayImage
 
                     zIndex = MarkerZIndex.PHOTO.ordinal
@@ -68,6 +69,13 @@ class NaverMapOverlayModifier @Inject constructor(
                 markerInfo.iconRes != null -> {
                     icon = OverlayImage.fromResource(markerInfo.iconRes)
                     zIndex = MarkerZIndex.ICON.ordinal
+                }
+                else->{
+                    val iconRes= when(contentId){
+                        CHECKPOINT_ADD_MARKER-> R.drawable.ic_mk_cm
+                        else -> R.drawable.ic_mk_df
+                    }
+                    icon = OverlayImage.fromResource(iconRes)
                 }
             }
 
@@ -79,26 +87,29 @@ class NaverMapOverlayModifier @Inject constructor(
             captionTextSize = 16f
             isHideCollidedMarkers = true
             setCaptionAligns(Align.Top, Align.Right)
-            when (markerInfo.type) {
+            minZoom = when (markerInfo.type) {
                 MarkerType.SPOT -> {
-                    minZoom = OverlayType.SPOT.minZoomLevel()
+                    OverlayType.SPOT_MARKER.minZoomLevel()
                 }
 
                 MarkerType.CHECKPOINT -> {
-                    minZoom = OverlayType.CHECKPOINT.minZoomLevel()
+                    OverlayType.CLUSTER_MARKER.minZoomLevel()
                 }
 
+                MarkerType.DEFAULT -> {
+                    OverlayType.ONE_TIME_MARKER.minZoomLevel()
+                }
             }
 
         }
     }
 
-    fun scaleUp(info: MarkerInfo): OverlayImage? {
-        return createOverlayImage(info, focus.first, focus.second)
+    fun scaleUp(imgPath: String): OverlayImage? {
+        return createOverlayImage(imgPath, focus.first, focus.second)
     }
 
-    private fun createOverlayImage(info: MarkerInfo, widthDp: Float, heightDp: Float): OverlayImage {
-        val bitmap = BitmapFactory.decodeFile(info.iconPath)
+    fun createOverlayImage(imgPath: String, widthDp: Float = normal.first, heightDp: Float = normal.second): OverlayImage {
+        val bitmap = BitmapFactory.decodeFile(imgPath)
         val overlayImage = OverlayImage.fromBitmap(
             bitmap
                 .resizeToDp(context, widthDp, heightDp)
@@ -112,8 +123,8 @@ class NaverMapOverlayModifier @Inject constructor(
         return overlayImage
     }
 
-    fun scaleDown(info:MarkerInfo): OverlayImage {
-        return createOverlayImage(info, normal.first,normal.second)
+    fun scaleDown(imgPath: String): OverlayImage {
+        return createOverlayImage(imgPath, normal.first,normal.second)
     }
 
     private fun PathInfo.toNaverPath(): PathOverlay {
@@ -175,4 +186,3 @@ class NaverMapOverlayModifier @Inject constructor(
         return scale(newWidthPx, newHeightPx)
     }
 }
-

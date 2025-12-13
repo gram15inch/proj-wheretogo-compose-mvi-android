@@ -5,5 +5,5 @@ import com.wheretogo.presentation.ViewModelErrorHandler
 import com.wheretogo.presentation.toAppError
 
 class MockErrorHandler : ViewModelErrorHandler {
-    override suspend fun handle(error: AppError): AppError = error.toAppError()
+    override suspend fun handle(error: Throwable): Throwable = error.toAppError()
 }

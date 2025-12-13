@@ -16,6 +16,7 @@ import com.wheretogo.domain.model.course.CourseContent
 import com.wheretogo.domain.model.route.RouteCategory
 import com.wheretogo.domain.model.util.Navigation
 import com.wheretogo.presentation.model.AdItem
+import com.wheretogo.presentation.model.AppCluster
 import com.wheretogo.presentation.model.AppMarker
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.MarkerInfo
@@ -150,11 +151,10 @@ fun Course.toMarkerInfo(): MarkerInfo {
     )
 }
 
-fun CheckPoint.toMarkerContainer(marker: AppMarker): MapOverlay.MarkerContainer {
-    return MapOverlay.MarkerContainer(
+fun CheckPoint.toClusterContainer(marker: AppCluster): MapOverlay.ClusterContainer {
+    return MapOverlay.ClusterContainer(
         contentId = checkPointId,
-        type = MarkerType.CHECKPOINT,
-        marker = marker
+        cluster = marker
     )
 }
 

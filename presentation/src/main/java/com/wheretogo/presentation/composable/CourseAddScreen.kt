@@ -56,7 +56,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -98,7 +97,6 @@ import com.wheretogo.presentation.theme.interFontFamily
 import com.wheretogo.presentation.toStrRes
 import com.wheretogo.presentation.viewmodel.CourseAddViewModel
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import kotlin.math.max
 
 @Composable
@@ -117,7 +115,7 @@ fun CourseAddScreen(
         onMapAsync = { coroutineScope.launch { it.setCurrentLocation(context) } },
         onCameraUpdate = { viewModel.handleIntent(CourseAddIntent.CameraUpdated(it)) },
         onMapClick = { viewModel.handleIntent(CourseAddIntent.MapClick(it)) },
-        onCheckPointMarkerClick = { viewModel.handleIntent(CourseAddIntent.WaypointMarkerClick(it)) },
+        onMarkerClick = { viewModel.handleIntent(CourseAddIntent.WaypointMarkerClick(it)) },
 
         //SearchBar
         onSearchSubmit = { viewModel.handleIntent(CourseAddIntent.SubmitClick(it)) },
@@ -150,7 +148,7 @@ fun CourseAddSheetContent(
     onMapAsync: (NaverMap) -> Unit = {},
     onCameraUpdate: (CameraState) -> Unit = {},
     onMapClick: (LatLng) -> Unit = {},
-    onCheckPointMarkerClick: (AppMarker) -> Unit = {},
+    onMarkerClick: (AppMarker) -> Unit = {},
 
     //SearchBar
     onSearchBarItemClick: (SearchBarItem) -> Unit = {},
@@ -193,7 +191,7 @@ fun CourseAddSheetContent(
                 onMapAsync = onMapAsync,
                 onCameraUpdate = onCameraUpdate,
                 onMapClick = onMapClick,
-                onCheckPointMarkerClick = onCheckPointMarkerClick,
+                onMarkerClick = onMarkerClick,
                 contentPadding = ContentPadding(
                     start = systemBars.calculateStartPadding(LocalLayoutDirection.current),
                     end = systemBars.calculateEndPadding(LocalLayoutDirection.current),
