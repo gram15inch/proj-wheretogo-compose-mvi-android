@@ -1,5 +1,5 @@
 package com.wheretogo.domain.model.app
 
-import com.wheretogo.domain.TutorialStep
+import com.wheretogo.domain.DriveTutorialStep
 
-data class Settings(val tutorialStep: TutorialStep = TutorialStep.SKIP)
+data class Settings(val tutorialStep: DriveTutorialStep = DriveTutorialStep.SKIP)

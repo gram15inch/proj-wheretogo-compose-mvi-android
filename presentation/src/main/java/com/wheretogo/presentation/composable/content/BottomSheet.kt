@@ -42,13 +42,14 @@ fun BottomSheet(
     bottomSpace: Dp = 0.dp,
     onSheetStateChange: (SheetVisibleMode) -> Unit,
     onSheetHeightChange: (Dp) -> Unit,
-    content: @Composable () -> Unit,
+    dragHandleColor: Color? = null,
+    content: @Composable () -> Unit
 ) {
     val density = LocalDensity.current
     var latestDp by remember { mutableStateOf(0.dp) }
     val scaffoldState = rememberBottomSheetScaffoldState()
     val sheetState = scaffoldState.bottomSheetState
-
+    var latestTargetValue by remember { mutableStateOf<SheetValue?>(null) }
     LaunchedEffect(isVisible) {
         if (isVisible) {
             scaffoldState.bottomSheetState.expand()
@@ -59,6 +60,8 @@ fun BottomSheet(
     }
 
     LaunchedEffect(sheetState.targetValue) {
+        if (latestTargetValue == sheetState.targetValue) return@LaunchedEffect
+        latestTargetValue = sheetState.targetValue
         when (sheetState.targetValue) {
             SheetValue.Expanded -> {
                 onSheetStateChange(SheetVisibleMode.Expand)
@@ -122,7 +125,14 @@ fun BottomSheet(
                 }
             },
             sheetDragHandle = {
-                DragHandle()
+                DragHandle(
+                    modifier = Modifier.run {
+                        if (dragHandleColor != null)
+                            this.background(dragHandleColor)
+                        else
+                            this
+                    }
+                )
             },
             sheetPeekHeight = initHeightWithSpace,
             content = {}

@@ -15,10 +15,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -82,7 +79,7 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
 
                     is AppEvent.Navigation -> {
                         navController.navigate(it.to.toString()){
-                            popUpTo(it.form.toString()) { inclusive = true }
+                            popUpTo(it.form.toString()) { inclusive = it.inclusive }
                         }
                     }
 

@@ -115,6 +115,21 @@
     // 이미지 설명
     <string name="google_logo">google logo</string>
 
+    // 가이드
+    <string name="tutorial_start">🥳 반가워요, 같이 어디갈까를 둘러봐요!</string>
+    <string name="tutorial_stop">🥺 튜토리얼은 다음에 다시 만나요.</string>
+    <string name="welcome_start">새로운 시작을 환영해요\n아래에 정보를 눌러 코스를 확인하세요.</string>
+    <string name="move_to_spot">지도를 이동시켜 \n스팟을 둘러보세요.</string>
+    <string name="spot_click">원하는 스팟을 찾았다면 클릭해 확대해 보세요.</string>
+    <string name="comment_guide">스팟은 코스중 특별한 순간으로 간단한 한줄평을 남길 수 있어요!</string>
+    <string name="export_guide">코스 둘러보기중 지도앱으로 바로 출발이 가능해요.</string>
+    <string name="map_export_click">내가 사용 하는 앱을 선택해보세요.</string>
+    <string name="use_search">지도로 매번 찾기 힘들다면 \n검색을 사용해 보세요!</string>
+    <string name="display_course_and_place">검색어는 키워드로 사용해요, 대표 키워드인 와인딩을 한번 검색해 볼까요?</string>
+    <string name="blue_course_white_normal">파란 배경은 코스를 하얀배경은\n일반 장소를 나타내요.\n아이템을 클릭하면 위치로 이동 할 수 있어요.</string>
+    <string name="safe_drive_with_app">모든 튜토리얼을 끝냈어요\n이제 어디갈까와 함께 \n안전운전 하세요!</string>
+
+    <string name="searchbar_guide_text">와인딩</string>
 
     //오류
     <string name="google_auth">구글 인증 오류</string>
@@ -126,4 +141,5 @@
     <string name="unexpect_error">요청을 완료할 수 없습니다. 앱을 다시 시작하거나 캐시를 지우고 시도해 주세요.</string>
     <string name="cool_down_error">🏝️더 좋은 여행 정보를 위해 잠깐만 기다려 주세요.\n %s분 뒤에 다시 등록할 수 있어요.</string>
 
+    <string name="blank" />
 </resources>

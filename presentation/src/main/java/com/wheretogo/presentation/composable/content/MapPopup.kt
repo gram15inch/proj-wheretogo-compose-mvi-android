@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -32,6 +33,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.pointerInteropFilter
@@ -47,15 +49,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.skydoves.landscapist.ImageOptions
 import com.skydoves.landscapist.glide.GlideImage
 import com.valentinilk.shimmer.shimmer
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.dummy.getCommentDummy
 import com.wheretogo.presentation.CommentType
+import com.wheretogo.presentation.R
 import com.wheretogo.presentation.SheetVisibleMode
 import com.wheretogo.presentation.WIDE_WIDTH
-import com.wheretogo.presentation.composable.ExtendArea
 import com.wheretogo.presentation.defaultCommentEmogiGroup
 import com.wheretogo.presentation.feature.BlurEffect
 import com.wheretogo.presentation.feature.ImeStickyBox
@@ -66,6 +73,8 @@ import com.wheretogo.presentation.state.CommentState
 import com.wheretogo.presentation.state.CommentState.CommentAddState
 import com.wheretogo.presentation.state.CommentState.CommentItemState
 import com.wheretogo.presentation.state.PopUpState
+import com.wheretogo.presentation.theme.Gray5050
+import com.wheretogo.presentation.theme.Gray6080
 import com.wheretogo.presentation.theme.Green50
 import com.wheretogo.presentation.theme.Purple200
 import com.wheretogo.presentation.theme.Teal200
@@ -73,7 +82,6 @@ import com.wheretogo.presentation.theme.White
 import com.wheretogo.presentation.theme.hancomMalangFontFamily
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import java.io.File
 
 @Composable
@@ -83,6 +91,7 @@ fun MapPopup(
     isLoading: Boolean,
     onPopupImageClick: () -> Unit,
     onPopupBlurClick: () -> Unit,
+    onCommentSheetStateChange: (SheetVisibleMode)-> Unit,
     onCommentListItemClick: (CommentItemState) -> Unit,
     onCommentListItemLongClick: (Comment) -> Unit,
     onCommentLikeClick: (CommentItemState) -> Unit,
@@ -136,7 +145,7 @@ fun MapPopup(
                             onCommentLikeClick = onCommentLikeClick,
                             onCommentRemoveClick = onCommentRemoveClick,
                             onCommentReportClick = onCommentReportClick,
-                            onPopupBlurClick = onPopupBlurClick
+                            onSheetStateChange = onCommentSheetStateChange
                         )
                         Surface(modifier = Modifier.height(70.dp)) { }
                     }
@@ -177,34 +186,62 @@ fun CommentDragSheet(
     onCommentLikeClick: (CommentItemState) -> Unit,
     onCommentRemoveClick: (Comment) -> Unit,
     onCommentReportClick: (Comment) -> Unit,
-    onPopupBlurClick: () -> Unit
+    onSheetStateChange: (SheetVisibleMode) -> Unit
 ) {
     val isPreview = LocalInspectionMode.current
     Box(modifier = modifier) {
         BottomSheet(
             modifier = Modifier
                 .fillMaxWidth(),
-            isVisible = true,
+            isVisible = state.isVisible,
             minHeight = if (isPreview) 400.dp else 0.dp,
-            onSheetStateChange = {
-                if (it == SheetVisibleMode.PartiallyExpand)
-                    onPopupBlurClick()
-            },
+            onSheetStateChange = onSheetStateChange,
             onSheetHeightChange = {},
-            isSpaceVisibleWhenClose = false
+            isSpaceVisibleWhenClose = false,
+            dragHandleColor = if(state.isDragGuide) Gray6080 else null
         ) {
+            Box{
+                if(state.isDragGuide){
+                    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.lt_arrow_down))
+                    val progress by animateLottieCompositionAsState(
+                        composition = composition,
+                        iterations = 100,
+                        isPlaying = true,
+                        speed = 1.0f
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .align(Alignment.TopCenter)
+                            .zIndex(999f)
+                            .background(
+                                brush = Brush.verticalGradient(
+                                    colors = listOf(Gray6080, Gray5050)
+                                )
+                            )
+                    ) {
+                        LottieAnimation(
+                            modifier = Modifier
+                                .size(100.dp)
+                                .align(Alignment.Center),
+                            composition = composition,
+                            progress = { progress },
+                        )
+                    }
+                }
 
-            CommentContent(
-                modifier = Modifier
-                    .height(500.dp)
-                    .consumptionEvent()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(White),
-                commentState = state,
-                onCommentListItemClick = onCommentListItemClick,
-                onCommentListItemLongClick = onCommentListItemLongClick,
-                onCommentLikeClick = onCommentLikeClick,
-            )
+                CommentContent(
+                    modifier = Modifier
+                        .height(500.dp)
+                        .consumptionEvent()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(White),
+                    commentState = state,
+                    onCommentListItemClick = onCommentListItemClick,
+                    onCommentListItemLongClick = onCommentListItemLongClick,
+                    onCommentLikeClick = onCommentLikeClick,
+                )
+            }
         }
 
         FadeAnimation(
@@ -547,6 +584,7 @@ fun PopupPreview() {
             state = PopUpState(
                 commentState = CommentState(
                     isVisible = true,
+                    isDragGuide = true,
                     commentItemGroup = getCommentDummy().mapIndexed { idx, item ->
                         val comment = item.copy(
                             isUserLiked = if (item.like % 2 == 0) false else true,
@@ -576,7 +614,8 @@ fun PopupPreview() {
             onCommentReportClick = {},
             onCommentAddClick = {},
             onCommentEmogiPress = {},
-            onCommentTypePress = {}
+            onCommentTypePress = {},
+            onCommentSheetStateChange = {}
         )
     }
 }

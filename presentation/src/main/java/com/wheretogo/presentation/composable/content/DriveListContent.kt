@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wheretogo.domain.model.course.Course
 import com.wheretogo.domain.model.route.RouteCategory
+import com.wheretogo.presentation.composable.animation.highlightRoundedCorner
 import com.wheretogo.presentation.state.ListState
 import com.wheretogo.presentation.theme.Gray250
 import com.wheretogo.presentation.theme.White100
@@ -108,7 +109,9 @@ fun DriveListItem(
     onBookmarkClick: (ListState.ListItemState) -> Unit
 ) {
     AnimatedVisibility(
-        modifier = Modifier.shadow(
+        modifier = Modifier
+            .highlightRoundedCorner(listItem.isHighlight, 5.dp,16.dp)
+            .shadow(
             elevation = 1.dp,
             shape = RoundedCornerShape(16.dp),
             clip = false

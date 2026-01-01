@@ -7,8 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
@@ -29,13 +27,11 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.tooling.preview.Preview
@@ -44,7 +40,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.naver.maps.map.NaverMap
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
+import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.dummy.getCourseDummy
 import com.wheretogo.domain.model.util.ImageInfo
@@ -56,6 +56,7 @@ import com.wheretogo.presentation.R
 import com.wheretogo.presentation.SheetVisibleMode
 import com.wheretogo.presentation.WIDE_WIDTH
 import com.wheretogo.presentation.composable.content.AnimationDirection
+import com.wheretogo.presentation.composable.content.ZIndexOfDriveContentArea
 import com.wheretogo.presentation.composable.content.BottomSheet
 import com.wheretogo.presentation.composable.content.CheckPointAddContent
 import com.wheretogo.presentation.composable.content.DelayLottieAnimation
@@ -63,21 +64,21 @@ import com.wheretogo.presentation.composable.content.DescriptionTextField
 import com.wheretogo.presentation.composable.content.DriveListContent
 import com.wheretogo.presentation.composable.content.FadeAnimation
 import com.wheretogo.presentation.composable.content.FloatingButtons
+import com.wheretogo.presentation.composable.content.GuidePopup
 import com.wheretogo.presentation.composable.content.InfoContent
 import com.wheretogo.presentation.composable.effect.LifecycleDisposer
 import com.wheretogo.presentation.composable.content.MapPopup
 import com.wheretogo.presentation.composable.content.NaverMapSheet
+import com.wheretogo.presentation.composable.content.OneHandArea
 import com.wheretogo.presentation.composable.content.SearchBar
 import com.wheretogo.presentation.composable.content.SlideAnimation
-import com.wheretogo.presentation.composable.content.screenSize
 import com.wheretogo.presentation.composable.effect.AppEventReceiveEffect
 import com.wheretogo.presentation.defaultCommentEmogiGroup
 import com.wheretogo.presentation.feature.ImeStickyBox
-import com.wheretogo.presentation.feature.naver.setCurrentLocation
+import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.model.AppMarker
 import com.wheretogo.presentation.model.ContentPadding
-import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.model.TypeEditText
 import com.wheretogo.presentation.state.BottomSheetState
@@ -89,10 +90,11 @@ import com.wheretogo.presentation.state.DriveScreenState
 import com.wheretogo.presentation.state.FloatingButtonState
 import com.wheretogo.presentation.state.InfoState
 import com.wheretogo.presentation.state.ListState
+import com.wheretogo.presentation.state.GuideState
+import com.wheretogo.presentation.theme.Gray5060
 import com.wheretogo.presentation.theme.Gray6080
 import com.wheretogo.presentation.toNavigation
 import com.wheretogo.presentation.viewmodel.DriveViewModel
-import kotlinx.coroutines.launch
 
 @Composable
 fun DriveScreen(
@@ -117,7 +119,11 @@ fun DriveScreen(
         DriveContent(
             state = driveState,
 
+            //GuidePopup
+            onGuideClick = { handleIntent(DriveScreenIntent.GuidePopupClick(it)) },
+
             //NaverMap
+            onMapAsync = { handleIntent(DriveScreenIntent.MapAsync)},
             onCameraUpdate = { handleIntent(DriveScreenIntent.CameraUpdated(it)) },
             onMarkerClick = { handleIntent(DriveScreenIntent.MarkerClick(it))},
 
@@ -183,8 +189,11 @@ fun DriveScreen(
 fun DriveContent(
     state: DriveScreenState = DriveScreenState(),
 
+    //GuidePopup
+    onGuideClick: (DriveTutorialStep) -> Unit = {},
+
     //Navermap
-    onMapAsync: (NaverMap) -> Unit = {},
+    onMapAsync: () -> Unit = {},
     onCameraUpdate: (CameraState) -> Unit = {},
     onMarkerClick: (AppMarker) -> Unit = {},
 
@@ -237,13 +246,11 @@ fun DriveContent(
     onTextFieldEnterClick: () -> Unit = {}
 ) {
     val isPreview = LocalInspectionMode.current
-    val context = LocalContext.current
     var bottomSheetHeight by remember { mutableStateOf(0.dp) }
     val mapBottomPadding by animateDpAsState(
         targetValue = bottomSheetHeight,
         animationSpec = tween(durationMillis = 300)
     )
-    val coroutineScope = rememberCoroutineScope()
     val focusRequester: FocusRequester = remember { FocusRequester() }
     Scaffold(
         contentWindowInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout),
@@ -253,13 +260,11 @@ fun DriveContent(
             }
             NaverMapSheet(
                 modifier = Modifier
-                    .fillMaxSize(),
+                    .fillMaxSize()
+                    .zIndex(0f),
                 state = state.naverMapState,
                 overlayGroup = state.overlayGroup,
-                onMapAsync = {
-                    onMapAsync(it)
-                    coroutineScope.launch { it.setCurrentLocation(context) }
-                },
+                onMapAsync = { onMapAsync() },
                 onCameraUpdate = onCameraUpdate,
                 onMarkerClick = onMarkerClick,
                 contentPadding = ContentPadding(
@@ -270,9 +275,9 @@ fun DriveContent(
                 )
             )
 
-
             FadeAnimation(
-                modifier = Modifier.zIndex(1f),
+                modifier = Modifier
+                    .zIndex(1f),
                 visible = DriveScreenState.blurVisible.contains(state.stateMode),
                 short = FloatingButtonState.backPlateVisible.contains(state.floatingButtonState.stateMode)
             ) {
@@ -298,6 +303,47 @@ fun DriveContent(
                         fontSize = 50.sp
                     )
 
+                if(state.isCongrats){
+                    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.lt_congrats))
+                    val progress by animateLottieCompositionAsState(
+                        composition = composition,
+                        iterations = 1,
+                        isPlaying = true,
+                        speed = 1.0f
+                    )
+
+                    LottieAnimation(
+                        modifier = Modifier
+                            .zIndex(999f)
+                            .fillMaxSize(),
+                        composition = composition,
+                        progress = { progress }
+                    )
+                }
+
+                GuidePopup(
+                    modifier = Modifier
+                        .zIndex(1f)
+                        .run {
+                        when(state.guideState.alignment){
+                            GuideState.Companion.Align.TOP_START -> align(
+                                BiasAlignment(
+                                    horizontalBias = -0.9f,
+                                    verticalBias = -0.8f
+                                )
+                            )
+                            GuideState.Companion.Align.BOTTOM_START -> align(
+                                BiasAlignment(
+                                    horizontalBias = -0.9f,
+                                    verticalBias = 0.3f
+                                )
+                            )
+                        }
+                    },
+                    state = state.guideState,
+                    onClick = onGuideClick
+                )
+
                 DelayLottieAnimation(
                     modifier = Modifier
                         .padding(top = 40.dp, end = 10.dp)
@@ -309,118 +355,144 @@ fun DriveContent(
                 )
 
                 OneHandArea {
-                    Box(
-                        modifier = Modifier
-                            .sizeIn(WIDE_WIDTH.dp)
-                            .fillMaxWidth(), contentAlignment = Alignment.CenterEnd
-                    ) {
-                        SlideAnimation(
-                            visible = DriveScreenState.searchBarVisible.contains(state.stateMode),
-                            direction = AnimationDirection.CenterUp
+                    ZIndexOfDriveContentArea(state.guideState.tutorialStep) { zIdxs, isBlock->
+                        // 선택 막기(가이드)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .zIndex(1f)
+                                .consumptionEvent(isBlock)
+                                .run{
+                                    if(isBlock)
+                                        background(Gray5060)
+                                    else this
+                                }
+                        )
+                        // 서치바
+                        Box(
+                            modifier = Modifier
+                                .sizeIn(WIDE_WIDTH.dp)
+                                .fillMaxWidth()
+                                .zIndex(zIdxs.searchBar)
+                            , contentAlignment = Alignment.CenterEnd
                         ) {
-                            SearchBar(
-                                modifier = Modifier,
-                                state = state.searchBarState,
-                                onSearchSubmit = onSearchSubmit,
-                                onSearchBarClick = onSearchBarClick,
-                                onSearchBarItemClick = onSearchBarItemClick,
-                                onSearchBarClose = onSearchBarClose
+                            SlideAnimation(
+                                visible = DriveScreenState.searchBarVisible.contains(state.stateMode),
+                                direction = AnimationDirection.CenterUp
+                            ) {
+                                SearchBar(
+                                    state = state.searchBarState,
+                                    onSearchSubmit = onSearchSubmit,
+                                    onSearchBarClick = onSearchBarClick,
+                                    onSearchBarItemClick = onSearchBarItemClick,
+                                    onSearchBarClose = onSearchBarClose
+                                )
+                            }
+                        }
+
+                        // 코스목록
+                        SlideAnimation(
+                            modifier = Modifier
+                                .padding(bottom = systemBarBottomPadding)
+                                .align(alignment = Alignment.BottomEnd)
+                                .zIndex(zIdxs.driveList),
+                            visible = DriveScreenState.itemListVisible.contains(state.stateMode),
+                            direction = AnimationDirection.CenterDown,
+                        ) {
+                            DriveListContent(
+                                modifier = Modifier
+                                    .padding(horizontal = 4.dp)
+                                    .align(alignment = Alignment.BottomCenter),
+                                state = state.listState,
+                                onItemClick = onListItemClick,
                             )
                         }
-                    }
 
-                    SlideAnimation(
-                        modifier = Modifier
-                            .padding(bottom = systemBarBottomPadding)
-                            .align(alignment = Alignment.BottomEnd),
-                        visible = DriveScreenState.itemListVisible.contains(state.stateMode),
-                        direction = AnimationDirection.CenterDown,
-                    ) {
-                        DriveListContent(
+                        // 팝업(체크포인트 사진, 댓글)
+                        FadeAnimation(
                             modifier = Modifier
-                                .padding(horizontal = 4.dp)
-                                .align(alignment = Alignment.BottomCenter),
-                            state = state.listState,
-                            onItemClick = onListItemClick,
-                        )
-                    }
-
-                    FadeAnimation(
-                        modifier = Modifier
-                            .padding(bottom = systemBarBottomPadding)
-                            .align(alignment = Alignment.BottomStart),
-                        visible = DriveScreenState.popUpVisible.contains(state.stateMode)
-                    ) {
-                        MapPopup(
-                            modifier = Modifier.align(Alignment.BottomStart),
-                            state = state.popUpState,
-                            isLoading = state.isLoading,
-                            onPopupImageClick = onPopupImageClick,
-                            onPopupBlurClick = onPopupBlurClick,
-                            onCommentListItemClick = onCommentListItemClick,
-                            onCommentListItemLongClick = onCommentListItemLongClick,
-                            onCommentLikeClick = onCommentLikeClick,
-                            onCommentAddClick = onCommentAddClick,
-                            onCommentRemoveClick = onCommentRemoveClick,
-                            onCommentReportClick = onCommentReportClick,
-                            onCommentEmogiPress = onCommentEmogiPress,
-                            onCommentTypePress = onCommentTypePress
-                        )
-                    }
-                    BottomSheet(
-                        modifier = Modifier
-                            .zIndex(3f),
-                        isVisible = DriveScreenState.bottomSheetVisible.contains(state.stateMode),
-                        bottomSpace = systemBarBottomPadding,
-                        onSheetHeightChange = {
-                            if (state.bottomSheetState.content == DriveBottomSheetContent.CHECKPOINT_ADD) {
-                                bottomSheetHeight = it
-                            }
-                        },
-                        onSheetStateChange = onBottomSheetStateChange,
-                        minHeight = state.bottomSheetState.content.minHeight.dp,
-                        isSpaceVisibleWhenClose = false
-                    ) {
-                        when (state.bottomSheetState.content) {
-                            DriveBottomSheetContent.CHECKPOINT_ADD -> {
-                                CheckPointAddContent(
-                                    state = state.bottomSheetState.checkPointAddState,
-                                    focusRequester = focusRequester,
-                                    onSubmitClick = onCheckPointAddSubmitClick,
-                                    onSliderChange = onSliderChange,
-                                    onImageChange = onImageChange
-                                )
-                            }
-
-                            DriveBottomSheetContent.COURSE_INFO, DriveBottomSheetContent.CHECKPOINT_INFO -> {
-                                InfoContent(
-                                    state = state.bottomSheetState.infoState,
-                                    onRemoveClick = onInfoRemoveClick,
-                                    onReportClick = onInfoReportClick
-                                )
-                            }
-
-                            else -> {}
+                                .padding(bottom = systemBarBottomPadding)
+                                .align(alignment = Alignment.BottomStart)
+                                .zIndex(zIdxs.mapPopup),
+                            visible = DriveScreenState.popUpVisible.contains(state.stateMode)
+                        ) {
+                            MapPopup(
+                                modifier = Modifier.align(Alignment.BottomStart),
+                                state = state.popUpState,
+                                isLoading = state.isLoading,
+                                onPopupImageClick = onPopupImageClick,
+                                onPopupBlurClick = onPopupBlurClick,
+                                onCommentListItemClick = onCommentListItemClick,
+                                onCommentListItemLongClick = onCommentListItemLongClick,
+                                onCommentLikeClick = onCommentLikeClick,
+                                onCommentAddClick = onCommentAddClick,
+                                onCommentRemoveClick = onCommentRemoveClick,
+                                onCommentReportClick = onCommentReportClick,
+                                onCommentEmogiPress = onCommentEmogiPress,
+                                onCommentTypePress = onCommentTypePress,
+                                onCommentSheetStateChange = onBottomSheetStateChange
+                            )
                         }
-                    }
 
-                    FloatingButtons(
-                        modifier = Modifier
-                            .padding(bottom = systemBars.calculateBottomPadding())
-                            .fillMaxSize(),
-                        state = state.floatingButtonState,
-                        isVisible = DriveScreenState.floatingVisible.contains(state.stateMode),
-                        navigation = state.selectedCourse.toNavigation(),
-                        onCommentClick = onCommentFloatClick,
-                        onCheckpointAddClick = onCheckpointAddFloatClick,
-                        onInfoClick = { onInfoFloatClick(DriveScreenState.infoContent(state.stateMode)) },
-                        onExportMapClick = onExportMapFloatClick,
-                        onMapAppClick = onMapAppClick,
-                        onFoldClick = onFoldFloatClick
-                    )
+                        // 바텀시트(체크포인트 추가, 컨텐츠 정보)
+                        BottomSheet(
+                            modifier = Modifier,
+                            isVisible = DriveScreenState.bottomSheetVisible.contains(state.stateMode),
+                            bottomSpace = systemBarBottomPadding,
+                            onSheetHeightChange = {
+                                if (state.bottomSheetState.content == DriveBottomSheetContent.CHECKPOINT_ADD) {
+                                    bottomSheetHeight = it
+                                }
+                            },
+                            onSheetStateChange = onBottomSheetStateChange,
+                            minHeight = state.bottomSheetState.content.minHeight.dp,
+                            isSpaceVisibleWhenClose = false
+                        ) {
+                            when (state.bottomSheetState.content) {
+                                DriveBottomSheetContent.CHECKPOINT_ADD -> {
+                                    CheckPointAddContent(
+                                        state = state.bottomSheetState.checkPointAddState,
+                                        focusRequester = focusRequester,
+                                        onSubmitClick = onCheckPointAddSubmitClick,
+                                        onSliderChange = onSliderChange,
+                                        onImageChange = onImageChange
+                                    )
+                                }
+
+                                DriveBottomSheetContent.COURSE_INFO, DriveBottomSheetContent.CHECKPOINT_INFO -> {
+                                    InfoContent(
+                                        state = state.bottomSheetState.infoState,
+                                        onRemoveClick = onInfoRemoveClick,
+                                        onReportClick = onInfoReportClick
+                                    )
+                                }
+
+                                else -> {}
+                            }
+                        }
+
+                        // 지도 플로팅
+                        FloatingButtons(
+                            modifier = Modifier
+                                .padding(bottom = systemBars.calculateBottomPadding())
+                                .fillMaxSize()
+                                .zIndex(zIdxs.floatBtn),
+                            state = state.floatingButtonState,
+                            guideStep = state.guideState.tutorialStep,
+                            isVisible = DriveScreenState.floatingVisible.contains(state.stateMode),
+                            navigation = state.selectedCourse.toNavigation(),
+                            onCommentClick = onCommentFloatClick,
+                            onCheckpointAddClick = onCheckpointAddFloatClick,
+                            onInfoClick = { onInfoFloatClick(DriveScreenState.infoContent(state.stateMode)) },
+                            onExportMapClick = onExportMapFloatClick,
+                            onMapAppClick = onMapAppClick,
+                            onFoldClick = onFoldFloatClick
+                        )
+                    }
                 }
 
-                BottomSheetImeStickyBox(
+                // 키보드(체크포인트 추가)
+                ImeStickyBoxForBottomSheet(
                     modifier = Modifier
                         .padding(systemBars)
                         .align(alignment = Alignment.BottomCenter),
@@ -432,17 +504,6 @@ fun DriveContent(
                 )
             }
         })
-}
-
-@Composable
-fun OneHandArea(content: @Composable BoxScope.() -> Unit) {
-    val min = minOf(screenSize(true), 800.dp)
-    Box(
-        modifier = Modifier
-            .sizeIn(maxWidth = min)
-    ) {
-        content()
-    }
 }
 
 @Composable
@@ -462,31 +523,7 @@ fun BlurEffect(modifier: Modifier = Modifier, onClick: () -> Unit) {
 }
 
 @Composable
-fun ExtendArea(
-    modifier: Modifier = Modifier,
-    isExtend: Boolean,
-    holdContent: @Composable () -> Unit,
-    moveContent: @Composable () -> Unit
-) {
-    if (isExtend) {
-        Row(modifier, verticalAlignment = Alignment.Bottom) {
-            holdContent()
-            moveContent()
-        }
-    } else {
-        Box(
-            modifier = modifier.graphicsLayer(clip = true),
-            contentAlignment = Alignment.BottomCenter
-        ) {
-            holdContent()
-            moveContent()
-        }
-    }
-
-}
-
-@Composable
-fun BottomSheetImeStickyBox(
+fun ImeStickyBoxForBottomSheet(
     modifier: Modifier,
     state: BottomSheetState,
     isVisible: Boolean,
@@ -531,6 +568,9 @@ fun ExplorerContentPreview() {
                     isActive = true,
                     searchBarItemGroup = searchBarItemGroup
                 ),
+                guideState = GuideState(
+                    tutorialStep = DriveTutorialStep.DRIVE_LIST_ITEM_CLICK
+                )
             )
         }
     )

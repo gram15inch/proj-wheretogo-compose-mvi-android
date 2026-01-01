@@ -31,6 +31,8 @@ val Black100 = Color(0x80202020)
 val Black = Color(0xFF000000)
 
 val Gray50 = Color(0xFFF6F6F6)
+val Gray5050 = Color(0x4DF6F6F6)
+val Gray5060 = Color(0x66F6F6F6)
 val Gray6080 = Color(0x80C7C7C7)
 val Gray8090 = Color(0x90C7C7C7)
 val Gray100 = Color(0xFFC7C7C7)

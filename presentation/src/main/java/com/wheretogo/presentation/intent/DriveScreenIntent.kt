@@ -1,5 +1,6 @@
 package com.wheretogo.presentation.intent
 
+import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.util.ImageInfo
 import com.wheretogo.presentation.AppEvent
@@ -7,7 +8,6 @@ import com.wheretogo.presentation.AppLifecycle
 import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.SheetVisibleMode
 import com.wheretogo.presentation.model.AppMarker
-import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.model.TypeEditText
 import com.wheretogo.presentation.state.CameraState
@@ -15,6 +15,8 @@ import com.wheretogo.presentation.state.CommentState.CommentItemState
 import com.wheretogo.presentation.state.ListState.ListItemState
 
 sealed class DriveScreenIntent {
+    //가이드
+    data class GuidePopupClick(val step: DriveTutorialStep) : DriveScreenIntent()
 
     //서치바
     data class AddressItemClick(val searchBarItem: SearchBarItem) : DriveScreenIntent()
@@ -23,6 +25,7 @@ sealed class DriveScreenIntent {
     data class SearchSubmit(val submit:String) : DriveScreenIntent()
 
     //지도
+    object MapAsync : DriveScreenIntent()
     data class CameraUpdated(val cameraState: CameraState) : DriveScreenIntent()
     data class MarkerClick(val appMarker: AppMarker) : DriveScreenIntent()
 

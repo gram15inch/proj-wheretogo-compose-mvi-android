@@ -1,11 +1,13 @@
 package com.wheretogo.presentation.state
 
+import com.wheretogo.presentation.DriveFloatHighlight
 import com.wheretogo.presentation.DriveFloatingVisibleMode
 import com.wheretogo.presentation.model.AdItem
 import java.util.EnumSet
 
 data class FloatingButtonState(
     val adItemGroup: List<AdItem> = emptyList(),
+    val highlight: DriveFloatHighlight = DriveFloatHighlight.NONE,
     val stateMode: DriveFloatingVisibleMode = DriveFloatingVisibleMode.Default
 ) {
     companion object {

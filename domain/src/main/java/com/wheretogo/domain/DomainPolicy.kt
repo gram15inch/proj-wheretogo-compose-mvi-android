@@ -51,10 +51,28 @@ fun Throwable?.toDomainError(): DomainError {
     }
 }
 
-enum class TutorialStep {
-    SKIP, HOME_TO_DRIVE, DRIVE_LIST_ITEM_CLICK;
-    fun next(): TutorialStep{
-        return TutorialStep.entries.getOrNull(ordinal+1)?:SKIP
+enum class DriveTutorialStep(val tag: String?=null) {
+    SKIP,
+    HOME_TO_DRIVE_CLICK,
+    MOVE_TO_COURSE,
+    DRIVE_LIST_ITEM_CLICK("info"),
+    MOVE_TO_LEAF("info"),
+    LEAF_CLICK("info"),
+    COMMENT_FLOAT_CLICK("info"),
+    COMMENT_SHEET_DRAG,
+    EXPORT_FLOAT_CLICK("info"),
+    FOLD_FLOAT_CLICK("info"),
+    SEARCHBAR_CLICK("info"),
+    SEARCHBAR_EDIT("info"),
+    ADDRESS_CLICK("info"),
+    DRIVE_GUIDE_DONE("info")
+    ;
+
+    fun next(): DriveTutorialStep{
+        return DriveTutorialStep.entries.getOrNull(ordinal+1)?:SKIP
+    }
+    fun prev(): DriveTutorialStep{
+        return DriveTutorialStep.entries.getOrNull(ordinal-1)?:SKIP
     }
 }
 

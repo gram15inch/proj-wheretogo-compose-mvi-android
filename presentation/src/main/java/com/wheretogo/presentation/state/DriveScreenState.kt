@@ -6,11 +6,11 @@ import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.DriveVisibleMode
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.state.CommentState.CommentAddState
-import timber.log.Timber
 import java.util.EnumSet
 
 
 data class DriveScreenState(
+    val guideState: GuideState = GuideState(),
     val searchBarState: SearchBarState = SearchBarState(),
     val naverMapState: NaverMapState = NaverMapState(),
     val listState: ListState = ListState(),
@@ -22,6 +22,7 @@ data class DriveScreenState(
     val selectedCourse: Course = Course(),
     val selectedCheckPoint: CheckPoint = CheckPoint(),
     val isLoading: Boolean = false,
+    val isCongrats: Boolean = false,
     val error: String? = null
 ) {
 

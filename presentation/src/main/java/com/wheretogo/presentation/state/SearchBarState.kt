@@ -8,6 +8,9 @@ data class SearchBarState(
     val isLoading: Boolean = false,
     val isAdVisible: Boolean = false,
     val isEmptyVisible: Boolean = false,
+    val isHighlight: Boolean = false,
+    val isTextGuide: Boolean = false,
+    val isEditBlock: Boolean = false,
     val searchBarItemGroup: List<SearchBarItem> = emptyList(),
     val adItemGroup: List<AdItem> = emptyList(),
 )
