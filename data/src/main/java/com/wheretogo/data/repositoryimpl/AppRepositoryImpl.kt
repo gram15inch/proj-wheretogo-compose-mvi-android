@@ -5,7 +5,7 @@ import com.wheretogo.data.datasource.AppLocalDatasource
 import com.wheretogo.data.datasource.AppRemoteDatasource
 import com.wheretogo.data.feature.mapSuccess
 import com.wheretogo.data.toDomainResult
-import com.wheretogo.domain.TutorialStep
+import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.model.app.Settings
 import com.wheretogo.domain.repository.AppRepository
 import kotlinx.coroutines.flow.Flow
@@ -19,17 +19,17 @@ class AppRepositoryImpl @Inject constructor(
 
     override suspend fun observeSetting(): Flow<Settings> {
         return appLocalDatasource.observeInt(DataSettingAttr.TUTORIAL).map {
-            Settings(tutorialStep = TutorialStep.entries.getOrNull(it)?: TutorialStep.SKIP)
+            Settings(tutorialStep = DriveTutorialStep.entries.getOrNull(it)?: DriveTutorialStep.SKIP)
         }
     }
 
     override suspend fun getSetting(): Result<Settings> {
         return appLocalDatasource.getInt(DataSettingAttr.TUTORIAL).map {
-            Settings(tutorialStep = TutorialStep.entries.getOrNull(it)?: TutorialStep.SKIP)
+            Settings(tutorialStep = DriveTutorialStep.entries.getOrNull(it)?: DriveTutorialStep.SKIP)
         }.toDomainResult()
     }
 
-    override suspend fun setTutorialStep(step: TutorialStep): Result<Unit> {
+    override suspend fun setTutorialStep(step: DriveTutorialStep): Result<Unit> {
         return appLocalDatasource.setInt(DataSettingAttr.TUTORIAL, step.ordinal)
             .toDomainResult()
     }

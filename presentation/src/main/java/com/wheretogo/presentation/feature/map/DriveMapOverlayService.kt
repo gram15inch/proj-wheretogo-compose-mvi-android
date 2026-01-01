@@ -2,6 +2,8 @@ package com.wheretogo.presentation.feature.map
 
 import com.naver.maps.map.overlay.Align
 import com.naver.maps.map.overlay.OverlayImage
+import com.wheretogo.domain.DomainError
+import com.wheretogo.domain.feature.domainMap
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.checkpoint.CheckPoint
 import com.wheretogo.domain.model.course.Course
@@ -234,29 +236,28 @@ class DriveMapOverlayService @Inject constructor(
     fun scaleToPointLeafInCluster(
         clusterId: String,
         point: LatLng
-    ) {
-        runCatching {
-            overlayStore.getCluster(clusterId).onSuccess {
-                 appCluster ->
+    ): Result<String> {
+        return overlayStore.getCluster(clusterId).domainMap { appCluster ->
+            runCatching {
                 val leafGroup = appCluster.getAppLeafGroup()
                 val minLeaf = leafGroup.minByOrNull {
                     it.leaf.position.toDomainLatLng().toDistance(point)
                 }
 
                 if (minLeaf == null)
-                    return
+                    return Result.failure(DomainError.NotFound("min leaf not found"))
 
                 if (latestScaleId == minLeaf.leaf.leafId)
-                    return
+                    return Result.success(latestScaleId)
 
                 if (latestScaleId.isNotBlank()) {
-                    leafGroup.firstOrNull{it.leaf.leafId == latestScaleId}?.setRevertIcon()
+                    leafGroup.firstOrNull { it.leaf.leafId == latestScaleId }?.setRevertIcon()
                 }
                 overlayModifier.scaleUp(minLeaf.leaf.thumbnail)?.let {
                     minLeaf.setUpIcon(it)
                 }
+                minLeaf.leaf.leafId
             }
-
         }
     }
 

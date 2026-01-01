@@ -47,11 +47,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.model.course.Course
 import com.wheretogo.domain.model.util.Navigation
+import com.wheretogo.presentation.DriveFloatHighlight
 import com.wheretogo.presentation.DriveFloatingVisibleMode
 import com.wheretogo.presentation.ExportMap
 import com.wheretogo.presentation.R
+import com.wheretogo.presentation.composable.animation.highlightCircle
 import com.wheretogo.presentation.feature.FontMaxScale
 import com.wheretogo.presentation.feature.callMap
 import com.wheretogo.presentation.state.FloatingButtonState
@@ -67,6 +70,7 @@ import kotlinx.coroutines.launch
 fun FloatingButtons(
     modifier: Modifier = Modifier,
     state: FloatingButtonState = FloatingButtonState(),
+    guideStep: DriveTutorialStep,
     isVisible: Boolean,
     navigation: Navigation,
     onCommentClick: () -> Unit,
@@ -114,111 +118,134 @@ fun FloatingButtons(
             }
         }
 
-        Column(
-            horizontalAlignment = Alignment.End,
-            verticalArrangement = Arrangement.spacedBy(if (isBackPlateVisible) 0.dp else 10.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = buttonEndPadding)
-        ) {
-            SlideAnimation(
-                modifier = Modifier,
-                visible = isCommentVisible,
-                direction = AnimationDirection.RightCenter
+        ActiveOfFloatBtnArea(
+            guideStep
+        ) { active ->
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(if (isBackPlateVisible) 0.dp else 10.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = buttonEndPadding)
             ) {
-                CircleButton(
-                    Modifier.padding(end = buttonEndPadding),
-                    icon = R.drawable.ic_message
-                ) {
-                    onCommentClick()
-                }
-            }
-
-            SlideAnimation(
-                modifier = Modifier,
-                visible = isCheckpointAddVisible,
-                direction = AnimationDirection.RightCenter
-            ) {
-                CircleButton(
-                    Modifier.padding(
-                        top = if (isBackPlateVisible) 10.dp else 0.dp,
-                        end = buttonEndPadding
-                    ), icon = R.drawable.ic_location
-                ) {
-                    onCheckpointAddClick()
-                }
-            }
-
-            SlideAnimation(
-                modifier = Modifier,
-                visible = isInfoVisible,
-                direction = AnimationDirection.RightCenter
-            ) {
-                CircleButton(
-                    Modifier.padding(
-                        top = if (isBackPlateVisible) 10.dp else 0.dp,
-                        end = buttonEndPadding
-                    ), icon = R.drawable.ic_info
-                ) {
-                    onInfoClick()
-                }
-            }
-
-            SlideAnimation(
-                modifier = Modifier,
-                visible = isExportVisible,
-                direction = AnimationDirection.RightCenter
-            ) {
-                CirclePlateButton(
-                    icon = R.drawable.ic_share,
-                    isBackPlate = isBackPlateVisible,
-                    buttonEndPadding = buttonEndPadding,
-                    onNaverClick = { isLongClick ->
-                        scope.launch {
-                            onMapAppClick(
-                                context.callMap(
-                                    ExportMap.NAVER,
-                                    navigation,
-                                    !isLongClick
-                                )
-                            )
-                        }
-                    },
-                    onKaKaoClick = { isLongClick ->
-                        scope.launch {
-                            onMapAppClick(
-                                context.callMap(
-                                    ExportMap.KAKAO,
-                                    navigation,
-                                    !isLongClick
-                                )
-                            )
-                        }
-                    },
-                    onTClick = { isLongClick ->
-                        scope.launch {
-                            onMapAppClick(context.callMap(ExportMap.SKT, navigation, !isLongClick))
-                        }
-                    },
-                ) {
-                    onExportMapClick()
-                }
-            }
-
-            SlideAnimation(
-                modifier = Modifier.padding(end = buttonEndPadding),
-                visible = isFoldVisible,
-                direction = AnimationDirection.RightCenter
-            ) {
-                CircleButton(
+                SlideAnimation(
                     modifier = Modifier,
-                    icon = R.drawable.ic_close
+                    visible = isCommentVisible,
+                    direction = AnimationDirection.RightCenter
                 ) {
-                    onFoldClick()
+                    CircleButton(
+                        modifier = Modifier.padding(end = buttonEndPadding),
+                        icon = R.drawable.ic_message,
+                        isHighLight = state.highlight == DriveFloatHighlight.COMMENT,
+                        isActive = active.comment
+                    ) {
+                        onCommentClick()
+                    }
+                }
+
+                SlideAnimation(
+                    modifier = Modifier,
+                    visible = isCheckpointAddVisible,
+                    direction = AnimationDirection.RightCenter
+                ) {
+                    CircleButton(
+                        modifier = Modifier.padding(
+                            top = if (isBackPlateVisible) 10.dp else 0.dp,
+                            end = buttonEndPadding
+                        ),
+                        icon = R.drawable.ic_location,
+                        isHighLight = state.highlight == DriveFloatHighlight.CHECKPOINT,
+                        isActive = active.checkpoint
+                    ) {
+                        onCheckpointAddClick()
+                    }
+                }
+
+                SlideAnimation(
+                    modifier = Modifier,
+                    visible = isInfoVisible,
+                    direction = AnimationDirection.RightCenter
+                ) {
+                    CircleButton(
+                        modifier = Modifier.padding(
+                            top = if (isBackPlateVisible) 10.dp else 0.dp,
+                            end = buttonEndPadding
+                        ),
+                        icon = R.drawable.ic_info,
+                        isHighLight = state.highlight == DriveFloatHighlight.INFO,
+                        isActive = active.info
+                    ) {
+                        onInfoClick()
+                    }
+                }
+
+                SlideAnimation(
+                    modifier = Modifier,
+                    visible = isExportVisible,
+                    direction = AnimationDirection.RightCenter
+                ) {
+                    CirclePlateButton(
+                        icon = R.drawable.ic_share,
+                        isHighlight = state.highlight == DriveFloatHighlight.EXPORT,
+                        isActive = active.export,
+                        isBackPlate = isBackPlateVisible,
+                        buttonEndPadding = buttonEndPadding,
+                        onNaverClick = { isLongClick ->
+                            scope.launch {
+                                onMapAppClick(
+                                    context.callMap(
+                                        ExportMap.NAVER,
+                                        navigation,
+                                        !isLongClick
+                                    )
+                                )
+                            }
+                        },
+                        onKaKaoClick = { isLongClick ->
+                            scope.launch {
+                                onMapAppClick(
+                                    context.callMap(
+                                        ExportMap.KAKAO,
+                                        navigation,
+                                        !isLongClick
+                                    )
+                                )
+                            }
+                        },
+                        onTClick = { isLongClick ->
+                            scope.launch {
+                                onMapAppClick(
+                                    context.callMap(
+                                        ExportMap.SKT,
+                                        navigation,
+                                        !isLongClick
+                                    )
+                                )
+                            }
+                        },
+                    ) {
+                        onExportMapClick()
+                    }
+                }
+
+                SlideAnimation(
+                    modifier = Modifier.padding(end = buttonEndPadding),
+                    visible = isFoldVisible,
+                    direction = AnimationDirection.RightCenter
+                ) {
+                    CircleButton(
+                        modifier = Modifier,
+                        icon = R.drawable.ic_close,
+                        isHighLight = state.highlight == DriveFloatHighlight.FOLD,
+                        isActive = active.fold
+                    ) {
+                        onFoldClick()
+                    }
                 }
             }
-
         }
+
+
     }
 }
 
@@ -226,14 +253,19 @@ fun FloatingButtons(
 @Composable
 fun CircleButton(
     modifier: Modifier = Modifier,
+    isHighLight: Boolean = false,
+    isActive: Boolean = true,
     @DrawableRes icon: Int,
     color: Color = White85,
     onClick: () -> Unit
 ) {
     Button(
         onClick = onClick,
+        enabled = isActive,
         modifier = modifier
-            .size(60.dp),
+            .size(60.dp)
+            .highlightCircle(isHighLight)
+        ,
         shape = CircleShape,
         colors = ButtonDefaults.buttonColors(containerColor = color),
         contentPadding = PaddingValues(0.dp)
@@ -250,6 +282,8 @@ fun CircleButton(
 fun CirclePlateButton(
     modifier: Modifier = Modifier,
     icon: Int,
+    isHighlight: Boolean = false,
+    isActive: Boolean = true,
     isBackPlate: Boolean,
     buttonEndPadding: Dp,
     onNaverClick: (Boolean) -> Unit,
@@ -277,6 +311,7 @@ fun CirclePlateButton(
         if (isBackPlate) {
             //백플레이트
             Backplate(
+                isActive = isActive,
                 backPlateHeight, buttonEndPadding, squareSize, circleSize,
                 onButtonClick = onIntervalClick
             )
@@ -326,7 +361,11 @@ fun CirclePlateButton(
             CircleButton(
                 modifier = Modifier
                     .padding(end = buttonEndPadding)
-                    .align(alignment = Alignment.CenterEnd), icon, onClick = onIntervalClick
+                    .align(alignment = Alignment.CenterEnd),
+                icon = icon,
+                onClick = onIntervalClick,
+                isHighLight = isHighlight,
+                isActive = isActive
             )
         }
     }
@@ -415,6 +454,7 @@ fun SquareScaleButton(
 
 @Composable
 fun Backplate(
+    isActive: Boolean,
     backPlateHeight: Dp,
     buttonEndPadding: Dp,
     squareSize: Dp,
@@ -442,6 +482,7 @@ fun Backplate(
         CircleButton(
             modifier = Modifier.align(alignment = Alignment.CenterEnd),
             icon = R.drawable.ic_share,
+            isActive = isActive,
             onClick = onButtonClick
         )
         InfoText(
@@ -463,6 +504,7 @@ fun FloatingLandscapeButtonPreview() {
             adItemGroup = emptyList(),
             stateMode = DriveFloatingVisibleMode.Default
         ),
+        guideStep = DriveTutorialStep.SKIP,
         isVisible = true,
         navigation = Course().toNavigation(),
         onCommentClick = {},

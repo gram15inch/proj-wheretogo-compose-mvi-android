@@ -10,6 +10,7 @@ import com.naver.maps.map.NaverMap
 import com.naver.maps.map.app.LegalNoticeActivity
 import com.naver.maps.map.app.OpenSourceLicenseActivity
 import com.wheretogo.domain.DomainError
+import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.RouteAttrItem
 import com.wheretogo.domain.RouteFieldType
 import com.wheretogo.domain.model.util.Viewport
@@ -40,7 +41,12 @@ enum class CommentType(@StringRes val typeRes: Int) {
 }
 
 enum class CameraUpdateSource {
-    USER, MARKER, LIST_ITEM, SEARCH_BAR, BOTTOM_SHEET_UP, BOTTOM_SHEET_DOWN
+    USER, MARKER,
+    LIST_ITEM,
+    SEARCH_BAR,
+    BOTTOM_SHEET_UP,
+    BOTTOM_SHEET_DOWN,
+    GUIDE
 }
 
 enum class MoveAnimation {
@@ -76,7 +82,7 @@ sealed class AppError : Exception() {
 }
 
 sealed class AppEvent {
-    data class Navigation(val form: AppScreen, val to: AppScreen) : AppEvent()
+    data class Navigation(val form: AppScreen, val to: AppScreen, val inclusive: Boolean = true) : AppEvent()
     data class SnackBar(val msg: EventMsg) : AppEvent()
     data class Permission(val permission: AppPermission) : AppEvent()
     data object SignInScreen : AppEvent()
@@ -87,6 +93,10 @@ sealed class AppScreen {
     data object Drive : AppScreen()
     data object CourseAdd : AppScreen()
     data object Setting : AppScreen()
+}
+
+enum class ViewModelEvent {
+    DRIVE_NAVIGATE, COURSE_ADD_NAVIGATE, GUIDE_START, GUIDE_STOP
 }
 
 enum class AdMinSize(val widthDp: Int, val heightDp: Int) {
@@ -110,6 +120,18 @@ sealed class AppPermission(val name: String) {
 
 enum class ExportMap {
     NAVER, KAKAO, SKT
+}
+
+enum class DriveFloatHighlight {
+    NONE, CHECKPOINT, COMMENT, INFO, EXPORT, FOLD
+}
+
+enum class HomeBodyBtnHighlight {
+    NONE, DRIVE, COURSE_ADD, GUIDE, CREATER_REQUEST
+}
+
+enum class HomeBodyBtn {
+    DRIVE, COURSE_ADD, GUIDE, CREATER_REQUEST
 }
 
 enum class DriveBottomSheetContent(val minHeight: Int) {
@@ -201,6 +223,22 @@ fun RouteAttrItem?.toIcRes(): Int {
     }
 }
 
+fun DriveTutorialStep.toStrRes(): Int? {
+    return when (this) {
+        DriveTutorialStep.DRIVE_LIST_ITEM_CLICK -> R.string.welcome_start
+        DriveTutorialStep.MOVE_TO_LEAF -> R.string.move_to_spot
+        DriveTutorialStep.LEAF_CLICK -> R.string.spot_click
+        DriveTutorialStep.COMMENT_FLOAT_CLICK -> R.string.comment_guide
+        DriveTutorialStep.EXPORT_FLOAT_CLICK -> R.string.export_guide
+        DriveTutorialStep.FOLD_FLOAT_CLICK -> R.string.map_export_click
+        DriveTutorialStep.SEARCHBAR_CLICK -> R.string.use_search
+        DriveTutorialStep.SEARCHBAR_EDIT -> R.string.display_course_and_place
+        DriveTutorialStep.ADDRESS_CLICK -> R.string.blue_course_white_normal
+        DriveTutorialStep.DRIVE_GUIDE_DONE -> R.string.safe_drive_with_app
+        else -> null
+    }
+}
+
 fun defaultCommentEmogiGroup(): List<String> {
     return listOf("😊", "😍", "🔥", "👏", "👍", "😂", "🙌", "😮", "🤔", "🤭", "🥹", "😭", "😢", "😡", "😞")
 }
@@ -230,6 +268,10 @@ annotation class IoDispatcher
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class MainDispatcher
+
+interface ViewModelEventHandler {
+    suspend fun handle(msg: ViewModelEvent)
+}
 
 interface ViewModelErrorHandler {
     suspend fun handle(error: Throwable): Throwable
@@ -290,5 +332,30 @@ class CourseAddErrorHandler() : ViewModelErrorHandler {
             }
         }
         return error
+    }
+}
+
+class HomeViewModelEventHandler() : ViewModelEventHandler {
+    override suspend fun handle(msg: ViewModelEvent) {
+        when (msg) {
+            ViewModelEvent.DRIVE_NAVIGATE -> EventBus.send(
+                AppEvent.Navigation(
+                    AppScreen.Home,
+                    AppScreen.Drive,
+                    false
+                )
+            )
+
+            ViewModelEvent.COURSE_ADD_NAVIGATE -> EventBus.send(
+                AppEvent.Navigation(
+                    AppScreen.Home,
+                    AppScreen.CourseAdd,
+                    false
+                )
+            )
+
+            ViewModelEvent.GUIDE_START -> EventBus.send(AppEvent.SnackBar(EventMsg(R.string.tutorial_start)))
+            ViewModelEvent.GUIDE_STOP -> EventBus.send(AppEvent.SnackBar(EventMsg(R.string.tutorial_stop)))
+        }
     }
 }

@@ -23,6 +23,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,14 +45,20 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.wheretogo.presentation.AppScreen
 import com.wheretogo.presentation.BANNER_URL
+import com.wheretogo.presentation.HomeBodyBtn
+import com.wheretogo.presentation.HomeBodyBtnHighlight
 import com.wheretogo.presentation.R
-import com.wheretogo.presentation.SettingInfoType
+import com.wheretogo.presentation.composable.animation.highlightRoundedCorner
+import com.wheretogo.presentation.composable.effect.LifecycleDisposer
+import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.feature.openWeb
+import com.wheretogo.presentation.intent.HomeIntent
 import com.wheretogo.presentation.theme.Black100
 import com.wheretogo.presentation.theme.Blue200
 import com.wheretogo.presentation.theme.Gray100
 import com.wheretogo.presentation.theme.Gray200
 import com.wheretogo.presentation.theme.Gray300
+import com.wheretogo.presentation.theme.Gray5060
 import com.wheretogo.presentation.theme.White100
 import com.wheretogo.presentation.theme.hancomMalangFontFamily
 import com.wheretogo.presentation.theme.hancomSansFontFamily
@@ -63,8 +70,14 @@ fun HomeScreen(
     navController: NavController,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
+    val state by viewModel.uiState.collectAsState()
     val scrollState = rememberScrollState()
     val outPadding = 12.dp
+
+    LifecycleDisposer(
+        onEventChange = { viewModel.handleIntent(HomeIntent.LifeCycleChange(it)) }
+    )
+
     Column(
         modifier = Modifier
             .systemBarsPadding()
@@ -78,8 +91,8 @@ fun HomeScreen(
         TopBar(onSettingClick = {
             navController.navigate(AppScreen.Setting.toString())
         })
-        Body { screen ->
-            navController.navigate(screen)
+        Body(homeBodyBtnHighlight = state.bodyBtnHighlight) {
+            viewModel.handleIntent(HomeIntent.BodyButtonClick(it))
         }
         Spacer(modifier = Modifier.weight(1f))
         BottomBar()
@@ -117,94 +130,107 @@ fun TopBar(onSettingClick: () -> Unit) {
 }
 
 @Composable
-fun Body(navigate: (String) -> Unit) {
+fun Body(homeBodyBtnHighlight: HomeBodyBtnHighlight, onClick: (HomeBodyBtn) -> Unit) {
     val context = LocalContext.current
     val gridGap = 12.dp
+    val isActive = homeBodyBtnHighlight == HomeBodyBtnHighlight.NONE
     Column(verticalArrangement = Arrangement.spacedBy(gridGap)) {
         GridButton(
-            3,
-            2,
-            content = {
-                ContentTextImage(
-                    stringResource(R.string.drive_main),
-                    stringResource(R.string.drive_sub),
-                    130.dp,
-                    R.raw.lt_togeter
-                )
-            },
-            click = { navigate(AppScreen.Drive.toString()) }
-        )
+            3, 2,
+            isHighlight = homeBodyBtnHighlight == HomeBodyBtnHighlight.DRIVE,
+            isActive = isActive,
+            click = { onClick(HomeBodyBtn.DRIVE) }
+        ) {
+            ContentTextImage(
+                stringResource(R.string.drive_main),
+                stringResource(R.string.drive_sub),
+                130.dp,
+                R.raw.lt_togeter
+            )
+        }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(gridGap)) {
-            GridButton(
-                3, 2,
-                content = {
-                    ContentTextImage(
-                        stringResource(R.string.course_add_main),
-                        stringResource(R.string.course_add_sub),
-                        0.dp,
-                        null
-                    )
-                },
-                click = {
-                    navigate(AppScreen.CourseAdd.toString())
-                })
-            /*   GridButton(
-                   3, 1,
-                   maxWidth = rowWidth,
-                   content = {
-                       ContentTextImage(
-                           stringResource(R.string.bookmark_main),
-                           stringResource(R.string.bookmark_sub),
-                           75.dp,
-                           R.raw.lt_bike
-                       )
-                   },
-                   click = { navigate("bookmark") })*/
+        GridButton(
+            3, 2,
+            isHighlight = homeBodyBtnHighlight == HomeBodyBtnHighlight.COURSE_ADD,
+            isActive = isActive,
+            click = { onClick(HomeBodyBtn.COURSE_ADD) }
+        ) {
+            ContentTextImage(
+                stringResource(R.string.course_add_main),
+                stringResource(R.string.course_add_sub),
+                0.dp,
+                null
+            )
         }
 
         GridButton(
             2, 2,
-            content = {
-                ContentTextImage(
-                    stringResource(R.string.visit_first_main),
-                    stringResource(R.string.visit_first_sub), 0.dp, null
-                )
-            },
+            isHighlight = homeBodyBtnHighlight == HomeBodyBtnHighlight.GUIDE,
+            isActive = isActive,
             click = {
-                openWeb(context, SettingInfoType.GUIDE.url)
-            })
+                onClick(HomeBodyBtn.GUIDE)
+            }
+        ) {
+            ContentTextImage(
+                stringResource(R.string.visit_first_main),
+                stringResource(R.string.visit_first_sub), 0.dp, null
+            )
+        }
         GridButton(
             5, 2,
-            content = {
-                ContentBanner(
-                    stringResource(R.string.banner_main),
-                    stringResource(R.string.banner_sub)
-                )
-            },
+            isHighlight = homeBodyBtnHighlight == HomeBodyBtnHighlight.CREATER_REQUEST,
+            isActive = isActive,
             click = {
+                onClick(HomeBodyBtn.CREATER_REQUEST)
                 openWeb(context, BANNER_URL)
-            })
+            }
+        ) {
+            ContentBanner(
+                stringResource(R.string.banner_main),
+                stringResource(R.string.banner_sub)
+            )
+        }
     }
 }
+
+
+data class BodyContent(
+    val type: HomeBodyBtn,
+    val row:Int,
+    val col:Int,
+    val title:Int,
+    val subTitle:Int,
+    val rawIcon:Int?=null,
+
+    )
 
 @Composable
 fun GridButton(
     row: Int,
     col: Int,
+    isHighlight: Boolean = false,
+    isActive: Boolean = true,
+    click: () -> Unit,
     content: @Composable () -> Unit,
-    click: () -> Unit
 ) {
-
+    val isConsume = !isActive && !isHighlight
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .height(row * 40.dp)
             .clip(shape = RoundedCornerShape(10.dp))
-            .clickable { click.invoke() },
+            .highlightRoundedCorner(isHighlight, 6.dp, 10.dp)
+            .clickable { click.invoke() }
+            .consumptionEvent(isConsume),
         color = Color.White,
     ) {
         content()
+        if(isConsume)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Gray5060)
+            )
     }
 }
 
@@ -223,7 +249,12 @@ fun ContentTextImage(title: String, subTitle: String, size: Dp, rawRes: Int?) {
         }
         if (rawRes != null) {
             val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(rawRes))
-            val progress by animateLottieCompositionAsState(composition)
+            val progress by animateLottieCompositionAsState(
+                composition = composition,
+                iterations = 2,
+                isPlaying = true,
+                speed = 1.0f
+            )
             LottieAnimation(
                 modifier = Modifier
                     .size(size)
@@ -298,7 +329,7 @@ fun BottomBar() {
 @Composable
 fun BodyPreview() {
     Surface(modifier = Modifier.width(400.dp)) {
-        Body {}
+        Body(HomeBodyBtnHighlight.NONE) {}
     }
 }
 
@@ -309,7 +340,9 @@ fun GridButtonPreview() {
         GridButton(
             2,
             2,
-            { ContentTextImage("메인", "서브", 0.dp, R.raw.lt_togeter) },
+            false,
+            isActive = true,
+            content = { ContentTextImage("메인", "서브", 0.dp, R.raw.lt_togeter) },
             click = {})
     }
 }

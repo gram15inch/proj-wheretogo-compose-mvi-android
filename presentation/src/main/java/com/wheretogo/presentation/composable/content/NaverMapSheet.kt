@@ -11,6 +11,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -31,6 +32,7 @@ import com.wheretogo.presentation.BuildConfig
 import com.wheretogo.presentation.CameraUpdateSource
 import com.wheretogo.presentation.MoveAnimation
 import com.wheretogo.presentation.feature.geo.FollowLocationSource
+import com.wheretogo.presentation.feature.naver.setCurrentLocation
 import com.wheretogo.presentation.model.AppMarker
 import com.wheretogo.presentation.model.ContentPadding
 import com.wheretogo.presentation.model.MapOverlay
@@ -40,6 +42,7 @@ import com.wheretogo.presentation.theme.Green50
 import com.wheretogo.presentation.toCameraState
 import com.wheretogo.presentation.toDomainLatLng
 import com.wheretogo.presentation.toNaver
+import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
 @Composable
@@ -60,6 +63,7 @@ fun NaverMapSheet(
     val lifecycleOwner = LocalLifecycleOwner.current
     var mapView: MapView? by remember { mutableStateOf(null) }
     var isMoving by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     // 지도 기본 주소
     val initLatlng = LatLng(latitude = 37.566914081334204, longitude = 126.97838809999871)
@@ -69,7 +73,7 @@ fun NaverMapSheet(
         mapView = MapView(context).apply {
             getMapAsync { naverMap ->
                 naverMap.apply {
-                    onMapAsync(this)
+                    onMapAsync(naverMap)
                     naverMap.setUiSetting()
                     naverMap.locationSetting(context)
                     addOnCameraIdleListener {
@@ -88,6 +92,13 @@ fun NaverMapSheet(
 
     }
 
+    LaunchedEffect(state.isMyLocation) {
+        if(state.isMyLocation){
+            mapView?.getMapAsync {
+                coroutineScope.launch { it.setCurrentLocation(context) }
+            }
+        }
+    }
 
     if (isPreview)
         Box(

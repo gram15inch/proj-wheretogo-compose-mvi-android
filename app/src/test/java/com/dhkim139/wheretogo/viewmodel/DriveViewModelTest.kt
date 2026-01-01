@@ -7,10 +7,14 @@ import com.wheretogo.domain.DomainError
 import com.wheretogo.domain.LIST_ITEM_ZOOM
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.address.SimpleAddress
+import com.wheretogo.domain.model.app.Settings
 import com.wheretogo.domain.model.checkpoint.CheckPoint
 import com.wheretogo.domain.model.checkpoint.CheckPointContent
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.course.Course
+import com.wheretogo.domain.usecase.app.AppCheckBySignatureUseCase
+import com.wheretogo.domain.usecase.app.GuideMoveStepUseCase
+import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
 import com.wheretogo.domain.usecase.checkpoint.AddCheckpointToCourseUseCase
 import com.wheretogo.domain.usecase.checkpoint.GetCheckpointForMarkerUseCase
 import com.wheretogo.domain.usecase.checkpoint.RemoveCheckPointUseCase
@@ -62,8 +66,10 @@ import io.mockk.mockk
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
@@ -73,6 +79,11 @@ class DriveViewModelTest {
 
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
+
+    @Before
+    fun initViewModel() = runTest {
+        coEvery { observeSettingsUseCase() } returns flowOf(Result.success(Settings()))
+    }
 
     // 서치바
     @Test
@@ -1220,6 +1231,7 @@ class DriveViewModelTest {
             stateInit = state,
             dispatcher = dispatcher,
             errorHandler = MockErrorHandler(),
+            observeSettingsUseCase,
             getNearByCourseUseCase,
             getCommentForCheckPointUseCase,
             getCheckPointForMarkerUseCase,
@@ -1235,12 +1247,14 @@ class DriveViewModelTest {
             reportCommentUseCase,
             searchKeywordUseCase,
             signOutUseCase,
+            guideMoveStepUseCase,
             driveMapOverlayService,
             nativeAdService,
             locationService
         )
     }
 
+    private val observeSettingsUseCase = mockk<ObserveSettingsUseCase>()
     private val getNearByCourseUseCase = mockk<GetNearByCourseUseCase>()
     private val getCommentForCheckPointUseCase = mockk<GetCommentForCheckPointUseCase>()
     private val getCheckPointForMarkerUseCase = mockk<GetCheckpointForMarkerUseCase>()
@@ -1256,6 +1270,7 @@ class DriveViewModelTest {
     private val reportCommentUseCase = mockk<ReportCommentUseCase>()
     private val searchKeywordUseCase = mockk<SearchKeywordUseCase>()
     private val signOutUseCase = mockk<UserSignOutUseCase>()
+    private val guideMoveStepUseCase = mockk<GuideMoveStepUseCase>()
     private val driveMapOverlayService = mockk<DriveMapOverlayService>()
     private val nativeAdService = mockk<AdService>()
     private val locationService = mockk<LocationService>()

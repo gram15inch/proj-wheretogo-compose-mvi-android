@@ -1,15 +1,19 @@
 package com.wheretogo.presentation.viewmodel
 
-//import com.wheretogo.domain.model.dummy.guideCourse
 import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.LIST_ITEM_ZOOM
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.checkpoint.CheckPoint
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.course.Course
+import com.wheretogo.domain.model.dummy.guideCheckPoint
+import com.wheretogo.domain.model.dummy.guideCourse
 import com.wheretogo.domain.model.util.ImageInfo
+import com.wheretogo.domain.usecase.app.GuideMoveStepUseCase
+import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
 import com.wheretogo.domain.usecase.checkpoint.AddCheckpointToCourseUseCase
 import com.wheretogo.domain.usecase.checkpoint.GetCheckpointForMarkerUseCase
 import com.wheretogo.domain.usecase.checkpoint.RemoveCheckPointUseCase
@@ -35,6 +39,7 @@ import com.wheretogo.presentation.CameraUpdateSource
 import com.wheretogo.presentation.CommentType
 import com.wheretogo.presentation.DRIVE_LIST_MIN_ZOOM
 import com.wheretogo.presentation.DriveBottomSheetContent
+import com.wheretogo.presentation.DriveFloatHighlight
 import com.wheretogo.presentation.DriveFloatingVisibleMode
 import com.wheretogo.presentation.DriveVisibleMode
 import com.wheretogo.presentation.MainDispatcher
@@ -59,6 +64,7 @@ import com.wheretogo.presentation.state.CommentState.CommentItemState
 import com.wheretogo.presentation.state.DriveScreenState
 import com.wheretogo.presentation.state.DriveScreenState.Companion.popUpVisible
 import com.wheretogo.presentation.state.FloatingButtonState
+import com.wheretogo.presentation.state.GuideState
 import com.wheretogo.presentation.state.ListState
 import com.wheretogo.presentation.state.PopUpState
 import com.wheretogo.presentation.state.SearchBarState
@@ -85,6 +91,7 @@ class DriveViewModel @Inject constructor(
     private val stateInit: DriveScreenState,
     @MainDispatcher private val dispatcher: CoroutineDispatcher,
     private val errorHandler: ViewModelErrorHandler,
+    private val observeSettingsUseCase: ObserveSettingsUseCase,
     private val getNearByCourseUseCase: GetNearByCourseUseCase,
     private val getCommentForCheckPointUseCase: GetCommentForCheckPointUseCase,
     private val getCheckPointForMarkerUseCase: GetCheckpointForMarkerUseCase,
@@ -100,6 +107,7 @@ class DriveViewModel @Inject constructor(
     private val reportCommentUseCase: ReportCommentUseCase,
     private val searchKeywordUseCase: SearchKeywordUseCase,
     private val signOutUseCase: UserSignOutUseCase,
+    private val guideMoveStepUseCase: GuideMoveStepUseCase,
     private val mapOverlayService: DriveMapOverlayService,
     private val nativeAdService: AdService,
     private val locationService: LocationService
@@ -111,6 +119,9 @@ class DriveViewModel @Inject constructor(
     fun handleIntent(intent: DriveScreenIntent) {
         viewModelScope.launch(dispatcher) {
             when (intent) {
+                //가이드
+                is DriveScreenIntent.GuidePopupClick ->  guidePopupClick(intent.step)
+
                 //서치바
                 is DriveScreenIntent.AddressItemClick -> searchBarItemClick(intent.searchBarItem)
                 is DriveScreenIntent.SearchBarClick -> searchBarClick(intent.isSkipAd)
@@ -118,6 +129,7 @@ class DriveViewModel @Inject constructor(
                 is DriveScreenIntent.SearchSubmit -> searchSubmit(intent.submit) // ✅
 
                 //지도
+                is DriveScreenIntent.MapAsync -> mapAsync()
                 is DriveScreenIntent.CameraUpdated -> cameraUpdated(intent.cameraState) // ✅
                 is DriveScreenIntent.MarkerClick -> markerClick(intent.appMarker) // ✅
 
@@ -162,6 +174,17 @@ class DriveViewModel @Inject constructor(
         }
     }
 
+    fun observe(){
+        viewModelScope.launch {
+            observeSettingsUseCase()
+                .collect { settings ->
+                    settings.onSuccess { set ->
+                        setTutorialStepUi(set.tutorialStep)
+                    }
+                }
+        }
+    }
+
     suspend fun handleError(error: Throwable) {
         when(errorHandler.handle(error.toAppError())){
             is AppError.InvalidState->{
@@ -176,14 +199,13 @@ class DriveViewModel @Inject constructor(
     }
 
     //서치바
-    private fun searchBarItemClick(item: SearchBarItem) {
+    private suspend fun searchBarItemClick(item: SearchBarItem) {
+        mapOverlayService.removeOneTimeMarker(listOf(SEARCH_MARKER))
+
         if (item.label == CLEAR_ADDRESS || item.latlng == null) {
-            mapOverlayService.removeOneTimeMarker(listOf(SEARCH_MARKER))
             _driveScreenState.update { it.initSearchBar() }
             return
         }
-
-        mapOverlayService.removeOneTimeMarker(listOf(SEARCH_MARKER))
 
         // 카메라 이동
         _driveScreenState.update {
@@ -209,7 +231,6 @@ class DriveViewModel @Inject constructor(
                     ).initSearchBar()
                 }
             }
-            return
         } else {
             _driveScreenState.update {
                 mapOverlayService.addOneTimeMarker(
@@ -223,9 +244,15 @@ class DriveViewModel @Inject constructor(
                 it.copy(overlayGroup = mapOverlayService.getOverlays().toList())
             }
         }
+        // 가이드
+        val step = _driveScreenState.value.guideState.tutorialStep
+        if (step == DriveTutorialStep.ADDRESS_CLICK) {
+            guideMoveStepUseCase(true)
+        }
+
     }
 
-    private fun searchBarClick(isSkipAd: Boolean) {
+    private suspend fun searchBarClick(isSkipAd: Boolean) {
         if(_driveScreenState.value.stateMode == DriveVisibleMode.SearchBarExpand) {
             searchBarClose()
             return
@@ -250,7 +277,11 @@ class DriveViewModel @Inject constructor(
             loadAd()
         }
 
-
+        // 가이드
+        val step= _driveScreenState.value.guideState.tutorialStep
+        if (step == DriveTutorialStep.SEARCHBAR_CLICK) {
+            guideMoveStepUseCase(true)
+        }
     }
 
     private fun searchBarClose() {
@@ -281,6 +312,11 @@ class DriveViewModel @Inject constructor(
                     )
                 )
             }
+            // 가이드
+            val step= _driveScreenState.value.guideState.tutorialStep
+            if (step == DriveTutorialStep.SEARCHBAR_EDIT) {
+                guideMoveStepUseCase(true)
+            }
         }.onFailure {
             handleError(it)
         }
@@ -289,14 +325,20 @@ class DriveViewModel @Inject constructor(
 
 
     //지도
+    private fun mapAsync(){
+        viewModelScope.launch(dispatcher) {
+            observe()
+        }
+    }
+
     private suspend fun cameraUpdated(cameraState: CameraState) {
         val isCameraUpdate =
             _driveScreenState.value.run {
-                val oldCamera = naverMapState.cameraState
-                stateMode == DriveVisibleMode.Explorer &&
-                        (locationService.distance(oldCamera.latLng, cameraState.latLng) >= 1 ||
-                                oldCamera.zoom - cameraState.zoom >= 1 ||
-                                oldCamera.updateSource != cameraState.updateSource)
+                                    val oldCamera = naverMapState.cameraState
+                                    stateMode == DriveVisibleMode.Explorer &&
+                                            (locationService.distance(oldCamera.latLng, cameraState.latLng) >= 1 ||
+                                                    oldCamera.zoom - cameraState.zoom >= 1 ||
+                                                    oldCamera.updateSource != cameraState.updateSource)
 
             }
 
@@ -317,12 +359,19 @@ class DriveViewModel @Inject constructor(
             }
 
         val course = _driveScreenState.value.selectedCourse
+        val step= _driveScreenState.value.guideState.tutorialStep
         if(course.checkpointIdGroup.isNotEmpty()){
             if (_driveScreenState.value.stateMode == DriveVisibleMode.CourseDetail) {
                 mapOverlayService.scaleToPointLeafInCluster(
                     course.courseId,
                     cameraState.latLng,
-                )
+                ).onSuccess {
+                    if (guideCheckPoint.checkPointId == it &&
+                        step == DriveTutorialStep.MOVE_TO_LEAF
+                    ) {
+                        guideMoveStepUseCase(true)
+                    }
+                }
             }
         }
 
@@ -331,9 +380,18 @@ class DriveViewModel @Inject constructor(
             isMapUpdate = false
             _driveScreenState.update { it.replaceScreenLoading(true) }
             _driveScreenState.update { it.refreshNearCourse(cameraState) }
-            isMapUpdate = true
             _driveScreenState.update { it.replaceScreenLoading(false) }
+            isMapUpdate = true
         }
+
+        _driveScreenState.value.apply {
+            if(guideState.tutorialStep == DriveTutorialStep.MOVE_TO_COURSE) {
+               listState.listItemGroup
+                    .firstOrNull { it.course.courseId == guideCourse.courseId }
+                    ?.let { guideMoveStepUseCase(true) }
+            }
+        }
+
 
         if (_driveScreenState.value.stateMode == DriveVisibleMode.CourseDetail &&
             cameraState.zoom <= COURSE_DETAIL_MIN_ZOOM
@@ -395,6 +453,10 @@ class DriveViewModel @Inject constructor(
                         ),
                     )
                 }
+            }
+            val step = _driveScreenState.value.guideState.tutorialStep
+            if (step == DriveTutorialStep.LEAF_CLICK) {
+                guideMoveStepUseCase(true)
             }
 
             val checkpoint = withContext(Dispatchers.IO) {
@@ -470,7 +532,10 @@ class DriveViewModel @Inject constructor(
     //목록
     private suspend fun driveListItemClick(listItemState: ListState.ListItemState) {
         val course = listItemState.course
-
+        val step = _driveScreenState.value.guideState.tutorialStep
+        if (step == DriveTutorialStep.DRIVE_LIST_ITEM_CLICK) {
+            guideMoveStepUseCase(true)
+        }
         // 코스 포커스 & 카메라 이동
         _driveScreenState.update {
             mapOverlayService.focusAndHideOthers(course)
@@ -776,6 +841,12 @@ class DriveViewModel @Inject constructor(
             }
             return
         }
+        // 가이드
+        val step = _driveScreenState.value.guideState.tutorialStep
+        if (step == DriveTutorialStep.COMMENT_FLOAT_CLICK) {
+            guideMoveStepUseCase(true)
+        }
+
         // 코멘트 관련 Ui 표시 및 로딩 시작
         _driveScreenState.update {
             it.run {
@@ -858,7 +929,7 @@ class DriveViewModel @Inject constructor(
         }
     }
 
-    private fun exportMapFloatingButtonClick() {
+    private suspend fun exportMapFloatingButtonClick() {
         val floatingMode = _driveScreenState.value.floatingButtonState.stateMode
         if (floatingMode == DriveFloatingVisibleMode.ExportExpand) {
             _driveScreenState.update {
@@ -881,9 +952,16 @@ class DriveViewModel @Inject constructor(
                     )
                 }
             }
+
             viewModelScope.launch(Dispatchers.IO) {
                 delay(50)
                 loadAd()
+            }
+
+            // 가이드
+            val step = _driveScreenState.value.guideState.tutorialStep
+            if (step == DriveTutorialStep.EXPORT_FLOAT_CLICK) {
+                guideMoveStepUseCase(true)
             }
         }
     }
@@ -894,7 +972,7 @@ class DriveViewModel @Inject constructor(
         }
     }
 
-    private fun foldFloatingButtonClick() {
+    private suspend fun foldFloatingButtonClick() {
         val course = _driveScreenState.value.selectedCourse
         _driveScreenState.update {
             mapOverlayService.removeCheckPointCluster(course.courseId)
@@ -903,10 +981,16 @@ class DriveViewModel @Inject constructor(
                 overlayGroup = mapOverlayService.getOverlays().toList()
             ).backToExplorer()
         }
+
+        // 가이드
+        val step= _driveScreenState.value.guideState.tutorialStep
+        if (step == DriveTutorialStep.FOLD_FLOAT_CLICK) {
+            guideMoveStepUseCase(true)
+        }
     }
 
     @SuppressLint("SuspiciousIndentation")
-    private fun bottomSheetChange(state: SheetVisibleMode) {
+    private suspend fun bottomSheetChange(state: SheetVisibleMode) {
         val content = _driveScreenState.value.bottomSheetState.content
         val course = _driveScreenState.value.selectedCourse
         when (state) {
@@ -966,6 +1050,14 @@ class DriveViewModel @Inject constructor(
 
                         else -> {}
                     }
+
+                if (_driveScreenState.value.popUpState.commentState.isVisible)
+                    dismissCommentPopUp()
+
+                val step = _driveScreenState.value.guideState.tutorialStep
+                if (step == DriveTutorialStep.COMMENT_SHEET_DRAG) {
+                    guideMoveStepUseCase(true)
+                }
             }
 
             SheetVisibleMode.PartiallyExpanded -> {
@@ -1166,7 +1258,16 @@ class DriveViewModel @Inject constructor(
         }
 
         val listItemGroup = if (cameraState.zoom >= DRIVE_LIST_MIN_ZOOM) {
-            newCourseGroup.filterNearByListGroup(center = cameraState.latLng, meter = 3000)
+            newCourseGroup.filterNearByListGroup(center = cameraState.latLng, meter = 3000).run {
+                if (guideState.tutorialStep == DriveTutorialStep.DRIVE_LIST_ITEM_CLICK)
+                    map { item ->
+                        if (item.course.courseId == guideCourse.courseId)
+                            item.copy(isHighlight = true)
+                        else
+                            item.copy(isHighlight = false)
+                    } else this
+            }
+
         } else emptyList()
 
         return run {
@@ -1187,6 +1288,188 @@ class DriveViewModel @Inject constructor(
             require(this.description.isNotEmpty()) { AppError.DescriptionEmpty() }
         }
     }
+
+    //가이드
+    private suspend fun guidePopupClick(step: DriveTutorialStep) {
+        when (step) {
+            DriveTutorialStep.DRIVE_GUIDE_DONE -> {
+                guideMoveStepUseCase(true)
+            }
+
+            else -> {
+
+            }
+        }
+    }
+
+    private fun setTutorialStepUi(step: DriveTutorialStep) {
+        _driveScreenState.update { old ->
+            old.copy(
+                guideState = old.guideState.copy(
+                    tutorialStep = step
+                )
+            ).run {
+                when (step) {
+                    DriveTutorialStep.MOVE_TO_COURSE -> {
+                        val camera = CameraState(
+                            latLng = guideCourse.cameraLatLng,
+                            zoom = LIST_ITEM_ZOOM,
+                            updateSource = CameraUpdateSource.GUIDE
+                        )
+                        copy(
+                            naverMapState = naverMapState.copy(
+                                cameraState = camera
+                            )
+                        )
+                    }
+
+                    DriveTutorialStep.DRIVE_LIST_ITEM_CLICK -> {
+                        setHighlightItemWithGuide(true)
+                    }
+
+                    DriveTutorialStep.MOVE_TO_LEAF -> {
+                        setHighlightItemWithGuide(false)
+                    }
+
+                    DriveTutorialStep.COMMENT_FLOAT_CLICK -> {
+                        copy(
+                            floatingButtonState = floatingButtonState.copy(
+                                highlight = DriveFloatHighlight.COMMENT
+                            )
+                        )
+                    }
+
+                    DriveTutorialStep.COMMENT_SHEET_DRAG -> {
+                        copy(
+                            floatingButtonState = floatingButtonState.copy(
+                                highlight = DriveFloatHighlight.NONE
+                            ),
+                            popUpState = popUpState.copy(
+                                commentState = popUpState.commentState.copy(
+                                    isDragGuide = true
+                                )
+                            )
+                        )
+                    }
+
+                    DriveTutorialStep.EXPORT_FLOAT_CLICK -> {
+                        copy(
+                            popUpState = popUpState.copy(
+                                commentState = popUpState.commentState.copy(
+                                    isDragGuide = false
+                                )
+                            ),
+                            floatingButtonState = floatingButtonState.copy(
+                                highlight = DriveFloatHighlight.EXPORT
+                            ),
+                        )
+                    }
+
+                    DriveTutorialStep.FOLD_FLOAT_CLICK -> {
+                        copy(
+                            guideState = guideState.copy(
+                                alignment = GuideState.Companion.Align.BOTTOM_START
+                            ),
+                            floatingButtonState = floatingButtonState.copy(
+                                highlight = DriveFloatHighlight.FOLD
+                            )
+                        )
+                    }
+
+                    DriveTutorialStep.SEARCHBAR_CLICK -> {
+                        copy(
+                            guideState = guideState.copy(
+                                alignment = GuideState.Companion.Align.TOP_START
+                            ),
+                            searchBarState = searchBarState.copy(
+                                isHighlight = true,
+                                isTextGuide = true
+                            ),
+                            floatingButtonState = floatingButtonState.copy(
+                                highlight = DriveFloatHighlight.NONE
+                            ),
+                        )
+                    }
+
+                    DriveTutorialStep.SEARCHBAR_EDIT -> {
+                        copy(
+                            searchBarState = searchBarState.copy(
+                                isHighlight = false,
+                                isEditBlock = true
+                            )
+                        )
+                    }
+
+                    DriveTutorialStep.ADDRESS_CLICK -> {
+                        val highlightItemGroup = searchBarState.searchBarItemGroup.run {
+                            mapIndexed { i, item ->
+                                if (i == 0)
+                                    item.copy(isHighlight = true)
+                                else
+                                    item
+                            }
+                        }
+                        copy(
+                            searchBarState = searchBarState.copy(
+                                isTextGuide = false,
+                                isEditBlock = false,
+                                searchBarItemGroup = highlightItemGroup
+                            )
+                        )
+                    }
+
+                    DriveTutorialStep.DRIVE_GUIDE_DONE -> {
+                        copy(
+                            guideState = guideState.copy(
+                                isHighlight = true
+                            ),
+                            searchBarState = searchBarState.copy(
+                                isTextGuide = false
+                            ),
+                            isCongrats = true
+                        )
+                    }
+
+                    DriveTutorialStep.SKIP -> {
+                        copy(
+                            guideState = guideState.copy(
+                                isHighlight = false,
+                            ),
+                            naverMapState = naverMapState.copy(
+                                isMyLocation = true
+                            ),
+                            isCongrats = false
+                        )
+                    }
+
+                    else -> {
+                        this
+                    }
+                }
+            }
+        }
+    }
+
+    private fun DriveScreenState.setHighlightItemWithGuide(isHighlight: Boolean): DriveScreenState{
+        val highlightItemGroup = if (isHighlight) {
+            listState.listItemGroup.map { item ->
+                if (item.course.courseId == guideCourse.courseId)
+                    item.copy(isHighlight = true)
+                else
+                    item.copy(isHighlight = false)
+            }
+        } else {
+            listState.listItemGroup.map { item ->
+                item.copy(isHighlight = false)
+            }
+        }
+        return copy(
+            listState = listState.copy(
+                listItemGroup = highlightItemGroup
+            )
+        )
+    }
+
 
     //공통
     private fun lifecycleChange(event: AppLifecycle) {

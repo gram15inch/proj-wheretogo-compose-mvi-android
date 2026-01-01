@@ -47,15 +47,15 @@ fun ImeStickyBox(
     val navBarBottom = WindowInsets.navigationBars.getBottom(density)
     val imeInsets = WindowInsets.ime
     val imeHeight = max(0f, (imeInsets.getBottom(density) - navBarBottom) / density.density).dp
-    Box(modifier = modifier
+    Box(
+        modifier = modifier
             .wrapContentHeight()
             .offset(y = -imeHeight)
             .onGloballyPositioned { layoutCoordinates ->
                 onBoxHeightChange(with(density) {
                     layoutCoordinates.size.height.dp
                 })
-            }
-    ) {
+            }) {
         content(imeHeight)
     }
 }
@@ -77,10 +77,10 @@ fun BlurEffect(modifier: Modifier = Modifier, onClick: () -> Unit) {
 }
 
 @Composable
-fun Modifier.consumptionEvent(): Modifier {
-    return this.pointerInput(Unit) {
+fun Modifier.consumptionEvent(isConsume: Boolean = false): Modifier {
+    return if (isConsume) this.pointerInput(Unit) {
         awaitEachGesture { awaitFirstDown().consume() }
-    }
+    } else this
 }
 
 @Composable

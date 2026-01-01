@@ -45,14 +45,17 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wheretogo.presentation.AdMinSize
 import com.wheretogo.presentation.CLEAR_ADDRESS
 import com.wheretogo.presentation.R
+import com.wheretogo.presentation.composable.animation.highlightRoundedCorner
 import com.wheretogo.presentation.feature.intervalTab
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.SearchBarState
@@ -79,17 +82,20 @@ fun SearchBar(
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
     var isFocused by remember { mutableStateOf(false) }
-    var editText by remember { mutableStateOf("") }
+    var editText by remember { mutableStateOf(TextFieldValue("")) }
     var alpha by remember { mutableFloatStateOf(0.75f) }
     var isAdSkip by remember { mutableStateOf(false) }
     val adSize = adSize(true)
     val outDp = 12.dp
+    val guideText = stringResource(R.string.searchbar_guide_text)
     LaunchedEffect(state.isActive) {
         if (state.isActive) {
             alpha = 1f
+            if(state.isTextGuide)
+                editText = editText.copy(text = guideText, selection = TextRange(guideText.length))
         } else {
             alpha = 0.75f
-            editText = ""
+            editText = editText.copy(text = "")
         }
     }
     LaunchedEffect(adSize) {
@@ -97,6 +103,13 @@ fun SearchBar(
             isAdSkip = true
         else
             isAdSkip = false
+    }
+    LaunchedEffect(state.isTextGuide) {
+        if(state.isTextGuide) {
+            isAdSkip = true
+        } else {
+            isAdSkip = adSize == AdMinSize.INVISIBLE
+        }
     }
 
     fun clearFocus() {
@@ -117,6 +130,11 @@ fun SearchBar(
                 .shadow(elevation = 1.5.dp, shape = RoundedCornerShape(16.dp), clip = false)
                 .height(40.dp)
                 .background(Color.White)
+                .highlightRoundedCorner(
+                    isVisible = state.isHighlight,
+                    width = 6.dp,
+                    size = 16.dp
+                )
 
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -125,7 +143,18 @@ fun SearchBar(
                     textValue = editText,
                     readOnly = !state.isActive,
                     focusRequester = focusRequester,
-                    onTextValueChange = { editText = it },
+                    onTextValueChange = {
+                        if(state.isEditBlock)
+                            return@BarTextField
+
+                        val isComposing = it.composition != null
+                        editText =
+                            if (isComposing) {
+                                it
+                            } else {
+                                it.copy(selection = TextRange(it.text.length))
+                            }
+                    },
                     onSearchSubmit = {
                         clearFocus()
                         onSearchSubmit(it)
@@ -133,29 +162,29 @@ fun SearchBar(
                     onFocusChanged = {
                         isFocused = it.isFocused
                         when {
-                            it.isFocused && editText.isBlank() -> {
+                            it.isFocused && editText.text.isBlank() && !state.isEditBlock -> {
                                 onSearchBarClick(isAdSkip)
                             }
 
-                            !it.isFocused && editText.isBlank() -> {
+                            !it.isFocused && editText.text.isBlank() -> {
                                 onSearchBarClose()
                             }
                         }
                     }
                 )
-                BarIcon(state.isLoading)
+                BarIcon(isLoading = state.isLoading)
             }
             Box(
                 Modifier
                     .fillMaxSize()
                     .intervalTab {
                         when {
-                            isFocused && editText.isBlank() -> {
+                            isFocused && editText.text.isBlank() -> {
                                 focusManager.clearFocus()
                             }
 
-                            isFocused && editText.isNotBlank() -> {
-                                editText = ""
+                            isFocused && editText.text.isNotBlank() -> {
+                                editText = editText.copy("")
                                 focusRequester.requestFocus()
                             }
 
@@ -179,12 +208,15 @@ fun SearchBar(
             val isAd = if (isPreview) {
                 state.isAdVisible
             } else {
-                state.isAdVisible && state.isActive && state.searchBarItemGroup.isEmpty() && !state.isEmptyVisible
+                state.isAdVisible &&
+                state.isActive &&
+                state.searchBarItemGroup.isEmpty() &&
+                !state.isEmptyVisible &&
+                !isAdSkip
             }
-
             if (!isAd)
                 BarDropList(
-                    modifier = modifier.padding(horizontal = outDp),
+                    modifier = Modifier.padding(horizontal = outDp),
                     isEmptyVisible = state.isEmptyVisible,
                     searchBarItemGroup = state.searchBarItemGroup,
                     onSearchBarItemClick = {
@@ -238,10 +270,10 @@ fun KeyboardTrack(onKeyboardClose: () -> Unit) {
 @Composable
 fun BarTextField(
     modifier: Modifier,
-    textValue: String,
+    textValue: TextFieldValue,
     readOnly: Boolean,
     focusRequester: FocusRequester,
-    onTextValueChange: (String) -> Unit,
+    onTextValueChange: (TextFieldValue) -> Unit,
     onSearchSubmit: (String) -> Unit = {},
     onFocusChanged: (FocusState) -> Unit = {}
 ) {
@@ -269,7 +301,7 @@ fun BarTextField(
             ),
             keyboardActions = KeyboardActions(
                 onDone = {
-                    onSearchSubmit(textValue)
+                    onSearchSubmit(textValue.text)
                 }
             ),
             readOnly = readOnly,
@@ -359,6 +391,7 @@ fun BarListItem(searchBarItem: SearchBarItem, onSearchBarItemClick: (SearchBarIt
             )
             .clip(RoundedCornerShape(16.dp))
             .background(backgroundColor)
+            .highlightRoundedCorner(searchBarItem.isHighlight, 4.dp, 16.dp)
     ) {
         Text(
             modifier = Modifier.padding(8.dp), text = searchBarItem.label, style = textStyle
@@ -400,6 +433,8 @@ fun SearchBarPreview() {
                 SearchBarItem(
                     "기흥호수공원 순환",
                     "",
+                    isCourse = true,
+                    isHighlight = false
                 ),
                 SearchBarItem(
                     "기흥역 ak플라자",
@@ -414,9 +449,10 @@ fun SearchBarPreview() {
         state = SearchBarState(
             isActive = true,
             isLoading = isLoading,
+            isHighlight = false,
             isEmptyVisible = false,
-            isAdVisible = true,
-            searchBarItemGroup = emptyList()
+            isAdVisible = false, // 광고랑 리스트 중 하나만 표시
+            searchBarItemGroup = simpleAddressGroups
         ),
         onSearchBarItemClick = {
             CoroutineScope(Dispatchers.Main).launch {

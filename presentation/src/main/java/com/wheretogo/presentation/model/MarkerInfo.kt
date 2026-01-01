@@ -11,5 +11,6 @@ data class MarkerInfo(
     val type: MarkerType = MarkerType.SPOT,
     @DrawableRes val iconRes: Int? = null,
     val iconPath: String? = null,
-    val isVisible: Boolean = true
+    val isVisible: Boolean = true,
+    val isHighlight : Boolean = false
 )
