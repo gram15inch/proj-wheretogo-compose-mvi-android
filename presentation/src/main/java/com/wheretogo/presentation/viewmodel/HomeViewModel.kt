@@ -3,14 +3,14 @@ package com.wheretogo.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wheretogo.domain.DriveTutorialStep
+import com.wheretogo.domain.handler.HomeEvent
+import com.wheretogo.domain.handler.HomeHandler
 import com.wheretogo.domain.usecase.app.GuideMoveStepUseCase
 import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
 import com.wheretogo.presentation.AppLifecycle
 import com.wheretogo.presentation.HomeBodyBtn
 import com.wheretogo.presentation.HomeBodyBtnHighlight
 import com.wheretogo.presentation.MainDispatcher
-import com.wheretogo.presentation.ViewModelEvent
-import com.wheretogo.presentation.ViewModelEventHandler
 import com.wheretogo.presentation.intent.HomeIntent
 import com.wheretogo.presentation.state.HomeScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,10 +25,10 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     stateInit: HomeScreenState,
+    private val handler: HomeHandler,
     @MainDispatcher private val dispatcher: CoroutineDispatcher,
     private val observeSettingsUseCase: ObserveSettingsUseCase,
-    private val guideMoveStepUseCase: GuideMoveStepUseCase,
-    private val eventHandler: ViewModelEventHandler
+    private val guideMoveStepUseCase: GuideMoveStepUseCase
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(stateInit)
     val uiState: StateFlow<HomeScreenState> = _uiState.asStateFlow()
@@ -50,16 +50,16 @@ class HomeViewModel @Inject constructor(
         when (btn) {
             HomeBodyBtn.DRIVE -> {
                 guideMoveStepUseCase(true)
-                eventHandler.handle(ViewModelEvent.DRIVE_NAVIGATE)
+                handler.handle(HomeEvent.DRIVE_NAVIGATE)
             }
 
             HomeBodyBtn.COURSE_ADD -> {
-                eventHandler.handle(ViewModelEvent.COURSE_ADD_NAVIGATE)
+                handler.handle(HomeEvent.COURSE_ADD_NAVIGATE)
             }
 
             HomeBodyBtn.GUIDE -> {
                 if (_uiState.value.guideState.tutorialStep == DriveTutorialStep.SKIP) {
-                    eventHandler.handle(ViewModelEvent.GUIDE_START)
+                    handler.handle(HomeEvent.GUIDE_START)
                     guideMoveStepUseCase.start()
                 }
             }
@@ -79,7 +79,7 @@ class HomeViewModel @Inject constructor(
                     }
 
                     else -> {
-                        eventHandler.handle(ViewModelEvent.GUIDE_STOP)
+                        handler.handle(HomeEvent.GUIDE_STOP)
                         guideMoveStepUseCase.skip()
                     }
                 }

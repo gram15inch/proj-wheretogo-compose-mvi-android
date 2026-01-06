@@ -3,6 +3,7 @@ package com.wheretogo.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wheretogo.domain.DomainError
+import com.wheretogo.domain.handler.ErrorHandler
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.usecase.user.DeleteUserUseCase
 import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
@@ -12,7 +13,6 @@ import com.wheretogo.presentation.AppEvent
 import com.wheretogo.presentation.AppLifecycle
 import com.wheretogo.presentation.MainDispatcher
 import com.wheretogo.presentation.SettingInfoType
-import com.wheretogo.presentation.ViewModelErrorHandler
 import com.wheretogo.presentation.feature.ads.AdService
 import com.wheretogo.presentation.intent.SettingIntent
 import com.wheretogo.presentation.state.SettingScreenState
@@ -31,7 +31,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SettingViewModel @Inject constructor(
-    private val errorHandler: ViewModelErrorHandler,
+    private val errorHandler: ErrorHandler,
     @MainDispatcher private val dispatcher: CoroutineDispatcher,
     private val signOutUseCase: UserSignOutUseCase,
     private val getUserProfileStreamUseCase: GetUserProfileStreamUseCase,

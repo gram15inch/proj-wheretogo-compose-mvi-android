@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.LIST_ITEM_ZOOM
+import com.wheretogo.domain.handler.DriveEvent
+import com.wheretogo.domain.handler.DriveHandler
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.checkpoint.CheckPoint
 import com.wheretogo.domain.model.comment.Comment
@@ -47,7 +49,6 @@ import com.wheretogo.presentation.MarkerType
 import com.wheretogo.presentation.MoveAnimation
 import com.wheretogo.presentation.SEARCH_MARKER
 import com.wheretogo.presentation.SheetVisibleMode
-import com.wheretogo.presentation.ViewModelErrorHandler
 import com.wheretogo.presentation.feature.ads.AdService
 import com.wheretogo.presentation.feature.geo.LocationService
 import com.wheretogo.presentation.feature.map.DriveMapOverlayService
@@ -90,7 +91,7 @@ import kotlin.math.round
 class DriveViewModel @Inject constructor(
     private val stateInit: DriveScreenState,
     @MainDispatcher private val dispatcher: CoroutineDispatcher,
-    private val errorHandler: ViewModelErrorHandler,
+    private val handler: DriveHandler,
     private val observeSettingsUseCase: ObserveSettingsUseCase,
     private val getNearByCourseUseCase: GetNearByCourseUseCase,
     private val getCommentForCheckPointUseCase: GetCommentForCheckPointUseCase,
@@ -186,7 +187,7 @@ class DriveViewModel @Inject constructor(
     }
 
     suspend fun handleError(error: Throwable) {
-        when(errorHandler.handle(error.toAppError())){
+        when(handler.handle(error.toAppError())){
             is AppError.InvalidState->{
                 clearState()
             }
@@ -1150,6 +1151,7 @@ class DriveViewModel @Inject constructor(
             withContext(Dispatchers.IO) { addCheckpointToCourseUseCase(content) }
 
         result.onSuccess { newCheckPoint ->
+            handler.handle(DriveEvent.ADD_DONE)
             val newCheckpointIdGroup = course.checkpointIdGroup + newCheckPoint.checkPointId
             _driveScreenState.update {
                 it.run {
@@ -1190,6 +1192,7 @@ class DriveViewModel @Inject constructor(
             DriveBottomSheetContent.COURSE_INFO -> {
                 val course = _driveScreenState.value.selectedCourse
                 withContext(Dispatchers.IO) { removeCourseUseCase(course.courseId) }.onSuccess {
+                    handler.handle(DriveEvent.REMOVE_DONE)
                     _driveScreenState.update {
                         it.clearCourseInfo()
                             .refreshNearCourse(it.naverMapState.cameraState)
@@ -1204,6 +1207,7 @@ class DriveViewModel @Inject constructor(
                 withContext(Dispatchers.IO) {
                     removeCheckPointUseCase(checkPoint.courseId, checkPoint.checkPointId)
                 }.onSuccess {
+                    handler.handle(DriveEvent.REMOVE_DONE)
                     _driveScreenState.update { it.clearCheckPointInfo() }
                 }.onFailure {
                     handleError(it)
@@ -1226,6 +1230,7 @@ class DriveViewModel @Inject constructor(
                     reportCourseUseCase(course, reason)
                 }
                 result.onSuccess {
+                    handler.handle(DriveEvent.REPORT_DONE)
                     _driveScreenState.update {
                         it.clearCourseInfo()
                             .refreshNearCourse(it.naverMapState.cameraState)
@@ -1241,6 +1246,7 @@ class DriveViewModel @Inject constructor(
                     reportCheckPointUseCase(checkPoint, reason)
                 }
                 result.onSuccess {
+                    handler.handle(DriveEvent.REPORT_DONE)
                     _driveScreenState.update { it.clearCheckPointInfo() }
                 }.onFailure {
                     handleError(it)

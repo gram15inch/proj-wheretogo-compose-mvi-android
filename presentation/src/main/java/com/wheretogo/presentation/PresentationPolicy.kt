@@ -5,19 +5,15 @@ import androidx.annotation.StringRes
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.GetCredentialCustomException
 import androidx.credentials.exceptions.NoCredentialException
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.app.LegalNoticeActivity
 import com.naver.maps.map.app.OpenSourceLicenseActivity
 import com.wheretogo.domain.DomainError
 import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.RouteAttrItem
-import com.wheretogo.domain.RouteFieldType
 import com.wheretogo.domain.model.util.Viewport
-import com.wheretogo.presentation.feature.EventBus
 import com.wheretogo.presentation.model.EventMsg
 import com.wheretogo.presentation.state.CameraState
-import timber.log.Timber
 import javax.inject.Qualifier
 
 const val DRIVE_LIST_MIN_ZOOM = 9.5
@@ -93,10 +89,6 @@ sealed class AppScreen {
     data object Drive : AppScreen()
     data object CourseAdd : AppScreen()
     data object Setting : AppScreen()
-}
-
-enum class ViewModelEvent {
-    DRIVE_NAVIGATE, COURSE_ADD_NAVIGATE, GUIDE_START, GUIDE_STOP
 }
 
 enum class AdMinSize(val widthDp: Int, val heightDp: Int) {
@@ -268,94 +260,3 @@ annotation class IoDispatcher
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class MainDispatcher
-
-interface ViewModelEventHandler {
-    suspend fun handle(msg: ViewModelEvent)
-}
-
-interface ViewModelErrorHandler {
-    suspend fun handle(error: Throwable): Throwable
-}
-
-class DefaultErrorHandler() : ViewModelErrorHandler {
-    override suspend fun handle(error: Throwable): Throwable {
-        Timber.tag("policy_").d("Throwable -> AppError: ${error.stackTraceToString()}")
-        val appError = error.toAppError()
-        when (appError) {
-            is AppError.NeedSignIn -> {
-                EventBus.send(AppEvent.SnackBar(EventMsg(R.string.need_login)))
-                EventBus.send(AppEvent.SignInScreen)
-            }
-
-            is AppError.CredentialError ->
-                EventBus.send(AppEvent.SnackBar(EventMsg(R.string.google_auth)))
-
-            is AppError.Unavailable ->
-                EventBus.send(AppEvent.SnackBar(EventMsg(R.string.unavailable_user, arg = appError.msg)))
-
-
-            is AppError.NetworkError ->
-                EventBus.send(AppEvent.SnackBar(EventMsg(R.string.network_error)))
-
-            is AppError.MapNotSupportExcludeLocation ->
-                EventBus.send(AppEvent.SnackBar(EventMsg(R.string.no_supprot_app_exclude_my_loction)))
-
-            is AppError.WaitCoolDown->{
-                EventBus.send(AppEvent.SnackBar(EventMsg(R.string.cool_down_error, arg = "${appError.remainTimeInMinute}")))
-            }
-
-            is AppError.Ignore -> {}
-
-            else -> {
-                Timber.e(error.stackTraceToString())
-                FirebaseCrashlytics.getInstance().recordException(error)
-            }
-        }
-        return error
-    }
-}
-
-class CourseAddErrorHandler() : ViewModelErrorHandler {
-    override suspend fun handle(error: Throwable): Throwable {
-        when (error) {
-            is DomainError.RouteFieldInvalid ->{
-                when(error.type){
-                    RouteFieldType.NAME, RouteFieldType.KEYWORD ->
-                        EventBus.send(AppEvent.SnackBar(EventMsg(R.string.invalid_name)))
-                    RouteFieldType.POINT ->
-                        EventBus.send(AppEvent.SnackBar(EventMsg(R.string.click_need_more_marker)))
-                }
-            }
-
-            else -> {
-                DefaultErrorHandler().handle(error)
-            }
-        }
-        return error
-    }
-}
-
-class HomeViewModelEventHandler() : ViewModelEventHandler {
-    override suspend fun handle(msg: ViewModelEvent) {
-        when (msg) {
-            ViewModelEvent.DRIVE_NAVIGATE -> EventBus.send(
-                AppEvent.Navigation(
-                    AppScreen.Home,
-                    AppScreen.Drive,
-                    false
-                )
-            )
-
-            ViewModelEvent.COURSE_ADD_NAVIGATE -> EventBus.send(
-                AppEvent.Navigation(
-                    AppScreen.Home,
-                    AppScreen.CourseAdd,
-                    false
-                )
-            )
-
-            ViewModelEvent.GUIDE_START -> EventBus.send(AppEvent.SnackBar(EventMsg(R.string.tutorial_start)))
-            ViewModelEvent.GUIDE_STOP -> EventBus.send(AppEvent.SnackBar(EventMsg(R.string.tutorial_stop)))
-        }
-    }
-}

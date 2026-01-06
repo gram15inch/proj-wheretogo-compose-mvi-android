@@ -3,15 +3,12 @@ package com.wheretogo.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.wheretogo.domain.handler.LoginEvent
+import com.wheretogo.domain.handler.LoginHandler
 import com.wheretogo.domain.model.auth.AuthRequest
 import com.wheretogo.domain.usecase.user.UserSignUpAndSignInUseCase
 import com.wheretogo.presentation.AppError
-import com.wheretogo.presentation.AppEvent
 import com.wheretogo.presentation.MainDispatcher
-import com.wheretogo.presentation.R
-import com.wheretogo.presentation.ViewModelErrorHandler
-import com.wheretogo.presentation.feature.EventBus
-import com.wheretogo.presentation.model.EventMsg
 import com.wheretogo.presentation.state.LoginScreenState
 import com.wheretogo.presentation.toAppError
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,8 +23,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val errorHandler: ViewModelErrorHandler,
     @MainDispatcher private val dispatcher: CoroutineDispatcher,
+    private val handler: LoginHandler,
     private val userSignUpAndSignInUseCase: UserSignUpAndSignInUseCase,
     val getGoogleIdOption: GetGoogleIdOption,
 ) : ViewModel() {
@@ -35,7 +32,7 @@ class LoginViewModel @Inject constructor(
     val loginScreenState: StateFlow<LoginScreenState> = _loginScreenState
 
     suspend fun handleError(error: AppError) {
-        when(errorHandler.handle(error)){
+        when(handler.handle(error)){
             else -> {}
         }
     }
@@ -52,8 +49,7 @@ class LoginViewModel @Inject constructor(
 
                 result.onSuccess { name->
                     _loginScreenState.update { it.copy(isExit = true, isLoading = false) }
-                    EventBus.result(AppEvent.SignInScreen,true)
-                    EventBus.send(AppEvent.SnackBar(EventMsg(R.string.welcome_user, name)))
+                    handler.handle(LoginEvent.SIGN_IN_SUCCESS, name)
                 }.onFailure {
                     _loginScreenState.update { it.copy(isLoading = false) }
                     handleError(it.toAppError())
@@ -64,7 +60,7 @@ class LoginViewModel @Inject constructor(
 
     fun signInPass() {
         viewModelScope.launch(dispatcher) {
-            EventBus.result(AppEvent.SignInScreen,false)
+            handler.handle(LoginEvent.SIGN_IN_FAIL)
             _loginScreenState.update { it.copy(isExit = true) }
         }
     }

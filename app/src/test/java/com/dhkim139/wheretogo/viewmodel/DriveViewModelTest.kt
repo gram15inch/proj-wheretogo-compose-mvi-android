@@ -2,9 +2,10 @@ package com.dhkim139.wheretogo.viewmodel
 
 import app.cash.turbine.test
 import com.dhkim139.wheretogo.feature.MainDispatcherRule
-import com.dhkim139.wheretogo.mock.MockErrorHandler
 import com.wheretogo.domain.DomainError
 import com.wheretogo.domain.LIST_ITEM_ZOOM
+import com.wheretogo.domain.handler.DriveEvent
+import com.wheretogo.domain.handler.DriveHandler
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.address.SimpleAddress
 import com.wheretogo.domain.model.app.Settings
@@ -12,7 +13,6 @@ import com.wheretogo.domain.model.checkpoint.CheckPoint
 import com.wheretogo.domain.model.checkpoint.CheckPointContent
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.course.Course
-import com.wheretogo.domain.usecase.app.AppCheckBySignatureUseCase
 import com.wheretogo.domain.usecase.app.GuideMoveStepUseCase
 import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
 import com.wheretogo.domain.usecase.checkpoint.AddCheckpointToCourseUseCase
@@ -30,6 +30,7 @@ import com.wheretogo.domain.usecase.user.UserSignOutUseCase
 import com.wheretogo.domain.usecase.util.GetImageForPopupUseCase
 import com.wheretogo.domain.usecase.util.SearchKeywordUseCase
 import com.wheretogo.domain.usecase.util.UpdateLikeUseCase
+import com.wheretogo.presentation.AppError
 import com.wheretogo.presentation.CHECKPOINT_ADD_MARKER
 import com.wheretogo.presentation.CameraUpdateSource
 import com.wheretogo.presentation.CommentType
@@ -54,6 +55,7 @@ import com.wheretogo.presentation.state.CommentState.CommentAddState
 import com.wheretogo.presentation.state.DriveScreenState
 import com.wheretogo.presentation.state.ListState.ListItemState
 import com.wheretogo.presentation.state.NaverMapState
+import com.wheretogo.presentation.toAppError
 import com.wheretogo.presentation.toClusterContainer
 import com.wheretogo.presentation.toCommentContent
 import com.wheretogo.presentation.toCommentItemState
@@ -440,7 +442,7 @@ class DriveViewModelTest {
             ),
             isLoading = false
         )
-
+        val domainError = DomainError.InternalError("comment like error")
         val initState = DriveScreenState().run {
             copy(
                 popUpState = popUpState.copy(
@@ -453,7 +455,8 @@ class DriveViewModelTest {
         }
         val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
         coEvery { updateLikeUseCase(likeCommentItemState.data, true) } returnsMany
-                listOf(Result.failure(DomainError.InternalError()), Result.success(Unit))
+                listOf(Result.failure(domainError), Result.success(Unit))
+        coEvery { driveHandler.handle(domainError.toAppError()) } returns domainError.toAppError()
 
         viewModel.driveScreenState.test {
             assertEquals(initState.popUpState, awaitItem().popUpState)
@@ -527,13 +530,7 @@ class DriveViewModelTest {
         val refreshedCheckPoint = checkPoint.copy(
             caption = commentAddState.oneLinePreview
         )
-
-        val updateMarkerInfo = MarkerInfo(
-            contentId = checkPoint.checkPointId,
-            type = MarkerType.CHECKPOINT,
-            caption = commentAddState.oneLinePreview
-        )
-
+        val domainError = DomainError.InternalError("comment add error")
         val initState = DriveScreenState().run {
             copy(
                 popUpState = popUpState.copy(
@@ -550,7 +547,7 @@ class DriveViewModelTest {
 
         val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
         coEvery { addCommentToCheckPointUseCase(commentContent) } returnsMany
-                listOf(Result.failure(DomainError.InternalError()), Result.success(addedComment))
+                listOf(Result.failure(domainError), Result.success(addedComment))
         coEvery {
             getCheckPointForMarkerUseCase(
                 course.courseId,
@@ -565,6 +562,7 @@ class DriveViewModelTest {
                 refreshedCheckPoint.caption
             )
         } returns Unit
+        coEvery { driveHandler.handle(domainError.toAppError()) } returns domainError.toAppError()
         viewModel.driveScreenState.test {
             assertEquals(initState, awaitItem())
 
@@ -855,6 +853,7 @@ class DriveViewModelTest {
             contentId = addedCheckPoint.courseId,
             cluster = AppCluster(course.courseId)
         )
+        val domainError = DomainError.InternalError("checkpoint add fail")
         val initState = DriveScreenState().run {
             copy(
                 stateMode = DriveVisibleMode.BottomSheetExpand,
@@ -867,9 +866,11 @@ class DriveViewModelTest {
 
         val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
         coEvery { addCheckpointToCourseUseCase(checkpointContent) } returnsMany
-                listOf(Result.failure(DomainError.InternalError()), Result.success(addedCheckPoint))
+                listOf(Result.failure(domainError), Result.success(addedCheckPoint))
         coEvery { driveMapOverlayService.addOneTimeMarker(listOf(addedCheckPoint.toMarkerInfo())) } returns Unit
+        coEvery { driveHandler.handle(DriveEvent.ADD_DONE) } returns Unit
         coEvery { driveMapOverlayService.removeOneTimeMarker(listOf(CHECKPOINT_ADD_MARKER)) } returns Unit
+        coEvery { driveHandler.handle(DriveEvent.REMOVE_DONE) } returns Unit
         coEvery {
             driveMapOverlayService.addCheckPointLeaf(
                 courseId = addedCheckPoint.courseId,
@@ -878,6 +879,7 @@ class DriveViewModelTest {
             )
         } returns Result.success(Unit)
         coEvery { driveMapOverlayService.getOverlays() } returns listOf(checkpointOverlay)
+        coEvery { driveHandler.handle(domainError.toAppError()) } returns domainError.toAppError()
 
         viewModel.driveScreenState.test {
             assertEquals(initState, awaitItem())
@@ -963,6 +965,7 @@ class DriveViewModelTest {
 
         val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
         coEvery { reportCourseUseCase(reportCourse, "reason") } returns Result.success("rp1")
+        coEvery { driveHandler.handle(DriveEvent.REPORT_DONE) } returns Unit
         coEvery { driveMapOverlayService.removeCourseMarkerAndPath(listOf(reportCourse.courseId)) } returns Unit
         coEvery { driveMapOverlayService.removeCheckPointCluster(reportCourse.courseId) } returns Unit
         coEvery { driveMapOverlayService.showAllOverlays() } returns Unit
@@ -1034,13 +1037,12 @@ class DriveViewModelTest {
         }
 
         val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
-        coEvery {
-            reportCheckPointUseCase(
-                checkPoint = reprotCheckpoint,
-                reason = "reason"
-            )
-        } returns Result.success("rp1")
-        coEvery { driveMapOverlayService.removeCheckPointLeaf(reprotCheckpoint.courseId, reprotCheckpoint.checkPointId) } returns Unit
+        coEvery { reportCheckPointUseCase(reprotCheckpoint, "reason") } returns Result.success("rp1")
+        coEvery { driveHandler.handle(DriveEvent.REPORT_DONE) } returns Unit
+        coEvery { driveMapOverlayService.removeCheckPointLeaf(
+            reprotCheckpoint.courseId,
+            reprotCheckpoint.checkPointId)
+        } returns Unit
         viewModel.driveScreenState.test {
             assertEquals(initState, awaitItem())
 
@@ -1112,9 +1114,8 @@ class DriveViewModelTest {
         }
 
         val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
-        coEvery { removeCourseUseCase(courseId = removeCourse.courseId) } returns Result.success(
-            removeCourse.courseId
-        )
+        coEvery { removeCourseUseCase(courseId = removeCourse.courseId) } returns Result.success(removeCourse.courseId)
+        coEvery { driveHandler.handle(DriveEvent.REMOVE_DONE) } returns Unit
         coEvery { driveMapOverlayService.removeCourseMarkerAndPath(listOf(removeCourse.courseId)) } returns Unit
         coEvery { driveMapOverlayService.removeCheckPointCluster(removeCourse.courseId) } returns Unit
         coEvery { driveMapOverlayService.showAllOverlays() } returns Unit
@@ -1187,12 +1188,12 @@ class DriveViewModelTest {
 
         val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
         coEvery {
-            removeCheckPointUseCase(
-                courseId = removeCheckpoint.courseId,
-                removeCheckpoint.checkPointId
-            )
+            removeCheckPointUseCase(removeCheckpoint.courseId, removeCheckpoint.checkPointId)
         } returns Result.success(removeCheckpoint.checkPointId)
-        coEvery { driveMapOverlayService.removeCheckPointLeaf(removeCheckpoint.courseId,removeCheckpoint.checkPointId) } returns Unit
+        coEvery { driveHandler.handle(DriveEvent.REMOVE_DONE) } returns Unit
+        coEvery {
+            driveMapOverlayService.removeCheckPointLeaf(removeCheckpoint.courseId, removeCheckpoint.checkPointId)
+        } returns Unit
         viewModel.driveScreenState.test {
             assertEquals(initState, awaitItem())
 
@@ -1230,7 +1231,7 @@ class DriveViewModelTest {
         return DriveViewModel(
             stateInit = state,
             dispatcher = dispatcher,
-            errorHandler = MockErrorHandler(),
+            handler = driveHandler,
             observeSettingsUseCase,
             getNearByCourseUseCase,
             getCommentForCheckPointUseCase,
@@ -1253,6 +1254,7 @@ class DriveViewModelTest {
             locationService
         )
     }
+    private val driveHandler = mockk<DriveHandler>()
 
     private val observeSettingsUseCase = mockk<ObserveSettingsUseCase>()
     private val getNearByCourseUseCase = mockk<GetNearByCourseUseCase>()

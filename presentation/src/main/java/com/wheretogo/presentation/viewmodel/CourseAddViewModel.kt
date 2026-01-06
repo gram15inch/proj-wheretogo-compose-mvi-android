@@ -4,13 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wheretogo.domain.RouteAttr
 import com.wheretogo.domain.SearchType
+import com.wheretogo.domain.handler.CourseAddEvent
+import com.wheretogo.domain.handler.CourseAddHandler
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.route.RouteCategory
 import com.wheretogo.domain.usecase.course.AddCourseUseCase
 import com.wheretogo.domain.usecase.util.CreateRouteUseCase
 import com.wheretogo.domain.usecase.util.SearchKeywordUseCase
-import com.wheretogo.presentation.AppEvent
-import com.wheretogo.presentation.AppScreen
 import com.wheretogo.presentation.CLEAR_ADDRESS
 import com.wheretogo.presentation.COURSE_NAME_MAX_LENGTH
 import com.wheretogo.presentation.CameraUpdateSource
@@ -19,14 +19,10 @@ import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.MainDispatcher
 import com.wheretogo.presentation.MoveAnimation
 import com.wheretogo.presentation.PathType
-import com.wheretogo.presentation.R
 import com.wheretogo.presentation.SheetVisibleMode
-import com.wheretogo.presentation.ViewModelErrorHandler
-import com.wheretogo.presentation.feature.EventBus
 import com.wheretogo.presentation.feature.map.CourseAddMapOverlayService
 import com.wheretogo.presentation.intent.CourseAddIntent
 import com.wheretogo.presentation.model.AppMarker
-import com.wheretogo.presentation.model.EventMsg
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.BottomSheetState
 import com.wheretogo.presentation.state.CameraState
@@ -43,13 +39,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
-import javax.inject.Named
 
 
 @HiltViewModel
 class CourseAddViewModel @Inject constructor(
-    @Named("courseAddError") private val errorHandler: ViewModelErrorHandler,
     @MainDispatcher private val dispatcher: CoroutineDispatcher,
+    private val handler: CourseAddHandler,
     private val createRouteUseCase: CreateRouteUseCase,
     private val addCourseUseCase: AddCourseUseCase,
     private val searchKeywordUseCase: SearchKeywordUseCase,
@@ -96,7 +91,7 @@ class CourseAddViewModel @Inject constructor(
     }
 
     suspend fun handleError(error: Throwable) {
-        errorHandler.handle(error)
+        handler.handle(error)
     }
 
 
@@ -423,8 +418,8 @@ class CourseAddViewModel @Inject constructor(
                 withContext(Dispatchers.IO) { addCourseUseCase(content) }
             }
             result.onSuccess {
-                EventBus.send(AppEvent.SnackBar(EventMsg(R.string.course_add_done)))
-                EventBus.send(AppEvent.Navigation(AppScreen.CourseAdd,AppScreen.Home))
+                handler.handle(CourseAddEvent.COURSE_ADD_DONE)
+                handler.handle(CourseAddEvent.HOME_NAVIGATE)
             }.onFailure {
                 handleError(it)
             }
