@@ -3,14 +3,10 @@ package com.wheretogo.presentation.viewmodel
 import androidx.compose.material3.SnackbarHostState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.wheretogo.domain.DriveTutorialStep
-import com.wheretogo.domain.repository.AppRepository
+import com.wheretogo.domain.handler.RootEvent
+import com.wheretogo.domain.handler.RootHandler
 import com.wheretogo.domain.usecase.app.AppCheckBySignatureUseCase
 import com.wheretogo.presentation.AppEvent
-import com.wheretogo.presentation.R
-import com.wheretogo.presentation.ViewModelErrorHandler
-import com.wheretogo.presentation.feature.EventBus
-import com.wheretogo.presentation.model.EventMsg
 import com.wheretogo.presentation.state.RootScreenState
 import com.wheretogo.presentation.toAppError
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,7 +18,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class RootViewModel @Inject constructor(
-    private val errorHandler: ViewModelErrorHandler,
+    private val handler: RootHandler,
     private val appCheckBySignatureUseCase: AppCheckBySignatureUseCase
 ) :
     ViewModel() {
@@ -31,13 +27,13 @@ class RootViewModel @Inject constructor(
     val snackbarHostState = SnackbarHostState()
 
     suspend fun handleError(error: Throwable) {
-        errorHandler.handle(error.toAppError())
+        handler.handle(error.toAppError())
     }
     init {
         viewModelScope.launch {
             appCheckBySignatureUseCase().onSuccess {
                 if (it)
-                    EventBus.send(AppEvent.SnackBar(EventMsg(R.string.app_check_success)))
+                    handler.handle(RootEvent.APP_CHECK_SUCCESS)
             }.onFailure {
                 handleError(it)
             }

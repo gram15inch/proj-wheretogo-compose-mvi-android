@@ -2,9 +2,11 @@ package com.dhkim139.wheretogo.viewmodel
 
 import app.cash.turbine.test
 import com.dhkim139.wheretogo.feature.MainDispatcherRule
-import com.dhkim139.wheretogo.mock.MockErrorHandler
 import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.LIST_ITEM_ZOOM
+import com.wheretogo.domain.handler.DriveHandler
+import com.wheretogo.domain.handler.HomeEvent
+import com.wheretogo.domain.handler.HomeHandler
 import com.wheretogo.domain.model.app.Settings
 import com.wheretogo.domain.model.dummy.guideCourse
 import com.wheretogo.domain.usecase.app.GuideMoveStepUseCase
@@ -27,8 +29,6 @@ import com.wheretogo.domain.usecase.util.UpdateLikeUseCase
 import com.wheretogo.presentation.CameraUpdateSource
 import com.wheretogo.presentation.HomeBodyBtn
 import com.wheretogo.presentation.HomeBodyBtnHighlight
-import com.wheretogo.presentation.ViewModelEvent
-import com.wheretogo.presentation.ViewModelEventHandler
 import com.wheretogo.presentation.feature.ads.AdService
 import com.wheretogo.presentation.feature.geo.LocationService
 import com.wheretogo.presentation.feature.map.DriveMapOverlayService
@@ -69,10 +69,10 @@ class ViewModelTestByGuide {
                     emit(Result.success(Settings(tutorialStep = DriveTutorialStep.MOVE_TO_COURSE)))
                 }
 
-        coEvery { viewModelEventHandler.handle(ViewModelEvent.GUIDE_START) } returns Unit
+        coEvery { homeHandler.handle(HomeEvent.GUIDE_START) } returns Unit
         coEvery { guideMoveStepUseCase.start() } returns Result.success(Unit)
 
-        coEvery { viewModelEventHandler.handle(ViewModelEvent.DRIVE_NAVIGATE) } returns Unit
+        coEvery { homeHandler.handle(HomeEvent.DRIVE_NAVIGATE) } returns Unit
         coEvery { guideMoveStepUseCase(true) } returns Result.success(Unit)
 
         val initState = HomeScreenState(
@@ -193,7 +193,7 @@ class ViewModelTestByGuide {
         return DriveViewModel(
             stateInit = state,
             dispatcher = dispatcher,
-            errorHandler = MockErrorHandler(),
+            handler = driveHandler,
             observeSettingsUseCase,
             getNearByCourseUseCase,
             getCommentForCheckPointUseCase,
@@ -223,13 +223,14 @@ class ViewModelTestByGuide {
     ): HomeViewModel {
         return HomeViewModel(
             stateInit = state,
+            handler = homeHandler,
             dispatcher = dispatcher,
             observeSettingsUseCase,
-            guideMoveStepUseCase,
-            viewModelEventHandler
+            guideMoveStepUseCase
         )
     }
-    private val viewModelEventHandler = mockk<ViewModelEventHandler>()
+    private val homeHandler = mockk<HomeHandler>()
+    private val driveHandler = mockk<DriveHandler>()
 
     private val observeSettingsUseCase = mockk<ObserveSettingsUseCase>()
     private val getNearByCourseUseCase = mockk<GetNearByCourseUseCase>()

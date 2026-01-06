@@ -115,6 +115,11 @@
     // 이미지 설명
     <string name="google_logo">google logo</string>
 
+    // 메세지
+    <string name="add_done">️📌 추가 완료.</string>
+    <string name="remove_done">🗑 삭제 완료.</string>
+    <string name="report_done">🚨 신고 완료.</string>
+
     // 가이드
     <string name="tutorial_start">🥳 반가워요, 같이 어디갈까를 둘러봐요!</string>
     <string name="tutorial_stop">🥺 튜토리얼은 다음에 다시 만나요.</string>
