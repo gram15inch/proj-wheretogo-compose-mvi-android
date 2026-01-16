@@ -22,6 +22,8 @@ data class AppPath(
         h = 31 * h + pathInfo.isVisible.hashCode()
         if (pathInfo.type == PathType.SCAFFOLD)
             h = 31 * h + pathInfo.points.hashCode()
+        else
+            h = 31 * h + pathInfo.points.size
         return h
     }
 
