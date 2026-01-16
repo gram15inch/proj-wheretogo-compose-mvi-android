@@ -10,8 +10,10 @@ import com.wheretogo.presentation.feature.ads.AdService
 import com.wheretogo.presentation.feature.ads.NativeAdServiceImpl
 import com.wheretogo.presentation.feature.geo.LocationService
 import com.wheretogo.presentation.feature.geo.LocationServiceImpl
+import com.wheretogo.presentation.feature.map.MapOverlayService
+import com.wheretogo.presentation.feature.map.MapOverlayServiceImpl
 import com.wheretogo.presentation.feature.naver.NaverMapOverlayModifier
-import com.wheretogo.presentation.feature.naver.NaverMapOverlayStore
+import com.wheretogo.presentation.feature.naver.NaverMapOverlayProvider
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -35,7 +37,7 @@ object ServiceModule {
         return NativeAdServiceImpl(context, BuildConfig.NATIVE_AD_ID, refreshSize).apply {
             CoroutineScope(Dispatchers.IO).launch {
                 MobileAds.initialize(context)
-                if(BuildConfig.BUILD_TYPE == "release")
+                if (BuildConfig.BUILD_TYPE == "release")
                     refreshAd(1)
             }
         }
@@ -49,13 +51,21 @@ object ServiceModule {
 
     @Singleton
     @Provides
-    fun provideNaverMapOverlayStore(): NaverMapOverlayStore {
-        return NaverMapOverlayStore()
+    fun provideNaverMapOverlayModifier(@ApplicationContext context: Context): NaverMapOverlayModifier {
+        return NaverMapOverlayModifier(context, true)
     }
 
-    @Singleton
+
     @Provides
-    fun provideNaverMapOverlayCreater(@ApplicationContext context: Context): NaverMapOverlayModifier {
-        return NaverMapOverlayModifier(context, true)
+    fun provideNaverMapProvider(modifier2: NaverMapOverlayModifier): NaverMapOverlayProvider {
+        return NaverMapOverlayProvider(modifier2)
+    }
+
+    @Provides
+    fun provideMapOverlayServiceImpl(
+        provider: NaverMapOverlayProvider,
+        locationService: LocationService
+    ): MapOverlayService {
+        return MapOverlayServiceImpl(provider, locationService)
     }
 }

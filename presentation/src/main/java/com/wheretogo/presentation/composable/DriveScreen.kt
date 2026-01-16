@@ -56,7 +56,6 @@ import com.wheretogo.presentation.R
 import com.wheretogo.presentation.SheetVisibleMode
 import com.wheretogo.presentation.WIDE_WIDTH
 import com.wheretogo.presentation.composable.content.AnimationDirection
-import com.wheretogo.presentation.composable.content.ZIndexOfDriveContentArea
 import com.wheretogo.presentation.composable.content.BottomSheet
 import com.wheretogo.presentation.composable.content.CheckPointAddContent
 import com.wheretogo.presentation.composable.content.DelayLottieAnimation
@@ -66,19 +65,20 @@ import com.wheretogo.presentation.composable.content.FadeAnimation
 import com.wheretogo.presentation.composable.content.FloatingButtons
 import com.wheretogo.presentation.composable.content.GuidePopup
 import com.wheretogo.presentation.composable.content.InfoContent
-import com.wheretogo.presentation.composable.effect.LifecycleDisposer
 import com.wheretogo.presentation.composable.content.MapPopup
 import com.wheretogo.presentation.composable.content.NaverMapSheet
 import com.wheretogo.presentation.composable.content.OneHandArea
 import com.wheretogo.presentation.composable.content.SearchBar
 import com.wheretogo.presentation.composable.content.SlideAnimation
+import com.wheretogo.presentation.composable.content.ZIndexOfDriveContentArea
 import com.wheretogo.presentation.composable.effect.AppEventReceiveEffect
+import com.wheretogo.presentation.composable.effect.LifecycleDisposer
 import com.wheretogo.presentation.defaultCommentEmogiGroup
 import com.wheretogo.presentation.feature.ImeStickyBox
 import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.intent.DriveScreenIntent
-import com.wheretogo.presentation.model.AppMarker
 import com.wheretogo.presentation.model.ContentPadding
+import com.wheretogo.presentation.model.MarkerInfo
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.model.TypeEditText
 import com.wheretogo.presentation.state.BottomSheetState
@@ -88,9 +88,9 @@ import com.wheretogo.presentation.state.CommentState
 import com.wheretogo.presentation.state.CommentState.CommentAddState
 import com.wheretogo.presentation.state.DriveScreenState
 import com.wheretogo.presentation.state.FloatingButtonState
+import com.wheretogo.presentation.state.GuideState
 import com.wheretogo.presentation.state.InfoState
 import com.wheretogo.presentation.state.ListState
-import com.wheretogo.presentation.state.GuideState
 import com.wheretogo.presentation.theme.Gray5060
 import com.wheretogo.presentation.theme.Gray6080
 import com.wheretogo.presentation.toNavigation
@@ -195,7 +195,7 @@ fun DriveContent(
     //Navermap
     onMapAsync: () -> Unit = {},
     onCameraUpdate: (CameraState) -> Unit = {},
-    onMarkerClick: (AppMarker) -> Unit = {},
+    onMarkerClick: (MarkerInfo) -> Unit = {},
 
     //Blur
     onBlurClick: () -> Unit = {},
@@ -264,6 +264,7 @@ fun DriveContent(
                     .zIndex(0f),
                 state = state.naverMapState,
                 overlayGroup = state.overlayGroup,
+                fingerPrint = state.fingerPrint,
                 onMapAsync = { onMapAsync() },
                 onCameraUpdate = onCameraUpdate,
                 onMarkerClick = onMarkerClick,

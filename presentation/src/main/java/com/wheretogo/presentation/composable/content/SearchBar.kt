@@ -138,14 +138,15 @@ fun SearchBar(
 
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                BarTextField(
-                    modifier = Modifier.weight(1f),
+                FocusTextField(
+                    modifier = Modifier.weight(1f)
+                        .padding(start = 16.dp, end = 5.dp),
                     textValue = editText,
                     readOnly = !state.isActive,
                     focusRequester = focusRequester,
                     onTextValueChange = {
                         if(state.isEditBlock)
-                            return@BarTextField
+                            return@FocusTextField
 
                         val isComposing = it.composition != null
                         editText =
@@ -155,7 +156,7 @@ fun SearchBar(
                                 it.copy(selection = TextRange(it.text.length))
                             }
                     },
-                    onSearchSubmit = {
+                    onTextSubmit = {
                         clearFocus()
                         onSearchSubmit(it)
                     },
@@ -268,23 +269,22 @@ fun KeyboardTrack(onKeyboardClose: () -> Unit) {
 }
 
 @Composable
-fun BarTextField(
+fun FocusTextField(
     modifier: Modifier,
     textValue: TextFieldValue,
-    readOnly: Boolean,
-    focusRequester: FocusRequester,
-    onTextValueChange: (TextFieldValue) -> Unit,
-    onSearchSubmit: (String) -> Unit = {},
-    onFocusChanged: (FocusState) -> Unit = {}
-) {
-    val textStyle = TextStyle(
+    textStyle: TextStyle = TextStyle(
         fontSize = 15.sp,
         fontFamily = hancomSansFontFamily,
         color = Gray320
-    )
+    ),
+    readOnly: Boolean = false,
+    focusRequester: FocusRequester,
+    onTextValueChange: (TextFieldValue) -> Unit,
+    onTextSubmit: (String) -> Unit = {},
+    onFocusChanged: (FocusState) -> Unit = {}
+) {
     Box(
         modifier = modifier
-            .padding(start = 16.dp, end = 5.dp)
     ) {
         BasicTextField(
             modifier = Modifier
@@ -301,7 +301,7 @@ fun BarTextField(
             ),
             keyboardActions = KeyboardActions(
                 onDone = {
-                    onSearchSubmit(textValue.text)
+                    onTextSubmit(textValue.text)
                 }
             ),
             readOnly = readOnly,

@@ -19,6 +19,7 @@ import com.wheretogo.domain.usecase.user.DeleteUserUseCase
 import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
 import com.wheretogo.domain.usecase.user.UserSignUpAndSignInUseCase
+import com.wheretogo.domain.usecase.util.CourseAddValidUseCase
 import com.wheretogo.domain.usecase.util.CreateRouteUseCase
 import com.wheretogo.domain.usecase.util.GetImageForPopupUseCase
 import com.wheretogo.domain.usecase.util.GetLatLngFromAddressUseCase
@@ -43,6 +44,7 @@ import com.wheretogo.domain.usecaseimpl.user.DeleteUserUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.GetUserProfileStreamUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.UserSignOutUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.UserSignUpAndSignInUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.util.CourseAddValidUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.util.CreateRouteUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.util.GetImageForPopupUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.util.GetLatLngFromAddressUseCaseImpl
@@ -131,5 +133,9 @@ abstract class UseCaseModule {
 
     @Binds
     abstract fun bindGetLatLngFromAddressUseCase(useCaseImpl: GetLatLngFromAddressUseCaseImpl): GetLatLngFromAddressUseCase
+
+    @Binds
+    abstract fun bindCourseAddValidUseCase(useCaseImpl: CourseAddValidUseCaseImpl): CourseAddValidUseCase
+
 }
 

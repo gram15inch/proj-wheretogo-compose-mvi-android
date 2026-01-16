@@ -7,7 +7,7 @@ import com.wheretogo.presentation.AppEvent
 import com.wheretogo.presentation.AppLifecycle
 import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.SheetVisibleMode
-import com.wheretogo.presentation.model.AppMarker
+import com.wheretogo.presentation.model.MarkerInfo
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.model.TypeEditText
 import com.wheretogo.presentation.state.CameraState
@@ -27,7 +27,7 @@ sealed class DriveScreenIntent {
     //지도
     object MapAsync : DriveScreenIntent()
     data class CameraUpdated(val cameraState: CameraState) : DriveScreenIntent()
-    data class MarkerClick(val appMarker: AppMarker) : DriveScreenIntent()
+    data class MarkerClick(val markerInfo: MarkerInfo) : DriveScreenIntent()
 
 
     //목록

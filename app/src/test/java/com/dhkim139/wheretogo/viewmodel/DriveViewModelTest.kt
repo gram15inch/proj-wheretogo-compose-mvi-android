@@ -4,6 +4,7 @@ import app.cash.turbine.test
 import com.dhkim139.wheretogo.feature.MainDispatcherRule
 import com.wheretogo.domain.DomainError
 import com.wheretogo.domain.LIST_ITEM_ZOOM
+import com.wheretogo.domain.MarkerType
 import com.wheretogo.domain.handler.DriveEvent
 import com.wheretogo.domain.handler.DriveHandler
 import com.wheretogo.domain.model.address.LatLng
@@ -30,7 +31,6 @@ import com.wheretogo.domain.usecase.user.UserSignOutUseCase
 import com.wheretogo.domain.usecase.util.GetImageForPopupUseCase
 import com.wheretogo.domain.usecase.util.SearchKeywordUseCase
 import com.wheretogo.domain.usecase.util.UpdateLikeUseCase
-import com.wheretogo.presentation.AppError
 import com.wheretogo.presentation.CHECKPOINT_ADD_MARKER
 import com.wheretogo.presentation.CameraUpdateSource
 import com.wheretogo.presentation.CommentType
@@ -38,32 +38,26 @@ import com.wheretogo.presentation.DRIVE_LIST_MIN_ZOOM
 import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.DriveFloatingVisibleMode
 import com.wheretogo.presentation.DriveVisibleMode
-import com.wheretogo.presentation.MarkerType
 import com.wheretogo.presentation.MoveAnimation
 import com.wheretogo.presentation.feature.ads.AdService
 import com.wheretogo.presentation.feature.geo.LocationService
-import com.wheretogo.presentation.feature.map.DriveMapOverlayService
+import com.wheretogo.presentation.feature.map.MapOverlayService
 import com.wheretogo.presentation.intent.DriveScreenIntent
-import com.wheretogo.presentation.model.AppCluster
-import com.wheretogo.presentation.model.AppMarker
-import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.MarkerInfo
 import com.wheretogo.presentation.state.CameraState
-import com.wheretogo.presentation.state.CheckPointAddState
 import com.wheretogo.presentation.state.CommentState
-import com.wheretogo.presentation.state.CommentState.CommentAddState
 import com.wheretogo.presentation.state.DriveScreenState
 import com.wheretogo.presentation.state.ListState.ListItemState
 import com.wheretogo.presentation.state.NaverMapState
+import com.wheretogo.presentation.state.CheckPointAddState
 import com.wheretogo.presentation.toAppError
-import com.wheretogo.presentation.toClusterContainer
 import com.wheretogo.presentation.toCommentContent
 import com.wheretogo.presentation.toCommentItemState
-import com.wheretogo.presentation.toMarkerContainer
 import com.wheretogo.presentation.toMarkerInfo
 import com.wheretogo.presentation.toSearchBarItem
 import com.wheretogo.presentation.viewmodel.DriveViewModel
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.CoroutineDispatcher
@@ -85,6 +79,7 @@ class DriveViewModelTest {
     @Before
     fun initViewModel() = runTest {
         coEvery { observeSettingsUseCase() } returns flowOf(Result.success(Settings()))
+        every { mapOverlayService.overlays } returnsMany listOf(emptyList())
     }
 
     // 서치바
@@ -110,7 +105,6 @@ class DriveViewModelTest {
         )
         viewModel.driveScreenState.test {
             assertEquals(initState, awaitItem())
-
             viewModel.handleIntent(DriveScreenIntent.SearchSubmit("query"))
             // 로딩 시작
             val loadingExpect = initState.replaceSearchBarLoading(true)
@@ -163,13 +157,6 @@ class DriveViewModelTest {
             points = listOf(current.latLng),
             cameraLatLng = LatLng(3.0, 3.0)
         )
-        val marker = MapOverlay.MarkerContainer(
-            nearCourse.courseId, MarkerType.SPOT,
-            AppMarker(
-                nearCourse.toMarkerInfo(),
-                coreMarker = null
-            )
-        )
         val initState = DriveScreenState(
             naverMapState = NaverMapState(
                 cameraState = latest
@@ -179,12 +166,10 @@ class DriveViewModelTest {
         coEvery { locationService.distance(latest.latLng, current.latLng) } returns 5
         coEvery { locationService.distance(current.latLng, nearCourse.cameraLatLng) } returns 50
         coEvery { getNearByCourseUseCase(current.latLng, current.zoom) } returns listOf(nearCourse)
-        coEvery { driveMapOverlayService.addCourseMarkerAndPath(listOf(nearCourse)) } returns Unit
-        coEvery { driveMapOverlayService.showAllOverlays() } returns Unit
-        coEvery { driveMapOverlayService.getOverlays() } returns listOf(marker)
+        coEvery { mapOverlayService.addCourseMarkerAndPath(listOf(nearCourse)) } returns Unit
+        coEvery { mapOverlayService.showAllOverlays() } returns Unit
 
         viewModel.driveScreenState.test {
-
             assertEquals(initState, awaitItem())
 
             // @ 지도 타일 이동 (카메라 업데이트)
@@ -205,7 +190,6 @@ class DriveViewModelTest {
             val updatedContentItem = camera.run {
                 copy(
                     isLoading = true,
-                    overlayGroup = listOf(marker),
                     listState = listState.copy(
                         listItemGroup = listOf(
                             ListItemState(
@@ -230,12 +214,9 @@ class DriveViewModelTest {
             imageId = "img1",
             thumbnail = "small/img1.jpg"
         )
-        val marker = AppMarker(
-            coreMarker = null,
-            markerInfo = MarkerInfo(
-                contentId = cp.checkPointId,
-                type = MarkerType.CHECKPOINT
-            )
+        val marker = MarkerInfo(
+            contentId = cp.checkPointId,
+            type = MarkerType.CHECKPOINT
         )
         val initState = DriveScreenState().run {
             copy(
@@ -289,13 +270,6 @@ class DriveViewModelTest {
     // 목록
     @Test
     fun driveListItemClick() = runTest {
-        data class Item(
-            val course: Course,
-            val checkpoint: CheckPoint,
-            val listItemState: ListItemState,
-            val csOverlay: MapOverlay,
-            val cpOverlay: MapOverlay
-        )
 
         val focus = Pair(
             Course(
@@ -310,19 +284,7 @@ class DriveViewModelTest {
                 thumbnail = "small/img1.jpg",
                 latLng = LatLng(1.0, 1.0),
             )
-        ).run {
-            Item(
-                course = first,
-                checkpoint = second,
-                listItemState = ListItemState(course = first),
-                csOverlay = first.toMarkerContainer(
-                    AppMarker(first.toMarkerInfo())
-                ),
-                cpOverlay = second.toClusterContainer(
-                    AppCluster(second.courseId)
-                )
-            )
-        }
+        )
 
         val normal = Pair(
             Course(
@@ -337,26 +299,13 @@ class DriveViewModelTest {
                 thumbnail = "small/img1.jpg",
                 latLng = LatLng(1.0, 1.0),
             )
-        ).run {
-            Item(
-                course = first,
-                checkpoint = second,
-                listItemState = ListItemState(course = first),
-                csOverlay = first.toMarkerContainer(
-                    AppMarker(first.toMarkerInfo().copy(isVisible = false))
-                ),
-                cpOverlay = second.toClusterContainer(
-                    AppCluster(second.courseId)
-                )
-            )
-        }
+        )
 
-        val listItemGroup = listOf(focus.listItemState, normal.listItemState)
-        val focusCsOverlayGroup = listOf(focus.csOverlay, normal.csOverlay)
-        val focusCsCpOverlayGroup = listOf(focus.csOverlay, focus.cpOverlay, normal.csOverlay)
+        val focusItem = ListItemState(course = focus.first)
+        val normalItem = ListItemState(course = normal.first)
+        val listItemGroup = listOf(focusItem, normalItem)
         val initState = DriveScreenState().run {
             copy(
-                overlayGroup = focusCsOverlayGroup,
                 listState = listState.copy(
                     listItemGroup = listItemGroup
                 )
@@ -364,15 +313,13 @@ class DriveViewModelTest {
         }
 
         val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
-        coEvery { driveMapOverlayService.focusAndHideOthers(focus.course) } returns Unit
-        coEvery { driveMapOverlayService.getOverlays() } returnsMany
-                listOf(focusCsOverlayGroup, focusCsCpOverlayGroup)
-        coEvery { getCheckPointForMarkerUseCase(focus.course.courseId) } returns
-                Result.success(listOf(focus.checkpoint))
+        coEvery { mapOverlayService.focusAndHideOthers(focus.first) } returns Unit
+        coEvery { getCheckPointForMarkerUseCase(focus.first.courseId) } returns
+                Result.success(listOf(focus.second))
         coEvery {
-            driveMapOverlayService.addCheckPointCluster(
-                courseId = focus.course.courseId,
-                checkPointGroup = listOf(focus.checkpoint),
+            mapOverlayService.addCheckPointCluster(
+                courseId = focus.first.courseId,
+                checkPointGroup = listOf(focus.second),
                 onLeafRendered = any(),
                 onLeafClick = any()
             )
@@ -382,17 +329,16 @@ class DriveViewModelTest {
             assertEquals(initState, awaitItem())
 
             // @ 목록 아이템 클릭
-            viewModel.handleIntent(DriveScreenIntent.DriveListItemClick(focus.listItemState))
+            viewModel.handleIntent(DriveScreenIntent.DriveListItemClick(focusItem))
 
             // 코스 클릭 ui 변경후 해당 코스로 카메라 이동
             val listItemExpect = initState.run {
                 copy(
                     stateMode = DriveVisibleMode.CourseDetail,
                     isLoading = true,
-                    overlayGroup = focusCsOverlayGroup,
                     naverMapState = naverMapState.copy(
                         cameraState = naverMapState.cameraState.copy(
-                            latLng = focus.course.cameraLatLng,
+                            latLng = focus.first.cameraLatLng,
                             zoom = LIST_ITEM_ZOOM,
                             updateSource = CameraUpdateSource.LIST_ITEM,
                             moveAnimation = MoveAnimation.APP_LINEAR
@@ -401,7 +347,7 @@ class DriveViewModelTest {
                     floatingButtonState = floatingButtonState.copy(
                         stateMode = DriveFloatingVisibleMode.Default
                     ),
-                    selectedCourse = focus.course
+                    selectedCourse = focus.first
                 )
             }
             val listItemActual = awaitItem()
@@ -411,8 +357,7 @@ class DriveViewModelTest {
             // 체크포인트 가져오기 시도 (성공) : 체크포인트 마커 오버레이 추가
             val cpExpect = listItemExpect.run {
                 copy(
-                    isLoading = false,
-                    overlayGroup = focusCsCpOverlayGroup,
+                    isLoading = false
                 )
             }
             val cpActual = awaitItem()
@@ -516,7 +461,7 @@ class DriveViewModelTest {
         val course = Course("cs1")
         val checkPoint = CheckPoint("cp1", courseId = course.courseId)
         val editText = "hi"
-        val commentAddState = CommentAddState(
+        val commentAddState = CommentState.CommentAddState(
             commentType = CommentType.ONE
         )
         val commentContent = commentAddState.toCommentContent(checkPoint.checkPointId, editText)
@@ -556,7 +501,7 @@ class DriveViewModelTest {
         } returns
                 Result.success(listOf(refreshedCheckPoint))
         coEvery {
-            driveMapOverlayService.updateCheckPointLeafCaption(
+            mapOverlayService.updateCheckPointLeafCaption(
                 refreshedCheckPoint.courseId,
                 refreshedCheckPoint.checkPointId,
                 refreshedCheckPoint.caption
@@ -608,14 +553,18 @@ class DriveViewModelTest {
 
     @Test
     fun commentRemoveClick() = runTest {
-        val course = Course(courseId ="cs1")
+        val course = Course(courseId = "cs1")
         val checkPoint = CheckPoint(courseId = course.courseId, checkPointId = "cp1")
         val defaultComment =
             Comment(commentId = "cm1", groupId = checkPoint.checkPointId, oneLineReview = "hello")
         val removeComment =
             Comment(commentId = "cm2", groupId = checkPoint.checkPointId, oneLineReview = "hi")
         val refreshedCheckPoint =
-            CheckPoint(courseId = course.courseId, checkPointId = checkPoint.checkPointId, caption = "hello")
+            CheckPoint(
+                courseId = course.courseId,
+                checkPointId = checkPoint.checkPointId,
+                caption = "hello"
+            )
 
         val initState = DriveScreenState().run {
             copy(
@@ -648,7 +597,7 @@ class DriveViewModelTest {
             listOf(refreshedCheckPoint)
         )
         coEvery {
-            driveMapOverlayService.updateCheckPointLeafCaption(
+            mapOverlayService.updateCheckPointLeafCaption(
                 refreshedCheckPoint.courseId,
                 refreshedCheckPoint.checkPointId,
                 refreshedCheckPoint.caption
@@ -722,7 +671,7 @@ class DriveViewModelTest {
         coEvery { getCheckPointForMarkerUseCase(course.courseId) } returns
                 Result.success(listOf(refreshedCheckPoint))
         coEvery {
-            driveMapOverlayService.updateCheckPointLeafCaption(
+            mapOverlayService.updateCheckPointLeafCaption(
                 refreshedCheckPoint.courseId,
                 refreshedCheckPoint.checkPointId,
                 refreshedCheckPoint.caption
@@ -849,10 +798,6 @@ class DriveViewModelTest {
         )
         val addedCheckPoint =
             CheckPoint("cp1", courseId = course.courseId, latLng = checkpointContent.latLng)
-        val checkpointOverlay = MapOverlay.ClusterContainer(
-            contentId = addedCheckPoint.courseId,
-            cluster = AppCluster(course.courseId)
-        )
         val domainError = DomainError.InternalError("checkpoint add fail")
         val initState = DriveScreenState().run {
             copy(
@@ -867,18 +812,17 @@ class DriveViewModelTest {
         val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
         coEvery { addCheckpointToCourseUseCase(checkpointContent) } returnsMany
                 listOf(Result.failure(domainError), Result.success(addedCheckPoint))
-        coEvery { driveMapOverlayService.addOneTimeMarker(listOf(addedCheckPoint.toMarkerInfo())) } returns Unit
+        coEvery { mapOverlayService.addOneTimeMarker(listOf(addedCheckPoint.toMarkerInfo())) } returns Unit
         coEvery { driveHandler.handle(DriveEvent.ADD_DONE) } returns Unit
-        coEvery { driveMapOverlayService.removeOneTimeMarker(listOf(CHECKPOINT_ADD_MARKER)) } returns Unit
+        coEvery { mapOverlayService.removeOneTimeMarker(listOf(CHECKPOINT_ADD_MARKER)) } returns Unit
         coEvery { driveHandler.handle(DriveEvent.REMOVE_DONE) } returns Unit
         coEvery {
-            driveMapOverlayService.addCheckPointLeaf(
+            mapOverlayService.addCheckPointLeaf(
                 courseId = addedCheckPoint.courseId,
-                checkPoint =  addedCheckPoint,
+                checkPoint = addedCheckPoint,
                 onLeafClick = any()
             )
         } returns Result.success(Unit)
-        coEvery { driveMapOverlayService.getOverlays() } returns listOf(checkpointOverlay)
         coEvery { driveHandler.handle(domainError.toAppError()) } returns domainError.toAppError()
 
         viewModel.driveScreenState.test {
@@ -906,7 +850,6 @@ class DriveViewModelTest {
             // 체크포인트 생성 시도 (성공) :  생성된 체크포인트 주입 및 ui 변경
             val checkpointAddExpect = loadingExpect3.run {
                 copy(
-                    overlayGroup = listOf(checkpointOverlay),
                     stateMode = DriveVisibleMode.CourseDetail,
                     selectedCourse = selectedCourse.copy(
                         checkpointIdGroup = listOf(addedCheckPoint.checkPointId)
@@ -937,8 +880,6 @@ class DriveViewModelTest {
             CheckPoint(courseId = reportCourse.courseId, checkPointId = "cp1", isUserCreated = true)
         val normalItemState = ListItemState(course = normalCourse, distanceFromCenter = 50)
         val removeItemState = ListItemState(course = reportCourse)
-        val normalCourseOverlay =
-            normalCourse.toMarkerContainer(AppMarker(normalCourse.toMarkerInfo()))
 
         val initState = DriveScreenState().run {
             copy(
@@ -966,9 +907,9 @@ class DriveViewModelTest {
         val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
         coEvery { reportCourseUseCase(reportCourse, "reason") } returns Result.success("rp1")
         coEvery { driveHandler.handle(DriveEvent.REPORT_DONE) } returns Unit
-        coEvery { driveMapOverlayService.removeCourseMarkerAndPath(listOf(reportCourse.courseId)) } returns Unit
-        coEvery { driveMapOverlayService.removeCheckPointCluster(reportCourse.courseId) } returns Unit
-        coEvery { driveMapOverlayService.showAllOverlays() } returns Unit
+        coEvery { mapOverlayService.removeCourseMarkerAndPath(listOf(reportCourse.courseId)) } returns Unit
+        coEvery { mapOverlayService.removeCheckPointCluster(reportCourse.courseId) } returns Unit
+        coEvery { mapOverlayService.showAllOverlays() } returns Unit
 
         coEvery { getNearByCourseUseCase(centerCamera.latLng, centerCamera.zoom) } returns listOf(
             normalCourse
@@ -979,8 +920,7 @@ class DriveViewModelTest {
                 normalCourse.cameraLatLng
             )
         } returns 50
-        coEvery { driveMapOverlayService.addCourseMarkerAndPath(listOf(normalCourse)) } returns Unit
-        coEvery { driveMapOverlayService.getOverlays() } returns listOf(normalCourseOverlay)
+        coEvery { mapOverlayService.addCourseMarkerAndPath(listOf(normalCourse)) } returns Unit
 
         viewModel.driveScreenState.test {
             assertEquals(initState, awaitItem())
@@ -996,7 +936,6 @@ class DriveViewModelTest {
             val reportExpect = loadingExpect.run {
                 copy(
                     stateMode = DriveVisibleMode.Explorer,
-                    overlayGroup = listOf(normalCourseOverlay),
                     listState = listState.copy(
                         listItemGroup = listOf(normalItemState)
                     ),
@@ -1037,11 +976,18 @@ class DriveViewModelTest {
         }
 
         val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
-        coEvery { reportCheckPointUseCase(reprotCheckpoint, "reason") } returns Result.success("rp1")
+        coEvery {
+            reportCheckPointUseCase(
+                reprotCheckpoint,
+                "reason"
+            )
+        } returns Result.success("rp1")
         coEvery { driveHandler.handle(DriveEvent.REPORT_DONE) } returns Unit
-        coEvery { driveMapOverlayService.removeCheckPointLeaf(
-            reprotCheckpoint.courseId,
-            reprotCheckpoint.checkPointId)
+        coEvery {
+            mapOverlayService.removeCheckPointLeaf(
+                reprotCheckpoint.courseId,
+                reprotCheckpoint.checkPointId
+            )
         } returns Unit
         viewModel.driveScreenState.test {
             assertEquals(initState, awaitItem())
@@ -1087,9 +1033,6 @@ class DriveViewModelTest {
             CheckPoint(courseId = removeCourse.courseId, checkPointId = "cp1", isUserCreated = true)
         val normalItemState = ListItemState(course = normalCourse, distanceFromCenter = 50)
         val removeItemState = ListItemState(course = removeCourse)
-        val normalCourseOverlay =
-            normalCourse.toMarkerContainer(AppMarker(normalCourse.toMarkerInfo()))
-
         val initState = DriveScreenState().run {
             copy(
                 stateMode = DriveVisibleMode.BlurBottomSheetExpand,
@@ -1114,11 +1057,13 @@ class DriveViewModelTest {
         }
 
         val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
-        coEvery { removeCourseUseCase(courseId = removeCourse.courseId) } returns Result.success(removeCourse.courseId)
+        coEvery { removeCourseUseCase(courseId = removeCourse.courseId) } returns Result.success(
+            removeCourse.courseId
+        )
         coEvery { driveHandler.handle(DriveEvent.REMOVE_DONE) } returns Unit
-        coEvery { driveMapOverlayService.removeCourseMarkerAndPath(listOf(removeCourse.courseId)) } returns Unit
-        coEvery { driveMapOverlayService.removeCheckPointCluster(removeCourse.courseId) } returns Unit
-        coEvery { driveMapOverlayService.showAllOverlays() } returns Unit
+        coEvery { mapOverlayService.removeCourseMarkerAndPath(listOf(removeCourse.courseId)) } returns Unit
+        coEvery { mapOverlayService.removeCheckPointCluster(removeCourse.courseId) } returns Unit
+        coEvery { mapOverlayService.showAllOverlays() } returns Unit
 
         coEvery { getNearByCourseUseCase(centerCamera.latLng, centerCamera.zoom) } returns listOf(
             normalCourse
@@ -1129,8 +1074,7 @@ class DriveViewModelTest {
                 normalCourse.cameraLatLng
             )
         } returns 50
-        coEvery { driveMapOverlayService.addCourseMarkerAndPath(listOf(normalCourse)) } returns Unit
-        coEvery { driveMapOverlayService.getOverlays() } returns listOf(normalCourseOverlay)
+        coEvery { mapOverlayService.addCourseMarkerAndPath(listOf(normalCourse)) } returns Unit
 
         viewModel.driveScreenState.test {
             assertEquals(initState, awaitItem())
@@ -1146,7 +1090,6 @@ class DriveViewModelTest {
             val removeExpect = loadingExpect.run {
                 copy(
                     stateMode = DriveVisibleMode.Explorer,
-                    overlayGroup = listOf(normalCourseOverlay),
                     listState = listState.copy(
                         listItemGroup = listOf(normalItemState)
                     ),
@@ -1192,7 +1135,10 @@ class DriveViewModelTest {
         } returns Result.success(removeCheckpoint.checkPointId)
         coEvery { driveHandler.handle(DriveEvent.REMOVE_DONE) } returns Unit
         coEvery {
-            driveMapOverlayService.removeCheckPointLeaf(removeCheckpoint.courseId, removeCheckpoint.checkPointId)
+            mapOverlayService.removeCheckPointLeaf(
+                removeCheckpoint.courseId,
+                removeCheckpoint.checkPointId
+            )
         } returns Unit
         viewModel.driveScreenState.test {
             assertEquals(initState, awaitItem())
@@ -1249,9 +1195,9 @@ class DriveViewModelTest {
             searchKeywordUseCase,
             signOutUseCase,
             guideMoveStepUseCase,
-            driveMapOverlayService,
             nativeAdService,
-            locationService
+            locationService,
+            mapOverlayService
         )
     }
     private val driveHandler = mockk<DriveHandler>()
@@ -1273,7 +1219,7 @@ class DriveViewModelTest {
     private val searchKeywordUseCase = mockk<SearchKeywordUseCase>()
     private val signOutUseCase = mockk<UserSignOutUseCase>()
     private val guideMoveStepUseCase = mockk<GuideMoveStepUseCase>()
-    private val driveMapOverlayService = mockk<DriveMapOverlayService>()
+    private val mapOverlayService = mockk<MapOverlayService>()
     private val nativeAdService = mockk<AdService>()
     private val locationService = mockk<LocationService>()
 

@@ -3,6 +3,8 @@ package com.wheretogo.presentation
 
 import com.google.android.gms.ads.nativead.NativeAd
 import com.wheretogo.domain.AuthCompany
+import com.wheretogo.domain.MarkerType
+import com.wheretogo.domain.PathType
 import com.wheretogo.domain.RouteAttr
 import com.wheretogo.domain.SearchType
 import com.wheretogo.domain.model.address.LatLng
@@ -15,16 +17,15 @@ import com.wheretogo.domain.model.course.Course
 import com.wheretogo.domain.model.course.CourseContent
 import com.wheretogo.domain.model.route.RouteCategory
 import com.wheretogo.domain.model.util.Navigation
+import com.wheretogo.presentation.state.CourseAddScreenState
 import com.wheretogo.presentation.model.AdItem
-import com.wheretogo.presentation.model.AppCluster
-import com.wheretogo.presentation.model.AppMarker
-import com.wheretogo.presentation.model.MapOverlay
+import com.wheretogo.presentation.model.LeafInfo
 import com.wheretogo.presentation.model.MarkerInfo
+import com.wheretogo.presentation.model.PathInfo
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.CheckPointAddState
 import com.wheretogo.presentation.state.CommentState
 import com.wheretogo.presentation.state.CommentState.CommentAddState
-import com.wheretogo.presentation.state.CourseAddScreenState
 import com.naver.maps.geometry.LatLng as NaverLatLng
 
 fun List<NativeAd>.toItem(): List<AdItem> {
@@ -136,25 +137,29 @@ fun parseLogoImgRes(company: String): Int {
     }
 }
 
-fun Course.toMarkerContainer(marker: AppMarker): MapOverlay.MarkerContainer {
-    return MapOverlay.MarkerContainer(
-        courseId, MarkerType.SPOT,
-        marker
-    )
-}
-
 fun Course.toMarkerInfo(): MarkerInfo {
     return MarkerInfo(
         contentId = courseId,
         position = waypoints.first(),
+        type = MarkerType.COURSE,
         iconRes = RouteCategory.fromCode(type)?.item.toIcRes()
     )
 }
 
-fun CheckPoint.toClusterContainer(marker: AppCluster): MapOverlay.ClusterContainer {
-    return MapOverlay.ClusterContainer(
-        contentId = checkPointId,
-        cluster = marker
+fun Course.toPathInfo(): PathInfo {
+    return PathInfo(
+        contentId = courseId,
+        type = PathType.FULL,
+        points = points
+    )
+}
+
+fun CheckPoint.toLeafInfo(): LeafInfo {
+    return LeafInfo(
+        id = checkPointId,
+        latLng = latLng,
+        caption = caption,
+        thumbnail = thumbnail
     )
 }
 

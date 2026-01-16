@@ -2,34 +2,25 @@ package com.wheretogo.presentation.viewmodel.test
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.naver.maps.map.clustering.ClusterMarkerInfo
-import com.naver.maps.map.clustering.Clusterer
 import com.naver.maps.map.clustering.ClusteringKey
-import com.naver.maps.map.clustering.DefaultClusterMarkerUpdater
-import com.naver.maps.map.clustering.DefaultLeafMarkerUpdater
-import com.naver.maps.map.clustering.DefaultMarkerManager
-import com.naver.maps.map.clustering.LeafMarkerInfo
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
-import com.naver.maps.map.util.MarkerIcons
 import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.LIST_ITEM_ZOOM
+import com.wheretogo.domain.MarkerType
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.dummy.guideCheckPoint
 import com.wheretogo.domain.model.dummy.guideCourse
 import com.wheretogo.domain.usecase.app.GuideMoveStepUseCase
 import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
 import com.wheretogo.presentation.CameraUpdateSource
-import com.wheretogo.presentation.MarkerType
 import com.wheretogo.presentation.MoveAnimation
-import com.wheretogo.presentation.feature.map.DriveMapOverlayService
-import com.wheretogo.presentation.feature.naver.NaverMapOverlayModifier
-import com.wheretogo.presentation.model.MapOverlay
+import com.wheretogo.presentation.OverlayType
+import com.wheretogo.presentation.model.AppMarker
 import com.wheretogo.presentation.model.MarkerInfo
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.CameraState
 import com.wheretogo.presentation.state.test.TestState
-import com.wheretogo.presentation.toNaver
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -38,8 +29,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TestViewModel @Inject constructor(
-    private val overlayService: DriveMapOverlayService,
-    private val creater: NaverMapOverlayModifier,
     private val observeSettingsUseCase: ObserveSettingsUseCase,
     private val guideMoveStepUseCase: GuideMoveStepUseCase,
 ) : ViewModel() {
@@ -80,10 +69,10 @@ class TestViewModel @Inject constructor(
         )
     )
     val overlays = infos.map{
-        MapOverlay.MarkerContainer(
+        AppMarker(
             it.contentId,
-            it.type,
-            creater.createMarker(it)
+            OverlayType.LEAF_MARKER,
+            it
         )
     }
 
@@ -91,8 +80,8 @@ class TestViewModel @Inject constructor(
         viewModelScope.launch {
             state.update {
                 it.copy(
- overlays =  overlays,
-                    clustererGroup = createComplex(overlays),
+                    overlays =  overlays,
+                    //clustererGroup = createComplex(overlays),
 
                     searchBarState = it.searchBarState.copy(
                         searchBarItemGroup = searchBarItemGroup
@@ -145,95 +134,6 @@ class TestViewModel @Inject constructor(
                 )
             )
         }
-    }
-
-    fun createClusterer(overlays : List<MapOverlay>):List<Clusterer<ItemKey>>{
-        val clusterer = Clusterer.Builder<ItemKey>()
-        val markers= overlays
-            .mapNotNull {
-                if(it is MapOverlay.MarkerContainer && it.type == MarkerType.CHECKPOINT) {
-                    val icon = it.marker.coreMarker?.icon?:return@mapNotNull null
-                    val position = it.marker.markerInfo.position?.toNaver()?:return@mapNotNull null
-                    ItemKey(
-                        it.contentId,
-                        position,
-                        icon
-                    ) to null
-                }
-                else null
-            }.toMap()
-
-        clusterer.clusterMarkerUpdater(object : DefaultClusterMarkerUpdater() {
-            override fun updateClusterMarker(info: ClusterMarkerInfo, marker: Marker) {
-                super.updateClusterMarker(info, marker)
-                marker.icon = if (info.size < 3) {
-                    MarkerIcons.CLUSTER_LOW_DENSITY
-                } else {
-                    MarkerIcons.CLUSTER_MEDIUM_DENSITY
-                }
-            }
-        }).leafMarkerUpdater(object : DefaultLeafMarkerUpdater() {
-            override fun updateLeafMarker(info: LeafMarkerInfo, marker: Marker) {
-                super.updateLeafMarker(info, marker)
-
-                val key = info.key as ItemKey
-                marker.icon = key.oi
-
-            }
-        })
-        val result = clusterer.build()
-        result.addAll(markers)
-        return listOf(result)
-    }
-
-
-    fun createComplex(overlays : List<MapOverlay>):List<Clusterer<ItemKey>>{
-        val builder= Clusterer.ComplexBuilder<ItemKey>()
-
-        val markers= overlays
-            .mapNotNull {
-                if(it is MapOverlay.MarkerContainer && it.type == MarkerType.CHECKPOINT) {
-                    it
-                }
-                else null
-            }
-        val keys = markers.mapNotNull{
-            val icon = it.marker.coreMarker?.icon?:return@mapNotNull null
-            val position = it.marker.markerInfo.position?.toNaver()?:return@mapNotNull null
-
-            ItemKey(
-                it.contentId,
-                position,
-                icon
-            ) to null
-        }.toMap()
-        builder.markerManager(object : DefaultMarkerManager() {
-            override fun createMarker() = super.createMarker().apply {
-                checkMarkerPointGroup.add(this)
-            }
-        })
-        builder.clusterMarkerUpdater(object : DefaultClusterMarkerUpdater() {
-            override fun updateClusterMarker(info: ClusterMarkerInfo, marker: Marker) {
-                super.updateClusterMarker(info, marker)
-                marker.icon = if (info.size < 3) {
-                    MarkerIcons.CLUSTER_LOW_DENSITY
-                } else {
-                    MarkerIcons.CLUSTER_MEDIUM_DENSITY
-                }
-            }
-        }).leafMarkerUpdater(object : DefaultLeafMarkerUpdater() {
-            override fun updateLeafMarker(info: LeafMarkerInfo, marker: Marker) {
-                super.updateLeafMarker(info, marker)
-
-                val key = info.key as ItemKey
-                marker.icon = key.oi
-
-            }
-        })
-        val result = builder.build()
-        result.addAll(keys)
-
-        return listOf(result)
     }
 
     fun markerClick(){

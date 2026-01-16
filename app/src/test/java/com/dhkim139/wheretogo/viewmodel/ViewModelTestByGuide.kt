@@ -3,12 +3,10 @@ package com.dhkim139.wheretogo.viewmodel
 import app.cash.turbine.test
 import com.dhkim139.wheretogo.feature.MainDispatcherRule
 import com.wheretogo.domain.DriveTutorialStep
-import com.wheretogo.domain.LIST_ITEM_ZOOM
 import com.wheretogo.domain.handler.DriveHandler
 import com.wheretogo.domain.handler.HomeEvent
 import com.wheretogo.domain.handler.HomeHandler
 import com.wheretogo.domain.model.app.Settings
-import com.wheretogo.domain.model.dummy.guideCourse
 import com.wheretogo.domain.usecase.app.GuideMoveStepUseCase
 import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
 import com.wheretogo.domain.usecase.checkpoint.AddCheckpointToCourseUseCase
@@ -26,22 +24,15 @@ import com.wheretogo.domain.usecase.user.UserSignOutUseCase
 import com.wheretogo.domain.usecase.util.GetImageForPopupUseCase
 import com.wheretogo.domain.usecase.util.SearchKeywordUseCase
 import com.wheretogo.domain.usecase.util.UpdateLikeUseCase
-import com.wheretogo.presentation.CameraUpdateSource
 import com.wheretogo.presentation.HomeBodyBtn
 import com.wheretogo.presentation.HomeBodyBtnHighlight
 import com.wheretogo.presentation.feature.ads.AdService
 import com.wheretogo.presentation.feature.geo.LocationService
-import com.wheretogo.presentation.feature.map.DriveMapOverlayService
-import com.wheretogo.presentation.intent.DriveScreenIntent
+import com.wheretogo.presentation.feature.map.MapOverlayService
 import com.wheretogo.presentation.intent.HomeIntent
-import com.wheretogo.presentation.model.AppMarker
-import com.wheretogo.presentation.state.CameraState
 import com.wheretogo.presentation.state.DriveScreenState
 import com.wheretogo.presentation.state.GuideState
 import com.wheretogo.presentation.state.HomeScreenState
-import com.wheretogo.presentation.state.ListState
-import com.wheretogo.presentation.toMarkerContainer
-import com.wheretogo.presentation.toMarkerInfo
 import com.wheretogo.presentation.viewmodel.DriveViewModel
 import com.wheretogo.presentation.viewmodel.HomeViewModel
 import io.mockk.coEvery
@@ -117,75 +108,6 @@ class ViewModelTestByGuide {
         }
     }
 
-    @Test  // todo 미완성
-    fun driveScreenTest() = runTest {
-        val courseGroup = listOf(guideCourse)
-        val courseOverlayGroup =
-            courseGroup.map { it.toMarkerContainer(AppMarker(it.toMarkerInfo())) }
-        val listItemGroup =
-            courseGroup.map{
-                ListState.ListItemState(
-
-                )
-            }
-        coEvery { observeSettingsUseCase() } returns flow {
-            emit(Result.success(Settings(tutorialStep = DriveTutorialStep.MOVE_TO_COURSE)))
-            emit(Result.success(Settings(tutorialStep = DriveTutorialStep.DRIVE_LIST_ITEM_CLICK)))
-        }
-
-        coEvery { getNearByCourseUseCase(guideCourse.cameraLatLng, 11.0) } returns courseGroup
-        coEvery { driveMapOverlayService.addCourseMarkerAndPath(courseGroup) } returns Unit
-        coEvery { driveMapOverlayService.showAllOverlays() } returns Unit
-        coEvery { driveMapOverlayService.getOverlays() } returns courseOverlayGroup
-        coEvery { guideMoveStepUseCase(true) } returns Result.success(Unit)
-
-        val initState = DriveScreenState(
-            guideState = GuideState(
-                tutorialStep = DriveTutorialStep.MOVE_TO_COURSE
-            )
-        )
-        val viewModel = initDriveViewModel(
-            dispatcher = StandardTestDispatcher(testScheduler),
-            state = initState
-        )
-
-        viewModel.driveScreenState.test {
-            assertEquals(initState, awaitItem())
-            val targetCamera = CameraState(
-                latLng = guideCourse.cameraLatLng,
-                zoom = LIST_ITEM_ZOOM,
-                updateSource = CameraUpdateSource.GUIDE
-            )
-
-            // 가이드 코스 이동
-            viewModel.handleIntent(DriveScreenIntent.CameraUpdated(
-                cameraState = targetCamera
-            ))
-
-            val moveToCamera = initState.run {
-                copy(
-                    naverMapState = naverMapState.copy(
-                        cameraState = targetCamera
-                    )
-                )
-            }
-
-            assertEquals(moveToCamera, awaitItem())
-
-            val screenLoading =  moveToCamera.replaceScreenLoading(true)
-            assertEquals(screenLoading, awaitItem())
-            val driveListItemClick = screenLoading.run {
-                copy(
-                    overlayGroup = courseOverlayGroup,
-                    listState = listState
-                )
-            }
-            assertEquals(driveListItemClick, awaitItem())
-            assertEquals(driveListItemClick.replaceScreenLoading(false), awaitItem())
-        }
-    }
-
-
     private fun initDriveViewModel(
         dispatcher: CoroutineDispatcher,
         state: DriveScreenState
@@ -211,9 +133,9 @@ class ViewModelTestByGuide {
             searchKeywordUseCase,
             signOutUseCase,
             guideMoveStepUseCase,
-            driveMapOverlayService,
             nativeAdService,
-            locationService
+            locationService,
+            mapOverlayService
         )
     }
 
@@ -249,7 +171,7 @@ class ViewModelTestByGuide {
     private val searchKeywordUseCase = mockk<SearchKeywordUseCase>()
     private val signOutUseCase = mockk<UserSignOutUseCase>()
     private val guideMoveStepUseCase = mockk<GuideMoveStepUseCase>()
-    private val driveMapOverlayService = mockk<DriveMapOverlayService>()
+    private val mapOverlayService = mockk<MapOverlayService>()
     private val nativeAdService = mockk<AdService>()
     private val locationService = mockk<LocationService>()
 
