@@ -32,10 +32,13 @@ import com.wheretogo.presentation.BuildConfig
 import com.wheretogo.presentation.CameraUpdateSource
 import com.wheretogo.presentation.MoveAnimation
 import com.wheretogo.presentation.feature.geo.FollowLocationSource
-import com.wheretogo.presentation.feature.naver.setCurrentLocation
-import com.wheretogo.presentation.model.AppMarker
-import com.wheretogo.presentation.model.ContentPadding
 import com.wheretogo.presentation.model.MapOverlay
+import com.wheretogo.presentation.feature.naver.setCurrentLocation
+import com.wheretogo.presentation.model.ContentPadding
+import com.wheretogo.presentation.model.AppCluster
+import com.wheretogo.presentation.model.AppMarker
+import com.wheretogo.presentation.model.AppPath
+import com.wheretogo.presentation.model.MarkerInfo
 import com.wheretogo.presentation.state.CameraState
 import com.wheretogo.presentation.state.NaverMapState
 import com.wheretogo.presentation.theme.Green50
@@ -43,6 +46,7 @@ import com.wheretogo.presentation.toCameraState
 import com.wheretogo.presentation.toDomainLatLng
 import com.wheretogo.presentation.toNaver
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.lang.ref.WeakReference
 
 @Composable
@@ -50,11 +54,12 @@ fun NaverMapSheet(
     modifier: Modifier = Modifier,
     state: NaverMapState,
     overlayGroup: List<MapOverlay> = emptyList(),
+    fingerPrint: Int = 0,
     contentPadding: ContentPadding = ContentPadding(),
     onMapAsync: (NaverMap) -> Unit = {},
     onCameraUpdate: (CameraState) -> Unit = {},
     onMapClick: (LatLng) -> Unit = {},
-    onMarkerClick: (AppMarker) -> Unit = {},
+    onMarkerClick: (MarkerInfo) -> Unit = {},
     onOverlayRenderComplete: (Boolean) -> Unit = {}
 ) {
     val isPreview = LocalInspectionMode.current
@@ -124,7 +129,7 @@ fun NaverMapSheet(
                 naverMap.contentPaddingUpdate(density, contentPadding)
             }
         }
-        LaunchedEffect(overlayGroup) {
+        LaunchedEffect(fingerPrint) {
             mapView?.getMapAsync { naverMap ->
                 naverMap.overlayUpdate(
                     overlayGroup = overlayGroup,
@@ -195,31 +200,32 @@ private fun NaverMap.contentPaddingUpdate(density: Density, contentPadding: Cont
 
 private fun NaverMap.overlayUpdate(
     overlayGroup: List<MapOverlay>,
-    onMarkerClick: (AppMarker) -> Unit = {},
+    onMarkerClick: (MarkerInfo) -> Unit = {},
     onOverlayRenderComplete: (Boolean) -> Unit = {}
 ) {
     val naverMap = this@overlayUpdate
     var isRendered = overlayGroup.isEmpty()
+
     overlayGroup.forEachIndexed { i, overlay ->
         when (overlay) {
-            is MapOverlay.MarkerContainer -> {
-                val marker = overlay.marker.coreMarker
+            is AppMarker -> {
+                val marker = overlay.coreMarker
 
                 if (marker != null) {
                     marker.map = naverMap
                     marker.setOnClickListener {
-                        onMarkerClick(overlay.marker)
+                        onMarkerClick(overlay.markerInfo)
                         true
                     }
                 }
 
             }
 
-            is MapOverlay.PathContainer -> {
-                overlay.path.corePathOverlay?.map = naverMap
+            is AppPath -> {
+                overlay.corePathOverlay?.map = naverMap
             }
-            is MapOverlay.ClusterContainer -> {
-                overlay.cluster.cluster?.map = naverMap
+            is AppCluster -> {
+                overlay.clusterHolder.cluster?.map = naverMap
             }
         }
         if (i == overlayGroup.size - 1)

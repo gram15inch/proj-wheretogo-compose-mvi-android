@@ -19,6 +19,15 @@ class CourseAddHandlerImpl(val errorHandler: ErrorHandler) : CourseAddHandler {
 
             CourseAddEvent.COURSE_ADD_DONE ->
                 EventBus.send(AppEvent.SnackBar(EventMsg(R.string.course_add_done)))
+
+            CourseAddEvent.NAME_MIN ->
+                EventBus.send(AppEvent.SnackBar(EventMsg(R.string.name_need_two_char)))
+
+            CourseAddEvent.WAYPOINT_MIN ->
+                EventBus.send(AppEvent.SnackBar(EventMsg(R.string.need_two_marker_for_path)))
+
+            CourseAddEvent.COURSE_CREATE_NEED ->
+                EventBus.send(AppEvent.SnackBar(EventMsg(R.string.course_create_need)))
         }
     }
 

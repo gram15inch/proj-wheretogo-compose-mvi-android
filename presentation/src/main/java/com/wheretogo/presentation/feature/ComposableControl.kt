@@ -32,6 +32,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.min
 import com.wheretogo.presentation.theme.Gray6080
 import kotlin.math.max
 
@@ -40,17 +41,25 @@ import kotlin.math.max
 @Composable
 fun ImeStickyBox(
     modifier: Modifier = Modifier,
+    isOffset: Boolean = true,
+    maxOffset: Dp = Int.MAX_VALUE.dp,
     onBoxHeightChange: (Dp) -> Unit = {},
     content: @Composable (Dp) -> Unit
 ) {
     val density = LocalDensity.current
     val navBarBottom = WindowInsets.navigationBars.getBottom(density)
     val imeInsets = WindowInsets.ime
-    val imeHeight = max(0f, (imeInsets.getBottom(density) - navBarBottom) / density.density).dp
+    val imeHeight = max(0f, ((imeInsets.getBottom(density) - navBarBottom) / density.density)).dp
+    val realHeight = min(imeHeight, maxOffset)
     Box(
         modifier = modifier
             .wrapContentHeight()
-            .offset(y = -imeHeight)
+            .run {
+                if (isOffset)
+                    offset(y = -realHeight)
+                else
+                    this
+            }
             .onGloballyPositioned { layoutCoordinates ->
                 onBoxHeightChange(with(density) {
                     layoutCoordinates.size.height.dp

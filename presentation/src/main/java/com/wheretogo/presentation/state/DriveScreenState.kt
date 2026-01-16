@@ -19,6 +19,7 @@ data class DriveScreenState(
     val floatingButtonState: FloatingButtonState = FloatingButtonState(),
     val stateMode: DriveVisibleMode = DriveVisibleMode.Explorer,
     val overlayGroup: List<MapOverlay> = emptyList(),
+    val fingerPrint: Int = 0,
     val selectedCourse: Course = Course(),
     val selectedCheckPoint: CheckPoint = CheckPoint(),
     val isLoading: Boolean = false,

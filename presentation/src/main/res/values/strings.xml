@@ -30,6 +30,8 @@
     <string name="detail_review">상세리뷰</string>
 
 
+    <string name="course_name">경로 이름</string>
+
     <string name="category">유형</string>
     <string name="level">난이도</string>
     <string name="duration">소요시간</string>
@@ -64,6 +66,10 @@
 
     <string name="course_add_done">코스 등록 완료</string>
     <string name="course_add_error">"코스 등록 오류: %s"</string>
+    <string name="name_need_two_char">이름은 2자 이상의 필요합니다.</string>
+    <string name="course_create_need">생성을 눌러 경로를 완성 하세요.</string>
+    <string name="need_two_marker_for_path">경로 생성은 2개 이상의 마커가 필요 합니다.</string>
+
 
     <string name="setting_open">설정열기</string>
     <string name="grant_location_permission">내 위치 권한 수락 하러 가기</string>

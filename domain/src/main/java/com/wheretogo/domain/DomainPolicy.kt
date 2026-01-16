@@ -142,6 +142,9 @@ enum class RouteAttrItem {
     COUPLE;
 }
 
+enum class CourseAddValid {
+    NAME, ROUTE, ATTR
+}
 
 enum class ReportStatus {
     PENDING, REVIEWED, REJECTED, ACCEPTED
@@ -176,4 +179,12 @@ class DefaultCoolDownPolicy(
             Result.failure(DomainError.CoolDownData(minCoolDownMinutes - waitingMinutes))
         else Result.success(Unit)
     }
+}
+
+enum class MarkerType {
+    DEFAULT, COURSE, CHECKPOINT
+}
+
+enum class PathType {
+    SCAFFOLD, FULL
 }

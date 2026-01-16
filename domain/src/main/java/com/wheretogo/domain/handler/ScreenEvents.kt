@@ -10,7 +10,7 @@ enum class HomeEvent {
 }
 
 enum class CourseAddEvent {
-    HOME_NAVIGATE, COURSE_ADD_DONE
+    HOME_NAVIGATE, COURSE_ADD_DONE, NAME_MIN, COURSE_CREATE_NEED, WAYPOINT_MIN
 }
 
 enum class LoginEvent {

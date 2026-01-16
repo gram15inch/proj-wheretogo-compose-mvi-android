@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
@@ -29,8 +28,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -45,16 +42,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -72,14 +70,16 @@ import com.wheretogo.presentation.composable.content.AnimationDirection
 import com.wheretogo.presentation.composable.content.BottomSheet
 import com.wheretogo.presentation.composable.content.DelayLottieAnimation
 import com.wheretogo.presentation.composable.content.FadeAnimation
+import com.wheretogo.presentation.composable.content.FocusTextField
+import com.wheretogo.presentation.composable.content.KeyboardTrack
 import com.wheretogo.presentation.composable.content.NaverMapSheet
 import com.wheretogo.presentation.composable.content.SearchBar
 import com.wheretogo.presentation.composable.content.SlideAnimation
 import com.wheretogo.presentation.feature.intervalTab
 import com.wheretogo.presentation.feature.naver.setCurrentLocation
 import com.wheretogo.presentation.intent.CourseAddIntent
-import com.wheretogo.presentation.model.AppMarker
 import com.wheretogo.presentation.model.ContentPadding
+import com.wheretogo.presentation.model.MarkerInfo
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.BottomSheetState
 import com.wheretogo.presentation.state.CameraState
@@ -97,7 +97,6 @@ import com.wheretogo.presentation.theme.interFontFamily
 import com.wheretogo.presentation.toStrRes
 import com.wheretogo.presentation.viewmodel.CourseAddViewModel
 import kotlinx.coroutines.launch
-import kotlin.math.max
 
 @Composable
 fun CourseAddScreen(
@@ -131,7 +130,7 @@ fun CourseAddScreen(
         onCategorySelect = { viewModel.handleIntent(CourseAddIntent.RouteCategorySelect(it)) },
         onCommendClick = { viewModel.handleIntent(CourseAddIntent.CommendClick) },
         onBackClick = { viewModel.handleIntent(CourseAddIntent.DetailBackClick) },
-        onNameEditValueChange = { viewModel.handleIntent(CourseAddIntent.NameEditValueChange(it)) },
+        onCourseNameSubmit = { viewModel.handleIntent(CourseAddIntent.CourseNameSubmit(it)) },
 
         //FloatingButtonGroup
         onMarkerMoveClick = { viewModel.handleIntent(CourseAddIntent.MarkerMoveFloatingClick) },
@@ -148,7 +147,7 @@ fun CourseAddSheetContent(
     onMapAsync: (NaverMap) -> Unit = {},
     onCameraUpdate: (CameraState) -> Unit = {},
     onMapClick: (LatLng) -> Unit = {},
-    onMarkerClick: (AppMarker) -> Unit = {},
+    onMarkerClick: (MarkerInfo) -> Unit = {},
 
     //SearchBar
     onSearchBarItemClick: (SearchBarItem) -> Unit = {},
@@ -163,7 +162,7 @@ fun CourseAddSheetContent(
     onCategorySelect: (RouteCategory) -> Unit = {},
     onRouteCreateClick: () -> Unit = {},
     onCommendClick: () -> Unit = {},
-    onNameEditValueChange: (String) -> Unit = {},
+    onCourseNameSubmit: (String) -> Unit = {},
     onBackClick: () -> Unit = {},
 
     //FloatingButtonGroup
@@ -188,6 +187,7 @@ fun CourseAddSheetContent(
                     .fillMaxSize(),
                 state = state.naverMapState,
                 overlayGroup = state.overlayGroup,
+                fingerPrint = state.fingerPrint,
                 onMapAsync = onMapAsync,
                 onCameraUpdate = onCameraUpdate,
                 onMapClick = onMapClick,
@@ -236,32 +236,39 @@ fun CourseAddSheetContent(
                         onCategorySelect = onCategorySelect,
                         onCommendClick = onCommendClick,
                         onBackClick = onBackClick,
-                        onNameEditValueChange = onNameEditValueChange,
+                        onCourseNameSubmit = onCourseNameSubmit,
                     )
                 }
             }
 
             Box(
                 modifier = Modifier
-                .fillMaxSize()
-                .padding(
-                    start = systemBars.calculateStartPadding(LocalLayoutDirection.current),
-                    end = systemBars.calculateEndPadding(LocalLayoutDirection.current),
-                    top = systemBars.calculateTopPadding(),
-                    bottom = mapBottomPadding
-                )
-            ){
+                    .fillMaxSize()
+                    .padding(
+                        start = systemBars.calculateStartPadding(LocalLayoutDirection.current),
+                        end = systemBars.calculateEndPadding(LocalLayoutDirection.current),
+                        top = systemBars.calculateTopPadding(),
+                        bottom = mapBottomPadding
+                    )
+            ) {
                 if (BuildConfig.TEST_UI) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .zIndex(1f)
                     ) {
-                        Text(
+                        Column(
                             modifier = Modifier.align(alignment = Alignment.TopStart),
-                            text = "${state.overlayGroup.size}",
-                            fontSize = 50.sp
-                        )
+                        ) {
+                            Text(
+                                text = "${state.overlayGroup.size}",
+                                fontSize = 50.sp
+                            )
+                            Text(
+                                text = "${state.bottomSheetState.courseAddSheetState.pathType}",
+                                fontSize = 16.sp
+                            )
+                        }
                     }
                 }
                 if (state.isFloatMarker)
@@ -338,29 +345,29 @@ fun CourseAddSheetContent(
     onCategorySelect: (RouteCategory) -> Unit,
     onRouteCreateClick: () -> Unit,
     onCommendClick: () -> Unit,
-    onNameEditValueChange: (String) -> Unit,
+    onCourseNameSubmit: (String) -> Unit = {},
     onBackClick: () -> Unit,
 ) {
     Column {
-        Box(modifier = Modifier.heightIn(min=320.dp)) {
+        Box(modifier = Modifier.heightIn(min = 340.dp)) {
             SlideAnimation(
-                visible = !state.isTwoStep,
+                visible = !state.isCategoryStep,
                 direction = AnimationDirection.CenterUp
             ) {
                 RouteWaypointContent(
                     modifier = Modifier
                         .padding(top = 15.dp, start = 15.dp, end = 15.dp, bottom = 5.dp)
                         .fillMaxWidth(),
-                    routeName = state.courseName,
+                    courseName = state.courseName,
                     duration = state.routeState.duration,
                     waypointItemStateGroup = state.routeState.waypointItemStateGroup,
                     onRouteCreateClick = onRouteCreateClick,
-                    onNameEditValueChange = onNameEditValueChange,
+                    onCourseNameSubmit = onCourseNameSubmit,
                 )
             }
 
             SlideAnimation(
-                visible = state.isTwoStep,
+                visible = state.isCategoryStep,
                 direction = AnimationDirection.CenterDown
             ) {
                 RouteDetailContent(
@@ -374,8 +381,8 @@ fun CourseAddSheetContent(
         }
         CommendButton(
             modifier = Modifier.height(60.dp),
-            isDetailContent = state.isTwoStep,
-            isDone = state.isNextStepButtonActive,
+            isDetailContent = state.isCategoryStep,
+            isDone = if (state.isCategoryStep) state.isTwoStepDone else state.isOneStepDone,
             isLoading = state.isLoading,
             onCommendClick = onCommendClick
         )
@@ -391,7 +398,7 @@ fun CommendButton(
     onCommendClick: () -> Unit
 ) {
     var isCommendActive by remember { mutableStateOf(isDone) }
-    LaunchedEffect(isDone) { isCommendActive=isDone }
+    LaunchedEffect(isDone) { isCommendActive = isDone }
     Box(
         modifier = modifier.padding(horizontal = 15.dp, vertical = 5.dp),
         contentAlignment = Alignment.BottomCenter
@@ -404,14 +411,11 @@ fun CommendButton(
                 .fillMaxSize()
                 .clip(RoundedCornerShape(16.dp))
                 .border(
-                    color = Gray6080,
-                    shape = RoundedCornerShape(16.dp),
-                    width = 1.dp
+                    color = Gray6080, shape = RoundedCornerShape(16.dp), width = 1.dp
                 )
                 .background(backColor)
                 .intervalTab(1000L) {
-                    if(isCommendActive)
-                        onCommendClick()
+                    if (isCommendActive) onCommendClick()
                 },
             contentAlignment = Alignment.Center
         ) {
@@ -536,92 +540,136 @@ fun RouteDetailItem(
 
 @Composable
 fun RouteWaypointContent(
+    courseName: String,
     modifier: Modifier,
-    routeName: String,
     duration: Int,
     waypointItemStateGroup: List<CourseAddScreenState.RouteWaypointItemState>,
     onRouteCreateClick: () -> Unit,
-    onNameEditValueChange: (String) -> Unit,
+    onCourseNameSubmit: (String) -> Unit = {},
 ) {
-    val imeBottom = WindowInsets.ime.getBottom(LocalDensity.current)
-    val density= LocalDensity.current
+    val focusManager = LocalFocusManager.current
+    val focusRequester = remember { FocusRequester() }
     var isFocus by remember { mutableStateOf(false) }
-    val imePadding = if(isFocus) with(density) {
-        (max(imeBottom - 100, 0)*0.2f).toDp()
-    } else 0.dp
+    var editText by remember { mutableStateOf(TextFieldValue("")) }
 
-    Box(modifier = modifier.padding(bottom = imePadding)) {
+    LaunchedEffect(courseName) {
+        if (courseName.isNotBlank())
+            editText = editText.copy(text = courseName)
+    }
+
+    Box(modifier = modifier.padding()) {
         Column {
-            Box(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    modifier = Modifier.padding(start = 5.dp, top = 5.dp), text = "경로",
-                    fontSize = 20.sp,
-                    fontFamily = interBoldFontFamily
-                )
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(16.dp))
-                        .border(
-                            width = 1.dp,
-                            shape = RoundedCornerShape(16.dp),
-                            color = Gray150
-                        )
-                        .align(Alignment.TopEnd)
-                        .intervalTab(2000) { onRouteCreateClick() },
-                    contentAlignment = Alignment.Center
-                ) {
+            FadeAnimation(modifier = Modifier, !isFocus) {
+                Box(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-                        text = "\uD83D\uDCCD 생성",
-                        fontSize = 15.sp,
+                        modifier = Modifier.padding(start = 5.dp, top = 5.dp), text = "경로",
+                        fontSize = 20.sp,
                         fontFamily = interBoldFontFamily
                     )
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(16.dp))
+                            .border(
+                                width = 1.dp, shape = RoundedCornerShape(16.dp), color = Gray150
+                            )
+                            .align(Alignment.TopEnd)
+                            .intervalTab(2000) { onRouteCreateClick() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                            text = "\uD83D\uDCCD 생성",
+                            fontSize = 15.sp,
+                            fontFamily = interBoldFontFamily
+                        )
+                    }
                 }
             }
-            Column (
+
+            Box(
                 modifier = Modifier
-                    .padding(top = 15.dp, bottom = 10.dp, start = 10.dp)
+                    .padding(bottom = 10.dp, start = 10.dp)
                     .fillMaxWidth()
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    val textStyle = TextStyle(fontSize = 16.sp, fontFamily = interBoldFontFamily)
-                    val focusManager = LocalFocusManager.current
-
-                    BasicTextField(
-                        modifier = Modifier
-                            .onFocusChanged {
-                                isFocus = it.isFocused
-                            }
-                            .fillMaxWidth(),
-                        value = routeName,
-                        onValueChange = onNameEditValueChange,
-                        singleLine = true,
-                        decorationBox = { innerTextField ->
-                            Box(
-                                contentAlignment = Alignment.CenterStart
-                            ) {
-                                if (routeName.isEmpty()) {
-                                    Text(
-                                        text = "경로 이름",
-                                        style = textStyle.copy(color = Gray150)
-                                    )
-                                }
-                                innerTextField()
-                            }
-                        },
-                        textStyle = textStyle.copy(color = Black),
-                        keyboardActions = KeyboardActions(
-                            onDone = { focusManager.clearFocus() }
-                        )
-                    )
-
+                val textStyle = TextStyle(fontSize = 16.sp, fontFamily = interBoldFontFamily)
+                val courseName = stringResource(R.string.course_name)
+                SlideAnimation(
+                    modifier = Modifier.align(Alignment.TopStart),
+                    visible = isFocus,
+                    direction = AnimationDirection.CenterDown
+                ) {
                     Text(
-                        "소요시간 : ${duration / 60000}분",
-                        fontSize = 15.sp,
-                        fontFamily = interFontFamily
+                        text = courseName,
+                        style = textStyle.copy(color = Gray150, fontSize = 11.sp)
                     )
                 }
+                Column(modifier = Modifier.padding(top = 17.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+
+                        var isTextCover by remember { mutableStateOf(true) }
+
+                        Box(
+                            modifier = Modifier
+                                .heightIn(min = 30.dp),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            if (isTextCover && editText.text.isBlank())
+                                Text(
+                                    text = courseName,
+                                    style = textStyle.copy(color = Gray150)
+                                )
+                            FocusTextField(
+                                modifier = Modifier,
+                                textValue = editText,
+                                textStyle = textStyle,
+                                readOnly = false,
+                                focusRequester = focusRequester,
+                                onTextValueChange = {
+                                    val isComposing = it.composition != null
+                                    editText =
+                                        if (isComposing) {
+                                            it
+                                        } else {
+                                            it.copy(selection = TextRange(it.text.length))
+                                        }
+                                },
+                                onTextSubmit = {
+                                    isFocus = false
+                                    focusManager.clearFocus()
+                                    onCourseNameSubmit(it)
+                                },
+                                onFocusChanged = {
+                                    when {
+                                        !it.hasFocus -> {
+                                            isTextCover = true
+                                        }
+
+                                        it.hasFocus -> {
+                                            isFocus = true
+                                            isTextCover = false
+                                        }
+                                    }
+                                }
+                            )
+                        }
+
+                        KeyboardTrack(
+                            onKeyboardClose = {
+                                if (isFocus) {
+                                    focusManager.clearFocus()
+                                    onCourseNameSubmit(editText.text)
+                                    isFocus = false
+                                }
+                            })
+                        Text(
+                            "소요시간 : ${duration / 60000}분",
+                            fontSize = 15.sp,
+                            fontFamily = interFontFamily
+                        )
+                    }
+                }
             }
+
 
             Box(modifier.height(160.dp)) {
                 FadeAnimation(visible = waypointItemStateGroup.isNotEmpty()) {
@@ -648,8 +696,6 @@ fun RouteWaypointContent(
                     }
                 }
             }
-
-
         }
     }
 }
@@ -660,9 +706,7 @@ fun AddressItem(modifier: Modifier, item: CourseAddScreenState.RouteWaypointItem
         modifier = modifier
             .fillMaxWidth()
             .border(
-                width = 1.dp,
-                color = Gray280,
-                shape = RoundedCornerShape(16.dp)
+                width = 1.dp, color = Gray280, shape = RoundedCornerShape(16.dp)
             )
 
     ) {
@@ -690,7 +734,7 @@ fun CourseAddOneStepPreview() {
             bottomSheetState = BottomSheetState(
                 content = DriveBottomSheetContent.PREVIEW,
                 courseAddSheetState = CourseAddScreenState.CourseAddSheetState(
-                    isTwoStep = false,
+                    isCategoryStep = false,
                     selectedCategoryCodeGroup = mapOf(
                         RouteAttr.TYPE to 1,
                         RouteAttr.LEVEL to 4,
@@ -710,7 +754,7 @@ fun CourseAddTwoStepPreview() {
             bottomSheetState = BottomSheetState(
                 content = DriveBottomSheetContent.PREVIEW,
                 courseAddSheetState = CourseAddScreenState.CourseAddSheetState(
-                    isTwoStep = true,
+                    isCategoryStep = true,
                     selectedCategoryCodeGroup = mapOf(
                         RouteAttr.TYPE to 1,
                         RouteAttr.LEVEL to 4,

@@ -10,6 +10,8 @@ import com.naver.maps.map.app.LegalNoticeActivity
 import com.naver.maps.map.app.OpenSourceLicenseActivity
 import com.wheretogo.domain.DomainError
 import com.wheretogo.domain.DriveTutorialStep
+import com.wheretogo.domain.MarkerType
+import com.wheretogo.domain.PathType
 import com.wheretogo.domain.RouteAttrItem
 import com.wheretogo.domain.model.util.Viewport
 import com.wheretogo.presentation.model.EventMsg
@@ -29,7 +31,8 @@ const val AD_REFRESH_SIZE = 1
 const val AD_MAX_FONT_SCALE = 1.2f
 
 enum class OverlayType {
-    SPOT_MARKER, CLUSTER_MARKER, ONE_TIME_MARKER, PATH
+    DEFAULT_MARKER, COURSE_MARKER, ONE_TIME_MARKER, CLUSTER, LEAF_MARKER,
+    SCAFFOLD_PATH, FULL_PATH
 }
 
 enum class CommentType(@StringRes val typeRes: Int) {
@@ -130,14 +133,6 @@ enum class DriveBottomSheetContent(val minHeight: Int) {
     EMPTY(0), COURSE_ADD(80), CHECKPOINT_ADD(0), COURSE_INFO(0), CHECKPOINT_INFO(0), PREVIEW(400)
 }
 
-enum class MarkerType {
-    DEFAULT, SPOT, CHECKPOINT
-}
-
-enum class PathType {
-    SCAFFOLD, FULL
-}
-
 enum class AppLifecycle {
     onLaunch, onResume, onPause, onDispose, onDestory
 }
@@ -164,10 +159,33 @@ enum class MarkerZIndex{
 
 fun OverlayType.minZoomLevel(): Double {
     return when (this) {
-        OverlayType.SPOT_MARKER -> 8.0
-        OverlayType.PATH -> 9.5
-        OverlayType.CLUSTER_MARKER -> 9.5
+        OverlayType.COURSE_MARKER -> 8.0
+        OverlayType.FULL_PATH -> 9.5
+        OverlayType.CLUSTER -> 9.5
         OverlayType.ONE_TIME_MARKER -> 9.5
+        else -> 0.0
+    }
+}
+
+fun MarkerType.toOverlayType(): OverlayType{
+    return when(this){
+        MarkerType.COURSE -> OverlayType.COURSE_MARKER
+        MarkerType.CHECKPOINT -> OverlayType.LEAF_MARKER
+        MarkerType.DEFAULT -> OverlayType.DEFAULT_MARKER
+    }
+}
+
+fun PathType.toOverlayType(): OverlayType{
+    return when(this){
+        PathType.SCAFFOLD -> OverlayType.SCAFFOLD_PATH
+        PathType.FULL -> OverlayType.FULL_PATH
+    }
+}
+
+fun OverlayType.toPathType(): PathType{
+    return when(this){
+        OverlayType.SCAFFOLD_PATH -> PathType.SCAFFOLD
+        else -> PathType.FULL
     }
 }
 
