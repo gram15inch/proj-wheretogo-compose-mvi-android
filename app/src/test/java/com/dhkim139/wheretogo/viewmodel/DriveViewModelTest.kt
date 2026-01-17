@@ -159,7 +159,7 @@ class DriveViewModelTest {
         )
         val initState = DriveScreenState(
             naverMapState = NaverMapState(
-                cameraState = latest
+                latestCameraState = latest
             )
         )
         val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
@@ -175,21 +175,13 @@ class DriveViewModelTest {
             // @ 지도 타일 이동 (카메라 업데이트)
             viewModel.handleIntent(DriveScreenIntent.CameraUpdated(current))
 
-            // 카메라 이동
-            val camera = initState.run {
-                copy(
-                    naverMapState = naverMapState.copy(
-                        cameraState = current
-                    )
-                )
-            }
-            assertEquals(camera, awaitItem())
+            // 로딩 시작
+            val loadingStart = initState.copy(isLoading = true)
+            assertEquals(loadingStart, awaitItem())
 
             // 이동된 위치의 코스를 목록, 오버레이에 표시 (성공)
-            assertEquals(camera.copy(isLoading = true), awaitItem())
-            val updatedContentItem = camera.run {
+            val updatedContentItem = loadingStart.run {
                 copy(
-                    isLoading = true,
                     listState = listState.copy(
                         listItemGroup = listOf(
                             ListItemState(
@@ -201,7 +193,21 @@ class DriveViewModelTest {
                 )
             }
             assertEquals(updatedContentItem, awaitItem())
-            assertEquals(updatedContentItem.copy(isLoading = false), awaitItem())
+
+            // 로딩 중지
+            val loadingStop = updatedContentItem.copy(isLoading = false)
+            assertEquals(loadingStop, awaitItem())
+
+            // 카메라 업데이트
+            val camera = loadingStop.run {
+                copy(
+                    naverMapState = naverMapState.copy(
+                        latestCameraState = current
+                    )
+                )
+            }
+            assertEquals(camera, awaitItem())
+
         }
 
     }
@@ -337,7 +343,7 @@ class DriveViewModelTest {
                     stateMode = DriveVisibleMode.CourseDetail,
                     isLoading = true,
                     naverMapState = naverMapState.copy(
-                        cameraState = naverMapState.cameraState.copy(
+                        requestCameraState = naverMapState.latestCameraState.copy(
                             latLng = focus.first.cameraLatLng,
                             zoom = LIST_ITEM_ZOOM,
                             updateSource = CameraUpdateSource.LIST_ITEM,
@@ -885,7 +891,7 @@ class DriveViewModelTest {
             copy(
                 stateMode = DriveVisibleMode.BlurBottomSheetExpand,
                 naverMapState = naverMapState.copy(
-                    cameraState = centerCamera
+                    latestCameraState = centerCamera
                 ),
                 listState = listState.copy(listOf(normalItemState, removeItemState)),
                 bottomSheetState = bottomSheetState.copy(
@@ -1037,7 +1043,7 @@ class DriveViewModelTest {
             copy(
                 stateMode = DriveVisibleMode.BlurBottomSheetExpand,
                 naverMapState = naverMapState.copy(
-                    cameraState = centerCamera
+                    latestCameraState = centerCamera
                 ),
                 listState = listState.copy(listOf(normalItemState, removeItemState)),
                 bottomSheetState = bottomSheetState.copy(

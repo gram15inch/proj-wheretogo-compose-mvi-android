@@ -106,7 +106,7 @@ class TestViewModel @Inject constructor(
                                         )
                                         this.copy(
                                             naverState = naverState.copy(
-                                                cameraState = camera
+                                                requestCameraState = camera
                                             )
                                         )
                                     }
@@ -127,7 +127,7 @@ class TestViewModel @Inject constructor(
         state.update {
             it.copy(
                 naverState = it.naverState.copy(
-                    cameraState = cameraState.copy(
+                    latestCameraState = cameraState.copy(
                         updateSource = CameraUpdateSource.USER,
                         zoom = cameraState.zoom
                     )
@@ -148,7 +148,7 @@ class TestViewModel @Inject constructor(
                 it.run {
                     copy(
                         naverState = naverState.copy(
-                            cameraState = it.naverState.cameraState.copy(
+                            latestCameraState = it.naverState.latestCameraState.copy(
                                 latLng = latlng,
                                 zoom = LIST_ITEM_ZOOM,
                                 updateSource = CameraUpdateSource.SEARCH_BAR,

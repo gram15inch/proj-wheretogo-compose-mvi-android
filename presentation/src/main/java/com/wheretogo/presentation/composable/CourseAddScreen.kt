@@ -76,7 +76,7 @@ import com.wheretogo.presentation.composable.content.NaverMapSheet
 import com.wheretogo.presentation.composable.content.SearchBar
 import com.wheretogo.presentation.composable.content.SlideAnimation
 import com.wheretogo.presentation.feature.intervalTab
-import com.wheretogo.presentation.feature.naver.setCurrentLocation
+import com.wheretogo.presentation.feature.naver.placeCurrentLocation
 import com.wheretogo.presentation.intent.CourseAddIntent
 import com.wheretogo.presentation.model.ContentPadding
 import com.wheretogo.presentation.model.MarkerInfo
@@ -111,7 +111,7 @@ fun CourseAddScreen(
         state = state,
 
         //NaverMap
-        onMapAsync = { coroutineScope.launch { it.setCurrentLocation(context) } },
+        onMapAsync = { coroutineScope.launch { it.placeCurrentLocation(context) } },
         onCameraUpdate = { viewModel.handleIntent(CourseAddIntent.CameraUpdated(it)) },
         onMapClick = { viewModel.handleIntent(CourseAddIntent.MapClick(it)) },
         onMarkerClick = { viewModel.handleIntent(CourseAddIntent.WaypointMarkerClick(it)) },

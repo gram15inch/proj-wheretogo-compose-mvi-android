@@ -217,18 +217,12 @@ class DriveViewModel @Inject constructor(
 
         // 카메라 이동
         _driveScreenState.update {
-            it.run {
-                copy(
-                    naverMapState = naverMapState.copy(
-                        cameraState = naverMapState.cameraState.copy(
-                            latLng = item.latlng,
-                            zoom = LIST_ITEM_ZOOM,
-                            updateSource = CameraUpdateSource.SEARCH_BAR,
-                            moveAnimation = MoveAnimation.APP_EASING
-                        )
-                    )
-                )
-            }
+            it.moveCamera(
+                latLng = item.latlng,
+                zoom = LIST_ITEM_ZOOM,
+                source = CameraUpdateSource.SEARCH_BAR,
+                animation = MoveAnimation.APP_EASING
+            )
         }
 
         if (item.isCourse) {
@@ -337,71 +331,59 @@ class DriveViewModel @Inject constructor(
     }
 
     private suspend fun cameraUpdated(cameraState: CameraState) {
-        val isCameraUpdate =
-            _driveScreenState.value.run {
-                val oldCamera = naverMapState.cameraState
-                stateMode == DriveVisibleMode.Explorer &&
-                        (locationService.distance(oldCamera.latLng, cameraState.latLng) >= 1 ||
-                                oldCamera.zoom - cameraState.zoom >= 1 ||
-                                oldCamera.updateSource != cameraState.updateSource)
+        when(_driveScreenState.value.stateMode){
+            DriveVisibleMode.Explorer->{
+                if (isMapUpdate) {
+                    isMapUpdate = false
+                    _driveScreenState.update { it.replaceScreenLoading(true) }
+                    _driveScreenState.update { it.refreshNearCourse(cameraState) }
+                    _driveScreenState.update { it.replaceScreenLoading(false) }
+                    isMapUpdate = true
+                }
 
-            }
-
-        val isContentsUpdate = _driveScreenState.value.run {
-            isCameraUpdate && isMapUpdate
-        }
-
-        if (isCameraUpdate)
-            _driveScreenState.update {
-                it.copy(
-                    naverMapState = it.naverMapState.copy(
-                        cameraState = cameraState.copy(
-                            updateSource = CameraUpdateSource.USER,
-                            zoom = cameraState.zoom
-                        )
-                    )
-                )
-            }
-
-        val course = _driveScreenState.value.selectedCourse
-        val step= _driveScreenState.value.guideState.tutorialStep
-        if(course.checkpointIdGroup.isNotEmpty()){
-            if (_driveScreenState.value.stateMode == DriveVisibleMode.CourseDetail) {
-                mapOverlayService.scaleToPointLeafInCluster(
-                    course.courseId,
-                    cameraState.latLng,
-                ).onSuccess {
-                    if (guideCheckPoint.checkPointId == it &&
-                        step == DriveTutorialStep.MOVE_TO_LEAF
-                    ) {
-                        guideMoveStepUseCase(true)
+                _driveScreenState.value.apply {
+                    if(guideState.tutorialStep == DriveTutorialStep.MOVE_TO_COURSE) {
+                        listState.listItemGroup
+                            .firstOrNull { it.course.courseId == guideCourse.courseId }
+                            ?.let { guideMoveStepUseCase(true) }
                     }
                 }
             }
-        }
 
+            DriveVisibleMode.CourseDetail->{
+                val course = _driveScreenState.value.selectedCourse
+                val step= _driveScreenState.value.guideState.tutorialStep
+                if(course.checkpointIdGroup.isNotEmpty()){
+                    if (_driveScreenState.value.stateMode == DriveVisibleMode.CourseDetail) {
+                        mapOverlayService.scaleToPointLeafInCluster(
+                            course.courseId,
+                            cameraState.latLng,
+                        ).onSuccess {
+                            if (guideCheckPoint.checkPointId == it &&
+                                step == DriveTutorialStep.MOVE_TO_LEAF
+                            ) {
+                                guideMoveStepUseCase(true)
+                            }
+                        }
+                    }
+                }
 
-        if (isContentsUpdate) {
-            isMapUpdate = false
-            _driveScreenState.update { it.replaceScreenLoading(true) }
-            _driveScreenState.update { it.refreshNearCourse(cameraState) }
-            _driveScreenState.update { it.replaceScreenLoading(false) }
-            isMapUpdate = true
-        }
-
-        _driveScreenState.value.apply {
-            if(guideState.tutorialStep == DriveTutorialStep.MOVE_TO_COURSE) {
-               listState.listItemGroup
-                    .firstOrNull { it.course.courseId == guideCourse.courseId }
-                    ?.let { guideMoveStepUseCase(true) }
+                if (cameraState.zoom <= COURSE_DETAIL_MIN_ZOOM) {
+                    foldFloatingButtonClick()
+                }
             }
+            else -> return
         }
 
-
-        if (_driveScreenState.value.stateMode == DriveVisibleMode.CourseDetail &&
-            cameraState.zoom <= COURSE_DETAIL_MIN_ZOOM
-        ) {
-            foldFloatingButtonClick()
+        _driveScreenState.update {
+            it.copy(
+                naverMapState = it.naverMapState.copy(
+                    latestCameraState = cameraState.copy(
+                        updateSource = CameraUpdateSource.USER,
+                        zoom = cameraState.zoom,
+                    )
+                )
+            )
         }
     }
 
@@ -420,20 +402,16 @@ class DriveViewModel @Inject constructor(
     private fun courseMarkerClick(markerInfo: MarkerInfo) {
         _driveScreenState.update {
             it.run {
-                val zoom =
-                    if (naverMapState.cameraState.zoom > DRIVE_LIST_MIN_ZOOM) naverMapState.cameraState.zoom else DRIVE_LIST_MIN_ZOOM + 0.1
+                val zoom = // 목록이 보일때 까지 확대
+                    maxOf(naverMapState.latestCameraState.zoom, DRIVE_LIST_MIN_ZOOM + 0.1)
                 val latlng = markerInfo.position
                 if (latlng == null)
                     return
-                val newCameraState =
-                    CameraState(
-                        latLng = latlng,
-                        zoom = zoom,
-                        updateSource = CameraUpdateSource.MARKER,
-                        moveAnimation = MoveAnimation.APP_EASING
-                    )
-                copy(
-                    naverMapState = naverMapState.copy(cameraState = newCameraState)
+                it.moveCamera(
+                    latLng = latlng,
+                    zoom = zoom,
+                    source = CameraUpdateSource.MARKER,
+                    animation = MoveAnimation.APP_EASING
                 )
             }
         }
@@ -507,22 +485,24 @@ class DriveViewModel @Inject constructor(
     }
 
     private fun DriveScreenState.moveCamera(
-        latLng: LatLng,
+        latLng: LatLng? = null,
         zoom: Double? = null,
-        source: CameraUpdateSource,
+        source: CameraUpdateSource = CameraUpdateSource.USER,
         animation: MoveAnimation = MoveAnimation.APP_LINEAR
     ): DriveScreenState {
-        return if (latLng != LatLng()) {
+        return if (latLng != null) {
             run {
-                val oldZoom = zoom ?: naverMapState.cameraState.zoom
+                val oldZoom = zoom ?: naverMapState.latestCameraState.zoom
                 val newZoom = when {
-                    oldZoom <= LIST_ITEM_ZOOM -> LIST_ITEM_ZOOM
+                    source == CameraUpdateSource.LIST_ITEM && oldZoom <= LIST_ITEM_ZOOM -> {
+                        LIST_ITEM_ZOOM
+                    }
                     else -> oldZoom
                 }
 
                 copy(
                     naverMapState = naverMapState.copy(
-                        cameraState = naverMapState.cameraState.copy(
+                        requestCameraState = naverMapState.latestCameraState.copy(
                             latLng = latLng,
                             zoom = newZoom,
                             updateSource = source,
@@ -531,8 +511,15 @@ class DriveViewModel @Inject constructor(
                     )
                 )
             }
-        } else
-            copy()
+        } else{
+            copy(
+                naverMapState = naverMapState.copy(
+                    requestCameraState = naverMapState.latestCameraState.copy(
+                        isMyLocation = true
+                    )
+                )
+            )
+        }
     }
 
     //목록
@@ -569,7 +556,7 @@ class DriveViewModel @Inject constructor(
                 onLeafRendered = {
                     mapOverlayService.scaleToPointLeafInCluster(
                         course.courseId,
-                        _driveScreenState.value.naverMapState.cameraState.latLng
+                        _driveScreenState.value.naverMapState.latestCameraState.latLng
                     )
                 },
                 onLeafClick = ::checkPointLeafClick
@@ -1198,7 +1185,7 @@ class DriveViewModel @Inject constructor(
                     handler.handle(DriveEvent.REMOVE_DONE)
                     _driveScreenState.update {
                         it.clearCourseInfo()
-                            .refreshNearCourse(it.naverMapState.cameraState)
+                            .refreshNearCourse(it.naverMapState.latestCameraState)
                     }
                 }.onFailure {
                     handleError(it)
@@ -1236,7 +1223,7 @@ class DriveViewModel @Inject constructor(
                     handler.handle(DriveEvent.REPORT_DONE)
                     _driveScreenState.update {
                         it.clearCourseInfo()
-                            .refreshNearCourse(it.naverMapState.cameraState)
+                            .refreshNearCourse(it.naverMapState.latestCameraState)
                     }
                 }.onFailure {
                     handleError(it)
@@ -1319,15 +1306,10 @@ class DriveViewModel @Inject constructor(
             ).run {
                 when (step) {
                     DriveTutorialStep.MOVE_TO_COURSE -> {
-                        val camera = CameraState(
+                        moveCamera(
                             latLng = guideCourse.cameraLatLng,
                             zoom = LIST_ITEM_ZOOM,
-                            updateSource = CameraUpdateSource.GUIDE
-                        )
-                        copy(
-                            naverMapState = naverMapState.copy(
-                                cameraState = camera
-                            )
+                            source = CameraUpdateSource.GUIDE
                         )
                     }
 
@@ -1443,11 +1425,8 @@ class DriveViewModel @Inject constructor(
                             guideState = guideState.copy(
                                 isHighlight = false,
                             ),
-                            naverMapState = naverMapState.copy(
-                                isMyLocation = true
-                            ),
                             isCongrats = false
-                        )
+                        ).moveCamera()
                     }
 
                     else -> {
@@ -1563,7 +1542,7 @@ class DriveViewModel @Inject constructor(
         return mapNotNull {
             val course = it.cameraLatLng
             val distance = locationService.distance(center, course)
-            if (distance < meter) // 근처 코스만 필터링
+            if (distance < meter) // 근처 코스만 필터링 부터
                 ListState.ListItemState(
                     distanceFromCenter = distance,
                     course = it

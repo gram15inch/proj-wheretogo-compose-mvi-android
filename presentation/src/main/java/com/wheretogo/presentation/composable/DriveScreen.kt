@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
@@ -298,11 +299,16 @@ fun DriveContent(
             ) {
 
                 if (BuildConfig.TEST_UI && !isPreview)
-                    Text(
-                        modifier = Modifier.align(alignment = Alignment.TopStart),
-                        text = "${state.overlayGroup.size}",
-                        fontSize = 50.sp
-                    )
+                    Column(modifier = Modifier.align(alignment = Alignment.TopStart).padding(5.dp)) {
+                        Text(
+                            text = "${state.overlayGroup.size}",
+                            fontSize = 50.sp
+                        )
+                        Text(
+                            text = "${state.fingerPrint}",
+                            fontSize = 16.sp
+                        )
+                    }
 
                 if(state.isCongrats){
                     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.lt_congrats))

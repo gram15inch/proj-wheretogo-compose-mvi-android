@@ -1,6 +1,6 @@
 package com.wheretogo.presentation.state
 
 data class NaverMapState(
-    val cameraState: CameraState = CameraState(),
-    val isMyLocation : Boolean = false
+    val latestCameraState: CameraState = CameraState(),
+    val requestCameraState: CameraState = CameraState(),
 )
