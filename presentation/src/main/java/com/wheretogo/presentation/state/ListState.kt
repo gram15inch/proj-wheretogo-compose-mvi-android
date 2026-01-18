@@ -7,7 +7,6 @@ data class ListState(
 ) {
     data class ListItemState(
         val isHighlight: Boolean = false,
-        val distanceFromCenter: Int = 0,
         val course: Course = Course()
     )
 }

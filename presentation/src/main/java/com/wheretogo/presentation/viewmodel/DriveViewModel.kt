@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.LIST_ITEM_ZOOM
 import com.wheretogo.domain.MarkerType
+import com.wheretogo.domain.feature.sucessMap
 import com.wheretogo.domain.handler.DriveEvent
 import com.wheretogo.domain.handler.DriveHandler
 import com.wheretogo.domain.model.address.LatLng
@@ -40,7 +41,6 @@ import com.wheretogo.presentation.CLEAR_ADDRESS
 import com.wheretogo.presentation.COURSE_DETAIL_MIN_ZOOM
 import com.wheretogo.presentation.CameraUpdateSource
 import com.wheretogo.presentation.CommentType
-import com.wheretogo.presentation.DRIVE_LIST_MIN_ZOOM
 import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.DriveFloatHighlight
 import com.wheretogo.presentation.DriveFloatingVisibleMode
@@ -50,7 +50,7 @@ import com.wheretogo.presentation.MoveAnimation
 import com.wheretogo.presentation.SEARCH_MARKER
 import com.wheretogo.presentation.SheetVisibleMode
 import com.wheretogo.presentation.feature.ads.AdService
-import com.wheretogo.presentation.feature.geo.LocationService
+import com.wheretogo.domain.usecase.course.FilterListCourseUseCase
 import com.wheretogo.presentation.feature.map.MapOverlayService
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.model.MarkerInfo
@@ -107,8 +107,8 @@ class DriveViewModel @Inject constructor(
     private val searchKeywordUseCase: SearchKeywordUseCase,
     private val signOutUseCase: UserSignOutUseCase,
     private val guideMoveStepUseCase: GuideMoveStepUseCase,
+    private val filterListCourseUseCase: FilterListCourseUseCase,
     private val nativeAdService: AdService,
-    private val locationService: LocationService,
     private val mapOverlayService: MapOverlayService,
 ) : ViewModel() {
     private val _driveScreenState =
@@ -336,7 +336,11 @@ class DriveViewModel @Inject constructor(
                 if (isMapUpdate) {
                     isMapUpdate = false
                     _driveScreenState.update { it.replaceScreenLoading(true) }
-                    _driveScreenState.update { it.refreshNearCourse(cameraState) }
+                    refreshNearCourse(cameraState).sucessMap {
+                        filterListCourseUseCase(cameraState.viewport, cameraState.zoom, it)
+                    }.onSuccess { courseGroup->
+                        _driveScreenState.update { it.updateListItem(courseGroup) }
+                    }.onFailure { handleError(it) }
                     _driveScreenState.update { it.replaceScreenLoading(false) }
                     isMapUpdate = true
                 }
@@ -403,7 +407,7 @@ class DriveViewModel @Inject constructor(
         _driveScreenState.update {
             it.run {
                 val zoom = // 목록이 보일때 까지 확대
-                    maxOf(naverMapState.latestCameraState.zoom, DRIVE_LIST_MIN_ZOOM + 0.1)
+                    maxOf(naverMapState.latestCameraState.zoom, LIST_ITEM_ZOOM + 0.1)
                 val latlng = markerInfo.position
                 if (latlng == null)
                     return
@@ -1181,11 +1185,19 @@ class DriveViewModel @Inject constructor(
         when (content) {
             DriveBottomSheetContent.COURSE_INFO -> {
                 val course = _driveScreenState.value.selectedCourse
-                withContext(Dispatchers.IO) { removeCourseUseCase(course.courseId) }.onSuccess {
+                val camera = _driveScreenState.value.naverMapState.latestCameraState
+                withContext(Dispatchers.IO) {
+                    removeCourseUseCase(course.courseId)
+                }.onSuccess {
                     handler.handle(DriveEvent.REMOVE_DONE)
                     _driveScreenState.update {
                         it.clearCourseInfo()
-                            .refreshNearCourse(it.naverMapState.latestCameraState)
+                    }
+                }.sucessMap {
+                    refreshNearCourse(camera).sucessMap {
+                        filterListCourseUseCase(camera.viewport, camera.zoom, it)
+                    }.onSuccess { courseGroup->
+                        _driveScreenState.update { it.updateListItem(courseGroup) }
                     }
                 }.onFailure {
                     handleError(it)
@@ -1211,19 +1223,24 @@ class DriveViewModel @Inject constructor(
 
     private suspend fun infoReportClick(reason: String) {
         val content = _driveScreenState.value.bottomSheetState.content
+        val camera = _driveScreenState.value.naverMapState.latestCameraState
         _driveScreenState.update { it.replaceInfoLoading(true) }
 
         when (content) {
             DriveBottomSheetContent.COURSE_INFO -> {
                 val course = _driveScreenState.value.selectedCourse
-                val result = withContext(Dispatchers.IO) {
-                    reportCourseUseCase(course, reason)
-                }
-                result.onSuccess {
-                    handler.handle(DriveEvent.REPORT_DONE)
-                    _driveScreenState.update {
-                        it.clearCourseInfo()
-                            .refreshNearCourse(it.naverMapState.latestCameraState)
+                withContext(Dispatchers.IO) {
+                    reportCourseUseCase(course, reason).onSuccess {
+                        handler.handle(DriveEvent.REPORT_DONE)
+                        _driveScreenState.update {
+                            it.clearCourseInfo()
+                        }
+                    }
+                }.sucessMap {
+                    refreshNearCourse(camera).sucessMap {
+                        filterListCourseUseCase(camera.viewport, camera.zoom, it)
+                    }.onSuccess { courseGroup->
+                        _driveScreenState.update { it.updateListItem(courseGroup) }
                     }
                 }.onFailure {
                     handleError(it)
@@ -1248,34 +1265,26 @@ class DriveViewModel @Inject constructor(
         _driveScreenState.update { it.replaceInfoLoading(false) }
     }
 
-    private suspend fun DriveScreenState.refreshNearCourse(cameraState: CameraState): DriveScreenState {
-        val newCourseGroup = withContext(Dispatchers.IO) {
+    private suspend fun refreshNearCourse(cameraState: CameraState): Result<List<Course>> {
+        return withContext(Dispatchers.IO) {
             getNearByCourseUseCase(cameraState.latLng, cameraState.zoom)
-        }
-
-        val listItemGroup = if (cameraState.zoom >= DRIVE_LIST_MIN_ZOOM) {
-            newCourseGroup.filterNearByListGroup(center = cameraState.latLng, meter = 3000).run {
-                if (guideState.tutorialStep == DriveTutorialStep.DRIVE_LIST_ITEM_CLICK)
-                    map { item ->
-                        if (item.course.courseId == guideCourse.courseId)
-                            item.copy(isHighlight = true)
-                        else
-                            item.copy(isHighlight = false)
-                    } else this
+        }.sucessMap { courseGroup->
+            runCatching {
+                mapOverlayService.addCourseMarkerAndPath(courseGroup)
+                mapOverlayService.showAllOverlays()
+                courseGroup
             }
-
-        } else emptyList()
-
-        return run {
-            mapOverlayService.addCourseMarkerAndPath(newCourseGroup)
-            mapOverlayService.showAllOverlays()
-            copy(
-                listState = listState.copy(
-                    listItemGroup = listItemGroup
-                )
-            )
         }
     }
+
+    private fun DriveScreenState.updateListItem(courseGroup:List<Course>): DriveScreenState{
+        return copy(
+            listState = listState.copy(
+                listItemGroup = courseGroup.map { ListState.ListItemState(course = it) }
+            )
+        )
+    }
+
 
     private fun CheckPointAddState.isValidateAddCheckPoint(): Result<Unit> {
         return runCatching {
@@ -1533,23 +1542,6 @@ class DriveViewModel @Inject constructor(
         floatingButtonState.adItemGroup.forEach {
             it.nativeAd.destroy()
         }
-    }
-
-    private fun List<Course>.filterNearByListGroup(
-        center: LatLng,
-        meter: Int
-    ): List<ListState.ListItemState> {
-        return mapNotNull {
-            val course = it.cameraLatLng
-            val distance = locationService.distance(center, course)
-            if (distance < meter) // 근처 코스만 필터링 부터
-                ListState.ListItemState(
-                    distanceFromCenter = distance,
-                    course = it
-                )
-            else
-                null
-        }.sortedBy { it.course.courseId }
     }
 
     private fun DriveScreenState.likeSwitch(commentId: String)

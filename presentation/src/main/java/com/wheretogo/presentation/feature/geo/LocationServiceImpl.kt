@@ -1,7 +1,11 @@
 package com.wheretogo.presentation.feature.geo
 
 import android.location.Location
+import com.naver.maps.geometry.LatLngBounds
+import com.wheretogo.domain.feature.LocationService
 import com.wheretogo.domain.model.address.LatLng
+import com.wheretogo.domain.model.util.Viewport
+import com.wheretogo.presentation.toNaver
 import jakarta.inject.Inject
 
 class LocationServiceImpl @Inject constructor() : LocationService {
@@ -33,5 +37,13 @@ class LocationServiceImpl @Inject constructor() : LocationService {
                 this
             )
         }[0]
+    }
+
+    override fun isContainByViewPort(vp: Viewport, target: LatLng): Boolean {
+        val rectBounds = LatLngBounds(
+            vp.southWest.toNaver(),
+            vp.northEast.toNaver()
+        )
+        return rectBounds.contains(target.toNaver())
     }
 }

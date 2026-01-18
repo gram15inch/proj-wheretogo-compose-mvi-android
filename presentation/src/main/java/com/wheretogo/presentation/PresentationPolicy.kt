@@ -190,15 +190,16 @@ fun OverlayType.toPathType(): PathType{
 }
 
 fun NaverMap.toCameraState(): CameraState {
-    return contentRegion.run {
+    return contentBounds.run {
         CameraState(
             latLng = cameraPosition.target.toDomainLatLng(),
             zoom = cameraPosition.zoom,
             viewport = Viewport(
-                this[0].latitude,
-                this[3].latitude,
-                this[0].longitude,
-                this[3].longitude
+                northWest = northWest.toDomainLatLng(),
+                northEast = northEast.toDomainLatLng(),
+                southWest = southWest.toDomainLatLng(),
+                southEast = southEast.toDomainLatLng(),
+                center = center.toDomainLatLng()
             ),
             updateSource = CameraUpdateSource.USER
         )

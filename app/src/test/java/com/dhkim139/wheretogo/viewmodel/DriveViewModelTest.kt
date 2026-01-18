@@ -40,7 +40,8 @@ import com.wheretogo.presentation.DriveFloatingVisibleMode
 import com.wheretogo.presentation.DriveVisibleMode
 import com.wheretogo.presentation.MoveAnimation
 import com.wheretogo.presentation.feature.ads.AdService
-import com.wheretogo.presentation.feature.geo.LocationService
+import com.wheretogo.domain.feature.LocationService
+import com.wheretogo.domain.usecase.course.FilterListCourseUseCase
 import com.wheretogo.presentation.feature.map.MapOverlayService
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.model.MarkerInfo
@@ -163,9 +164,8 @@ class DriveViewModelTest {
             )
         )
         val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
-        coEvery { locationService.distance(latest.latLng, current.latLng) } returns 5
-        coEvery { locationService.distance(current.latLng, nearCourse.cameraLatLng) } returns 50
-        coEvery { getNearByCourseUseCase(current.latLng, current.zoom) } returns listOf(nearCourse)
+        coEvery { getNearByCourseUseCase(current.latLng, current.zoom) } returns Result.success(listOf(nearCourse))
+        coEvery { filterListCourseUseCase(current.viewport, current.zoom,listOf(nearCourse)) } returns Result.success(listOf(nearCourse))
         coEvery { mapOverlayService.addCourseMarkerAndPath(listOf(nearCourse)) } returns Unit
         coEvery { mapOverlayService.showAllOverlays() } returns Unit
 
@@ -185,7 +185,6 @@ class DriveViewModelTest {
                     listState = listState.copy(
                         listItemGroup = listOf(
                             ListItemState(
-                                distanceFromCenter = 50,
                                 course = nearCourse
                             )
                         )
@@ -884,7 +883,7 @@ class DriveViewModelTest {
         val reportCourse = Course("cs1", isUserCreated = true, checkpointIdGroup = listOf("cp1"))
         val checkpoint =
             CheckPoint(courseId = reportCourse.courseId, checkPointId = "cp1", isUserCreated = true)
-        val normalItemState = ListItemState(course = normalCourse, distanceFromCenter = 50)
+        val normalItemState = ListItemState(course = normalCourse)
         val removeItemState = ListItemState(course = reportCourse)
 
         val initState = DriveScreenState().run {
@@ -916,16 +915,8 @@ class DriveViewModelTest {
         coEvery { mapOverlayService.removeCourseMarkerAndPath(listOf(reportCourse.courseId)) } returns Unit
         coEvery { mapOverlayService.removeCheckPointCluster(reportCourse.courseId) } returns Unit
         coEvery { mapOverlayService.showAllOverlays() } returns Unit
-
-        coEvery { getNearByCourseUseCase(centerCamera.latLng, centerCamera.zoom) } returns listOf(
-            normalCourse
-        )
-        coEvery {
-            locationService.distance(
-                centerCamera.latLng,
-                normalCourse.cameraLatLng
-            )
-        } returns 50
+        coEvery { getNearByCourseUseCase(centerCamera.latLng, centerCamera.zoom) } returns Result.success(listOf(normalCourse))
+        coEvery { filterListCourseUseCase(centerCamera.viewport, centerCamera.zoom, listOf(normalCourse)) } returns Result.success(listOf(normalCourse))
         coEvery { mapOverlayService.addCourseMarkerAndPath(listOf(normalCourse)) } returns Unit
 
         viewModel.driveScreenState.test {
@@ -942,9 +933,6 @@ class DriveViewModelTest {
             val reportExpect = loadingExpect.run {
                 copy(
                     stateMode = DriveVisibleMode.Explorer,
-                    listState = listState.copy(
-                        listItemGroup = listOf(normalItemState)
-                    ),
                     floatingButtonState = floatingButtonState.copy(
                         stateMode = DriveFloatingVisibleMode.Default
                     ),
@@ -956,7 +944,17 @@ class DriveViewModelTest {
             }
             assertEquals(reportExpect, awaitItem())
 
-            val loadingExpect2 = reportExpect.replaceInfoLoading(false)
+            // 코스 리프래시
+            val refreshExpect= reportExpect.run {
+                copy(
+                    listState = listState.copy(
+                        listItemGroup = listOf(normalItemState)
+                    )
+                )
+            }
+            assertEquals(refreshExpect, awaitItem())
+
+            val loadingExpect2 = refreshExpect.replaceInfoLoading(false)
             // 로딩 중지
             assertEquals(loadingExpect2, awaitItem())
 
@@ -1037,7 +1035,7 @@ class DriveViewModelTest {
         val removeCourse = Course("cs1", isUserCreated = true, checkpointIdGroup = listOf("cp1"))
         val checkpoint =
             CheckPoint(courseId = removeCourse.courseId, checkPointId = "cp1", isUserCreated = true)
-        val normalItemState = ListItemState(course = normalCourse, distanceFromCenter = 50)
+        val normalItemState = ListItemState(course = normalCourse)
         val removeItemState = ListItemState(course = removeCourse)
         val initState = DriveScreenState().run {
             copy(
@@ -1071,15 +1069,10 @@ class DriveViewModelTest {
         coEvery { mapOverlayService.removeCheckPointCluster(removeCourse.courseId) } returns Unit
         coEvery { mapOverlayService.showAllOverlays() } returns Unit
 
-        coEvery { getNearByCourseUseCase(centerCamera.latLng, centerCamera.zoom) } returns listOf(
-            normalCourse
-        )
         coEvery {
-            locationService.distance(
-                centerCamera.latLng,
-                normalCourse.cameraLatLng
-            )
-        } returns 50
+            getNearByCourseUseCase(centerCamera.latLng, centerCamera.zoom)
+        } returns Result.success(listOf(normalCourse))
+        coEvery { filterListCourseUseCase(centerCamera.viewport, centerCamera.zoom, listOf(normalCourse)) } returns Result.success(listOf(normalCourse))
         coEvery { mapOverlayService.addCourseMarkerAndPath(listOf(normalCourse)) } returns Unit
 
         viewModel.driveScreenState.test {
@@ -1092,13 +1085,10 @@ class DriveViewModelTest {
             val loadingExpect = initState.replaceInfoLoading(true)
             assertEquals(loadingExpect, awaitItem())
 
-            // 삭제시도(성공) : ui 변경 및 코스 리프레시
+            // 삭제시도(성공) : ui 변경
             val removeExpect = loadingExpect.run {
                 copy(
                     stateMode = DriveVisibleMode.Explorer,
-                    listState = listState.copy(
-                        listItemGroup = listOf(normalItemState)
-                    ),
                     floatingButtonState = floatingButtonState.copy(
                         stateMode = DriveFloatingVisibleMode.Default
                     ),
@@ -1110,7 +1100,17 @@ class DriveViewModelTest {
             }
             assertEquals(removeExpect, awaitItem())
 
-            val loadingExpect2 = removeExpect.replaceInfoLoading(false)
+            // 코스 리프래시
+            val refreshExpect = removeExpect.run {
+                copy(
+                    listState = listState.copy(
+                        listItemGroup = listOf(normalItemState)
+                    ),
+                )
+            }
+            assertEquals(refreshExpect, awaitItem())
+
+            val loadingExpect2 = refreshExpect.replaceInfoLoading(false)
             // 로딩 중지
             assertEquals(loadingExpect2, awaitItem())
 
@@ -1201,8 +1201,8 @@ class DriveViewModelTest {
             searchKeywordUseCase,
             signOutUseCase,
             guideMoveStepUseCase,
+            filterListCourseUseCase,
             nativeAdService,
-            locationService,
             mapOverlayService
         )
     }
@@ -1225,6 +1225,7 @@ class DriveViewModelTest {
     private val searchKeywordUseCase = mockk<SearchKeywordUseCase>()
     private val signOutUseCase = mockk<UserSignOutUseCase>()
     private val guideMoveStepUseCase = mockk<GuideMoveStepUseCase>()
+    private val filterListCourseUseCase = mockk<FilterListCourseUseCase>()
     private val mapOverlayService = mockk<MapOverlayService>()
     private val nativeAdService = mockk<AdService>()
     private val locationService = mockk<LocationService>()

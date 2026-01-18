@@ -1,8 +1,11 @@
 package com.wheretogo.domain.model.util
 
+import com.wheretogo.domain.model.address.LatLng
+
 data class Viewport(
-    val minLatitude: Double=0.0,
-    val maxLatitude: Double=0.0,
-    val minLongitude: Double=0.0,
-    val maxLongitude: Double=0.0
+    val northWest: LatLng = LatLng(),
+    val northEast: LatLng = LatLng(),
+    val southWest: LatLng = LatLng(),
+    val southEast: LatLng = LatLng(),
+    val center: LatLng = LatLng()
 )

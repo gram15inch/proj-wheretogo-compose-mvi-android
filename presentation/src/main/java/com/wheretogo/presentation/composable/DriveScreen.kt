@@ -143,14 +143,8 @@ fun DriveScreen(
             //MapPopup
             onPopupImageClick = { handleIntent(DriveScreenIntent.CommentFloatingButtonClick) },
             onPopupBlurClick = { handleIntent(DriveScreenIntent.DismissPopupComment) },
+            onCommentListItemLongClick = { handleIntent(DriveScreenIntent.CommentListItemLongClick(it)) },
             onCommentListItemClick = { handleIntent(DriveScreenIntent.CommentListItemClick(it)) },
-            onCommentListItemLongClick = {
-                handleIntent(
-                    DriveScreenIntent.CommentListItemLongClick(
-                        it
-                    )
-                )
-            },
             onCommentLikeClick = { handleIntent(DriveScreenIntent.CommentLikeClick(it)) },
             onCommentAddClick = { handleIntent(DriveScreenIntent.CommentAddClick(it)) },
             onCommentRemoveClick = { handleIntent(DriveScreenIntent.CommentRemoveClick(it)) },

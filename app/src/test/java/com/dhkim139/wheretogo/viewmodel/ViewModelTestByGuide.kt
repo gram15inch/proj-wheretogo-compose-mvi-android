@@ -27,7 +27,7 @@ import com.wheretogo.domain.usecase.util.UpdateLikeUseCase
 import com.wheretogo.presentation.HomeBodyBtn
 import com.wheretogo.presentation.HomeBodyBtnHighlight
 import com.wheretogo.presentation.feature.ads.AdService
-import com.wheretogo.presentation.feature.geo.LocationService
+import com.wheretogo.domain.usecase.course.FilterListCourseUseCase
 import com.wheretogo.presentation.feature.map.MapOverlayService
 import com.wheretogo.presentation.intent.HomeIntent
 import com.wheretogo.presentation.state.DriveScreenState
@@ -133,8 +133,8 @@ class ViewModelTestByGuide {
             searchKeywordUseCase,
             signOutUseCase,
             guideMoveStepUseCase,
+            filterListCourseUseCase,
             nativeAdService,
-            locationService,
             mapOverlayService
         )
     }
@@ -171,8 +171,8 @@ class ViewModelTestByGuide {
     private val searchKeywordUseCase = mockk<SearchKeywordUseCase>()
     private val signOutUseCase = mockk<UserSignOutUseCase>()
     private val guideMoveStepUseCase = mockk<GuideMoveStepUseCase>()
+    private val filterListCourseUseCase = mockk<FilterListCourseUseCase>()
     private val mapOverlayService = mockk<MapOverlayService>()
     private val nativeAdService = mockk<AdService>()
-    private val locationService = mockk<LocationService>()
 
 }

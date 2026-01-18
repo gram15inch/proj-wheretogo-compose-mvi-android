@@ -14,7 +14,7 @@ import com.wheretogo.presentation.AppError
 import com.wheretogo.presentation.MarkerZIndex
 import com.wheretogo.presentation.OverlayType
 import com.wheretogo.presentation.R
-import com.wheretogo.presentation.feature.geo.LocationService
+import com.wheretogo.domain.feature.LocationService
 import com.wheretogo.presentation.feature.model.StringKey
 import com.wheretogo.presentation.feature.naver.NaverMapOverlayProvider
 import com.wheretogo.presentation.model.AppLeaf

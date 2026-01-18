@@ -12,6 +12,7 @@ import com.wheretogo.domain.usecase.comment.GetCommentForCheckPointUseCase
 import com.wheretogo.domain.usecase.comment.RemoveCommentToCheckPointUseCase
 import com.wheretogo.domain.usecase.comment.ReportCommentUseCase
 import com.wheretogo.domain.usecase.course.AddCourseUseCase
+import com.wheretogo.domain.usecase.course.FilterListCourseUseCase
 import com.wheretogo.domain.usecase.course.GetNearByCourseUseCase
 import com.wheretogo.domain.usecase.course.RemoveCourseUseCase
 import com.wheretogo.domain.usecase.course.ReportCourseUseCase
@@ -37,6 +38,7 @@ import com.wheretogo.domain.usecaseimpl.comment.GetCommentForCheckPointUseCaseIm
 import com.wheretogo.domain.usecaseimpl.comment.RemoveCommentToCheckPointUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.comment.ReportCommentUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.course.AddCourseUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.course.FilterListCourseUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.course.GetNearByCourseUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.course.RemoveCourseUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.course.ReportCourseUseCaseImpl
@@ -136,6 +138,9 @@ abstract class UseCaseModule {
 
     @Binds
     abstract fun bindCourseAddValidUseCase(useCaseImpl: CourseAddValidUseCaseImpl): CourseAddValidUseCase
+
+    @Binds
+    abstract fun bindFilterScreenCourseUseCase(useCaseImpl: FilterListCourseUseCaseImpl): FilterListCourseUseCase
 
 }
 
