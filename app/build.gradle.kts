@@ -29,8 +29,8 @@ android {
         applicationId = "com.dhkim139.wheretogo"
         minSdk = AndroidConfig.MIN_SDK
         targetSdk = AndroidConfig.TARGET_SDK
-        versionCode = 39
-        versionName = "1.0-rc10"
+        versionCode = 40
+        versionName = "1.0-rc11"
 
         testInstrumentationRunner = "com.dhkim139.wheretogo.TestRunner"
         vectorDrawables {
