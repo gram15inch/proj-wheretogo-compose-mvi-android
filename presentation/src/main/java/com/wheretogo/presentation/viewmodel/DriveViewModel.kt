@@ -1,6 +1,5 @@
 package com.wheretogo.presentation.viewmodel
 
-import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wheretogo.domain.DriveTutorialStep
@@ -26,6 +25,7 @@ import com.wheretogo.domain.usecase.comment.AddCommentToCheckPointUseCase
 import com.wheretogo.domain.usecase.comment.GetCommentForCheckPointUseCase
 import com.wheretogo.domain.usecase.comment.RemoveCommentToCheckPointUseCase
 import com.wheretogo.domain.usecase.comment.ReportCommentUseCase
+import com.wheretogo.domain.usecase.course.FilterListCourseUseCase
 import com.wheretogo.domain.usecase.course.GetNearByCourseUseCase
 import com.wheretogo.domain.usecase.course.RemoveCourseUseCase
 import com.wheretogo.domain.usecase.course.ReportCourseUseCase
@@ -50,7 +50,6 @@ import com.wheretogo.presentation.MoveAnimation
 import com.wheretogo.presentation.SEARCH_MARKER
 import com.wheretogo.presentation.SheetVisibleMode
 import com.wheretogo.presentation.feature.ads.AdService
-import com.wheretogo.domain.usecase.course.FilterListCourseUseCase
 import com.wheretogo.presentation.feature.map.MapOverlayService
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.model.MarkerInfo
@@ -71,7 +70,6 @@ import com.wheretogo.presentation.toAppError
 import com.wheretogo.presentation.toCheckPointContent
 import com.wheretogo.presentation.toCommentContent
 import com.wheretogo.presentation.toCommentItemState
-import com.wheretogo.presentation.toItem
 import com.wheretogo.presentation.toSearchBarItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -108,7 +106,7 @@ class DriveViewModel @Inject constructor(
     private val signOutUseCase: UserSignOutUseCase,
     private val guideMoveStepUseCase: GuideMoveStepUseCase,
     private val filterListCourseUseCase: FilterListCourseUseCase,
-    private val nativeAdService: AdService,
+    private val nativeAdServiceOld: AdService,
     private val mapOverlayService: MapOverlayService,
 ) : ViewModel() {
     private val _driveScreenState =
@@ -120,35 +118,35 @@ class DriveViewModel @Inject constructor(
         viewModelScope.launch(dispatcher) {
             when (intent) {
                 //가이드
-                is DriveScreenIntent.GuidePopupClick ->  guidePopupClick(intent.step)
+                is DriveScreenIntent.GuidePopupClick -> guidePopupClick(intent.step)
 
                 //서치바
                 is DriveScreenIntent.AddressItemClick -> searchBarItemClick(intent.searchBarItem)
                 is DriveScreenIntent.SearchBarClick -> searchBarClick(intent.isSkipAd)
                 is DriveScreenIntent.SearchBarClose -> searchBarClose()
-                is DriveScreenIntent.SearchSubmit -> searchSubmit(intent.submit) // ✅
+                is DriveScreenIntent.SearchSubmit -> searchSubmit(intent.submit)
 
                 //지도
                 is DriveScreenIntent.MapAsync -> mapAsync()
-                is DriveScreenIntent.CameraUpdated -> cameraUpdated(intent.cameraState) // ✅
-                is DriveScreenIntent.MarkerClick -> markerClick(intent.markerInfo) // ✅
+                is DriveScreenIntent.CameraUpdated -> cameraUpdated(intent.cameraState)
+                is DriveScreenIntent.MarkerClick -> markerClick(intent.markerInfo)
 
                 //목록
-                is DriveScreenIntent.DriveListItemClick -> driveListItemClick(intent.itemState) // ✅
+                is DriveScreenIntent.DriveListItemClick -> driveListItemClick(intent.itemState)
 
                 //팝업
                 is DriveScreenIntent.DismissPopupComment -> dismissCommentPopUp()
                 is DriveScreenIntent.CommentListItemClick -> commentListItemClick(intent.itemState)
                 is DriveScreenIntent.CommentListItemLongClick -> commentListItemLongClick(intent.comment)
-                is DriveScreenIntent.CommentLikeClick -> commentLikeClick(intent.itemState) // ✅
-                is DriveScreenIntent.CommentAddClick -> commentAddClick(intent.editText) // ✅
-                is DriveScreenIntent.CommentRemoveClick -> commentRemoveClick(intent.comment) // ✅
-                is DriveScreenIntent.CommentReportClick -> commentReportClick(intent.comment) // ✅
+                is DriveScreenIntent.CommentLikeClick -> commentLikeClick(intent.itemState)
+                is DriveScreenIntent.CommentAddClick -> commentAddClick(intent.editText)
+                is DriveScreenIntent.CommentRemoveClick -> commentRemoveClick(intent.comment)
+                is DriveScreenIntent.CommentReportClick -> commentReportClick(intent.comment)
                 is DriveScreenIntent.CommentEmogiPress -> commentEmogiPress(intent.emogi)
                 is DriveScreenIntent.CommentTypePress -> commentTypePress(intent.typeEditText)
 
                 //플로팅
-                is DriveScreenIntent.CommentFloatingButtonClick -> commentFloatingButtonClick() // ✅
+                is DriveScreenIntent.CommentFloatingButtonClick -> commentFloatingButtonClick()
                 is DriveScreenIntent.CheckpointAddFloatingButtonClick -> checkpointAddFloatingButtonClick()
                 is DriveScreenIntent.InfoFloatingButtonClick -> infoFloatingButtonClick(intent.content)
                 is DriveScreenIntent.ExportMapFloatingButtonClick -> exportMapFloatingButtonClick()
@@ -158,12 +156,11 @@ class DriveViewModel @Inject constructor(
                 //바텀시트
                 is DriveScreenIntent.BottomSheetChange -> bottomSheetChange(intent.state)
                 is DriveScreenIntent.CheckpointLocationSliderChange -> checkpointLocationSliderChange(intent.percent)
-                is DriveScreenIntent.CheckpointDescriptionChange -> checkpointDescriptionChange(intent.text)
-                is DriveScreenIntent.CheckpointDescriptionEnterClick -> checkpointDescriptionEnterClick()
+                is DriveScreenIntent.CheckpointDescriptionEnterClick -> checkpointDescriptionEnterClick(intent.text)
                 is DriveScreenIntent.CheckpointImageChange -> checkpointImageChange(intent.imageInfo)
-                is DriveScreenIntent.CheckpointSubmitClick -> checkpointSubmitClick() // ✅
-                is DriveScreenIntent.InfoReportClick -> infoReportClick(intent.reason) // ✅
-                is DriveScreenIntent.InfoRemoveClick -> infoRemoveClick() // ✅
+                is DriveScreenIntent.CheckpointSubmitClick -> checkpointSubmitClick()
+                is DriveScreenIntent.InfoReportClick -> infoReportClick(intent.reason)
+                is DriveScreenIntent.InfoRemoveClick -> infoRemoveClick()
 
                 //공통
                 is DriveScreenIntent.LifecycleChange -> lifecycleChange(intent.event)
@@ -175,7 +172,7 @@ class DriveViewModel @Inject constructor(
     }
 
     fun observe() {
-        viewModelScope.launch {
+        viewModelScope.launch(dispatcher) {
             launch {
                 observeSettingsUseCase()
                     .collect { settings ->
@@ -189,19 +186,20 @@ class DriveViewModel @Inject constructor(
                     _driveScreenState.update { it.copy(fingerPrint = fp) }
                 }
             }
-
         }
     }
 
     suspend fun handleError(error: Throwable) {
-        when(handler.handle(error.toAppError())){
-            is AppError.InvalidState->{
-                clearState()
+        when (handler.handle(error.toAppError())) {
+            is AppError.InvalidState -> {
+                clearScreen()
             }
-            is AppError.NeedSignIn->{
+
+            is AppError.NeedSignIn -> {
                 clearAd()
                 signOutUseCase()
             }
+
             else -> {}
         }
     }
@@ -211,7 +209,7 @@ class DriveViewModel @Inject constructor(
         mapOverlayService.removeOneTimeMarker(listOf(SEARCH_MARKER))
 
         if (item.label == CLEAR_ADDRESS || item.latlng == null) {
-            _driveScreenState.update { it.initSearchBar() }
+            _driveScreenState.update { it.initSearchBar(stateInit.searchBarState.isAdVisible) }
             return
         }
 
@@ -227,11 +225,16 @@ class DriveViewModel @Inject constructor(
 
         if (item.isCourse) {
             _driveScreenState.update {
-                it.run {
-                    copy(
-                        stateMode = DriveVisibleMode.Explorer
-                    ).initSearchBar()
-                }
+                it.copy(
+                    stateMode = DriveVisibleMode.Explorer,
+                    searchBarState = it.searchBarState.copy(
+                        isActive = false,
+                        isLoading = false,
+                        isEmptyVisible = false,
+                        searchBarItemGroup = emptyList(),
+                        adItemGroup = emptyList()
+                    )
+                )
             }
         } else {
             mapOverlayService.addOneTimeMarker(
@@ -252,7 +255,7 @@ class DriveViewModel @Inject constructor(
     }
 
     private suspend fun searchBarClick(isSkipAd: Boolean) {
-        if(_driveScreenState.value.stateMode == DriveVisibleMode.SearchBarExpand) {
+        if (_driveScreenState.value.stateMode == DriveVisibleMode.SearchBarExpand) {
             searchBarClose()
             return
         }
@@ -277,7 +280,7 @@ class DriveViewModel @Inject constructor(
         }
 
         // 가이드
-        val step= _driveScreenState.value.guideState.tutorialStep
+        val step = _driveScreenState.value.guideState.tutorialStep
         if (step == DriveTutorialStep.SEARCHBAR_CLICK) {
             guideMoveStepUseCase(true)
         }
@@ -286,10 +289,8 @@ class DriveViewModel @Inject constructor(
     private fun searchBarClose() {
         mapOverlayService.removeOneTimeMarker(listOf(SEARCH_MARKER))
         _driveScreenState.update {
-            it.copy(
-                stateMode = DriveVisibleMode.Explorer,
-                searchBarState = stateInit.searchBarState
-            )
+            it.copy(stateMode = DriveVisibleMode.Explorer)
+                .initSearchBar(stateInit.searchBarState.isAdVisible)
         }
     }
 
@@ -312,7 +313,7 @@ class DriveViewModel @Inject constructor(
                 )
             }
             // 가이드
-            val step= _driveScreenState.value.guideState.tutorialStep
+            val step = _driveScreenState.value.guideState.tutorialStep
             if (step == DriveTutorialStep.SEARCHBAR_EDIT) {
                 guideMoveStepUseCase(true)
             }
@@ -324,21 +325,19 @@ class DriveViewModel @Inject constructor(
 
 
     //지도
-    private fun mapAsync(){
-        viewModelScope.launch(dispatcher) {
-            observe()
-        }
+    private fun mapAsync() {
+        observe()
     }
 
     private suspend fun cameraUpdated(cameraState: CameraState) {
-        when(_driveScreenState.value.stateMode){
-            DriveVisibleMode.Explorer->{
+        when (_driveScreenState.value.stateMode) {
+            DriveVisibleMode.Explorer -> {
                 if (isMapUpdate) {
                     isMapUpdate = false
                     _driveScreenState.update { it.replaceScreenLoading(true) }
                     refreshNearCourse(cameraState).sucessMap {
                         filterListCourseUseCase(cameraState.viewport, cameraState.zoom, it)
-                    }.onSuccess { courseGroup->
+                    }.onSuccess { courseGroup ->
                         _driveScreenState.update { it.updateListItem(courseGroup) }
                     }.onFailure { handleError(it) }
                     _driveScreenState.update { it.replaceScreenLoading(false) }
@@ -346,7 +345,7 @@ class DriveViewModel @Inject constructor(
                 }
 
                 _driveScreenState.value.apply {
-                    if(guideState.tutorialStep == DriveTutorialStep.MOVE_TO_COURSE) {
+                    if (guideState.tutorialStep == DriveTutorialStep.MOVE_TO_COURSE) {
                         listState.listItemGroup
                             .firstOrNull { it.course.courseId == guideCourse.courseId }
                             ?.let { guideMoveStepUseCase(true) }
@@ -354,10 +353,10 @@ class DriveViewModel @Inject constructor(
                 }
             }
 
-            DriveVisibleMode.CourseDetail->{
+            DriveVisibleMode.CourseDetail -> {
                 val course = _driveScreenState.value.selectedCourse
-                val step= _driveScreenState.value.guideState.tutorialStep
-                if(course.checkpointIdGroup.isNotEmpty()){
+                val step = _driveScreenState.value.guideState.tutorialStep
+                if (course.checkpointIdGroup.isNotEmpty()) {
                     if (_driveScreenState.value.stateMode == DriveVisibleMode.CourseDetail) {
                         mapOverlayService.scaleToPointLeafInCluster(
                             course.courseId,
@@ -371,7 +370,6 @@ class DriveViewModel @Inject constructor(
                         }
                     }
                 }
-
                 if (cameraState.zoom <= COURSE_DETAIL_MIN_ZOOM) {
                     foldFloatingButtonClick()
                 }
@@ -515,7 +513,7 @@ class DriveViewModel @Inject constructor(
                     )
                 )
             }
-        } else{
+        } else {
             copy(
                 naverMapState = naverMapState.copy(
                     requestCameraState = naverMapState.latestCameraState.copy(
@@ -574,12 +572,23 @@ class DriveViewModel @Inject constructor(
     //팝업
     private fun blurClick() {
         _driveScreenState.update {
-            if (it.selectedCheckPoint.checkPointId.isNotBlank()
-                && (it.stateMode == DriveVisibleMode.BlurBottomSheetExpand)
-            )
-                it.backToCheckPointDetail()
-            else
-                it.backToCourseDetail()
+            when (it.stateMode) {
+                DriveVisibleMode.BlurCheckpointBottomSheetExpand ->
+                    it.copy(
+                        stateMode = DriveVisibleMode.BlurCheckpointDetail,
+                        floatingButtonState = it.floatingButtonState.copy(
+                            stateMode = DriveFloatingVisibleMode.Popup
+                        )
+                    )
+
+                DriveVisibleMode.BlurBottomSheetExpand,
+                DriveVisibleMode.BlurCheckpointDetail,
+                DriveVisibleMode.BlurCourseDetail -> {
+                    it.backToCourseDetail()
+                }
+
+                else -> it
+            }
         }
     }
 
@@ -598,7 +607,9 @@ class DriveViewModel @Inject constructor(
 
     private fun commentListItemClick(itemState: CommentState.CommentItemState) {
         val comment = itemState.data
-        _driveScreenState.switchFold(comment.commentId)
+        _driveScreenState.update {
+            it.switchFold(comment.commentId)
+        }
     }
 
     private fun commentListItemLongClick(comment: Comment) {
@@ -661,10 +672,14 @@ class DriveViewModel @Inject constructor(
             _driveScreenState.updateComment(newComment, true)
             withContext(Dispatchers.IO) {
                 getCheckPointForMarkerUseCase(course.courseId, listOf(newComment.groupId))
-            }.onSuccess {
+            }.onSuccess { checkPointGroup ->
                 val caption =
-                    it.firstOrNull { it.checkPointId == newComment.groupId }?.caption ?: ""
-                mapOverlayService.updateCheckPointLeafCaption(course.courseId,content.groupId, caption)
+                    checkPointGroup.firstOrNull { it.checkPointId == newComment.groupId }?.caption ?: ""
+                mapOverlayService.updateCheckPointLeafCaption(
+                    course.courseId,
+                    content.groupId,
+                    caption
+                )
             }
         }
         _driveScreenState.update { it.initCommentAddState() }
@@ -685,7 +700,11 @@ class DriveViewModel @Inject constructor(
                 getCheckPointForMarkerUseCase(course.courseId)
             }.onSuccess {
                 val caption = it.firstOrNull { it.checkPointId == comment.groupId }?.caption ?: ""
-                mapOverlayService.updateCheckPointLeafCaption(course.courseId ,comment.groupId, caption)
+                mapOverlayService.updateCheckPointLeafCaption(
+                    course.courseId,
+                    comment.groupId,
+                    caption
+                )
                 _driveScreenState.update { it.replaceCommentSettingVisible(false) }
             }
         }
@@ -702,7 +721,11 @@ class DriveViewModel @Inject constructor(
                 getCheckPointForMarkerUseCase(course.courseId)
             }.onSuccess {
                 val caption = it.firstOrNull { it.checkPointId == comment.groupId }?.caption ?: ""
-                mapOverlayService.updateCheckPointLeafCaption(course.courseId,comment.groupId, caption)
+                mapOverlayService.updateCheckPointLeafCaption(
+                    course.courseId,
+                    comment.groupId,
+                    caption
+                )
                 _driveScreenState.update { it.replaceCommentSettingVisible(false) }
             }
         }.onFailure {
@@ -733,27 +756,25 @@ class DriveViewModel @Inject constructor(
 
     }
 
-    private fun MutableStateFlow<DriveScreenState>.switchFold(commentId: String) {
-        update {
-            val oldCommentGroup =
-                it.popUpState.commentState.commentItemGroup
-            val newCommentGroup =
-                oldCommentGroup.map {
-                    if (it.data.commentId == commentId && it.data.detailedReview.isNotBlank()) {
-                        it.copy(isFold = !it.isFold)
-                    } else {
-                        it
-                    }
+    private fun DriveScreenState.switchFold(commentId: String): DriveScreenState {
+        val oldCommentGroup =
+            popUpState.commentState.commentItemGroup
+        val newCommentGroup =
+            oldCommentGroup.map {
+                if (it.data.commentId == commentId && it.data.detailedReview.isNotBlank()) {
+                    it.copy(isFold = !it.isFold)
+                } else {
+                    it
                 }
-            it.copy(
-                popUpState = it.popUpState.copy(
-                    commentState = it.popUpState.commentState.copy(
-                        commentItemGroup = newCommentGroup,
-                        commentSettingState = CommentState.CommentSettingState()
-                    )
+            }
+        return copy(
+            popUpState = popUpState.copy(
+                commentState = popUpState.commentState.copy(
+                    commentItemGroup = newCommentGroup,
+                    commentSettingState = CommentState.CommentSettingState()
                 )
             )
-        }
+        )
     }
 
     private fun commentEmogiPress(emogi: String) {
@@ -763,7 +784,7 @@ class DriveViewModel @Inject constructor(
                     popUpState = popUpState.copy(
                         commentState = popUpState.commentState.copy(
                             commentAddState = popUpState.commentState.commentAddState.copy(
-                                largeEmoji = emogi
+                                titleEmoji = emogi
                             )
                         )
                     )
@@ -782,10 +803,8 @@ class DriveViewModel @Inject constructor(
                             copy(
                                 commentType = typeEditText.type,
                                 oneLineReview = "",
-                                oneLinePreview = "",
                                 detailReview = typeEditText.editText,
-                                isLargeEmogi = true,
-                                isEmogiGroup = true,
+                                isOneLinePreview = false,
                             )
                         }
                     }
@@ -796,10 +815,7 @@ class DriveViewModel @Inject constructor(
                                 commentType = typeEditText.type,
                                 oneLineReview = typeEditText.editText,
                                 detailReview = "",
-                                oneLinePreview =
-                                    "${largeEmoji.ifEmpty { emogiGroup.firstOrNull() ?: "" }}  ${typeEditText.editText}",
-                                isLargeEmogi = false,
-                                isEmogiGroup = false,
+                                isOneLinePreview = true,
                             )
                         }
                     }
@@ -817,11 +833,11 @@ class DriveViewModel @Inject constructor(
     }
 
 
-    //플로팅
+    // 플로팅
     private suspend fun commentFloatingButtonClick() {
         val state = _driveScreenState.value
         val checkpoint = _driveScreenState.value.selectedCheckPoint
-        if (state.floatingButtonState.stateMode == DriveFloatingVisibleMode.Hide) {
+  /*      if (state.floatingButtonState.stateMode == DriveFloatingVisibleMode.Hide) {
             _driveScreenState.update {
                 it.run {
                     copy(
@@ -835,7 +851,7 @@ class DriveViewModel @Inject constructor(
                 }
             }
             return
-        }
+        }*/
         // 가이드
         val step = _driveScreenState.value.guideState.tutorialStep
         if (step == DriveTutorialStep.COMMENT_FLOAT_CLICK) {
@@ -848,7 +864,8 @@ class DriveViewModel @Inject constructor(
                 copy(
                     popUpState = popUpState.copy(
                         commentState = popUpState.commentState.copy(
-                            isVisible = true
+                            isContentVisible = true,
+                            isImeVisible = true
                         ),
                     ),
                     floatingButtonState = floatingButtonState.copy(
@@ -867,7 +884,7 @@ class DriveViewModel @Inject constructor(
                 commentGroup.map { it.toCommentItemState() }
             _driveScreenState.update {
                 it.run {
-                    if (popUpState.commentState.isVisible)
+                    if (popUpState.commentState.isContentVisible)
                         copy(
                             popUpState = popUpState.copy(
                                 commentState = popUpState.commentState.copy(
@@ -896,7 +913,7 @@ class DriveViewModel @Inject constructor(
             it.copy(
                 stateMode = DriveVisibleMode.BottomSheetExpand,
                 bottomSheetState = it.bottomSheetState.copy(
-                    content = DriveBottomSheetContent.CHECKPOINT_ADD,
+                    content = DriveBottomSheetContent.CHECKPOINT_ADD
                 )
             ).initCheckPointAddState()
         }
@@ -904,15 +921,19 @@ class DriveViewModel @Inject constructor(
 
     private fun infoFloatingButtonClick(content: DriveBottomSheetContent) {
         _driveScreenState.update {
+            val mode =  when(content){
+                DriveBottomSheetContent.CHECKPOINT_INFO-> DriveVisibleMode.BlurCheckpointBottomSheetExpand
+                else-> DriveVisibleMode.BlurBottomSheetExpand
+            }
             it.run {
                 copy(
-                    stateMode = DriveVisibleMode.BlurBottomSheetExpand,
+                    stateMode = mode,
                     bottomSheetState = bottomSheetState.copy(
                         content = content,
                     ),
                     popUpState = popUpState.copy(
                         commentState = popUpState.commentState.copy(
-                            isVisible = false
+                            isContentVisible = false
                         )
                     ),
                     floatingButtonState = floatingButtonState.copy(
@@ -975,20 +996,21 @@ class DriveViewModel @Inject constructor(
         }
 
         // 가이드
-        val step= _driveScreenState.value.guideState.tutorialStep
+        val step = _driveScreenState.value.guideState.tutorialStep
         if (step == DriveTutorialStep.FOLD_FLOAT_CLICK) {
             guideMoveStepUseCase(true)
         }
     }
 
-    @SuppressLint("SuspiciousIndentation")
+
+    // 바텀 시트
     private suspend fun bottomSheetChange(state: SheetVisibleMode) {
         val content = _driveScreenState.value.bottomSheetState.content
         val course = _driveScreenState.value.selectedCourse
         when (state) {
-            SheetVisibleMode.Expand -> {}
+            SheetVisibleMode.Opening -> {}
 
-            SheetVisibleMode.Expanded -> {
+            SheetVisibleMode.Opened -> {
                 when (content) {
                     DriveBottomSheetContent.CHECKPOINT_ADD -> {
                         _driveScreenState.update {
@@ -1002,65 +1024,73 @@ class DriveViewModel @Inject constructor(
                     else -> {}
                 }
             }
-
-            SheetVisibleMode.PartiallyExpand -> {
-                if (_driveScreenState.value.bottomSheetState.isUserControl)
-                    when (content) {
-                        DriveBottomSheetContent.CHECKPOINT_ADD -> {
-                            _driveScreenState.update {
-                                mapOverlayService.removeOneTimeMarker(listOf(CHECKPOINT_ADD_MARKER))
-                                it.copy(
-                                    stateMode = DriveVisibleMode.CourseDetail,
-                                    floatingButtonState = it.floatingButtonState.copy(
-                                        stateMode = DriveFloatingVisibleMode.Default
-                                    )
+            SheetVisibleMode.Closing -> {
+                if(_driveScreenState.value.popUpState.commentState.isContentVisible){
+                    _driveScreenState.update {
+                        it.copy(
+                            popUpState = it.popUpState.copy(
+                                commentState = it.popUpState.commentState.copy(
+                                    isImeVisible = false
                                 )
-                            }
-                        }
-
-                        DriveBottomSheetContent.COURSE_INFO -> {
-                            _driveScreenState.update {
-                                it.copy(
-                                    stateMode = DriveVisibleMode.CourseDetail,
-                                    floatingButtonState = it.floatingButtonState.copy(
-                                        stateMode = DriveFloatingVisibleMode.Default
-                                    )
+                            )
+                        )
+                    }
+                }
+                when (content) {
+                    DriveBottomSheetContent.COURSE_INFO -> {
+                        _driveScreenState.update {
+                            it.copy(
+                                stateMode = DriveVisibleMode.CourseDetail,
+                                floatingButtonState = it.floatingButtonState.copy(
+                                    stateMode = DriveFloatingVisibleMode.Default
                                 )
-                            }
+                            )
                         }
-
-                        DriveBottomSheetContent.CHECKPOINT_INFO -> {
-                            _driveScreenState.update {
-                                it.copy(
-                                    stateMode = DriveVisibleMode.BlurCheckpointDetail,
-                                    floatingButtonState = it.floatingButtonState.copy(
-                                        stateMode = DriveFloatingVisibleMode.Popup
-                                    )
-                                )
-                            }
-                        }
-
-                        else -> {}
                     }
 
-                if (_driveScreenState.value.popUpState.commentState.isVisible)
-                    dismissCommentPopUp()
+                    DriveBottomSheetContent.CHECKPOINT_INFO -> {
+                        _driveScreenState.update {
+                            it.copy(
+                                stateMode = DriveVisibleMode.BlurCheckpointDetail,
+                                floatingButtonState = it.floatingButtonState.copy(
+                                    stateMode = DriveFloatingVisibleMode.Popup
+                                )
+                            )
+                        }
 
-                val step = _driveScreenState.value.guideState.tutorialStep
-                if (step == DriveTutorialStep.COMMENT_SHEET_DRAG) {
-                    guideMoveStepUseCase(true)
+                    }
+
+                    else -> {}
                 }
             }
 
-            SheetVisibleMode.PartiallyExpanded -> {
+            SheetVisibleMode.Closed -> {
+                if(_driveScreenState.value.popUpState.commentState.isContentVisible){
+                    _driveScreenState.update {
+                        it.copy(
+                            stateMode = DriveVisibleMode.BlurCheckpointDetail,
+                            floatingButtonState = it.floatingButtonState.copy(
+                                stateMode = DriveFloatingVisibleMode.Popup
+                            ),
+                            popUpState = it.popUpState.copy(
+                                commentState = CommentState()
+                            )
+                        )
+                    }
+                }
                 when (content) {
                     DriveBottomSheetContent.CHECKPOINT_ADD -> {
+                        mapOverlayService.removeOneTimeMarker(listOf(CHECKPOINT_ADD_MARKER))
                         _driveScreenState.update {
                             it.moveCamera(
                                 course.cameraLatLng,
-                                source = CameraUpdateSource.BOTTOM_SHEET_DOWN
+                                source = CameraUpdateSource.BOTTOM_SHEET_DOWN,
                             ).copy(
-                                bottomSheetState = BottomSheetState()
+                                stateMode = DriveVisibleMode.CourseDetail,
+                                bottomSheetState = BottomSheetState(),
+                                floatingButtonState = it.floatingButtonState.copy(
+                                    stateMode = DriveFloatingVisibleMode.Default
+                                )
                             )
                         }
                     }
@@ -1073,62 +1103,79 @@ class DriveViewModel @Inject constructor(
                         }
                     }
                 }
+
+                val step = _driveScreenState.value.guideState.tutorialStep
+                if (step == DriveTutorialStep.COMMENT_SHEET_DRAG) {
+                    guideMoveStepUseCase(true)
+                }
             }
         }
     }
 
-    //바텀시트
-
-    private fun checkpointLocationSliderChange(percent: Float) {
-        _driveScreenState.update {
-            val points = it.selectedCourse.points
-            val index = round((points.size - 1) * percent).toInt()
-            val newLatlng = points[index]
-            mapOverlayService.updateOneTimeMarker(
-                MarkerInfo(
-                    contentId = CHECKPOINT_ADD_MARKER,
-                    type = MarkerType.DEFAULT,
-                    position = newLatlng
+    private suspend fun checkpointLocationSliderChange(percent: Float) {
+        runCatching {
+            val selectedCourse = _driveScreenState.value.selectedCourse
+            val points = selectedCourse.points
+            val index = when (percent) {
+                100.0f -> points.size - 1
+                0.0f -> 0
+                else -> round((points.size - 1) * percent).toInt()
+            }
+            points[index]
+        }.onSuccess { newLatlng ->
+            _driveScreenState.update {
+                mapOverlayService.updateOneTimeMarker(
+                    MarkerInfo(
+                        contentId = CHECKPOINT_ADD_MARKER,
+                        type = MarkerType.DEFAULT,
+                        position = newLatlng
+                    )
                 )
-            )
-            val newCheckPointAddState = it.bottomSheetState.checkPointAddState.run {
-                copy(
-                    latLng = newLatlng,
-                    sliderPercent = percent,
-                    isSubmitActive = isValidateAddCheckPoint().isSuccess
+                val isValidateAddCheckPoint =
+                    it.bottomSheetState.checkPointAddState.isValidateAddCheckPoint().isSuccess
+                it.copy(
+                    bottomSheetState = it.bottomSheetState.copy(
+                        checkPointAddState = it.bottomSheetState.checkPointAddState.copy(
+                            latLng = newLatlng,
+                            sliderPercent = percent,
+                            isSubmitActive = isValidateAddCheckPoint
+                        )
+                    )
                 )
             }
+        }.onFailure {
+            handleError(it)
+        }
+    }
 
+    private fun checkpointDescriptionEnterClick(text: String) {
+        _driveScreenState.update {
+            val isValidateAddCheckPoint =
+                it.bottomSheetState.checkPointAddState.isValidateAddCheckPoint().isSuccess
             it.copy(
                 bottomSheetState = it.bottomSheetState.copy(
-                    checkPointAddState = newCheckPointAddState
+                    checkPointAddState = it.bottomSheetState.checkPointAddState.copy(
+                        description = text,
+                        isSubmitActive = isValidateAddCheckPoint
+                    )
                 )
             )
-        }
-    }
-
-    private fun checkpointDescriptionChange(text: String) {
-        _driveScreenState.update {
-            val newCheckPointAddState = it.bottomSheetState.checkPointAddState.run {
-                copy(
-                    description = text,
-                    isSubmitActive = isValidateAddCheckPoint().isSuccess
-                )
-            }
-            it.copy(bottomSheetState = it.bottomSheetState.copy(checkPointAddState = newCheckPointAddState))
         }
     }
 
     private fun checkpointImageChange(imageInfo: ImageInfo) {
         _driveScreenState.update {
-            val newCheckPointAddState = it.bottomSheetState.checkPointAddState.run {
-                copy(
-                    imgUriString = imageInfo.uriString,
-                    imgInfo = imageInfo,
-                    isSubmitActive = isValidateAddCheckPoint().isSuccess
+            val isValidateAddCheckPoint =
+                it.bottomSheetState.checkPointAddState.isValidateAddCheckPoint().isSuccess
+            it.copy(
+                bottomSheetState = it.bottomSheetState.copy(
+                    checkPointAddState = it.bottomSheetState.checkPointAddState.copy(
+                        imgUriString = imageInfo.uriString,
+                        imgInfo = imageInfo,
+                        isSubmitActive = isValidateAddCheckPoint
+                    )
                 )
-            }
-            it.copy(bottomSheetState = it.bottomSheetState.copy(checkPointAddState = newCheckPointAddState))
+            )
         }
     }
 
@@ -1152,7 +1199,7 @@ class DriveViewModel @Inject constructor(
                 it.run {
                     mapOverlayService.removeOneTimeMarker(listOf(CHECKPOINT_ADD_MARKER))
                     mapOverlayService.addCheckPointLeaf(
-                         courseId = course.courseId,
+                        courseId = course.courseId,
                         checkPoint = newCheckPoint,
                         onLeafClick = ::checkPointLeafClick
                     )
@@ -1163,9 +1210,6 @@ class DriveViewModel @Inject constructor(
                         ),
                         floatingButtonState = floatingButtonState.copy(
                             stateMode = DriveFloatingVisibleMode.Default
-                        ),
-                        bottomSheetState = bottomSheetState.copy(
-                            isUserControl = false
                         )
                     )
                 }
@@ -1175,8 +1219,6 @@ class DriveViewModel @Inject constructor(
             _driveScreenState.update { it.replaceCheckpointAddLoading(false) }
         }
     }
-
-    private fun checkpointDescriptionEnterClick() {}
 
     private suspend fun infoRemoveClick() {
         val content = _driveScreenState.value.bottomSheetState.content
@@ -1196,7 +1238,7 @@ class DriveViewModel @Inject constructor(
                 }.sucessMap {
                     refreshNearCourse(camera).sucessMap {
                         filterListCourseUseCase(camera.viewport, camera.zoom, it)
-                    }.onSuccess { courseGroup->
+                    }.onSuccess { courseGroup ->
                         _driveScreenState.update { it.updateListItem(courseGroup) }
                     }
                 }.onFailure {
@@ -1239,7 +1281,7 @@ class DriveViewModel @Inject constructor(
                 }.sucessMap {
                     refreshNearCourse(camera).sucessMap {
                         filterListCourseUseCase(camera.viewport, camera.zoom, it)
-                    }.onSuccess { courseGroup->
+                    }.onSuccess { courseGroup ->
                         _driveScreenState.update { it.updateListItem(courseGroup) }
                     }
                 }.onFailure {
@@ -1268,7 +1310,7 @@ class DriveViewModel @Inject constructor(
     private suspend fun refreshNearCourse(cameraState: CameraState): Result<List<Course>> {
         return withContext(Dispatchers.IO) {
             getNearByCourseUseCase(cameraState.latLng, cameraState.zoom)
-        }.sucessMap { courseGroup->
+        }.sucessMap { courseGroup ->
             runCatching {
                 mapOverlayService.addCourseMarkerAndPath(courseGroup)
                 mapOverlayService.showAllOverlays()
@@ -1277,7 +1319,7 @@ class DriveViewModel @Inject constructor(
         }
     }
 
-    private fun DriveScreenState.updateListItem(courseGroup:List<Course>): DriveScreenState{
+    private fun DriveScreenState.updateListItem(courseGroup: List<Course>): DriveScreenState {
         return copy(
             listState = listState.copy(
                 listItemGroup = courseGroup.map { ListState.ListItemState(course = it) }
@@ -1486,11 +1528,12 @@ class DriveViewModel @Inject constructor(
     private fun eventReceive(event: AppEvent, result: Boolean) {
         when (event) {
             AppEvent.SignInScreen -> {
-                if(result){
-                    clearState()
+                if (result) {
+                    clearScreen()
                     loadAd()
                 }
             }
+
             else -> {}
         }
     }
@@ -1500,23 +1543,25 @@ class DriveViewModel @Inject constructor(
         val state = _driveScreenState.value
         if (state.stateMode == DriveVisibleMode.SearchBarExpand || state.floatingButtonState.stateMode == DriveFloatingVisibleMode.ExportExpand)
             viewModelScope.launch(Dispatchers.IO) {
-                nativeAdService.getAd()
+                nativeAdServiceOld.getAd()
                     .onSuccess { newAdItemGroup ->
                         _driveScreenState.update {
                             when {
                                 state.floatingButtonState.stateMode == DriveFloatingVisibleMode.ExportExpand -> {
                                     it.copy(
                                         floatingButtonState = it.floatingButtonState.copy(
-                                            adItemGroup = newAdItemGroup.toItem()
+                                            adItemGroup = newAdItemGroup
                                         )
                                     )
                                 }
 
                                 state.stateMode == DriveVisibleMode.SearchBarExpand -> {
-                                    it.copy(searchBarState = it.searchBarState.copy(adItemGroup = newAdItemGroup.toItem()))
+                                    it.copy(searchBarState = it.searchBarState.copy(adItemGroup = newAdItemGroup))
                                 }
 
-                                else -> { it }
+                                else -> {
+                                    it
+                                }
                             }
                         }
                     }.onFailure {
@@ -1525,22 +1570,18 @@ class DriveViewModel @Inject constructor(
             }
     }
 
-    private fun clearAd(){
-        _driveScreenState.value.destroyAd()
+    private fun clearAd() {
         _driveScreenState.update {
+            it.searchBarState.adItemGroup.forEach {
+                it.destroy()
+            }
+            it.floatingButtonState.adItemGroup.forEach {
+                it.destroy()
+            }
             it.copy(
                 searchBarState = it.searchBarState.copy(adItemGroup = emptyList()),
                 floatingButtonState = it.floatingButtonState.copy(adItemGroup = emptyList())
             )
-        }
-    }
-
-    private fun DriveScreenState.destroyAd() {
-        searchBarState.adItemGroup.forEach {
-            it.nativeAd.destroy()
-        }
-        floatingButtonState.adItemGroup.forEach {
-            it.nativeAd.destroy()
         }
     }
 
@@ -1578,22 +1619,19 @@ class DriveViewModel @Inject constructor(
             floatingButtonState = floatingButtonState.copy(
                 stateMode = DriveFloatingVisibleMode.Default
             ),
-            bottomSheetState = bottomSheetState.copy(
-                isUserControl = false
-            ),
             selectedCourse = Course(),
         )
     }
 
     private fun DriveScreenState.clearCheckPointInfo(): DriveScreenState {
-        mapOverlayService.removeCheckPointLeaf(selectedCourse.courseId,selectedCheckPoint.checkPointId)
+        mapOverlayService.removeCheckPointLeaf(
+            selectedCourse.courseId,
+            selectedCheckPoint.checkPointId
+        )
         return copy(
             stateMode = DriveVisibleMode.CourseDetail,
             floatingButtonState = floatingButtonState.copy(
                 stateMode = DriveFloatingVisibleMode.Default
-            ),
-            bottomSheetState = bottomSheetState.copy(
-                isUserControl = false
             ),
             selectedCheckPoint = CheckPoint()
         )
@@ -1610,32 +1648,29 @@ class DriveViewModel @Inject constructor(
         )
     }
 
-    private fun DriveScreenState.backToCheckPointDetail(): DriveScreenState {
-        return copy(
-            stateMode = DriveVisibleMode.BlurCheckpointDetail,
-            floatingButtonState = floatingButtonState.copy(
-                stateMode = DriveFloatingVisibleMode.Popup
-            )
-        )
-    }
-
     private fun DriveScreenState.backToExplorer(): DriveScreenState {
         return copy(
+            stateMode = DriveVisibleMode.Explorer,
             searchBarState = SearchBarState(),
             popUpState = PopUpState(),
             bottomSheetState = BottomSheetState(),
             floatingButtonState = FloatingButtonState(),
-            stateMode = DriveVisibleMode.Explorer,
             selectedCourse = Course(),
             selectedCheckPoint = CheckPoint()
         )
     }
 
-    private fun clearState(){
+    private fun clearScreen() {
         _driveScreenState.update {
             mapOverlayService.clear()
-            it.backToExplorer().copy(
-                overlayGroup = emptyList(),
+            it.copy(
+                stateMode = DriveVisibleMode.Explorer,
+                searchBarState = SearchBarState(),
+                popUpState = PopUpState(),
+                bottomSheetState = BottomSheetState(),
+                floatingButtonState = FloatingButtonState(),
+                selectedCourse = Course(),
+                selectedCheckPoint = CheckPoint(),
                 listState = ListState()
             )
         }

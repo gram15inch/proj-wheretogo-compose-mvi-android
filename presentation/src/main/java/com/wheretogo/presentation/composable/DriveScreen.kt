@@ -82,7 +82,6 @@ import com.wheretogo.presentation.model.ContentPadding
 import com.wheretogo.presentation.model.MarkerInfo
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.model.TypeEditText
-import com.wheretogo.presentation.state.BottomSheetState
 import com.wheretogo.presentation.state.CameraState
 import com.wheretogo.presentation.state.CheckPointAddState
 import com.wheretogo.presentation.state.CommentState
@@ -141,7 +140,7 @@ fun DriveScreen(
             onListItemClick = { handleIntent(DriveScreenIntent.DriveListItemClick(it)) },
 
             //MapPopup
-            onPopupImageClick = { handleIntent(DriveScreenIntent.CommentFloatingButtonClick) },
+            onPopupImageClick = {},
             onPopupBlurClick = { handleIntent(DriveScreenIntent.DismissPopupComment) },
             onCommentListItemLongClick = { handleIntent(DriveScreenIntent.CommentListItemLongClick(it)) },
             onCommentListItemClick = { handleIntent(DriveScreenIntent.CommentListItemClick(it)) },
@@ -173,8 +172,7 @@ fun DriveScreen(
             onFoldFloatClick = { handleIntent(DriveScreenIntent.FoldFloatingButtonClick) },
 
             //DescriptionTextField
-            onTextChange = { handleIntent(DriveScreenIntent.CheckpointDescriptionChange(it)) },
-            onTextFieldEnterClick = { handleIntent(DriveScreenIntent.CheckpointDescriptionEnterClick) },
+            onTextFieldEnterClick = { handleIntent(DriveScreenIntent.CheckpointDescriptionEnterClick(it)) },
         )
     }
 
@@ -237,8 +235,7 @@ fun DriveContent(
     onBottomSheetStateChange: (SheetVisibleMode) -> Unit = {},
 
     //BottomSheetImeStickyBox
-    onTextChange: (String) -> Unit = {},
-    onTextFieldEnterClick: () -> Unit = {}
+    onTextFieldEnterClick: (String) -> Unit = {}
 ) {
     val isPreview = LocalInspectionMode.current
     var bottomSheetHeight by remember { mutableStateOf(0.dp) }
@@ -293,7 +290,9 @@ fun DriveContent(
             ) {
 
                 if (BuildConfig.TEST_UI && !isPreview)
-                    Column(modifier = Modifier.align(alignment = Alignment.TopStart).padding(5.dp)) {
+                    Column(modifier = Modifier
+                        .align(alignment = Alignment.TopStart)
+                        .padding(5.dp)) {
                         Text(
                             text = "${state.overlayGroup.size}",
                             fontSize = 50.sp
@@ -356,15 +355,18 @@ fun DriveContent(
                 )
 
                 OneHandArea {
-                    ZIndexOfDriveContentArea(state.guideState.tutorialStep) { zIdxs, isBlock->
-                        // 선택 막기(가이드)
+                    ZIndexOfDriveContentArea(
+                        tutorialStep = state.guideState.tutorialStep,
+                        visibleMode = state.stateMode
+                    ) { zIdxs, isBlock, isCover->
+                        // 블러(선택막기, 커버)
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .zIndex(1f)
                                 .consumptionEvent(isBlock)
                                 .run{
-                                    if(isBlock)
+                                    if(isCover)
                                         background(Gray5060)
                                     else this
                                 }
@@ -421,8 +423,9 @@ fun DriveContent(
                                 modifier = Modifier.align(Alignment.BottomStart),
                                 state = state.popUpState,
                                 isLoading = state.isLoading,
-                                onPopupImageClick = onPopupImageClick,
-                                onPopupBlurClick = onPopupBlurClick,
+                                isImageBlur = zIdxs.mapPopup == 0f,
+                                requestCommentOpen = onCommentFloatClick,
+                                onPopupBlurClick = onBlurClick,
                                 onCommentListItemClick = onCommentListItemClick,
                                 onCommentListItemLongClick = onCommentListItemLongClick,
                                 onCommentLikeClick = onCommentLikeClick,
@@ -437,14 +440,11 @@ fun DriveContent(
 
                         // 바텀시트(체크포인트 추가, 컨텐츠 정보)
                         BottomSheet(
-                            modifier = Modifier,
-                            isVisible = DriveScreenState.bottomSheetVisible.contains(state.stateMode),
+                            modifier = Modifier
+                                .zIndex(zIdxs.bottomSheet),
+                            isOpen = DriveScreenState.bottomSheetVisible.contains(state.stateMode),
                             bottomSpace = systemBarBottomPadding,
-                            onSheetHeightChange = {
-                                if (state.bottomSheetState.content == DriveBottomSheetContent.CHECKPOINT_ADD) {
-                                    bottomSheetHeight = it
-                                }
-                            },
+                            onSheetHeightChange = { bottomSheetHeight = it },
                             onSheetStateChange = onBottomSheetStateChange,
                             minHeight = state.bottomSheetState.content.minHeight.dp,
                             isSpaceVisibleWhenClose = false
@@ -497,10 +497,8 @@ fun DriveContent(
                     modifier = Modifier
                         .padding(systemBars)
                         .align(alignment = Alignment.BottomCenter),
-                    state = state.bottomSheetState,
                     isVisible = DriveScreenState.imeBoxVisible.contains(state.stateMode),
                     focusRequester = focusRequester,
-                    onTextChange = onTextChange,
                     onTextFieldEnterClick = onTextFieldEnterClick
                 )
             }
@@ -526,19 +524,15 @@ fun BlurEffect(modifier: Modifier = Modifier, onClick: () -> Unit) {
 @Composable
 fun ImeStickyBoxForBottomSheet(
     modifier: Modifier,
-    state: BottomSheetState,
     isVisible: Boolean,
     focusRequester: FocusRequester,
-    onTextChange: (String) -> Unit = {},
-    onTextFieldEnterClick: () -> Unit = {}
+    onTextFieldEnterClick: (String) -> Unit = {}
 ) {
     ImeStickyBox(modifier = modifier) {
         DescriptionTextField(
             modifier = Modifier.heightIn(min = 60.dp),
             isVisible = isVisible && it > 30.dp,
             focusRequester = focusRequester,
-            text = state.checkPointAddState.description,
-            onTextChange = onTextChange,
             onEnterClick = onTextFieldEnterClick
         )
     }
@@ -586,9 +580,9 @@ fun CourseContentPreview() {
                 stateMode = DriveVisibleMode.CourseDetail,
                 popUpState = popUpState.copy(
                     commentState = popUpState.commentState.copy(
-                        isVisible = true,
+                        isContentVisible = true,
                         commentAddState = CommentAddState(
-                            isEmogiGroup = true,
+                            isOneLinePreview = false,
                             emogiGroup = defaultCommentEmogiGroup()
                         )
                     )

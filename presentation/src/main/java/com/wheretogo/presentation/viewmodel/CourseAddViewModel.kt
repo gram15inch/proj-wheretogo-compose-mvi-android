@@ -426,7 +426,7 @@ class CourseAddViewModel @Inject constructor(
 
     private fun bottomSheetChange(state: SheetVisibleMode) {
         when (state) {
-            SheetVisibleMode.Expand -> {
+            SheetVisibleMode.Opening -> {
                 _courseAddScreenState.update {
                     it.run {
                         copy(
@@ -436,7 +436,7 @@ class CourseAddViewModel @Inject constructor(
                 }
             }
 
-            SheetVisibleMode.PartiallyExpand -> {
+            SheetVisibleMode.Closing -> {
                 _courseAddScreenState.update {
                     it.run {
                         copy(

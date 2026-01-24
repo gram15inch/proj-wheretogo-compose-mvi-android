@@ -26,14 +26,12 @@ import com.wheretogo.domain.usecase.util.SearchKeywordUseCase
 import com.wheretogo.domain.usecase.util.UpdateLikeUseCase
 import com.wheretogo.presentation.HomeBodyBtn
 import com.wheretogo.presentation.HomeBodyBtnHighlight
-import com.wheretogo.presentation.feature.ads.AdService
 import com.wheretogo.domain.usecase.course.FilterListCourseUseCase
+import com.wheretogo.presentation.feature.ads.AdService
 import com.wheretogo.presentation.feature.map.MapOverlayService
 import com.wheretogo.presentation.intent.HomeIntent
-import com.wheretogo.presentation.state.DriveScreenState
 import com.wheretogo.presentation.state.GuideState
 import com.wheretogo.presentation.state.HomeScreenState
-import com.wheretogo.presentation.viewmodel.DriveViewModel
 import com.wheretogo.presentation.viewmodel.HomeViewModel
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -108,37 +106,6 @@ class ViewModelTestByGuide {
         }
     }
 
-    private fun initDriveViewModel(
-        dispatcher: CoroutineDispatcher,
-        state: DriveScreenState
-    ): DriveViewModel {
-        return DriveViewModel(
-            stateInit = state,
-            dispatcher = dispatcher,
-            handler = driveHandler,
-            observeSettingsUseCase,
-            getNearByCourseUseCase,
-            getCommentForCheckPointUseCase,
-            getCheckPointForMarkerUseCase,
-            getImageForPopupUseCase,
-            addCheckpointToCourseUseCase,
-            addCommentToCheckPointUseCase,
-            updateLikeUseCase,
-            removeCourseUseCase,
-            removeCheckPointUseCase,
-            removeCommentToCheckPointUseCase,
-            reportCourseUseCase,
-            reportCheckPointUseCase,
-            reportCommentUseCase,
-            searchKeywordUseCase,
-            signOutUseCase,
-            guideMoveStepUseCase,
-            filterListCourseUseCase,
-            nativeAdService,
-            mapOverlayService
-        )
-    }
-
     private fun initHomeViewModel(
         dispatcher: CoroutineDispatcher,
         state: HomeScreenState
@@ -173,6 +140,6 @@ class ViewModelTestByGuide {
     private val guideMoveStepUseCase = mockk<GuideMoveStepUseCase>()
     private val filterListCourseUseCase = mockk<FilterListCourseUseCase>()
     private val mapOverlayService = mockk<MapOverlayService>()
-    private val nativeAdService = mockk<AdService>()
+    private val nativeAdServiceOld = mockk<AdService>()
 
 }

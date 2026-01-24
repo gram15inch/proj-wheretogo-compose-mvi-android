@@ -8,5 +8,4 @@ data class BottomSheetState(
     val checkPointAddState: CheckPointAddState = CheckPointAddState(),
     val courseAddSheetState: CourseAddSheetState = CourseAddSheetState(),
     val infoState: InfoState = InfoState(),
-    val isUserControl : Boolean = true
 )

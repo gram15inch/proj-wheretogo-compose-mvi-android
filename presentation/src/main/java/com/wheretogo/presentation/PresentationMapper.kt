@@ -1,7 +1,6 @@
 package com.wheretogo.presentation
 
 
-import com.google.android.gms.ads.nativead.NativeAd
 import com.wheretogo.domain.AuthCompany
 import com.wheretogo.domain.MarkerType
 import com.wheretogo.domain.PathType
@@ -17,8 +16,6 @@ import com.wheretogo.domain.model.course.Course
 import com.wheretogo.domain.model.course.CourseContent
 import com.wheretogo.domain.model.route.RouteCategory
 import com.wheretogo.domain.model.util.Navigation
-import com.wheretogo.presentation.state.CourseAddScreenState
-import com.wheretogo.presentation.model.AdItem
 import com.wheretogo.presentation.model.LeafInfo
 import com.wheretogo.presentation.model.MarkerInfo
 import com.wheretogo.presentation.model.PathInfo
@@ -26,13 +23,8 @@ import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.CheckPointAddState
 import com.wheretogo.presentation.state.CommentState
 import com.wheretogo.presentation.state.CommentState.CommentAddState
+import com.wheretogo.presentation.state.CourseAddScreenState
 import com.naver.maps.geometry.LatLng as NaverLatLng
-
-fun List<NativeAd>.toItem(): List<AdItem> {
-    return this.map {
-        AdItem(it)
-    }
-}
 
 fun List<LatLng>.toNaver(): List<NaverLatLng> {
     return this.map { NaverLatLng(it.latitude, it.longitude) }
@@ -105,7 +97,7 @@ fun CheckPointAddState.toCheckPointContent(courseId: String): CheckPointContent 
 fun CommentAddState.toCommentContent(groupId: String, editText: String): CommentContent {
     return CommentContent(
         groupId = groupId,
-        emoji = this.largeEmoji.ifEmpty { emogiGroup.firstOrNull() ?: "" },
+        emoji = this.titleEmoji.ifEmpty { emogiGroup.firstOrNull() ?: "" },
         oneLineReview = if (CommentType.ONE == commentType) editText else this.oneLineReview,
         detailedReview = if (CommentType.DETAIL == commentType) editText else this.detailReview
     )

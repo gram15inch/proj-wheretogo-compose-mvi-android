@@ -274,13 +274,11 @@ fun ProfileSection(
 
 @Composable
 fun AdSection(adItemGroup: List<AdItem> = emptyList()) {
-    val nativeAd = adItemGroup.firstOrNull()?.nativeAd
-
     Box(
         modifier = Modifier
             .padding(12.dp)
             .fillMaxWidth()) {
-        AdaptiveAd(elevation = 4.dp, nativeAd = nativeAd)
+        AdaptiveAd(elevation = 4.dp, adItem = adItemGroup.firstOrNull())
     }
 
 }

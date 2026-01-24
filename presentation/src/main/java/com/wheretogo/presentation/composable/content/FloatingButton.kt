@@ -113,7 +113,7 @@ fun FloatingButtons(
                         top = 10.dp,
                         bottom = buttonEndPadding + 10.dp
                     ),
-                    nativeAd = state.adItemGroup.firstOrNull()?.nativeAd
+                    adItem = state.adItemGroup.firstOrNull()
                 )
             }
         }

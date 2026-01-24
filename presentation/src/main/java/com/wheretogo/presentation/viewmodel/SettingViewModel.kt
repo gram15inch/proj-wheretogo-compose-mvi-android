@@ -17,7 +17,6 @@ import com.wheretogo.presentation.feature.ads.AdService
 import com.wheretogo.presentation.intent.SettingIntent
 import com.wheretogo.presentation.state.SettingScreenState
 import com.wheretogo.presentation.toAppError
-import com.wheretogo.presentation.toItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -36,7 +35,7 @@ class SettingViewModel @Inject constructor(
     private val signOutUseCase: UserSignOutUseCase,
     private val getUserProfileStreamUseCase: GetUserProfileStreamUseCase,
     private val deleteUserUseCase: DeleteUserUseCase,
-    private val adService: AdService
+    private val adServiceOld: AdService
 ) : ViewModel() {
     private val _settingScreenState = MutableStateFlow(SettingScreenState())
     val settingScreenState: StateFlow<SettingScreenState> = _settingScreenState
@@ -195,10 +194,10 @@ class SettingViewModel @Inject constructor(
     private suspend fun loadAd() {
         if(_loadAdSkipOnResume || _isCoverScreen)
             return
-        adService.getAd()
+        adServiceOld.getAd()
             .onSuccess { newAdGroup ->
                 _settingScreenState.update {
-                    it.copy(adItemGroup = newAdGroup.toItem())
+                    it.copy(adItemGroup = newAdGroup)
                 }
             }.onFailure {
                 if(it !is AppError.NeedSignIn)
@@ -217,7 +216,7 @@ class SettingViewModel @Inject constructor(
 
     private fun SettingScreenState.destroyAd() {
         adItemGroup.forEach {
-            it.nativeAd.destroy()
+            it.destroy()
         }
     }
 

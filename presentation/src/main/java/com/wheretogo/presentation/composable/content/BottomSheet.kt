@@ -36,7 +36,7 @@ import com.wheretogo.presentation.theme.Gray6080
 @Composable
 fun BottomSheet(
     modifier: Modifier = Modifier,
-    isVisible: Boolean = false,
+    isOpen: Boolean = false,
     minHeight: Dp,
     isSpaceVisibleWhenClose: Boolean,
     bottomSpace: Dp = 0.dp,
@@ -49,44 +49,55 @@ fun BottomSheet(
     var latestDp by remember { mutableStateOf(0.dp) }
     val scaffoldState = rememberBottomSheetScaffoldState()
     val sheetState = scaffoldState.bottomSheetState
-    var latestTargetValue by remember { mutableStateOf<SheetValue?>(null) }
-    LaunchedEffect(isVisible) {
-        if (isVisible) {
+    var latestDoneValue by remember { mutableStateOf<SheetValue?>(null) }
+    var latestIngValue by remember { mutableStateOf<SheetValue?>(null) }
+    var latestVisibleValue by remember { mutableStateOf<SheetVisibleMode?>(null) }
+    LaunchedEffect(isOpen) {
+        if (isOpen) {
             scaffoldState.bottomSheetState.expand()
-        } else {
-            if (scaffoldState.bottomSheetState.targetValue == SheetValue.Expanded)
-                scaffoldState.bottomSheetState.partialExpand()
-        }
+        }else if (latestVisibleValue == SheetVisibleMode.Opened)
+            scaffoldState.bottomSheetState.partialExpand()
     }
 
     LaunchedEffect(sheetState.targetValue) {
-        if (latestTargetValue == sheetState.targetValue) return@LaunchedEffect
-        latestTargetValue = sheetState.targetValue
+        if (latestIngValue == sheetState.targetValue) return@LaunchedEffect
         when (sheetState.targetValue) {
             SheetValue.Expanded -> {
-                onSheetStateChange(SheetVisibleMode.Expand)
+                if(latestVisibleValue == SheetVisibleMode.Closing) {
+                    return@LaunchedEffect scaffoldState.bottomSheetState.partialExpand()
+                }
+                onSheetStateChange(SheetVisibleMode.Opening)
+                latestVisibleValue = SheetVisibleMode.Opening
             }
 
             SheetValue.PartiallyExpanded -> {
-                onSheetStateChange(SheetVisibleMode.PartiallyExpand)
+                if(latestIngValue!=null)
+                    onSheetStateChange(SheetVisibleMode.Closing)
+                latestVisibleValue = SheetVisibleMode.Closing
             }
 
             else -> {}
         }
+        latestIngValue = sheetState.targetValue
     }
 
     LaunchedEffect(sheetState.currentValue) {
+        if (latestDoneValue == sheetState.targetValue) return@LaunchedEffect
         when (sheetState.currentValue) {
             SheetValue.Expanded -> {
-                onSheetStateChange(SheetVisibleMode.Expanded)
+                onSheetStateChange(SheetVisibleMode.Opened)
+                latestVisibleValue = SheetVisibleMode.Opened
             }
 
             SheetValue.PartiallyExpanded -> {
-                onSheetStateChange(SheetVisibleMode.PartiallyExpanded)
+                if(latestDoneValue!=null) //시트 처음 생성시 호출 방지
+                    onSheetStateChange(SheetVisibleMode.Closed)
+                latestVisibleValue = SheetVisibleMode.Closed
             }
 
             else -> {}
         }
+        latestDoneValue = sheetState.currentValue
     }
 
     val initHeightWithSpace =
@@ -104,7 +115,7 @@ fun BottomSheet(
                         .onGloballyPositioned { coordinates ->
                             val heightPx = coordinates.size.height
                             val dp =
-                                if (isVisible)
+                                if (isOpen)
                                     with(density) { heightPx.toDp() + 20.dp }
                                 else
                                     initHeightWithSpace.run { if (this < 0.dp) 0.dp else this }

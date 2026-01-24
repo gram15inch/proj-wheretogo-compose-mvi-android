@@ -222,7 +222,7 @@ fun CourseAddSheetContent(
                 BottomSheet(
                     modifier = Modifier,
                     bottomSpace = systemBarBottomPadding,
-                    isVisible = CourseAddScreenState.isBottomSheetVisible.contains(state.stateMode),
+                    isOpen = CourseAddScreenState.isBottomSheetVisible.contains(state.stateMode),
                     onSheetHeightChange = { dp ->
                         bottomSheetHeight = dp
                     },

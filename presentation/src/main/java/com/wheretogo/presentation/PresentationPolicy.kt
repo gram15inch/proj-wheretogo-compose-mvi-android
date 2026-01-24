@@ -130,7 +130,12 @@ enum class HomeBodyBtn {
 }
 
 enum class DriveBottomSheetContent(val minHeight: Int) {
-    EMPTY(0), COURSE_ADD(80), CHECKPOINT_ADD(0), COURSE_INFO(0), CHECKPOINT_INFO(0), PREVIEW(400)
+    EMPTY(0),
+    COURSE_ADD(80),
+    CHECKPOINT_ADD(0),
+    COURSE_INFO(0),
+    CHECKPOINT_INFO(0),
+    PREVIEW(400)
 }
 
 enum class AppLifecycle {
@@ -138,7 +143,7 @@ enum class AppLifecycle {
 }
 
 enum class DriveVisibleMode {
-    Explorer, CourseDetail, BlurCourseDetail, BlurCheckpointDetail, SearchBarExpand, BottomSheetExpand, BlurBottomSheetExpand
+    Explorer, CourseDetail, BlurCourseDetail, BlurCheckpointDetail, SearchBarExpand, BottomSheetExpand, BlurBottomSheetExpand, BlurCheckpointBottomSheetExpand,
 }
 
 enum class CourseAddVisibleMode {
@@ -150,7 +155,7 @@ enum class DriveFloatingVisibleMode {
 }
 
 enum class SheetVisibleMode {
-    PartiallyExpand, PartiallyExpanded, Expand, Expanded
+    Closing, Closed, Opening, Opened
 }
 
 enum class MarkerZIndex{

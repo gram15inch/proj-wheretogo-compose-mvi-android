@@ -77,7 +77,7 @@ fun LoginContent(
     Box(
         modifier = Modifier
             .background(Color.White)
-            .consumptionEvent()
+            .consumptionEvent(true)
             .systemBarsPadding()
             .fillMaxSize(),
         contentAlignment = Alignment.Center
