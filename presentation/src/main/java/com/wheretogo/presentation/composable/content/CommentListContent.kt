@@ -165,19 +165,7 @@ fun CommentListItem(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
-                    if (!comment.isFold)
-                        Text(
-                            modifier = Modifier.padding(top = 4.dp),
-                            text = comment.data.detailedReview,
-                            fontSize = 10.sp,
-                            fontFamily = hancomSansFontFamily,
-                            maxLines = 5,
-                            overflow = TextOverflow.Ellipsis,
-                            style = TextStyle(
-                                lineHeight = 16.sp
-                            )
-                        )
-                    else
+                    if (comment.isFold)
                         Text(
                             modifier = Modifier.padding(top = 4.dp, start = 1.dp),
                             text = "접힘 >",
@@ -190,6 +178,19 @@ fun CommentListItem(
                             fontFamily = hancomSansFontFamily,
                             color = Gray250
                         )
+                    else
+                        Text(
+                            modifier = Modifier.padding(top = 4.dp),
+                            text = comment.data.detailedReview,
+                            fontSize = 10.sp,
+                            fontFamily = hancomSansFontFamily,
+                            maxLines = 5,
+                            overflow = TextOverflow.Ellipsis,
+                            style = TextStyle(
+                                lineHeight = 16.sp
+                            )
+                        )
+
                 }
                 Column(modifier.padding(top = 4.dp)) {
                     Box(

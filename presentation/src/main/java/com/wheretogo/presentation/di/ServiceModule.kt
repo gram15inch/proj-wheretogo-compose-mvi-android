@@ -6,9 +6,9 @@ import com.google.android.gms.ads.MobileAds
 import com.wheretogo.presentation.AD_REFRESH_SIZE
 import com.wheretogo.presentation.BuildConfig
 import com.wheretogo.presentation.DEBUG_AD_REFRESH_SIZE
+import com.wheretogo.domain.feature.LocationService
 import com.wheretogo.presentation.feature.ads.AdService
 import com.wheretogo.presentation.feature.ads.NativeAdServiceImpl
-import com.wheretogo.presentation.feature.geo.LocationService
 import com.wheretogo.presentation.feature.geo.LocationServiceImpl
 import com.wheretogo.presentation.feature.map.MapOverlayService
 import com.wheretogo.presentation.feature.map.MapOverlayServiceImpl

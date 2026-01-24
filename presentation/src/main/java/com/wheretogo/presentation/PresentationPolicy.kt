@@ -130,7 +130,12 @@ enum class HomeBodyBtn {
 }
 
 enum class DriveBottomSheetContent(val minHeight: Int) {
-    EMPTY(0), COURSE_ADD(80), CHECKPOINT_ADD(0), COURSE_INFO(0), CHECKPOINT_INFO(0), PREVIEW(400)
+    EMPTY(0),
+    COURSE_ADD(80),
+    CHECKPOINT_ADD(0),
+    COURSE_INFO(0),
+    CHECKPOINT_INFO(0),
+    PREVIEW(400)
 }
 
 enum class AppLifecycle {
@@ -138,7 +143,7 @@ enum class AppLifecycle {
 }
 
 enum class DriveVisibleMode {
-    Explorer, CourseDetail, BlurCourseDetail, BlurCheckpointDetail, SearchBarExpand, BottomSheetExpand, BlurBottomSheetExpand
+    Explorer, CourseDetail, BlurCourseDetail, BlurCheckpointDetail, SearchBarExpand, BottomSheetExpand, BlurBottomSheetExpand, BlurCheckpointBottomSheetExpand,
 }
 
 enum class CourseAddVisibleMode {
@@ -150,7 +155,7 @@ enum class DriveFloatingVisibleMode {
 }
 
 enum class SheetVisibleMode {
-    PartiallyExpand, PartiallyExpanded, Expand, Expanded
+    Closing, Closed, Opening, Opened
 }
 
 enum class MarkerZIndex{
@@ -190,15 +195,16 @@ fun OverlayType.toPathType(): PathType{
 }
 
 fun NaverMap.toCameraState(): CameraState {
-    return contentRegion.run {
+    return contentBounds.run {
         CameraState(
             latLng = cameraPosition.target.toDomainLatLng(),
             zoom = cameraPosition.zoom,
             viewport = Viewport(
-                this[0].latitude,
-                this[3].latitude,
-                this[0].longitude,
-                this[3].longitude
+                northWest = northWest.toDomainLatLng(),
+                northEast = northEast.toDomainLatLng(),
+                southWest = southWest.toDomainLatLng(),
+                southEast = southEast.toDomainLatLng(),
+                center = center.toDomainLatLng()
             ),
             updateSource = CameraUpdateSource.USER
         )

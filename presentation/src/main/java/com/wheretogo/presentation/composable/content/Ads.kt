@@ -55,6 +55,7 @@ import com.wheretogo.presentation.composable.content.ad.NativeAdView
 import com.wheretogo.presentation.composable.effect.CardAdEffect
 import com.wheretogo.presentation.composable.effect.RowAdEffect
 import com.wheretogo.presentation.feature.FontMaxScale
+import com.wheretogo.presentation.model.AdItem
 import com.wheretogo.presentation.theme.Blue100
 import com.wheretogo.presentation.theme.Blue50
 import com.wheretogo.presentation.theme.Blue500
@@ -98,10 +99,10 @@ fun AdaptiveAd(
     modifier: Modifier = Modifier,
     elevation: Dp = 8.dp,
     isCompact: Boolean = false,
-    nativeAd: NativeAd?
+    adItem: AdItem?
 ) {
     val adSize = adSize(isCompact)
-
+    val nativeAd = adItem?.nativeAd as? NativeAd
     Box(modifier = modifier) {
         when (adSize) {
             AdMinSize.Row -> {

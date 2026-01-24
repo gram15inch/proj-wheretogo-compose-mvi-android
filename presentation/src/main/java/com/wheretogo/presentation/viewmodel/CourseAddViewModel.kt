@@ -123,14 +123,11 @@ class CourseAddViewModel @Inject constructor(
             _courseAddScreenState.update {
                 it.run {
                     copy(
-                        searchBarState = searchBarState.copy(isLoading = false),
-                        naverMapState = NaverMapState(
-                            cameraState = naverMapState.cameraState.copy(
-                                latLng = item.latlng,
-                                updateSource = CameraUpdateSource.SEARCH_BAR,
-                                moveAnimation = MoveAnimation.APP_EASING
-                            )
-                        )
+                        searchBarState = searchBarState.copy(isLoading = false)
+                    ).moveCamera(
+                        latLng = item.latlng,
+                        source = CameraUpdateSource.SEARCH_BAR,
+                        animation = MoveAnimation.APP_EASING
                     )
                 }
             }
@@ -210,7 +207,7 @@ class CourseAddViewModel @Inject constructor(
             it.run {
                 copy(
                     naverMapState = NaverMapState(
-                        cameraState = cameraState.copy(
+                        latestCameraState = cameraState.copy(
                             updateSource = CameraUpdateSource.USER
                         )
                     )
@@ -231,12 +228,9 @@ class CourseAddViewModel @Inject constructor(
                         isFloatingButton = true,
                         isFloatMarker = true,
                         selectedMarkerItem = info,
-                        naverMapState = NaverMapState(
-                            cameraState = naverMapState.cameraState.copy(
-                                latLng = position,
-                                updateSource = CameraUpdateSource.MARKER
-                            )
-                        )
+                    ).moveCamera(
+                        latLng = position,
+                        source = CameraUpdateSource.MARKER
                     )
                 }
             }
@@ -274,7 +268,7 @@ class CourseAddViewModel @Inject constructor(
                 it.run {
                     mapOverlayService.moveWaypoint(
                         item.contentId,
-                        naverMapState.cameraState.latLng
+                        naverMapState.latestCameraState.latLng
                     )
                     mapOverlayService.createScaffoldPath()
                     copy(
@@ -287,13 +281,7 @@ class CourseAddViewModel @Inject constructor(
                             )
                         ),
                         isFloatingButton = !isFloatMarker,
-                        isFloatMarker = !isFloatMarker,
-                        naverMapState = naverMapState.copy(
-                            cameraState = naverMapState.cameraState.copy(
-                                latLng = naverMapState.cameraState.latLng,
-                                updateSource = CameraUpdateSource.MARKER
-                            )
-                        )
+                        isFloatMarker = !isFloatMarker
                     )
                 }
             }
@@ -397,6 +385,37 @@ class CourseAddViewModel @Inject constructor(
         }
     }
 
+    private fun CourseAddScreenState.moveCamera(
+        latLng: LatLng? = null,
+        zoom: Double? = null,
+        source: CameraUpdateSource = CameraUpdateSource.USER,
+        animation: MoveAnimation = MoveAnimation.APP_LINEAR
+    ): CourseAddScreenState {
+        return if (latLng != null) {
+            run {
+                val zoom = zoom ?: naverMapState.latestCameraState.zoom
+                copy(
+                    naverMapState = naverMapState.copy(
+                        requestCameraState = naverMapState.latestCameraState.copy(
+                            latLng = latLng,
+                            zoom = zoom,
+                            updateSource = source,
+                            moveAnimation = animation
+                        )
+                    )
+                )
+            }
+        } else{
+            copy(
+                naverMapState = naverMapState.copy(
+                    requestCameraState = naverMapState.latestCameraState.copy(
+                        isMyLocation = true
+                    )
+                )
+            )
+        }
+    }
+
     private fun CourseAddScreenState.CourseAddSheetState.toValidContent(): CourseAddValidContent {
         return CourseAddValidContent(
             name = courseName,
@@ -407,7 +426,7 @@ class CourseAddViewModel @Inject constructor(
 
     private fun bottomSheetChange(state: SheetVisibleMode) {
         when (state) {
-            SheetVisibleMode.Expand -> {
+            SheetVisibleMode.Opening -> {
                 _courseAddScreenState.update {
                     it.run {
                         copy(
@@ -417,7 +436,7 @@ class CourseAddViewModel @Inject constructor(
                 }
             }
 
-            SheetVisibleMode.PartiallyExpand -> {
+            SheetVisibleMode.Closing -> {
                 _courseAddScreenState.update {
                     it.run {
                         copy(

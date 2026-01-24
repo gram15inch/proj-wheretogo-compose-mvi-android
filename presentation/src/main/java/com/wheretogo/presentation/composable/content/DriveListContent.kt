@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -42,7 +41,7 @@ import com.wheretogo.domain.model.route.RouteCategory
 import com.wheretogo.presentation.composable.animation.highlightRoundedCorner
 import com.wheretogo.presentation.state.ListState
 import com.wheretogo.presentation.theme.Gray250
-import com.wheretogo.presentation.theme.White100
+import com.wheretogo.presentation.theme.White10080
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 import com.wheretogo.presentation.toStrRes
 
@@ -82,7 +81,7 @@ fun DriveListContent(
         onHeightChange(with(density) { size.height.toDp() })
     }) {
         LazyColumn(
-            modifier = modifier.heightIn(max = 280.dp),
+            modifier = modifier.height(100.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp),
             state = listState
         ) {
@@ -110,12 +109,12 @@ fun DriveListItem(
 ) {
     AnimatedVisibility(
         modifier = Modifier
-            .highlightRoundedCorner(listItem.isHighlight, 5.dp,16.dp)
+            .highlightRoundedCorner(listItem.isHighlight, 5.dp, 16.dp)
             .shadow(
-            elevation = 1.dp,
-            shape = RoundedCornerShape(16.dp),
-            clip = false
-        ),
+                elevation = 1.dp,
+                shape = RoundedCornerShape(16.dp),
+                clip = false
+            ),
         visible = true,
         enter = slideInHorizontally(initialOffsetX = { fullWidth -> fullWidth }) + fadeIn(),
         exit = fadeOut() + shrinkHorizontally()
@@ -123,7 +122,7 @@ fun DriveListItem(
         Box(
             modifier = modifier
                 .fillMaxWidth()
-                .background(White100)
+                .background(White10080)
                 .padding(8.dp)
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {

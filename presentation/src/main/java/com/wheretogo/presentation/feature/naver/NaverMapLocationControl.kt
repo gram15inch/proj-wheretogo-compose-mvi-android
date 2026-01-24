@@ -11,7 +11,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
 @SuppressLint("MissingPermission")
-suspend fun NaverMap.setCurrentLocation(context: Context, zoom: Double = 13.0) {
+suspend fun NaverMap.placeCurrentLocation(context: Context, zoom: Double = 13.0) {
     val fusedLocationProviderClient: FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(context)
     val location = suspendCancellableCoroutine { continuation ->

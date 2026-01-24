@@ -135,15 +135,13 @@ fun DescriptionTextField(
     modifier: Modifier = Modifier,
     isVisible: Boolean,
     focusRequester: FocusRequester,
-    text: String,
-    onTextChange: (String) -> Unit,
-    onEnterClick: () -> Unit
+    onEnterClick: (String) -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     var textState by remember { mutableStateOf(TextFieldValue()) }
 
-    LaunchedEffect(text.isEmpty()) {
-        if(text.isEmpty())
+    LaunchedEffect(isVisible) {
+        if(!isVisible)
             textState = TextFieldValue("")
     }
 
@@ -178,7 +176,6 @@ fun DescriptionTextField(
                             .focusRequester(focusRequester),
                         value = textState,
                         onValueChange = {
-                            onTextChange(it.text)
                             textState = it
                         }
                     )
@@ -190,7 +187,7 @@ fun DescriptionTextField(
                     .padding(bottom = 5.dp, start = 5.dp)
             ) {
                 EnterButton(onClick = {
-                    onEnterClick()
+                    onEnterClick(textState.text)
                     focusRequester.freeFocus()
                     keyboardController?.hide()
                 })

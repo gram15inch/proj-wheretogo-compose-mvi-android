@@ -5,7 +5,8 @@ import com.wheretogo.presentation.CommentType
 import com.wheretogo.presentation.defaultCommentEmogiGroup
 
 data class CommentState(
-    val isVisible: Boolean = false,
+    val isContentVisible: Boolean = false,
+    val isImeVisible: Boolean = false,
     val isLoading: Boolean = false,
     val isDragGuide: Boolean = false,
     val commentItemGroup: List<CommentItemState> = emptyList(),
@@ -14,18 +15,16 @@ data class CommentState(
 ) {
     data class CommentItemState(
         val data: Comment = Comment(),
-        val isFold: Boolean = false,
+        val isFold: Boolean = true,
         val isLoading: Boolean = false
     )
 
     data class CommentAddState(
-        val largeEmoji: String = defaultCommentEmogiGroup().firstOrNull() ?: "",
+        val titleEmoji: String = defaultCommentEmogiGroup().firstOrNull() ?: "",
         val emogiGroup: List<String> = defaultCommentEmogiGroup(),
         val oneLineReview: String = "",
         val detailReview: String = "",
-        val oneLinePreview: String = "",
-        val isLargeEmogi: Boolean = true,
-        val isEmogiGroup: Boolean = true,
+        val isOneLinePreview: Boolean = false,
         val isLoading: Boolean = false,
         val commentType: CommentType = CommentType.ONE
     )

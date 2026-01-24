@@ -5,8 +5,8 @@ import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdLoader
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.nativead.NativeAd
 import com.wheretogo.presentation.AppError
+import com.wheretogo.presentation.model.AdItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -27,14 +27,14 @@ class NativeAdServiceImpl @Inject constructor(
     val refreshAdNumbers: Int
 ) : AdService {
     private val _mutexAdCache = Mutex()
-    private val _nativeAdCache: Deque<NativeAd> = LinkedList()
+    private val _nativeAdCache: Deque<AdItem> = LinkedList()
 
     private var serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var _error: Throwable? = null
     private var _refreshTime: Long = 0
     private var _errorCount = 0
 
-    override suspend fun getAd(): Result<List<NativeAd>> {
+    override suspend fun getAd(): Result<List<AdItem>> {
         val isLoadSuccess = serviceScope.async {
             when {
                 _refreshTime != 0L -> {
@@ -107,9 +107,9 @@ class NativeAdServiceImpl @Inject constructor(
         }
     }
 
-    private fun adLoad(request: Int, onSuccess: (NativeAd) -> Unit, onFail: (LoadAdError) -> Unit) {
+    private fun adLoad(request: Int, onSuccess: (AdItem) -> Unit, onFail: (LoadAdError) -> Unit) {
         return AdLoader.Builder(context, adId).forNativeAd {
-            onSuccess(it)
+            onSuccess(AdItem(it, System.currentTimeMillis()))
         }.withAdListener(object : AdListener() {
             override fun onAdFailedToLoad(adError: LoadAdError) {
                 onFail(adError)
@@ -117,7 +117,7 @@ class NativeAdServiceImpl @Inject constructor(
         }).build().loadAds(AdRequest.Builder().build(), request)
     }
 
-    private suspend fun Deque<NativeAd>.pollByMutex(): List<NativeAd> {
+    private suspend fun Deque<AdItem>.pollByMutex(): List<AdItem> {
         return _mutexAdCache.withLock {
             val adGroup = poll().run {
                 if (this == null)
@@ -129,7 +129,7 @@ class NativeAdServiceImpl @Inject constructor(
         }
     }
 
-    private suspend fun Deque<NativeAd>.waitUntilNotEmpty(): Result<Unit> {
+    private suspend fun Deque<AdItem>.waitUntilNotEmpty(): Result<Unit> {
         repeat(20) {
             delay(500)
             when {

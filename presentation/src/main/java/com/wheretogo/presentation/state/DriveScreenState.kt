@@ -31,7 +31,11 @@ data class DriveScreenState(
         val searchBarVisible: EnumSet<DriveVisibleMode> =
             EnumSet.of(DriveVisibleMode.Explorer, DriveVisibleMode.SearchBarExpand)
         val bottomSheetVisible: EnumSet<DriveVisibleMode> =
-            EnumSet.of(DriveVisibleMode.BottomSheetExpand, DriveVisibleMode.BlurBottomSheetExpand)
+            EnumSet.of(
+                DriveVisibleMode.BottomSheetExpand,
+                DriveVisibleMode.BlurBottomSheetExpand,
+                DriveVisibleMode.BlurCheckpointBottomSheetExpand
+            )
         val floatingVisible: EnumSet<DriveVisibleMode> = EnumSet.of(
             DriveVisibleMode.CourseDetail,
             DriveVisibleMode.BlurCourseDetail,
@@ -39,13 +43,14 @@ data class DriveScreenState(
         )
         val itemListVisible: EnumSet<DriveVisibleMode> = EnumSet.of(DriveVisibleMode.Explorer)
         val popUpVisible: EnumSet<DriveVisibleMode> =
-            EnumSet.of(DriveVisibleMode.BlurCheckpointDetail)
+            EnumSet.of(DriveVisibleMode.BlurCheckpointDetail, DriveVisibleMode.BlurCheckpointBottomSheetExpand)
         val imeBoxVisible: EnumSet<DriveVisibleMode> =
             EnumSet.of(DriveVisibleMode.BottomSheetExpand)
         val blurVisible: EnumSet<DriveVisibleMode> = EnumSet.of(
             DriveVisibleMode.BlurCourseDetail,
             DriveVisibleMode.BlurCheckpointDetail,
-            DriveVisibleMode.BlurBottomSheetExpand
+            DriveVisibleMode.BlurBottomSheetExpand,
+            DriveVisibleMode.BlurCheckpointBottomSheetExpand,
         )
 
         fun infoContent(mode: DriveVisibleMode): DriveBottomSheetContent =
@@ -62,14 +67,15 @@ data class DriveScreenState(
     }
 
     // 초기화
-    fun initSearchBar(): DriveScreenState {
+    fun initSearchBar(isAdVisible: Boolean): DriveScreenState {
         return copy(
             searchBarState = searchBarState.copy(
                 isActive = false,
                 isLoading = false,
                 isEmptyVisible = false,
                 searchBarItemGroup = emptyList(),
-                adItemGroup = emptyList()
+                adItemGroup = emptyList(),
+                isAdVisible = isAdVisible
             )
         )
     }
@@ -206,7 +212,6 @@ data class DriveScreenState(
                     popUpState = popUpState.copy(
                         commentState = popUpState.commentState.copy(
                             commentAddState = old.copy(
-                                isLargeEmogi = true,
                                 isLoading = true
                             )
                         )
@@ -217,7 +222,6 @@ data class DriveScreenState(
                     popUpState = popUpState.copy(
                         commentState = popUpState.commentState.copy(
                             commentAddState = old.copy(
-                                isLargeEmogi = true,
                                 isLoading = false
                             )
                         )

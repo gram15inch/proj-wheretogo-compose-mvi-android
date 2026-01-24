@@ -33,7 +33,7 @@ import com.wheretogo.presentation.CameraUpdateSource
 import com.wheretogo.presentation.MoveAnimation
 import com.wheretogo.presentation.feature.geo.FollowLocationSource
 import com.wheretogo.presentation.model.MapOverlay
-import com.wheretogo.presentation.feature.naver.setCurrentLocation
+import com.wheretogo.presentation.feature.naver.placeCurrentLocation
 import com.wheretogo.presentation.model.ContentPadding
 import com.wheretogo.presentation.model.AppCluster
 import com.wheretogo.presentation.model.AppMarker
@@ -83,7 +83,7 @@ fun NaverMapSheet(
                     naverMap.locationSetting(context)
                     addOnCameraIdleListener {
                         val cameraSate= naverMap.toCameraState()
-                        if (state.cameraState.updateSource == CameraUpdateSource.USER
+                        if (state.latestCameraState.updateSource == CameraUpdateSource.USER
                             && cameraSate.latLng != initLatlng
                         ) onCameraUpdate(cameraSate)
                     }
@@ -95,14 +95,6 @@ fun NaverMapSheet(
             }
         }
 
-    }
-
-    LaunchedEffect(state.isMyLocation) {
-        if(state.isMyLocation){
-            mapView?.getMapAsync {
-                coroutineScope.launch { it.setCurrentLocation(context) }
-            }
-        }
     }
 
     if (isPreview)
@@ -139,12 +131,19 @@ fun NaverMapSheet(
             }
         }
 
-        LaunchedEffect(state.cameraState) {
-            if (!isMoving && state.cameraState.updateSource != CameraUpdateSource.USER) {
+        // 카메라 이동 요청
+        LaunchedEffect(state.requestCameraState) {
+            val camera = state.requestCameraState
+            if (camera.isMyLocation) {
+                mapView?.getMapAsync {
+                    coroutineScope.launch { it.placeCurrentLocation(context) }
+                }
+            } else if(!isMoving && camera.latLng != LatLng()) {
                 mapView?.getMapAsync { naverMap ->
+
                     isMoving = true
                     naverMap.setGesture(false)
-                    naverMap.cameraMove(state.cameraState) {
+                    naverMap.cameraMove(camera) {
                         isMoving = false
                         naverMap.setGesture(true)
                     }

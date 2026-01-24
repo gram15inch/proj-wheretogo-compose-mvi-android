@@ -1,10 +1,10 @@
 package com.wheretogo.presentation.feature.ads
 
-import com.google.android.gms.ads.nativead.NativeAd
+import com.wheretogo.presentation.model.AdItem
 
 interface AdService {
 
-    suspend fun getAd(): Result<List<NativeAd>>
+    suspend fun getAd(): Result<List<AdItem>>
 
     fun refreshAd(count: Int)
 

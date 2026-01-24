@@ -10,5 +10,6 @@ data class CameraState(
     val zoom: Double = 0.0,
     val viewport: Viewport = Viewport(),
     val updateSource: CameraUpdateSource = CameraUpdateSource.USER,
-    val moveAnimation: MoveAnimation = MoveAnimation.APP_LINEAR
+    val moveAnimation: MoveAnimation = MoveAnimation.APP_LINEAR,
+    val isMyLocation: Boolean = false
 )

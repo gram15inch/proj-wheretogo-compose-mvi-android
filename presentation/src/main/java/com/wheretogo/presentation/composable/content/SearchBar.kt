@@ -237,7 +237,7 @@ fun SearchBar(
                 AdaptiveAd(
                     modifier = Modifier.padding(bottom = outDp, start = outDp, end = outDp),
                     isCompact = true,
-                    nativeAd = state.adItemGroup.firstOrNull()?.nativeAd
+                    adItem = state.adItemGroup.firstOrNull()
                 )
             }
         }
