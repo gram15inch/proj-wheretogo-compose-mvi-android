@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.zIndex
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -78,8 +79,13 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                     }
 
                     is AppEvent.Navigation -> {
-                        navController.navigate(it.to.toString()){
-                            popUpTo(it.form.toString()) { inclusive = it.inclusive }
+                        val from  = it.from?.toString()
+                        val to = it.to.toString()
+                        navController.navigate(to){
+                            if(from == null)
+                                popUpTo(navController.graph.findStartDestination().id) { inclusive = it.inclusive }
+                            else
+                                popUpTo(from) { inclusive = it.inclusive }
                         }
                     }
 

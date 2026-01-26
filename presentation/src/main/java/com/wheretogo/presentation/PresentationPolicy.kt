@@ -81,7 +81,7 @@ sealed class AppError : Exception() {
 }
 
 sealed class AppEvent {
-    data class Navigation(val form: AppScreen, val to: AppScreen, val inclusive: Boolean = true) : AppEvent()
+    data class Navigation(val from: AppScreen?, val to: AppScreen, val inclusive: Boolean = true) : AppEvent()
     data class SnackBar(val msg: EventMsg) : AppEvent()
     data class Permission(val permission: AppPermission) : AppEvent()
     data object SignInScreen : AppEvent()
