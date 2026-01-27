@@ -119,6 +119,7 @@ object Firebase{
     const val FIREBASE_FIRESTORE_KTX = "com.google.firebase:firebase-firestore-ktx"
     const val FIREBASE_STORAGE_KTX   = "com.google.firebase:firebase-storage-ktx"
     const val FIREBASE_AUTH_KTX      = "com.google.firebase:firebase-auth"
+    const val FIREBASE_MESSAGING     = "com.google.firebase:firebase-messaging"
 }
 
 object Google{

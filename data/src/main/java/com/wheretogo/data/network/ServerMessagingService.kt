@@ -1,0 +1,39 @@
+package com.wheretogo.data.network
+
+import com.google.firebase.messaging.FirebaseMessagingService
+import com.google.firebase.messaging.RemoteMessage
+import com.wheretogo.domain.FcmMsg
+import com.wheretogo.domain.repository.AppRepository
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@AndroidEntryPoint
+class ServerMessagingService() : FirebaseMessagingService() {
+    @Inject
+    lateinit var appRepository: AppRepository
+
+    override fun onMessageReceived(message: RemoteMessage) {
+        super.onMessageReceived(message)
+        CoroutineScope(Dispatchers.Main).launch {
+            if (message.data.isNotEmpty()) {
+                handleDataMessage(message.data)
+            }
+        }
+    }
+
+    override fun onNewToken(token: String) {
+        super.onNewToken(token)
+
+    }
+
+    private suspend fun handleDataMessage(data: Map<String, String>) {
+        when (data["type"]) {
+            "FORCE_LOGOUT" -> {
+                appRepository.sendMsg(FcmMsg.SIGN_OUT)
+            }
+        }
+    }
+}

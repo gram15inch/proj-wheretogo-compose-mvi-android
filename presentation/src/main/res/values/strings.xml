@@ -116,6 +116,7 @@
     <string name="no_search_data">검색 결과 없음</string>
 
     <string name="app_check_success">✨ 인증 완료!</string>
+    <string name="account_valid_expire">계정 인증 만료, 로그인이 필요합니다.</string>
 
 
     // 이미지 설명

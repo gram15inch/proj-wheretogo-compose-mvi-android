@@ -8,6 +8,7 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
@@ -42,6 +43,7 @@ class BaseApplication : Application(), Configuration.Provider {
             FirebaseStorage.getInstance()
             FirebaseAuth.getInstance()
             FirebaseFirestore.getInstance()
+            FirebaseMessaging.getInstance()
         }
     }
 

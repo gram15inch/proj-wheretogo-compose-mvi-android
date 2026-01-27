@@ -2,6 +2,7 @@ package com.wheretogo.domain.di
 
 import com.wheretogo.domain.usecase.app.AppCheckBySignatureUseCase
 import com.wheretogo.domain.usecase.app.GuideMoveStepUseCase
+import com.wheretogo.domain.usecase.app.ObserveMsgUseCase
 import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
 import com.wheretogo.domain.usecase.checkpoint.AddCheckpointToCourseUseCase
 import com.wheretogo.domain.usecase.checkpoint.GetCheckpointForMarkerUseCase
@@ -28,6 +29,7 @@ import com.wheretogo.domain.usecase.util.SearchKeywordUseCase
 import com.wheretogo.domain.usecase.util.UpdateLikeUseCase
 import com.wheretogo.domain.usecaseimpl.app.AppCheckBySignatureUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.app.GuideMoveStepUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.app.ObserveMsgUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.app.ObserveSettingsUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.checkpoint.AddCheckpointToCourseUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.checkpoint.GetCheckpointForMarkerUseCaseImpl
@@ -71,6 +73,9 @@ abstract class UseCaseModule {
 
     @Binds
     abstract fun bindObserveSettingsUseCase(useCaseImpl: ObserveSettingsUseCaseImpl): ObserveSettingsUseCase
+
+    @Binds
+    abstract fun bindObserveMsgUseCase(useCaseImpl: ObserveMsgUseCaseImpl): ObserveMsgUseCase
 
 
     @Binds
