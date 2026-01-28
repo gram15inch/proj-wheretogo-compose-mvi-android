@@ -3,6 +3,7 @@ package com.wheretogo.data.datasourceimpl
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.messaging.FirebaseMessaging
 import com.wheretogo.data.DataError
 import com.wheretogo.data.datasource.AuthRemoteDatasource
 import com.wheretogo.data.feature.dataErrorCatching
@@ -17,6 +18,7 @@ import kotlin.coroutines.resumeWithException
 
 class AuthRemoteDatasourceImpl @Inject constructor() : AuthRemoteDatasource {
     private val firebaseAuth by lazy { FirebaseAuth.getInstance() }
+    private val firebaseMsg by lazy { FirebaseMessaging.getInstance() }
 
     override suspend fun authGoogleWithFirebase(signToken: SignToken): Result<SyncProfile> {
         return runCatching {
@@ -36,27 +38,29 @@ class AuthRemoteDatasourceImpl @Inject constructor() : AuthRemoteDatasource {
                     }
             }
 
-            suspendCancellableCoroutine { continuation ->
+            val idToken = suspendCancellableCoroutine { continuation ->
                 user.getIdToken(true)
                     .addOnSuccessListener { result ->
-                        val token = result.token
-                        if (token == null) {
+                        val idToken = result.token
+                        if (idToken == null) {
                             continuation.resumeWithException(DataError.ServerError())
                             return@addOnSuccessListener
                         }
-                        continuation.resume(
-                            SyncProfile(
-                                uid = user.uid,
-                                mail = user.email ?: "",
-                                name = user.displayName ?: "",
-                                authCompany = AuthCompany.GOOGLE,
-                                token = token,
-                            )
-                        )
+                        continuation.resume(idToken)
                     }.addOnFailureListener {
                         continuation.resumeWithException(it.toDataError())
                     }
             }
+            val msgToken = getMsgToken().getOrNull() ?: ""
+
+            SyncProfile(
+                uid = user.uid,
+                mail = user.email ?: "",
+                name = user.displayName ?: "",
+                authCompany = AuthCompany.GOOGLE,
+                idToken = idToken,
+                msgToken = msgToken
+            )
         }
     }
 
@@ -82,6 +86,26 @@ class AuthRemoteDatasourceImpl @Inject constructor() : AuthRemoteDatasource {
                 continuation.resume(
                     Result.failure(DataError.UnexpectedException(Exception(it)))
                 )
+            }
+        }
+    }
+
+    override suspend fun getMsgToken(): Result<String> {
+        return runCatching {
+            suspendCancellableCoroutine { continuation ->
+                firebaseMsg.token
+                    .addOnCompleteListener { task ->
+                        if (!task.isSuccessful) {
+                            val err = task.exception
+                            if (err != null)
+                                return@addOnCompleteListener continuation.resumeWithException(err)
+                            else
+                                return@addOnCompleteListener continuation.resumeWithException(
+                                    DataError.InternalError("Empty exception")
+                                )
+                        }
+                        continuation.resume(task.result)
+                    }
             }
         }
     }

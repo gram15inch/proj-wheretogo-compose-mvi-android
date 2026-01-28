@@ -7,5 +7,6 @@ data class SyncProfile(
     val mail: String,
     val name: String,
     val authCompany: AuthCompany = AuthCompany.PROFILE,
-    val token: String
+    val idToken: String,
+    val msgToken: String
 )

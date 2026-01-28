@@ -4,6 +4,7 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.wheretogo.domain.FcmMsg
 import com.wheretogo.domain.repository.AppRepository
+import com.wheretogo.domain.repository.UserRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -12,8 +13,8 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class ServerMessagingService() : FirebaseMessagingService() {
-    @Inject
-    lateinit var appRepository: AppRepository
+    @Inject lateinit var appRepository: AppRepository
+    @Inject lateinit var userRepository: UserRepository
 
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
@@ -26,7 +27,9 @@ class ServerMessagingService() : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
-
+        CoroutineScope(Dispatchers.IO).launch {
+            userRepository.updateMsgToken(token)
+        }
     }
 
     private suspend fun handleDataMessage(data: Map<String, String>) {

@@ -10,6 +10,7 @@ import com.wheretogo.data.datasourceimpl.service.UserApiService
 import com.wheretogo.data.feature.dataErrorCatching
 import com.wheretogo.data.feature.mapSuccess
 import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
+import com.wheretogo.data.model.user.DataMsgToken
 import com.wheretogo.data.model.user.RemoteProfilePrivate
 import com.wheretogo.data.model.user.RemoteProfilePublic
 import com.wheretogo.data.name
@@ -34,6 +35,18 @@ class UserRemoteDatasourceImpl @Inject constructor(
                Result.success(userId)
         }
     }
+
+    override suspend fun updateMsgToken(token: String): Result<Unit> {
+        return dataErrorCatching {
+            userApiService.updateMsgToken(DataMsgToken(token))
+        }.mapSuccess {
+            if (!it.isSuccessful)
+                Result.failure(it.toDataError())
+            else
+                Result.success(Unit)
+        }
+    }
+
 
     override suspend fun getProfilePublic(uid: String): Result<RemoteProfilePublic> {
         return dataErrorCatching {

@@ -4,7 +4,6 @@ import com.dhkim139.wheretogo.mock.model.MockRemoteUser
 import com.wheretogo.data.datasource.AuthRemoteDatasource
 import com.wheretogo.domain.AuthCompany
 import com.wheretogo.domain.model.auth.SignToken
-import com.wheretogo.domain.model.auth.SignProfile
 import com.wheretogo.domain.model.auth.SyncProfile
 import com.wheretogo.presentation.AppError
 import javax.inject.Inject
@@ -20,7 +19,7 @@ class MockAuthRemoteDatasourceImpl @Inject constructor(
                     mail = mockRemoteUser.profile.private.mail,
                     name = mockRemoteUser.profile.name,
                     authCompany = AuthCompany.GOOGLE,
-                    token = ""
+                    idToken = ""
                 )
             )
 
@@ -35,6 +34,10 @@ class MockAuthRemoteDatasourceImpl @Inject constructor(
     }
 
     override suspend fun getApiToken(isForceRefresh: Boolean): Result<String?> {
+        return Result.success("")
+    }
+
+    override suspend fun getMsgToken(): Result<String> {
         return Result.success("")
     }
 }
