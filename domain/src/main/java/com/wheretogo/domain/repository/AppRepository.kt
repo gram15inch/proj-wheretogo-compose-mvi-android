@@ -1,7 +1,7 @@
 package com.wheretogo.domain.repository
 
 import com.wheretogo.domain.DriveTutorialStep
-import com.wheretogo.domain.FcmMsg
+import com.wheretogo.domain.model.app.AppMessage
 import com.wheretogo.domain.model.app.Settings
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
@@ -18,6 +18,6 @@ interface AppRepository {
     suspend fun getPublicKey(): Result<String>
 
     // msg
-    val msg: SharedFlow<FcmMsg>
-    suspend fun sendMsg(fcmMsg: FcmMsg): Result<Unit>
+    val msg: SharedFlow<AppMessage>
+    suspend fun sendMsg(msg:AppMessage): Result<Unit>
 }

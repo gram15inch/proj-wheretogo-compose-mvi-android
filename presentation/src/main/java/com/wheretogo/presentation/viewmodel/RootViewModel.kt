@@ -47,10 +47,10 @@ class RootViewModel @Inject constructor(
 
             launch {
                 observeMsgUseCase().collect { msg->
-                    when(msg){
-                        FcmMsg.SIGN_OUT -> {
+                    when(msg.type){
+                        FcmMsg.BAN -> {
                             userSignOutUseCase()
-                            handler.handle(RootEvent.ACCOUNT_VALID_EXPIRE)
+                            handler.handle(RootEvent.ACCOUNT_VALID_EXPIRE, msg.data)
                         }
                         else -> {}
                     }

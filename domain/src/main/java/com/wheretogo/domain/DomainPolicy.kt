@@ -156,7 +156,19 @@ enum class ImageSize(val pathName: String, val width: Int, val height: Int) {
 }
 
 enum class FcmMsg{
-    SIGN_OUT
+    BAN, NOTICE
+}
+enum class BanReason{
+    SPAM,               // 스팸 / 도배
+    ABUSE,              // 욕설 / 비하 / 혐오
+    HARASSMENT,         // 괴롭힘 / 지속적 공격
+    INAPPROPRIATE,      // 부적절한 콘텐츠
+    ILLEGAL_CONTENT,    // 불법 콘텐츠
+    FRAUD,              // 사기 / 기만
+    IMPERSONATION,      // 사칭
+    MALICIOUS_BEHAVIOR, // 악성 행위
+    POLICY_VIOLATION,   // 일반 약관 위반
+    OTHER               // 기타
 }
 
 fun zoomToGeohashLength(zoom: Double): Int {

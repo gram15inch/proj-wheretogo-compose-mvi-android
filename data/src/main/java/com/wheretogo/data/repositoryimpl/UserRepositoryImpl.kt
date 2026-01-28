@@ -6,7 +6,6 @@ import com.wheretogo.data.datasource.UserRemoteDatasource
 import com.wheretogo.data.feature.dataErrorCatching
 import com.wheretogo.data.feature.mapDomainError
 import com.wheretogo.data.feature.mapSuccess
-import com.wheretogo.data.network.ServerMsg
 import com.wheretogo.data.toDataHistoryType
 import com.wheretogo.data.toDomainResult
 import com.wheretogo.data.toHistory

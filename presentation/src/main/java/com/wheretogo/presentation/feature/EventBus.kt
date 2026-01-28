@@ -1,6 +1,7 @@
 package com.wheretogo.presentation.feature
 
 import android.content.Context
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import com.wheretogo.presentation.AppEvent
@@ -49,7 +50,7 @@ object EventBus {
     }
 }
 
-suspend fun SnackbarHostState.shortShow(
+suspend fun SnackbarHostState.show(
     context: Context,
     eventMsg: EventMsg,
     onActionPerformed: (String) -> Unit
@@ -57,10 +58,16 @@ suspend fun SnackbarHostState.shortShow(
     withContext(Dispatchers.IO) {
         val message = eventMsg.getString(context)
         val actionLabel = eventMsg.labelRes?.run { context.getString(this) }
+        val duration =  when{
+            eventMsg.isLongShow -> SnackbarDuration.Long
+            actionLabel == null -> SnackbarDuration.Short
+            else -> SnackbarDuration.Indefinite
+        }
         val job = launch {
             val result = showSnackbar(
                 message = message,
-                actionLabel = actionLabel
+                actionLabel = actionLabel,
+                duration =  duration
             )
             if (result == SnackbarResult.ActionPerformed && eventMsg.uri != null)
                 onActionPerformed(eventMsg.uri)

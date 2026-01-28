@@ -16,6 +16,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
 
 @Module
@@ -38,6 +39,6 @@ class HandlerModule {
     fun provideLoginHandler(error: ErrorHandler): LoginHandler = LoginHandlerImpl(error)
 
     @Provides
+    @Singleton
     fun provideRootHandler(error: ErrorHandler): RootHandler = RootHandlerImpl(error)
-
 }
