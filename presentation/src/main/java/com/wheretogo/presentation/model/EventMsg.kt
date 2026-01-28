@@ -5,5 +5,6 @@ data class EventMsg(
     val arg: String? = null,
     val labelRes: Int? = null,
     val uri: String? = null,
+    val isLongShow: Boolean = false,
     val timestamp: Long = System.currentTimeMillis()
 )

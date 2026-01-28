@@ -39,7 +39,7 @@ import com.wheretogo.presentation.composable.effect.AppEventSendEffect
 import com.wheretogo.presentation.composable.effect.ShakeEffect
 import com.wheretogo.presentation.feature.EventBus
 import com.wheretogo.presentation.feature.openUri
-import com.wheretogo.presentation.feature.shortShow
+import com.wheretogo.presentation.feature.show
 import com.wheretogo.presentation.theme.WhereTogoTheme
 import com.wheretogo.presentation.viewmodel.RootViewModel
 import kotlinx.coroutines.launch
@@ -73,7 +73,7 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                 viewModel.eventSend(it)
                 when (it) {
                     is AppEvent.SnackBar -> {
-                        viewModel.snackbarHostState.shortShow(context, it.msg) { uri ->
+                        viewModel.snackbarHostState.show(context, it.msg) { uri ->
                             openUri(context, uri)
                         }
                     }
