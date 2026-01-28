@@ -159,6 +159,7 @@ dependencies {
     implementation(Firebase.FIREBASE_FIRESTORE_KTX)
     implementation(Firebase.FIREBASE_STORAGE_KTX)
     implementation(Firebase.FIREBASE_AUTH_KTX)
+    implementation(Firebase.FIREBASE_MESSAGING)
 
     // Libraries
     implementation(Libraries.JAKEWHARTON_TIMBER)

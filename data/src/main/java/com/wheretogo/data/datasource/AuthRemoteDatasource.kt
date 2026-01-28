@@ -10,4 +10,6 @@ interface AuthRemoteDatasource {
     suspend fun signOutOnFirebase(): Result<Unit>
 
     suspend fun getApiToken(isForceRefresh: Boolean): Result<String?>
+
+    suspend fun getMsgToken(): Result<String>
 }

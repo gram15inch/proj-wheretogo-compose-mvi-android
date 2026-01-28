@@ -6,4 +6,5 @@ import com.wheretogo.domain.model.auth.SyncProfile
 interface AuthRepository {
     suspend fun signInWithToken(signToken: SignToken): Result<SyncProfile>
     suspend fun signOut(): Result<Unit>
+    suspend fun getMsgToken(): Result<String>
 }

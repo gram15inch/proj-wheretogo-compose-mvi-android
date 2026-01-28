@@ -11,6 +11,7 @@ interface UserRemoteDatasource {
     suspend fun getProfilePrivate(uid: String): Result<RemoteProfilePrivate>
     suspend fun deleteProfile(uid: String): Result<Unit>
     suspend fun deleteUser(userId: String): Result<String>
+    suspend fun updateMsgToken(token:String): Result<Unit>
 
     suspend fun getHistoryGroup(uid: String): Result<List<RemoteHistoryGroupWrapper>>
     suspend fun setHistoryGroup(uid: String, wrapper: RemoteHistoryGroupWrapper): Result<Long>

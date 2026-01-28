@@ -7,5 +7,6 @@ data class RemoteProfilePrivate(
     val lastVisited: Long = 0L,
     val accountCreation: Long = 0L,
     val adRemove: Boolean = false,
-    val admin: Boolean = false
+    val admin: Boolean = false,
+    val msgToken: String = ""
 )

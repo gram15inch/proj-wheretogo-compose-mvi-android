@@ -155,6 +155,10 @@ enum class ImageSize(val pathName: String, val width: Int, val height: Int) {
     SMALL("small", 400, 400)
 }
 
+enum class FcmMsg{
+    SIGN_OUT
+}
+
 fun zoomToGeohashLength(zoom: Double): Int {
     return when (zoom) {
         in 0.0..<9.5 -> 3

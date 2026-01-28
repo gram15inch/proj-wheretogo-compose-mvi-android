@@ -4,5 +4,6 @@ import com.wheretogo.domain.AuthCompany
 
 data class SyncToken(
     val authCompany: AuthCompany = AuthCompany.PROFILE,
-    val token: String
+    val idToken: String,
+    val msgToken: String
 )

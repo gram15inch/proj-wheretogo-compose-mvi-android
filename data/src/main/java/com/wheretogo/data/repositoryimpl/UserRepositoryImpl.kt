@@ -6,6 +6,7 @@ import com.wheretogo.data.datasource.UserRemoteDatasource
 import com.wheretogo.data.feature.dataErrorCatching
 import com.wheretogo.data.feature.mapDomainError
 import com.wheretogo.data.feature.mapSuccess
+import com.wheretogo.data.network.ServerMsg
 import com.wheretogo.data.toDataHistoryType
 import com.wheretogo.data.toDomainResult
 import com.wheretogo.data.toHistory
@@ -24,7 +25,7 @@ import javax.inject.Inject
 
 class UserRepositoryImpl @Inject constructor(
     private val userLocalDatasource: UserLocalDatasource,
-    private val userRemoteDatasource: UserRemoteDatasource
+    private val userRemoteDatasource: UserRemoteDatasource,
 ) : UserRepository {
 
     override suspend fun getProfileStream(): Flow<Profile> {
@@ -41,6 +42,12 @@ class UserRepositoryImpl @Inject constructor(
         }.mapCatching {
             clearCache()
         }.mapDomainError()
+    }
+
+    override suspend fun updateMsgToken(token: String): Result<Unit> {
+        return userRemoteDatasource
+            .updateMsgToken(token)
+            .mapDomainError()
     }
 
     override suspend fun cacheUser(

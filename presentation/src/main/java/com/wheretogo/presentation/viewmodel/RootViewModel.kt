@@ -3,9 +3,12 @@ package com.wheretogo.presentation.viewmodel
 import androidx.compose.material3.SnackbarHostState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.wheretogo.domain.FcmMsg
 import com.wheretogo.domain.handler.RootEvent
 import com.wheretogo.domain.handler.RootHandler
 import com.wheretogo.domain.usecase.app.AppCheckBySignatureUseCase
+import com.wheretogo.domain.usecase.app.ObserveMsgUseCase
+import com.wheretogo.domain.usecase.user.UserSignOutUseCase
 import com.wheretogo.presentation.AppEvent
 import com.wheretogo.presentation.state.RootScreenState
 import com.wheretogo.presentation.toAppError
@@ -19,7 +22,9 @@ import javax.inject.Inject
 @HiltViewModel
 class RootViewModel @Inject constructor(
     private val handler: RootHandler,
-    private val appCheckBySignatureUseCase: AppCheckBySignatureUseCase
+    private val appCheckBySignatureUseCase: AppCheckBySignatureUseCase,
+    private val userSignOutUseCase: UserSignOutUseCase,
+    private val observeMsgUseCase: ObserveMsgUseCase,
 ) :
     ViewModel() {
     private val _rootScreenState = MutableStateFlow(RootScreenState())
@@ -31,11 +36,25 @@ class RootViewModel @Inject constructor(
     }
     init {
         viewModelScope.launch {
-            appCheckBySignatureUseCase().onSuccess {
-                if (it)
-                    handler.handle(RootEvent.APP_CHECK_SUCCESS)
-            }.onFailure {
-                handleError(it)
+            launch {
+                appCheckBySignatureUseCase().onSuccess {
+                    if (it)
+                        handler.handle(RootEvent.APP_CHECK_SUCCESS)
+                }.onFailure {
+                    handleError(it)
+                }
+            }
+
+            launch {
+                observeMsgUseCase().collect { msg->
+                    when(msg){
+                        FcmMsg.SIGN_OUT -> {
+                            userSignOutUseCase()
+                            handler.handle(RootEvent.ACCOUNT_VALID_EXPIRE)
+                        }
+                        else -> {}
+                    }
+                }
             }
         }
     }

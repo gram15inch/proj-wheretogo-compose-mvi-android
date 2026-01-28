@@ -127,7 +127,8 @@ fun RemoteProfilePrivate.toProfilePrivate(): ProfilePrivate {
         lastVisited = lastVisited,
         accountCreation = accountCreation,
         isAdRemove = adRemove,
-        isAdmin = admin
+        isAdmin = admin,
+        msgToken = msgToken
     )
 }
 
@@ -649,6 +650,7 @@ fun History.remoteGroupWrapper(): List<RemoteHistoryGroupWrapper> {
 fun SyncToken.toDataSyncToken(): DataSyncToken{
     return DataSyncToken(
         authCompany = authCompany.toDataAuthCompany(),
-        token = token
+        idToken = idToken,
+        msgToken = msgToken
     )
 }

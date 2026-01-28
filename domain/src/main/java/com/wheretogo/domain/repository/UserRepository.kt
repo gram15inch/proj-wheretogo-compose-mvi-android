@@ -13,6 +13,8 @@ interface UserRepository {
 
     suspend fun deleteUser(): Result<Unit>
 
+    suspend fun updateMsgToken(token: String): Result<Unit>
+
     suspend fun getHistory(type: HistoryType): Result<HistoryGroupWrapper>
 
     suspend fun addHistory(

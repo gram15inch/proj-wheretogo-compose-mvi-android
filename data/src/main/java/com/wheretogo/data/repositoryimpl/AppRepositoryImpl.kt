@@ -6,9 +6,12 @@ import com.wheretogo.data.datasource.AppRemoteDatasource
 import com.wheretogo.data.feature.mapSuccess
 import com.wheretogo.data.toDomainResult
 import com.wheretogo.domain.DriveTutorialStep
+import com.wheretogo.domain.FcmMsg
 import com.wheretogo.domain.model.app.Settings
 import com.wheretogo.domain.repository.AppRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -16,6 +19,8 @@ class AppRepositoryImpl @Inject constructor(
     private val appRemoteDatasource: AppRemoteDatasource,
     private val appLocalDatasource: AppLocalDatasource
 ) : AppRepository {
+    private val _msgFlow = MutableSharedFlow<FcmMsg>()
+    override val msg = _msgFlow.asSharedFlow()
 
     override suspend fun observeSetting(): Flow<Settings> {
         return appLocalDatasource.observeInt(DataSettingAttr.TUTORIAL).map {
@@ -48,6 +53,12 @@ class AppRepositoryImpl @Inject constructor(
     override suspend fun getPublicKey(): Result<String> {
         return appLocalDatasource.getApiAccessKey().mapSuccess { accessKey ->
             appRemoteDatasource.getPublicKey(accessKey).toDomainResult()
+        }
+    }
+
+    override suspend fun sendMsg(fcmMsg: FcmMsg): Result<Unit> {
+        return runCatching {
+            _msgFlow.emit(fcmMsg)
         }
     }
 }

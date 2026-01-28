@@ -22,7 +22,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -43,8 +42,8 @@ class SettingViewModel @Inject constructor(
     private var _isCoverScreen = false
 
     init {
-        profileInit()
         adInit()
+        observe()
     }
 
     fun handleIntent(intent: SettingIntent) {
@@ -77,7 +76,7 @@ class SettingViewModel @Inject constructor(
 
 
     private suspend fun emptyProfileClick() {
-        refreshProfile()
+        handleError( DomainError.UserInvalid())
     }
 
     private fun userDeleteClick() {
@@ -89,15 +88,8 @@ class SettingViewModel @Inject constructor(
         }
     }
 
-    private suspend fun logoutClick() {
-        withContext(Dispatchers.IO) { signOutUseCase() }.onSuccess {
-            _settingScreenState.update {
-                it.copy(
-                    isProfile = false,
-                    profile = Profile()
-                )
-            }
-        }
+    private fun logoutClick() {
+        viewModelScope.launch(dispatcher) { signOutUseCase() }
     }
 
 
@@ -119,13 +111,6 @@ class SettingViewModel @Inject constructor(
             }
             withContext(Dispatchers.IO) { deleteUserUseCase() }.onFailure {
                 handleError(it)
-            }.onSuccess {
-                _settingScreenState.update {
-                    it.copy(
-                        isProfile = false,
-                        profile = Profile()
-                    )
-                }
             }
         }
         _settingScreenState.update {
@@ -159,13 +144,10 @@ class SettingViewModel @Inject constructor(
         }
     }
 
-    private suspend fun eventReceive(event: AppEvent, result: Boolean) {
+    private fun eventReceive(event: AppEvent, result: Boolean) {
         when (event) {
             AppEvent.SignInScreen -> {
                 _isCoverScreen = false
-                if(result) {
-                    refreshProfile()
-                }
                 viewModelScope.launch(Dispatchers.IO){ loadAd() }
             }
             else -> {}
@@ -173,14 +155,32 @@ class SettingViewModel @Inject constructor(
 
     }
 
-
-    // 초기화
-    private fun profileInit() {
+    private fun observe(){
         viewModelScope.launch(dispatcher) {
-            refreshProfile(false)
+            getUserProfileStreamUseCase().collect {
+                val profile = it.getOrNull()
+                if (profile != null && profile.uid.isNotBlank()) {
+                    _settingScreenState.update {
+                        it.copy(
+                            isProfile = true,
+                            profile = profile
+                        )
+                    }
+                } else {
+                    _settingScreenState.update {
+                        it.copy(
+                            isProfile = false,
+                            profile = Profile()
+                        )
+                    }
+                }
+
+
+            }
         }
     }
 
+    // 초기화
     private fun adInit() {
         viewModelScope.launch(Dispatchers.IO) {
             launch {
@@ -218,29 +218,6 @@ class SettingViewModel @Inject constructor(
         adItemGroup.forEach {
             it.destroy()
         }
-    }
-
-    private suspend fun refreshProfile(isRequestLogin: Boolean = true){
-        getUserProfileStreamUseCase().first()
-            .onSuccess { profile ->
-                _settingScreenState.update {
-                    it.copy(
-                        profile = profile,
-                        isProfile = true
-                    )
-                }
-            }.onFailure {
-                _settingScreenState.update {
-                    it.copy(
-                        profile = Profile(),
-                        isProfile = false
-                    )
-                }
-
-                if (!isRequestLogin && it is DomainError.UserInvalid)
-                    return@onFailure
-                handleError(it)
-            }
     }
 
 }

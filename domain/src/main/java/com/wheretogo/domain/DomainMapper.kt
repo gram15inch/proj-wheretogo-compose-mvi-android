@@ -125,6 +125,7 @@ fun parseDateToMillis(dateString: String, pattern: String = USER_DATE_FORMAT): L
 fun SyncProfile.toSyncToken(): SyncToken {
     return SyncToken(
         authCompany = authCompany,
-        token = token
+        idToken = idToken,
+        msgToken = msgToken
     )
 }
