@@ -13,18 +13,19 @@ import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
 import com.wheretogo.data.model.user.DataMsgToken
 import com.wheretogo.data.model.user.RemoteProfilePrivate
 import com.wheretogo.data.model.user.RemoteProfilePublic
-import com.wheretogo.data.name
 import com.wheretogo.data.toDataError
+import com.wheretogo.domain.model.app.AppBuildConfig
 import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 class UserRemoteDatasourceImpl @Inject constructor(
-    private val userApiService: UserApiService
+    private val userApiService: UserApiService,
+    appBuildConfig: AppBuildConfig
 ) : UserRemoteDatasource {
     private val firestore by lazy { FirebaseFirestore.getInstance() }
-
+    private val userRootCollection = appBuildConfig.dbPrefix +  FireStoreCollections.USER.name
     override suspend fun deleteUser(userId: String): Result<String> {
        return dataErrorCatching {
             userApiService.deleteUser(userId = userId)
@@ -51,7 +52,7 @@ class UserRemoteDatasourceImpl @Inject constructor(
     override suspend fun getProfilePublic(uid: String): Result<RemoteProfilePublic> {
         return dataErrorCatching {
             val snapshot = suspendCancellableCoroutine { continuation ->
-                firestore.collection(FireStoreCollections.USER.name()).document(uid)
+                firestore.collection(userRootCollection).document(uid)
                     .get()
                     .addOnSuccessListener { result ->
                         continuation.resume(result)
@@ -66,7 +67,7 @@ class UserRemoteDatasourceImpl @Inject constructor(
     override suspend fun getProfilePublicWithMail(hashMail: String): Result<RemoteProfilePublic> {
         return dataErrorCatching {
             val snapshot = suspendCancellableCoroutine { continuation ->
-                firestore.collection(FireStoreCollections.USER.name())
+                firestore.collection(userRootCollection)
                     .whereEqualTo(RemoteProfilePublic::hashMail.name, hashMail)
                     .limit(1)
                     .get()
@@ -87,7 +88,7 @@ class UserRemoteDatasourceImpl @Inject constructor(
     override suspend fun getProfilePrivate(userId: String): Result<RemoteProfilePrivate> {
         return dataErrorCatching {
             val snapshot = suspendCancellableCoroutine { continuation ->
-                firestore.collection(FireStoreCollections.USER.name()).document(userId)
+                firestore.collection(userRootCollection).document(userId)
                     .collection(FireStoreCollections.PRIVATE.name)
                     .document(FireStoreCollections.PRIVATE.name)
                     .get()
@@ -109,7 +110,7 @@ class UserRemoteDatasourceImpl @Inject constructor(
     override suspend fun deleteProfile(uid: String): Result<Unit> {
         return dataErrorCatching {
             suspendCancellableCoroutine { continuation ->
-                val root = firestore.collection(FireStoreCollections.USER.name()).document(uid)
+                val root = firestore.collection(userRootCollection).document(uid)
                 root.collection(FireStoreCollections.HISTORY.name)
                     .document(FireStoreCollections.BOOKMARK.name).delete()
                 root.collection(FireStoreCollections.HISTORY.name)
@@ -134,7 +135,7 @@ class UserRemoteDatasourceImpl @Inject constructor(
     override suspend fun getHistoryGroup(uid: String): Result<List<RemoteHistoryGroupWrapper>> {
         return dataErrorCatching {
             val snapshot = suspendCancellableCoroutine { continuation ->
-                firestore.collection(FireStoreCollections.USER.name()).document(uid)
+                firestore.collection(userRootCollection).document(uid)
                     .collection(FireStoreCollections.HISTORY.name)
                     .get()
                     .addOnSuccessListener {
@@ -154,7 +155,7 @@ class UserRemoteDatasourceImpl @Inject constructor(
     ): Result<Long> {
         return dataErrorCatching {
             suspendCancellableCoroutine { continuation ->
-                firestore.collection(FireStoreCollections.USER.name()).document(uid)
+                firestore.collection(userRootCollection).document(uid)
                     .collection(FireStoreCollections.HISTORY.name)
                     .document(wrapper.type.toCollectionName())
                     .set(wrapper)
@@ -177,7 +178,7 @@ class UserRemoteDatasourceImpl @Inject constructor(
         return dataErrorCatching {
             suspendCancellableCoroutine { continuation ->
                 val field = "${RemoteHistoryGroupWrapper::historyIdGroup.name}.$groupId"
-                firestore.collection(FireStoreCollections.USER.name()).document(uid)
+                firestore.collection(userRootCollection).document(uid)
                     .collection(FireStoreCollections.HISTORY.name)
                     .document(type.toCollectionName())
                     .update(
@@ -227,7 +228,7 @@ class UserRemoteDatasourceImpl @Inject constructor(
         return dataErrorCatching {
             suspendCancellableCoroutine { continuation ->
                 val field = "${RemoteHistoryGroupWrapper::historyIdGroup.name}.$groupId"
-                firestore.collection(FireStoreCollections.USER.name()).document(uid)
+                firestore.collection(userRootCollection).document(uid)
                     .collection(FireStoreCollections.HISTORY.name)
                     .document(type.toCollectionName())
                     .update(

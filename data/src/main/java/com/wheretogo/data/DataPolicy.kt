@@ -164,17 +164,3 @@ enum class FireStoreCollections {
 
     PRIVATE,
 }
-
-fun FireStoreCollections.name(): String {
-    return when(BuildConfig.FIREBASE){
-        "RELEASE" ->  "RELEASE_" + this.name
-        else -> "TEST_" + this.name
-    }
-}
-
-fun firebaseApiUrlByBuild(): String{
-    return when(BuildConfig.FIREBASE){
-        "RELEASE" -> FIREBASE_CLOUD_API_URL
-        else -> FIREBASE_CLOUD_STAGING_API_URL
-    }
-}

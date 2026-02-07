@@ -9,7 +9,7 @@ interface AppApiService {
 
     @GET("api/app/publicKey")
     suspend fun getPublicKey(
-        @Header("x-access-key") apiAccessKey: String
+        @Header("x-access-key") tokenRequestKey: String
     ): Response<MessageResponse>
 
     @GET("api/app/publicToken")

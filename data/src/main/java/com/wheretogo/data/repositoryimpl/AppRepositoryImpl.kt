@@ -51,9 +51,7 @@ class AppRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getPublicKey(): Result<String> {
-        return appLocalDatasource.getApiAccessKey().mapSuccess { accessKey ->
-            appRemoteDatasource.getPublicKey(accessKey).toDomainResult()
-        }
+        return appRemoteDatasource.getPublicKey().toDomainResult()
     }
 
     override suspend fun sendMsg(msg: AppMessage): Result<Unit> {

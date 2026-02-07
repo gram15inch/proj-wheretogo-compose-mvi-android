@@ -2,11 +2,9 @@ package com.wheretogo.data.di
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import com.wheretogo.data.NAVER_MAPS_NTRUSS_APIGW_URL
-import com.wheretogo.data.NAVER_OPEN_API_URL
-import com.wheretogo.data.firebaseApiUrlByBuild
 import com.wheretogo.data.network.PrivateInterceptor
 import com.wheretogo.data.network.PublicInterceptor
+import com.wheretogo.domain.model.app.AppBuildConfig
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -25,26 +23,34 @@ object RetrofitClientModule {
     @Singleton
     @Provides
     @Named("apigw")
-    fun provideNaverRetrofit(moshi: Moshi, client: OkHttpClient): Retrofit {
+    fun provideNaverRetrofit(
+        moshi: Moshi,
+        client: OkHttpClient,
+        buildConfig: AppBuildConfig
+    ): Retrofit {
         return Retrofit.Builder()
             .addConverterFactory(
                 MoshiConverterFactory.create(moshi)
             )
             .client(client)
-            .baseUrl(NAVER_MAPS_NTRUSS_APIGW_URL)
+            .baseUrl(buildConfig.naverMapsNtrussApigwUrl)
             .build()
     }
 
     @Singleton
     @Provides
     @Named("naver")
-    fun provideXNaverRetrofit(moshi: Moshi, client: OkHttpClient): Retrofit {
+    fun provideXNaverRetrofit(
+        moshi: Moshi,
+        client: OkHttpClient,
+        buildConfig: AppBuildConfig
+    ): Retrofit {
         return Retrofit.Builder()
             .addConverterFactory(
                 MoshiConverterFactory.create(moshi)
             )
             .client(client)
-            .baseUrl(NAVER_OPEN_API_URL)
+            .baseUrl(buildConfig.naverOpenApiUrl)
             .build()
     }
 
@@ -53,12 +59,13 @@ object RetrofitClientModule {
     @Named("privateRetrofit")
     fun providePrivateFirebaseApiRetrofit(
         moshi: Moshi,
-        @Named("privateHttp") client: OkHttpClient
+        @Named("privateHttp") client: OkHttpClient,
+        buildConfig: AppBuildConfig
     ): Retrofit {
         return Retrofit.Builder()
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .client(client)
-            .baseUrl(firebaseApiUrlByBuild())
+            .baseUrl(buildConfig.firebaseCloudApiUrl)
             .build()
     }
 
@@ -67,12 +74,13 @@ object RetrofitClientModule {
     @Named("publicRetrofit")
     fun providePublicFirebaseApiRetrofit(
         moshi: Moshi,
-        @Named("publicHttp") client: OkHttpClient
+        @Named("publicHttp") client: OkHttpClient,
+        buildConfig: AppBuildConfig
     ): Retrofit {
         return Retrofit.Builder()
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .client(client)
-            .baseUrl(firebaseApiUrlByBuild())
+            .baseUrl(buildConfig.firebaseCloudApiUrl)
             .build()
     }
 
@@ -80,12 +88,13 @@ object RetrofitClientModule {
     @Provides
     fun provideDefaultRetrofit(
         moshi: Moshi,
-        client: OkHttpClient
+        client: OkHttpClient,
+        buildConfig: AppBuildConfig
     ): Retrofit {
         return Retrofit.Builder()
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .client(client)
-            .baseUrl(firebaseApiUrlByBuild())
+            .baseUrl(buildConfig.firebaseCloudApiUrl)
             .build()
     }
 

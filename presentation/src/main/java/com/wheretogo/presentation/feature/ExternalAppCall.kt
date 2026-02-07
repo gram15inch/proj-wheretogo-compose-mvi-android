@@ -64,8 +64,7 @@ suspend fun Context.callMap(
                 }
 
                 ExportMap.SKT -> {
-                    val tMap = TMapTapi(this@callMap)
-                    if (tMap.init()) tMap.openMap(this@callMap, navigation, myLatlng)
+                    TMapTapi(this@callMap).openMap(this@callMap, navigation, myLatlng)
                 }
             }
         }
@@ -108,7 +107,7 @@ private suspend fun TMapTapi.init(): Boolean {
         if (isTmapAuth) {
             con.resume(true)
         } else {
-            setSKTMapAuthentication(BuildConfig.TMAP_APP_KEY)
+            //setSKTMapAuthentication(BuildConfig.TMAP_APP_KEY)
             setOnAuthenticationListener(object : OnAccountsUpdateListener,
                 TMapTapi.OnAuthenticationListenerCallback {
                 override fun SKTMapApikeySucceed() {

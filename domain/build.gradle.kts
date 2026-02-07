@@ -1,74 +1,41 @@
-import wheretogo.AndroidConfig
-import wheretogo.AndroidX
-import wheretogo.Dagger
-import wheretogo.Kotlin
-import wheretogo.Libraries
-import wheretogo.Squareup
-import wheretogo.UnitTest
 
 plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
+    id("wheretogo.android.library")
     id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
 }
 
 android {
     namespace = "com.wheretogo.domain"
-    compileSdk = AndroidConfig.COMPILE_SDK
-
-    defaultConfig {
-        minSdk = AndroidConfig.MIN_SDK
-    }
-
-    buildTypes{
-        debug {
-            buildConfigField( "Boolean", "COOLDOWN", "false")
-        }
-        create("qa") {
-            buildConfigField( "Boolean", "COOLDOWN", "true")
-        }
-        release {
-            buildConfigField( "Boolean", "COOLDOWN", "true")
-        }
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
 }
 
-kotlin {
-    jvmToolchain(17)
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
 }
 
 dependencies {
-    // BOM
-    implementation(platform(Kotlin.KOTLIN_BOM))
+    // Kotlin (BOM)
+    implementation(platform(libs.kotlin.bom))
 
     // AndroidX
-    implementation(AndroidX.CORE_KTX)
-    implementation(AndroidX.EXIFINTERFACE)
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.exifinterface)
 
-    // Dagger
-    implementation(Dagger.HILT_ANDROID)
-    ksp(Dagger.HILT_COMPILER)
+    // Dagger / Hilt
+    implementation(libs.dagger.hilt.android)
+    ksp(libs.dagger.hilt.compiler)
 
     // Libraries
-    implementation(Libraries.FIREBASE_GEOFIRE)
-    implementation(Libraries.FIREBASE_GEOFIRE_COMMON)
-    implementation(Libraries.HUXHORN_SULKY_ULID)
-    implementation(Libraries.KOMORAN)
-    implementation(Libraries.JAKEWHARTON_TIMBER)
+    implementation(libs.firebase.geofire.android)
+    implementation(libs.firebase.geofire.android.common)
+    implementation(libs.sulky.ulid)
+    implementation(libs.komoran)
+    implementation(libs.timber)
 
-    //Test
-    testImplementation(UnitTest.JUNIT_JUPITER)
-    testImplementation(UnitTest.JUNIT_JUPITER_API)
-    testImplementation(UnitTest.JUNIT_JUPITER_PARAMS)
-    testImplementation(UnitTest.JUNIT_JUPITER_ENGINE)
-    testImplementation(UnitTest.JUNIT_VINTAGE_ENGINE)
+    // Test
+    testImplementation(libs.junit.jupiter)
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
 }

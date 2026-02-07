@@ -1,34 +1,30 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent
-import wheretogo.AndroidConfig
-import wheretogo.AndroidX
-import wheretogo.Firebase
-import wheretogo.Dagger
-import wheretogo.Kotlin
-import wheretogo.Compose
-import wheretogo.Libraries
-import wheretogo.UnitTest
-import wheretogo.Versions
 import java.util.Properties
 
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("com.google.dagger.hilt.android")
-    id("de.mannodermaus.android-junit5")
+    id("wheretogo.android.application")
     id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
+    id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
+    id("de.mannodermaus.android-junit5")
 }
 
 android {
     namespace = "com.dhkim139.wheretogo"
-    compileSdk = AndroidConfig.COMPILE_SDK
+
+    signingConfigs {
+        create("release") {
+            keyAlias = getUploadKey("keyAlias")
+            keyPassword = getUploadKey("keyPassword")
+            storeFile = File(getUploadKey("storeFile"))
+            storePassword = getUploadKey("storePassword")
+        }
+    }
 
     defaultConfig {
         applicationId = "com.dhkim139.wheretogo"
-        minSdk = AndroidConfig.MIN_SDK
-        targetSdk = AndroidConfig.TARGET_SDK
         versionCode = 41
         versionName = "1.0-rc12"
 
@@ -39,23 +35,25 @@ android {
 
         manifestPlaceholders["adsMobAppId"] = getLocalProperties("adsMobAppId")
         manifestPlaceholders["naverMapClientId"] = getLocalProperties("naverMapClientId")
+
+        buildConfigField("String",  "API_ACCESS_KEY", getLocalProperties("apiAccessKey"))
+
+        buildConfigField("String", "NAVER_MAPS_APIGW_CLIENT_ID_KEY", getLocalProperties("naverMapsApigwClientId"))
+        buildConfigField("String", "NAVER_MAPS_APIGW_CLIENT_SECRET_KEY", getLocalProperties("naverMapsApigwClientSecret"))
+        buildConfigField("String", "NAVER_CLIENT_ID_KEY", getLocalProperties("naverClientId"))
+        buildConfigField("String", "NAVER_CLIENT_SECRET_KEY", getLocalProperties("naverClientSecret"))
+
+        buildConfigField( "String", "TMAP_APP_KEY", getLocalProperties("tmapApp"))
+
+        buildConfigField( "String", "NATIVE_AD_ID", getLocalProperties("nativeAdId"))
     }
-    signingConfigs {
-        create("release") {
-            keyAlias = getUploadKey("keyAlias")
-            keyPassword = getUploadKey("keyPassword")
-            storeFile = File(getUploadKey("storeFile"))
-            storePassword = getUploadKey("storePassword")
-        }
-    }
+
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
-            buildConfigField( "Boolean", "CRASHLYTICS", "false")
+            buildConfigField("String",  "BuildType", "\"debug\"")
             buildConfigField("String",  "GOOGLE_WEB_CLIENT_ID_KEY", getLocalProperties("googleStagingWebClientId"))
-            buildConfigField("String",  "API_ACCESS_KEY", getLocalProperties("apiAccessKey"))
-
-        }
+       }
         create("qa") {
             isMinifyEnabled = true
             isShrinkResources = true
@@ -66,9 +64,8 @@ android {
             signingConfig = signingConfigs.getByName("debug")
             isDebuggable = true
 
-            buildConfigField( "Boolean", "CRASHLYTICS", "false")
+            buildConfigField("String",  "BuildType", "\"qa\"")
             buildConfigField("String","GOOGLE_WEB_CLIENT_ID_KEY", getLocalProperties("googleWebClientId"))
-            buildConfigField("String",  "API_ACCESS_KEY", getLocalProperties("apiAccessKey"))
         }
 
         release {
@@ -80,24 +77,15 @@ android {
             )
             signingConfig = signingConfigs.getByName("release")
 
-            buildConfigField( "Boolean", "CRASHLYTICS", "true")
+            buildConfigField("String",  "BuildType", "\"release\"")
             buildConfigField("String", "GOOGLE_WEB_CLIENT_ID_KEY", getLocalProperties("googleWebClientId"))
-            buildConfigField("String",  "API_ACCESS_KEY", getLocalProperties("apiAccessKey"))
         }
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
+
     buildFeatures {
         compose = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = Versions.KOTLIN_COMPILER_EXTENSION_VERSION
-    }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -122,76 +110,70 @@ dependencies {
     implementation(project(mapOf("path" to ":data")))
     implementation(project(mapOf("path" to ":domain")))
 
-    implementation(platform(Kotlin.KOTLIN_BOM))
+    // Kotlin (BOM)
+    implementation(platform(libs.kotlin.bom))
+
+    // Compose (BOM)
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.material3)
+    debugImplementation(libs.androidx.compose.ui.tooling)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    // Firebase (BOM)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.firestore.ktx)
+    implementation(libs.firebase.storage.ktx)
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.messaging)
 
     // AndroidX
-    implementation(AndroidX.CORE_KTX)
-    implementation(AndroidX.LIFECYCLE_RUNTIME_KTX)
-    implementation(AndroidX.WORK_RUNTIME_KTX)
-    implementation(AndroidX.TEST_CORE_KTX)
-    implementation(AndroidX.HILT_COMMON)
-    implementation(AndroidX.HILT_WORK)
-    implementation(AndroidX.HILT_NAVIGATION_COMPOSE)
-    implementation(AndroidX.LIFECYCLE_VIEWMODEL_COMPOSE)
-    implementation(AndroidX.ACTIVITY_COMPOSE)
-    implementation(AndroidX.DATASTORE_PREFERENCE_CORE)
-    ksp(AndroidX.HILT_COMPILER)
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.hilt.common)
+    implementation(libs.androidx.hilt.work)
+    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.datastore.preferences.core.jvm)
 
-    // Compose
-    implementation(platform(Compose.COMPOSE_BOM))
-    implementation(Compose.COMPOSE_UI)
-    implementation(Compose.COMPOSE_UI_GRAPHICS)
-    implementation(Compose.COMPOSE_UI_TOOL_PREVIEW)
-    implementation(Compose.COMPOSE_MATERIAL3)
-    debugImplementation(Compose.COMPOSE_UI_TOOL)
-    debugImplementation(Compose.COMPOSE_UI_TEST_MANIFEST)
+    // Hilt compiler (AndroidX)
+    ksp(libs.androidx.hilt.compiler)
 
-    // Dagger
-    implementation(Dagger.HILT_ANDROID)
-    ksp(Dagger.HILT_COMPILER)
-    kspTest(Dagger.HILT_ANDROID_COMPILER)
-    kspAndroidTest(Dagger.HILT_ANDROID_COMPILER)
+    // Dagger / Hilt
+    implementation(libs.dagger.hilt.android)
+    ksp(libs.dagger.hilt.compiler)
+    kspTest(libs.dagger.hilt.android.compiler)
+    kspAndroidTest(libs.dagger.hilt.android.compiler)
 
-    // Firebase
-    implementation(platform(Firebase.FIREBASE_BOM))
-    implementation(Firebase.FIREBASE_CRASHLYTICS)
-    implementation(Firebase.FIREBASE_ANALYTICS)
-    implementation(Firebase.FIREBASE_FIRESTORE_KTX)
-    implementation(Firebase.FIREBASE_STORAGE_KTX)
-    implementation(Firebase.FIREBASE_AUTH_KTX)
-    implementation(Firebase.FIREBASE_MESSAGING)
 
     // Libraries
-    implementation(Libraries.JAKEWHARTON_TIMBER)
+    implementation(libs.timber)
 
-    // Test
-    androidTestImplementation(Dagger.HILT_ANDROID_TESTING)
-    androidTestImplementation(UnitTest.JUNIT_JUPITER_API)
-    androidTestImplementation(UnitTest.JUNIT_JUPITER_PARAMS)
-    androidTestImplementation(UnitTest.JUNIT_JUPITER_ENGINE)
-    androidTestImplementation(UnitTest.JUNIT_VINTAGE_ENGINE)
-    androidTestImplementation(Libraries.LIBRARIES_IDENTITY_GOOGLEID)
-    androidTestImplementation(Libraries.LOTTIE_COMPOSE)
-    androidTestImplementation(Compose.COMPOSE_UI_TEST_JUNIT4)
-    androidTestImplementation(AndroidX.TEST_UIAUTOMATOR)
-    androidTestImplementation(AndroidX.TEST_RUNNER)
-    androidTestImplementation(platform(Compose.COMPOSE_BOM))
+    // Android Test
+    androidTestImplementation(libs.dagger.hilt.android.testing)
+    androidTestImplementation(libs.google.identity.googleid)
+    androidTestImplementation(libs.lottie.compose)
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.test.uiautomator)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.core.ktx)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
 
-    testImplementation(UnitTest.JUNIT_JUPITER_API)
-    testImplementation(UnitTest.JUNIT_JUPITER_PARAMS)
-    testImplementation(UnitTest.JUNIT_JUPITER_ENGINE)
-    testImplementation(UnitTest.JUNIT_VINTAGE_ENGINE)
-    testImplementation(Dagger.HILT_ANDROID_TESTING)
-    testImplementation(Libraries.MOCKK)
-
-
-
-    testImplementation(UnitTest.JUNIT_JUPITER_PARAMS)
-    testImplementation(UnitTest.JUNIT_JUPITER_ENGINE)
-    testImplementation(UnitTest.JUNIT_VINTAGE_ENGINE)
-    testImplementation(UnitTest.JETBRAINS_KOTLINX_COROUTINES_TEST)
-    testImplementation(UnitTest.CASH_TURBINE)
-    testImplementation(Libraries.NAVER_MAPS)
+    // Unit Test
+    testImplementation(libs.junit.jupiter.api)
+    testImplementation(libs.junit.jupiter.params)
+    testImplementation(libs.junit.jupiter.engine)
+    testImplementation(libs.junit.vintage.engine)
+    testImplementation(libs.dagger.hilt.android.testing)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.cash.turbine)
 }
 
 tasks.withType(Test::class) {

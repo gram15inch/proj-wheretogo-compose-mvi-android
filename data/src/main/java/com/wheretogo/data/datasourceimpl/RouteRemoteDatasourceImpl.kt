@@ -1,7 +1,6 @@
 package com.wheretogo.data.datasourceimpl
 
 import com.google.firebase.firestore.FirebaseFirestore
-import com.wheretogo.data.BuildConfig
 import com.wheretogo.data.DataError
 import com.wheretogo.data.FireStoreCollections
 import com.wheretogo.data.datasource.RouteRemoteDatasource
@@ -9,8 +8,8 @@ import com.wheretogo.data.datasourceimpl.service.NaverMapApiService
 import com.wheretogo.data.feature.dataErrorCatching
 import com.wheretogo.data.model.map.DataLatLng
 import com.wheretogo.data.model.route.RemoteRoute
-import com.wheretogo.data.name
 import com.wheretogo.data.toDataError
+import com.wheretogo.domain.model.app.AppBuildConfig
 
 import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
@@ -19,9 +18,10 @@ import kotlin.coroutines.resumeWithException
 
 class RouteRemoteDatasourceImpl @Inject constructor(
     private val naverApiService: NaverMapApiService,
+    private val appBuildConfig: AppBuildConfig
 ) : RouteRemoteDatasource {
     private val firestore by lazy { FirebaseFirestore.getInstance() }
-    private val courseRootCollection = FireStoreCollections.COURSE.name()
+    private val courseRootCollection = appBuildConfig.dbPrefix + FireStoreCollections.COURSE.name
     private val routeCollection = FireStoreCollections.ROUTE.name
     private val routeDocument = FireStoreCollections.ROUTE.name
 
@@ -90,8 +90,8 @@ class RouteRemoteDatasourceImpl @Inject constructor(
 
 
             val response = naverApiService.getRouteWayPoint(
-                BuildConfig.NAVER_MAPS_APIGW_CLIENT_ID_KEY,
-                BuildConfig.NAVER_MAPS_APIGW_CLIENT_SECRET_KEY,
+                appBuildConfig.naverMapsApigwClientIdKey,
+                appBuildConfig.naverMapsApigwClientSecretkey,
                 start = convertLatLng(waypoints.first()),
                 goal = convertLatLng(waypoints.last()),
                 waypoints = convertWaypoints(waypoints.drop(1).dropLast(1))

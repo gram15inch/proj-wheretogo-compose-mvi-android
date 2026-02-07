@@ -9,7 +9,6 @@ import com.wheretogo.data.DataSettingAttr
 import com.wheretogo.data.datasource.AppLocalDatasource
 import com.wheretogo.data.datasourceimpl.store.SecureStore
 import com.wheretogo.data.feature.dataErrorCatching
-import com.wheretogo.data.model.key.AppKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -18,8 +17,7 @@ import javax.inject.Named
 
 class AppLocalDatasourceImpl @Inject constructor(
     @Named("appDataStore") private val dataStore: DataStore<Preferences>,
-    private val secureStore: SecureStore,
-    private val key: AppKey
+    private val secureStore: SecureStore
 ) : AppLocalDatasource {
     private val tutorialKey = intPreferencesKey(DataSettingAttr.TUTORIAL.name)
 
@@ -56,10 +54,6 @@ class AppLocalDatasourceImpl @Inject constructor(
             }
             Unit
         }
-    }
-
-    override suspend fun getApiAccessKey(): Result<String> {
-        return Result.success(key.apiAccessKey)
     }
 
     override suspend fun getPublicToken(): Result<String> {

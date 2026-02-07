@@ -9,6 +9,7 @@ import com.wheretogo.domain.feature.sucessMap
 import com.wheretogo.domain.handler.DriveEvent
 import com.wheretogo.domain.handler.DriveHandler
 import com.wheretogo.domain.model.address.LatLng
+import com.wheretogo.domain.model.app.AppBuildConfig
 import com.wheretogo.domain.model.checkpoint.CheckPoint
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.course.Course
@@ -109,8 +110,11 @@ class DriveViewModel @Inject constructor(
     private val nativeAdServiceOld: AdService,
     private val mapOverlayService: MapOverlayService,
 ) : ViewModel() {
+
     private val _driveScreenState =
-        MutableStateFlow(stateInit.copy(overlayGroup = mapOverlayService.overlays))
+        MutableStateFlow(
+            stateInit.copy(overlayGroup = mapOverlayService.overlays)
+        )
     val driveScreenState: StateFlow<DriveScreenState> = _driveScreenState
     private var isMapUpdate = true
 

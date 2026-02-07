@@ -49,6 +49,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CourseAddViewModel @Inject constructor(
+    private val initState: CourseAddScreenState,
     @MainDispatcher private val dispatcher: CoroutineDispatcher,
     private val handler: CourseAddHandler,
     private val createRouteUseCase: CreateRouteUseCase,
@@ -58,7 +59,7 @@ class CourseAddViewModel @Inject constructor(
     private val mapOverlayService: MapOverlayService,
 ) : ViewModel() {
     private val _courseAddScreenState = MutableStateFlow(
-        CourseAddScreenState(
+        initState.copy(
             bottomSheetState = BottomSheetState(
                 content = DriveBottomSheetContent.COURSE_ADD
             ),

@@ -63,11 +63,6 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
             }
         }
 
-        if(BuildConfig.DEBUG)
-            ShakeEffect{
-               MobileAds.openDebugMenu(context, BuildConfig.NATIVE_AD_ID)
-            }
-
         AppEventSendEffect {
             coroutine.launch {
                 viewModel.eventSend(it)

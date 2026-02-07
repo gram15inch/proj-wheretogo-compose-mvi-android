@@ -79,7 +79,7 @@ fun NaverMapSheet(
             getMapAsync { naverMap ->
                 naverMap.apply {
                     onMapAsync(naverMap)
-                    naverMap.setUiSetting()
+                    naverMap.setUiSetting(state.isZoomControl)
                     naverMap.locationSetting(context)
                     addOnCameraIdleListener {
                         val cameraSate= naverMap.toCameraState()
@@ -174,12 +174,11 @@ private fun NaverMap.setGesture(isEnable: Boolean) {
     uiSettings.isRotateGesturesEnabled = isEnable
 }
 
-private fun NaverMap.setUiSetting() {
+private fun NaverMap.setUiSetting(isZoomControl: Boolean) {
     uiSettings.apply {
         isLogoClickEnabled = false
         isLocationButtonEnabled = true
-        if (!BuildConfig.TEST_UI)
-            isZoomControlEnabled = false
+        isZoomControlEnabled = isZoomControl
     }
     minZoom = 8.0
     setLayerGroupEnabled(NaverMap.LAYER_GROUP_BUILDING, false)

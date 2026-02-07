@@ -1,7 +1,10 @@
 package com.wheretogo.presentation.di
 
+import com.wheretogo.domain.model.app.AppBuildConfig
+import com.wheretogo.presentation.state.CourseAddScreenState
 import com.wheretogo.presentation.state.DriveScreenState
 import com.wheretogo.presentation.state.HomeScreenState
+import com.wheretogo.presentation.state.NaverMapState
 import com.wheretogo.presentation.state.SearchBarState
 import dagger.Module
 import dagger.Provides
@@ -21,11 +24,26 @@ class StateModule {
 
     @Singleton
     @Provides
-    fun provideDriveState(): DriveScreenState {
+    fun provideDriveState(
+        buildConfig: AppBuildConfig
+    ): DriveScreenState {
         return DriveScreenState(
             searchBarState = SearchBarState(
                 isAdVisible = true
-            )
+            ),
+            naverMapState = NaverMapState(isZoomControl = buildConfig.isTestUi),
+            isTestUi = buildConfig.isTestUi
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideCourseAddState(
+        buildConfig: AppBuildConfig
+    ): CourseAddScreenState {
+        return CourseAddScreenState(
+            naverMapState = NaverMapState(isZoomControl = buildConfig.isTestUi),
+            isTestUi = buildConfig.isTestUi
         )
     }
 }

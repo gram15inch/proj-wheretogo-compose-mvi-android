@@ -49,7 +49,6 @@ import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.dummy.getCourseDummy
 import com.wheretogo.domain.model.util.ImageInfo
-import com.wheretogo.presentation.BuildConfig
 import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.DriveFloatingVisibleMode
 import com.wheretogo.presentation.DriveVisibleMode
@@ -289,7 +288,7 @@ fun DriveContent(
                 contentAlignment = Alignment.BottomEnd
             ) {
 
-                if (BuildConfig.TEST_UI && !isPreview)
+                if (state.isTestUi && !isPreview)
                     Column(modifier = Modifier
                         .align(alignment = Alignment.TopStart)
                         .padding(5.dp)) {

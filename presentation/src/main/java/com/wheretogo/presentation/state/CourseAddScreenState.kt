@@ -21,6 +21,7 @@ data class CourseAddScreenState(
     val stateMode: CourseAddVisibleMode = CourseAddVisibleMode.BottomSheetCollapse,
     val isFloatMarker: Boolean = false,
     val isFloatingButton: Boolean = false,
+    val isTestUi: Boolean = false,
     val padding: ContentPadding = ContentPadding(bottom = 350.dp)
 ) {
     data class CourseAddSheetState(

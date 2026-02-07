@@ -5,15 +5,17 @@ import com.wheretogo.data.FireStoreCollections
 import com.wheretogo.data.datasource.ReportRemoteDatasource
 import com.wheretogo.data.feature.mapDataError
 import com.wheretogo.data.model.report.RemoteReport
-import com.wheretogo.data.name
+import com.wheretogo.domain.model.app.AppBuildConfig
 import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-class ReportRemoteDatasourceImpl @Inject constructor() : ReportRemoteDatasource {
+class ReportRemoteDatasourceImpl @Inject constructor(
+    appBuildConfig: AppBuildConfig
+) : ReportRemoteDatasource {
     private val firestore by lazy { FirebaseFirestore.getInstance() }
-    private val reportRootCollection = FireStoreCollections.REPORT.name()
+    private val reportRootCollection = appBuildConfig.dbPrefix + FireStoreCollections.REPORT.name
     override suspend fun addReport(report: RemoteReport): Result<Unit> {
         return runCatching {
             suspendCancellableCoroutine { continuation ->
