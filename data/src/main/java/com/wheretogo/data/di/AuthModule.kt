@@ -1,7 +1,7 @@
 package com.wheretogo.data.di
 
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
-import com.wheretogo.data.model.key.AppKey
+import com.wheretogo.domain.model.app.AppBuildConfig
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -14,11 +14,11 @@ object AuthModule {
     @Singleton
     @Provides
     fun provideGoogleSignInOptions(
-        appKey: AppKey
+        appBuildConfig: AppBuildConfig
     ): GetGoogleIdOption {
         return GetGoogleIdOption.Builder()
             .setFilterByAuthorizedAccounts(false)
-            .setServerClientId(appKey.googleWebClientId)
+            .setServerClientId(appBuildConfig.googleWebClientId)
             .setAutoSelectEnabled(true)
             //.setNonce(generateNonce())
             .build()

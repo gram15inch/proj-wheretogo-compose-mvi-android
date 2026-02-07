@@ -8,7 +8,7 @@ class MockAppRemoteDatasourceImpl @Inject constructor() : AppRemoteDatasource {
         return Result.success("")
     }
 
-    override suspend fun getPublicKey(apiAccessKey: String): Result<String> {
+    override suspend fun getPublicKey(tokenRequestKey: String): Result<String> {
         return Result.success("")
     }
 }

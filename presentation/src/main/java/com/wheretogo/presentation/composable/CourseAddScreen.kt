@@ -251,7 +251,7 @@ fun CourseAddSheetContent(
                         bottom = mapBottomPadding
                     )
             ) {
-                if (BuildConfig.TEST_UI) {
+                if (state.isTestUi) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -741,7 +741,8 @@ fun CourseAddOneStepPreview() {
                         RouteAttr.RELATION to 9,
                     )
                 )
-            )
+            ),
+            isTestUi = true
         )
     )
 }

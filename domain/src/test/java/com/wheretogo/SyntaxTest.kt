@@ -1,7 +1,7 @@
 package com.wheretogo
 
 import com.wheretogo.domain.feature.courseNameToKeyword
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
 
 class SyntaxTest {

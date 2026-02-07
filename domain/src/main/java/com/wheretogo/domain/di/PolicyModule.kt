@@ -1,11 +1,11 @@
 package com.wheretogo.domain.di
 
-import com.wheretogo.domain.BuildConfig
 import com.wheretogo.domain.CheckpointCooldown
 import com.wheretogo.domain.CommentCooldown
 import com.wheretogo.domain.CoolDownPolicy
 import com.wheretogo.domain.CourseCooldown
 import com.wheretogo.domain.DefaultCoolDownPolicy
+import com.wheretogo.domain.model.app.AppBuildConfig
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,23 +21,29 @@ class PolicyModule {
     @Singleton
     @CourseCooldown
     @Provides
-    fun provideCoursePolicy(): CoolDownPolicy {
-        return if (BuildConfig.COOLDOWN) CourseCooldown else debugCooldown
+    fun provideCoursePolicy(
+        appBuildConfig: AppBuildConfig
+    ): CoolDownPolicy {
+        return if (appBuildConfig.isCoolDown) CourseCooldown else debugCooldown
     }
 
     @Singleton
     @CheckpointCooldown
     @Provides
-    fun provideCheckpointPolicy(): CoolDownPolicy {
-        return if (BuildConfig.COOLDOWN) CheckpointCooldown else debugCooldown
+    fun provideCheckpointPolicy(
+        appBuildConfig: AppBuildConfig
+    ): CoolDownPolicy {
+        return if (appBuildConfig.isCoolDown) CheckpointCooldown else debugCooldown
     }
 
 
     @Singleton
     @CommentCooldown
     @Provides
-    fun provideCommentPolicy(): CoolDownPolicy {
-        return if (BuildConfig.COOLDOWN) CommentCooldown else debugCooldown
+    fun provideCommentPolicy(
+        appBuildConfig: AppBuildConfig
+    ): CoolDownPolicy {
+        return if (appBuildConfig.isCoolDown) CommentCooldown else debugCooldown
     }
 }
 

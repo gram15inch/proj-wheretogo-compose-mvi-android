@@ -44,15 +44,14 @@ object ApiServiceModule {
 
     @Singleton
     @Provides
-    fun provideAppApiService(retrofit: Retrofit): AppApiService {
-        return retrofit.create(AppApiService::class.java)
-    }
-
-    @Singleton
-    @Provides
     fun provideGuestApiService(@Named("publicRetrofit") retrofit: Retrofit): GuestApiService {
         return retrofit.create(GuestApiService::class.java)
     }
 
+    @Singleton
+    @Provides
+    fun provideAppApiService(retrofit: Retrofit): AppApiService {
+        return retrofit.create(AppApiService::class.java)
+    }
 
 }

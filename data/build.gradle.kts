@@ -1,16 +1,5 @@
-import wheretogo.AndroidConfig
-import wheretogo.AndroidX
-import wheretogo.Firebase
-import wheretogo.Dagger
-import wheretogo.Google
-import wheretogo.Kotlin
-import wheretogo.Libraries
-import wheretogo.Squareup
-import java.util.Properties
-
 plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
+    id("wheretogo.android.library")
     id("com.google.dagger.hilt.android")
     kotlin("plugin.serialization")
     id("com.google.devtools.ksp")
@@ -18,10 +7,7 @@ plugins {
 
 android {
     namespace = "com.wheretogo.data"
-    compileSdk = AndroidConfig.COMPILE_SDK
-
     defaultConfig {
-        minSdk = AndroidConfig.MIN_SDK
         consumerProguardFiles(
             "consumer-default-rules.pro",
             "consumer-retrofit-rules.pro"
@@ -30,108 +16,55 @@ android {
     }
 
     defaultConfig {
-        buildConfigField( "String", "NAVER_MAPS_APIGW_CLIENT_ID_KEY", getLocalProperties("naverMapsApigwClientId"))
-        buildConfigField( "String", "NAVER_MAPS_APIGW_CLIENT_SECRET_KEY", getLocalProperties("naverMapsApigwClientSecret"))
-        buildConfigField( "String", "NAVER_CLIENT_ID_KEY", getLocalProperties("naverClientId"))
-        buildConfigField( "String", "NAVER_CLIENT_SECRET_KEY", getLocalProperties("naverClientSecret"))
-
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments["room.schemaLocation"] = "$projectDir/schemas"
             }
         }
     }
-    buildTypes {
-        val test = "\"TEST\""
-        val release = "\"RELEASE\""
-
-        debug {
-            buildConfigField( "String", "FIREBASE", test)
-        }
-        create("qa") {
-            buildConfigField( "String", "FIREBASE", release)
-        }
-        release {
-            buildConfigField( "String", "FIREBASE", release)
-        }
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
-
-}
-
-kotlin {
-    jvmToolchain(17)
 }
 
 dependencies {
     implementation(project(mapOf("path" to ":domain")))
 
-    // Bom
-    implementation(platform(Kotlin.KOTLIN_BOM))
+    // Kotlin (BOM)
+    implementation(platform(libs.kotlin.bom))
 
     // Kotlin
-    implementation(Kotlin.KOTLINX_SERIALIZATION_CBOR)
-    implementation(Kotlin.KOTLINX_SERIALIZATION_JSON)
+    implementation(libs.kotlinx.serialization.cbor)
+    implementation(libs.kotlinx.serialization.json)
 
-    // Androidx
-    api(AndroidX.ROOM_KTX)
-    implementation(AndroidX.CORE_KTX)
-    implementation(AndroidX.EXIFINTERFACE)
-    implementation(AndroidX.DATASTORE_PREFERENCES)
-    implementation(AndroidX.SECURITY_CRYPTO)
-
-    // Dagger
-    implementation(Dagger.HILT_ANDROID)
-    ksp(Dagger.HILT_COMPILER)
-
-    // Retrofit
-    api(Squareup.RETROFIT)
-    api(Squareup.RETROFIT_CONVERTER_MOSHI)
-    api(Squareup.MOSHI_KOTLIN)
+    // AndroidX
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.exifinterface)
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.security.crypto)
 
     // Room
-    api(AndroidX.ROOM_RUNTIME)
-    ksp(AndroidX.ROOM_COMPILER)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
 
-    // Firebase
-    implementation(platform(Firebase.FIREBASE_BOM))
-    implementation(Firebase.FIREBASE_CRASHLYTICS)
-    implementation(Firebase.FIREBASE_DATABASE)
-    implementation(Firebase.FIREBASE_FIRESTORE_KTX)
-    implementation(Firebase.FIREBASE_STORAGE_KTX)
-    implementation(Firebase.FIREBASE_AUTH_KTX)
-    implementation(Firebase.FIREBASE_MESSAGING)
+    // Dagger / Hilt
+    implementation(libs.dagger.hilt.android)
+    ksp(libs.dagger.hilt.compiler)
 
+    // Retrofit / Moshi
+    implementation(libs.squareup.retrofit)
+    implementation(libs.squareup.retrofit.converter.moshi)
+    implementation(libs.squareup.moshi.kotlin)
+
+    // Firebase (BOM)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.database)
+    implementation(libs.firebase.firestore.ktx)
+    implementation(libs.firebase.storage.ktx)
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.messaging)
 
     // Libraries
-    implementation(Google.IDENTITY_GOOGLEID)
-    implementation(Libraries.HUXHORN_SULKY_ULID)
-    implementation(Libraries.JAKEWHARTON_TIMBER)
-}
-
-fun getLocalProperties(key: String): String {
-    val propertiesFile = File(rootProject.projectDir, "local.properties")
-    val properties = Properties()
-
-    if (propertiesFile.exists()) {
-        propertiesFile.inputStream().use { properties.load(it) }
-    } else {
-        propertiesFile.createNewFile()
-    }
-
-    val defaultValue = "\"yourAppKey\""
-
-    if (!properties.containsKey(key)) {
-        properties[key] = defaultValue
-        propertiesFile.outputStream().use { properties.store(it, null) }
-    }
-    return properties[key].toString()
+    implementation(libs.google.identity.googleid)
+    implementation(libs.sulky.ulid)
+    implementation(libs.timber)
 }

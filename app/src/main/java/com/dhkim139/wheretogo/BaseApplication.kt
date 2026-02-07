@@ -10,6 +10,8 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.storage.FirebaseStorage
+import com.skt.Tmap.TMapTapi
+import com.wheretogo.domain.model.app.AppBuildConfig
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,6 +25,9 @@ class BaseApplication : Application(), Configuration.Provider {
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
 
+    @Inject
+    lateinit var buildConfig: AppBuildConfig
+
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
             .setWorkerFactory(workerFactory)
@@ -34,12 +39,13 @@ class BaseApplication : Application(), Configuration.Provider {
         timberInit()
         strictModeInit()
         firebaseInit()
+        tMapInit()
     }
 
     private fun firebaseInit() {
         CoroutineScope(Dispatchers.IO).launch {
             FirebaseApp.initializeApp(this@BaseApplication)
-            FirebaseCrashlytics.getInstance().isCrashlyticsCollectionEnabled = BuildConfig.CRASHLYTICS
+            FirebaseCrashlytics.getInstance().isCrashlyticsCollectionEnabled = buildConfig.isCrashlytics
             FirebaseStorage.getInstance()
             FirebaseAuth.getInstance()
             FirebaseFirestore.getInstance()
@@ -53,6 +59,12 @@ class BaseApplication : Application(), Configuration.Provider {
             Timber.plant(PrefixedDebugTree())
         } else {
             Timber.uprootAll()
+        }
+    }
+
+    private fun tMapInit() {
+        TMapTapi(this@BaseApplication).apply {
+            setSKTMapAuthentication(buildConfig.tmapAppKey)
         }
     }
 

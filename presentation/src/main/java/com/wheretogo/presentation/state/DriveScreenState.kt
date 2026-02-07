@@ -24,6 +24,7 @@ data class DriveScreenState(
     val selectedCheckPoint: CheckPoint = CheckPoint(),
     val isLoading: Boolean = false,
     val isCongrats: Boolean = false,
+    val isTestUi: Boolean = false,
     val error: String? = null
 ) {
 
