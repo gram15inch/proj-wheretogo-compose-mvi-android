@@ -1,3 +1,7 @@
 /build
 
 /src/main/java/com/wheretogo/data/repositoryimpl/AuthRepositoryImpl.kt
+/src/main/java/com/wheretogo/data/datasourceimpl/AppRemoteDatasourceImpl.kt
+/src/main/java/com/wheretogo/data/datasourceimpl/AuthRemoteDatasourceImpl.kt
+/src/main/java/com/wheretogo/data/feature/DataEncryptorImpl.kt
+/src/main/java/com/wheretogo/data/feature/SecureStore.kt
