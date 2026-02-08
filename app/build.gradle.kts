@@ -54,19 +54,6 @@ android {
             buildConfigField("String",  "BuildType", "\"debug\"")
             buildConfigField("String",  "GOOGLE_WEB_CLIENT_ID_KEY", getLocalProperties("googleStagingWebClientId"))
        }
-        create("qa") {
-            isMinifyEnabled = true
-            isShrinkResources = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-            signingConfig = signingConfigs.getByName("debug")
-            isDebuggable = true
-
-            buildConfigField("String",  "BuildType", "\"qa\"")
-            buildConfigField("String","GOOGLE_WEB_CLIENT_ID_KEY", getLocalProperties("googleWebClientId"))
-        }
 
         release {
             isMinifyEnabled = true
