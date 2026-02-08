@@ -7,7 +7,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import com.wheretogo.data.DataError
 import com.wheretogo.data.DataSettingAttr
 import com.wheretogo.data.datasource.AppLocalDatasource
-import com.wheretogo.data.datasourceimpl.store.SecureStore
+import com.wheretogo.data.feature.SecureStore
 import com.wheretogo.data.feature.dataErrorCatching
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first

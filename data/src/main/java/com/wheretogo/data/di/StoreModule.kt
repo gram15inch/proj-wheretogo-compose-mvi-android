@@ -1,7 +1,7 @@
 package com.wheretogo.data.di
 
 import android.content.Context
-import com.wheretogo.data.datasourceimpl.store.SecureStore
+import com.wheretogo.data.feature.SecureStore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
