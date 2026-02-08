@@ -42,29 +42,6 @@ object AppConfigModule {
                     dbPrefix = "RELEASE_",
                 )
             }
-
-            "qa" -> {
-                AppBuildConfig(
-                    firebaseCloudApiUrl = FIREBASE_CLOUD_API_URL,
-                    naverMapsNtrussApigwUrl = NAVER_MAPS_NTRUSS_APIGW_URL,
-                    naverOpenApiUrl = NAVER_OPEN_API_URL,
-                    googleWebClientId = BuildConfig.GOOGLE_WEB_CLIENT_ID_KEY,
-                    tokenRequestKey = BuildConfig.API_ACCESS_KEY,
-                    naverMapsApigwClientIdKey = BuildConfig.NAVER_MAPS_APIGW_CLIENT_ID_KEY,
-                    naverMapsApigwClientSecretkey = BuildConfig.NAVER_MAPS_APIGW_CLIENT_SECRET_KEY,
-                    naverClientIdKey = BuildConfig.NAVER_CLIENT_ID_KEY,
-                    naverClientSecretKey = BuildConfig.NAVER_CLIENT_SECRET_KEY,
-                    tmapAppKey = BuildConfig.TMAP_APP_KEY,
-                    nativeAdId = testAdId,
-                    isCoolDown = false,
-                    isCrashlytics = false,
-                    isTokenLog = true,
-                    isTestUi = false,
-                    isAdPreLoad = false,
-                    dbPrefix = "RELEASE_"
-                )
-            }
-
             else -> {
                 AppBuildConfig(
                     firebaseCloudApiUrl = FIREBASE_CLOUD_STAGING_API_URL,
