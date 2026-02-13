@@ -1,20 +1,20 @@
 package com.wheretogo.data.datasourceimpl
 
 import com.google.firebase.firestore.FirebaseFirestore
+import com.wheretogo.data.DataBuildConfig
 import com.wheretogo.data.FireStoreCollections
 import com.wheretogo.data.datasource.CheckPointRemoteDatasource
 import com.wheretogo.data.model.checkpoint.RemoteCheckPoint
-import com.wheretogo.domain.model.app.AppBuildConfig
 import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 class CheckPointRemoteDatasourceImpl @Inject constructor(
-    appBuildConfig: AppBuildConfig
+    buildConfig: DataBuildConfig
 ) : CheckPointRemoteDatasource {
     private val firestore by lazy { FirebaseFirestore.getInstance() }
-    private val checkPointRootCollection = appBuildConfig.dbPrefix + FireStoreCollections.CHECKPOINT.name
+    private val checkPointRootCollection = buildConfig.dbPrefix + FireStoreCollections.CHECKPOINT.name
     private val checkPointIdAttr = RemoteCheckPoint::checkPointId.name
 
     override suspend fun getCheckPointGroup(checkPointIdGroup: List<String>): Result<List<RemoteCheckPoint>> {

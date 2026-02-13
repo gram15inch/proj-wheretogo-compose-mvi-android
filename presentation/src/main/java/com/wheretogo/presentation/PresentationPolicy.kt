@@ -18,6 +18,13 @@ import com.wheretogo.presentation.model.EventMsg
 import com.wheretogo.presentation.state.CameraState
 import javax.inject.Qualifier
 
+data class PresentationBuildConfig(
+    val nativeAdId: String,
+    val isTestUi: Boolean,
+    val isAdPreLoad: Boolean
+)
+
+
 const val DRIVE_LIST_MIN_ZOOM = 9.5
 const val COURSE_DETAIL_MIN_ZOOM = 10.5
 const val COURSE_NAME_MAX_LENGTH = 17

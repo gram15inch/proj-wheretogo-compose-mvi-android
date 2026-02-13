@@ -3,6 +3,7 @@ package com.wheretogo.data.datasourceimpl
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
+import com.wheretogo.data.DataBuildConfig
 import com.wheretogo.data.DataHistoryType
 import com.wheretogo.data.FireStoreCollections
 import com.wheretogo.data.datasource.UserRemoteDatasource
@@ -14,7 +15,6 @@ import com.wheretogo.data.model.user.DataMsgToken
 import com.wheretogo.data.model.user.RemoteProfilePrivate
 import com.wheretogo.data.model.user.RemoteProfilePublic
 import com.wheretogo.data.toDataError
-import com.wheretogo.domain.model.app.AppBuildConfig
 import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
 import kotlin.coroutines.resume
@@ -22,10 +22,10 @@ import kotlin.coroutines.resumeWithException
 
 class UserRemoteDatasourceImpl @Inject constructor(
     private val userApiService: UserApiService,
-    appBuildConfig: AppBuildConfig
+    buildConfig: DataBuildConfig
 ) : UserRemoteDatasource {
     private val firestore by lazy { FirebaseFirestore.getInstance() }
-    private val userRootCollection = appBuildConfig.dbPrefix +  FireStoreCollections.USER.name
+    private val userRootCollection = buildConfig.dbPrefix +  FireStoreCollections.USER.name
     override suspend fun deleteUser(userId: String): Result<String> {
        return dataErrorCatching {
             userApiService.deleteUser(userId = userId)

@@ -13,6 +13,20 @@ import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
 
+data class DataBuildConfig(
+    val firebaseCloudApiUrl: String,
+    val naverMapsNtrussApigwUrl: String,
+    val naverOpenApiUrl: String,
+    val googleWebClientId: String,
+    val tokenRequestKey: String,
+    val naverMapsApigwClientIdKey: String,
+    val naverMapsApigwClientSecretkey: String,
+    val naverClientIdKey: String,
+    val naverClientSecretKey: String,
+    val isTokenLog: Boolean,
+    val dbPrefix: String,
+)
+
 const val DATA_NULL = ""
 
 val CheckpointPolicy = DefaultPolicy(60, 15)
