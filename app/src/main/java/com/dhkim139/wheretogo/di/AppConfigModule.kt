@@ -1,10 +1,6 @@
 package com.dhkim139.wheretogo.di
 
 import com.dhkim139.wheretogo.BuildConfig
-import com.wheretogo.data.FIREBASE_CLOUD_API_URL
-import com.wheretogo.data.FIREBASE_CLOUD_STAGING_API_URL
-import com.wheretogo.data.NAVER_MAPS_NTRUSS_APIGW_URL
-import com.wheretogo.data.NAVER_OPEN_API_URL
 import com.wheretogo.domain.model.app.AppBuildConfig
 import dagger.Module
 import dagger.Provides
@@ -23,9 +19,9 @@ object AppConfigModule {
         val config = when (BuildConfig.BUILD_TYPE) {
             "release" -> {
                 AppBuildConfig(
-                    firebaseCloudApiUrl = FIREBASE_CLOUD_API_URL,
-                    naverMapsNtrussApigwUrl = NAVER_MAPS_NTRUSS_APIGW_URL,
-                    naverOpenApiUrl = NAVER_OPEN_API_URL,
+                    firebaseCloudApiUrl = BuildConfig.FIREBASE_CLOUD_API_URL,
+                    naverMapsNtrussApigwUrl = BuildConfig.NAVER_MAPS_NTRUSS_APIGW_URL,
+                    naverOpenApiUrl = BuildConfig.NAVER_OPEN_API_URL,
                     googleWebClientId = BuildConfig.GOOGLE_WEB_CLIENT_ID_KEY,
                     tokenRequestKey = BuildConfig.API_ACCESS_KEY,
                     naverMapsApigwClientIdKey = BuildConfig.NAVER_MAPS_APIGW_CLIENT_ID_KEY,
@@ -44,9 +40,9 @@ object AppConfigModule {
             }
             else -> {
                 AppBuildConfig(
-                    firebaseCloudApiUrl = FIREBASE_CLOUD_STAGING_API_URL,
-                    naverMapsNtrussApigwUrl = NAVER_MAPS_NTRUSS_APIGW_URL,
-                    naverOpenApiUrl = NAVER_OPEN_API_URL,
+                    firebaseCloudApiUrl = BuildConfig.FIREBASE_CLOUD_STAGING_API_URL,
+                    naverMapsNtrussApigwUrl = BuildConfig.NAVER_MAPS_NTRUSS_APIGW_URL,
+                    naverOpenApiUrl = BuildConfig.NAVER_OPEN_API_URL,
                     googleWebClientId = BuildConfig.GOOGLE_WEB_CLIENT_ID_KEY,
                     tokenRequestKey = BuildConfig.API_ACCESS_KEY,
                     naverMapsApigwClientIdKey = BuildConfig.NAVER_MAPS_APIGW_CLIENT_ID_KEY,
