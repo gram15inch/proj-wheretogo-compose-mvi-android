@@ -1,21 +1,21 @@
 package com.wheretogo.data.datasourceimpl
 
 import com.google.firebase.firestore.FirebaseFirestore
+import com.wheretogo.data.DataBuildConfig
 import com.wheretogo.data.FireStoreCollections
 import com.wheretogo.data.datasource.CourseRemoteDatasource
 import com.wheretogo.data.feature.mapDataError
 import com.wheretogo.data.model.course.RemoteCourse
-import com.wheretogo.domain.model.app.AppBuildConfig
 import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 class CourseRemoteDatasourceImpl @Inject constructor(
-    appBuildConfig: AppBuildConfig
+    buildConfig: DataBuildConfig
 ) : CourseRemoteDatasource {
     private val firestore by lazy { FirebaseFirestore.getInstance() }
-    private val courseRootCollection = appBuildConfig.dbPrefix +  FireStoreCollections.COURSE.name
+    private val courseRootCollection = buildConfig.dbPrefix +  FireStoreCollections.COURSE.name
     private val geoHashAttr = RemoteCourse::geoHash.name
     private val keywordAttr = RemoteCourse::keyword.name
 

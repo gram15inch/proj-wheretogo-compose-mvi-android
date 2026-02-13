@@ -2,6 +2,7 @@ package com.wheretogo.data.datasourceimpl
 
 import android.os.Build
 import android.text.Html
+import com.wheretogo.data.DataBuildConfig
 import com.wheretogo.data.datasource.AddressRemoteDatasource
 import com.wheretogo.data.datasourceimpl.service.NaverFreeApiService
 import com.wheretogo.data.datasourceimpl.service.NaverMapApiService
@@ -9,21 +10,20 @@ import com.wheretogo.data.toDataError
 import com.wheretogo.domain.model.address.Address
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.address.SimpleAddress
-import com.wheretogo.domain.model.app.AppBuildConfig
 import javax.inject.Inject
 
 class AddressRemoteDatasourceImpl @Inject constructor(
     private val naverApiService: NaverMapApiService,
     private val naverFreeApiService: NaverFreeApiService,
-    private val appBuildConfig: AppBuildConfig
+    private val buildConfig: DataBuildConfig
 ) : AddressRemoteDatasource {
 
     private fun convertLatLng(latlng: LatLng): String = "${latlng.longitude}, ${latlng.latitude}"
 
     override suspend fun geocode(address: String): Result<List<Address>> {
         val response = naverApiService.geocode(
-            clientId = appBuildConfig.naverMapsApigwClientIdKey,
-            clientSecret = appBuildConfig.naverMapsApigwClientSecretkey,
+            clientId = buildConfig.naverMapsApigwClientIdKey,
+            clientSecret = buildConfig.naverMapsApigwClientSecretkey,
             accept = "application/json",
             query = address,
             count = "1"
@@ -44,8 +44,8 @@ class AddressRemoteDatasourceImpl @Inject constructor(
 
     override suspend fun reverseGeocode(latlng: LatLng): Result<String> {
         val response = naverApiService.reverseGeocode(
-            clientId = appBuildConfig.naverMapsApigwClientIdKey,
-            clientSecret = appBuildConfig.naverMapsApigwClientSecretkey,
+            clientId = buildConfig.naverMapsApigwClientIdKey,
+            clientSecret = buildConfig.naverMapsApigwClientSecretkey,
             coords = convertLatLng(latlng),
             output = "json"
         )
@@ -61,8 +61,8 @@ class AddressRemoteDatasourceImpl @Inject constructor(
 
     override suspend fun getSimpleAddressFromKeyword(keyword: String): Result<List<SimpleAddress>> {
         val response = naverFreeApiService.getAddressFromKeyword(
-            clientId = appBuildConfig.naverClientIdKey,
-            clientSecret = appBuildConfig.naverClientSecretKey,
+            clientId = buildConfig.naverClientIdKey,
+            clientSecret = buildConfig.naverClientSecretKey,
             query = keyword,
             display = 10,
             start = 1,

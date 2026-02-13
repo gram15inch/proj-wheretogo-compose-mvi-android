@@ -7,7 +7,7 @@ import com.wheretogo.presentation.AD_REFRESH_SIZE
 import com.wheretogo.presentation.BuildConfig
 import com.wheretogo.presentation.DEBUG_AD_REFRESH_SIZE
 import com.wheretogo.domain.feature.LocationService
-import com.wheretogo.domain.model.app.AppBuildConfig
+import com.wheretogo.presentation.PresentationBuildConfig
 import com.wheretogo.presentation.feature.ads.AdService
 import com.wheretogo.presentation.feature.ads.NativeAdServiceImpl
 import com.wheretogo.presentation.feature.geo.LocationServiceImpl
@@ -33,7 +33,7 @@ object ServiceModule {
     @SuppressLint("MissingPermission")
     @Singleton
     @Provides
-    fun provideAdService(@ApplicationContext context: Context, buildConfig: AppBuildConfig): AdService {
+    fun provideAdService(@ApplicationContext context: Context, buildConfig: PresentationBuildConfig): AdService {
         val refreshSize = if (BuildConfig.DEBUG) DEBUG_AD_REFRESH_SIZE else AD_REFRESH_SIZE
         return NativeAdServiceImpl(context, buildConfig.nativeAdId, refreshSize).apply {
             CoroutineScope(Dispatchers.IO).launch {

@@ -1,6 +1,6 @@
 package com.wheretogo.presentation.di
 
-import com.wheretogo.domain.model.app.AppBuildConfig
+import com.wheretogo.presentation.PresentationBuildConfig
 import com.wheretogo.presentation.state.CourseAddScreenState
 import com.wheretogo.presentation.state.DriveScreenState
 import com.wheretogo.presentation.state.HomeScreenState
@@ -25,7 +25,7 @@ class StateModule {
     @Singleton
     @Provides
     fun provideDriveState(
-        buildConfig: AppBuildConfig
+        buildConfig: PresentationBuildConfig
     ): DriveScreenState {
         return DriveScreenState(
             searchBarState = SearchBarState(
@@ -39,7 +39,7 @@ class StateModule {
     @Singleton
     @Provides
     fun provideCourseAddState(
-        buildConfig: AppBuildConfig
+        buildConfig: PresentationBuildConfig
     ): CourseAddScreenState {
         return CourseAddScreenState(
             naverMapState = NaverMapState(isZoomControl = buildConfig.isTestUi),

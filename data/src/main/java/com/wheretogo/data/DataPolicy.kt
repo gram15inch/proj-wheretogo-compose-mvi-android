@@ -13,10 +13,19 @@ import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
 
-const val NAVER_MAPS_NTRUSS_APIGW_URL = "https://maps.apigw.ntruss.com/"
-const val NAVER_OPEN_API_URL = "https://openapi.naver.com/"
-const val FIREBASE_CLOUD_API_URL = "https://asia-northeast3-where-to-go-35813.cloudfunctions.net/"
-const val FIREBASE_CLOUD_STAGING_API_URL = "https://asia-northeast3-where-to-go-staging.cloudfunctions.net/"
+data class DataBuildConfig(
+    val firebaseCloudApiUrl: String,
+    val naverMapsNtrussApigwUrl: String,
+    val naverOpenApiUrl: String,
+    val googleWebClientId: String,
+    val tokenRequestKey: String,
+    val naverMapsApigwClientIdKey: String,
+    val naverMapsApigwClientSecretkey: String,
+    val naverClientIdKey: String,
+    val naverClientSecretKey: String,
+    val isTokenLog: Boolean,
+    val dbPrefix: String,
+)
 
 const val DATA_NULL = ""
 

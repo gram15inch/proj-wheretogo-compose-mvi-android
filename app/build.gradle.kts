@@ -46,6 +46,11 @@ android {
         buildConfigField( "String", "TMAP_APP_KEY", getLocalProperties("tmapApp"))
 
         buildConfigField( "String", "NATIVE_AD_ID", getLocalProperties("nativeAdId"))
+
+        buildConfigField("String", "NAVER_MAPS_NTRUSS_APIGW_URL", getLocalProperties("NAVER_MAPS_NTRUSS_APIGW_URL"))
+        buildConfigField("String", "NAVER_OPEN_API_URL", getLocalProperties("NAVER_OPEN_API_URL"))
+        buildConfigField("String", "FIREBASE_CLOUD_API_URL", getLocalProperties("FIREBASE_CLOUD_API_URL"))
+        buildConfigField("String", "FIREBASE_CLOUD_STAGING_API_URL", getLocalProperties("FIREBASE_CLOUD_STAGING_API_URL"))
     }
 
     buildTypes {

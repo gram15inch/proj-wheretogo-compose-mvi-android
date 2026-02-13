@@ -2,9 +2,9 @@ package com.wheretogo.data.di
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import com.wheretogo.data.DataBuildConfig
 import com.wheretogo.data.network.PrivateInterceptor
 import com.wheretogo.data.network.PublicInterceptor
-import com.wheretogo.domain.model.app.AppBuildConfig
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -26,7 +26,7 @@ object RetrofitClientModule {
     fun provideNaverRetrofit(
         moshi: Moshi,
         client: OkHttpClient,
-        buildConfig: AppBuildConfig
+        buildConfig: DataBuildConfig
     ): Retrofit {
         return Retrofit.Builder()
             .addConverterFactory(
@@ -43,7 +43,7 @@ object RetrofitClientModule {
     fun provideXNaverRetrofit(
         moshi: Moshi,
         client: OkHttpClient,
-        buildConfig: AppBuildConfig
+        buildConfig: DataBuildConfig
     ): Retrofit {
         return Retrofit.Builder()
             .addConverterFactory(
@@ -60,7 +60,7 @@ object RetrofitClientModule {
     fun providePrivateFirebaseApiRetrofit(
         moshi: Moshi,
         @Named("privateHttp") client: OkHttpClient,
-        buildConfig: AppBuildConfig
+        buildConfig: DataBuildConfig
     ): Retrofit {
         return Retrofit.Builder()
             .addConverterFactory(MoshiConverterFactory.create(moshi))
@@ -75,7 +75,7 @@ object RetrofitClientModule {
     fun providePublicFirebaseApiRetrofit(
         moshi: Moshi,
         @Named("publicHttp") client: OkHttpClient,
-        buildConfig: AppBuildConfig
+        buildConfig: DataBuildConfig
     ): Retrofit {
         return Retrofit.Builder()
             .addConverterFactory(MoshiConverterFactory.create(moshi))
@@ -89,7 +89,7 @@ object RetrofitClientModule {
     fun provideDefaultRetrofit(
         moshi: Moshi,
         client: OkHttpClient,
-        buildConfig: AppBuildConfig
+        buildConfig: DataBuildConfig
     ): Retrofit {
         return Retrofit.Builder()
             .addConverterFactory(MoshiConverterFactory.create(moshi))
