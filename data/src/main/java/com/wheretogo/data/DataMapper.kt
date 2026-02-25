@@ -277,8 +277,9 @@ fun RemoteComment.toComment(): Comment {
         detailedReview = detailedReview,
         like = like,
         isFocus = isFocus,
+        timestamp = System.currentTimeMillis(),
+        reportedCount = reportedCount,
         createAt = createAt,
-        timestamp = System.currentTimeMillis()
     )
 }
 
@@ -353,7 +354,9 @@ fun RemoteCheckPoint.toLocalCheckPoint(): LocalCheckPoint {
         caption = caption,
         imageId = imageId,
         description = description,
-        timestamp = System.currentTimeMillis()
+        timestamp = System.currentTimeMillis(),
+        reportedCount = reportedCount,
+        createAt = createAt
     )
 }
 
@@ -366,7 +369,10 @@ fun LocalCheckPoint.toCheckPoint(imageLocalPath: String = ""): CheckPoint {
         latLng = latLng.toLatLng(),
         caption = caption,
         imageId = imageId,
+        description = description,
         thumbnail = imageLocalPath,
+        reportedCount = reportedCount,
+        createAt = createAt
     )
 }
 
@@ -414,7 +420,9 @@ fun LocalCourse.toCourse(): Course {
         relation = relation,
         cameraLatLng = cameraLatLng.toLatLng(),
         zoom = zoom,
-        like = like
+        like = like,
+        reportedCount = reportedCount,
+        createAt = createAt
     )
 }
 
@@ -436,6 +444,8 @@ fun RemoteCourse.toLocalCourse(): LocalCourse {
         cameraLatLng = cameraLatLng,
         zoom = zoom,
         like = 0,
+        reportedCount = reportedCount,
+        createAt = createAt
     )
 }
 

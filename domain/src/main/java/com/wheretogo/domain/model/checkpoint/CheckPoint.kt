@@ -13,5 +13,7 @@ data class CheckPoint(
     val imageId: String = "",
     val thumbnail: String = "",
     val description: String = "",
-    val isUserCreated: Boolean = false
+    val isUserCreated: Boolean = false,
+    val reportedCount: Int = 0,
+    val createAt: Long = 0L
 )

@@ -14,6 +14,7 @@ data class Comment(
     val isUserCreated: Boolean = false,
     val isUserLiked: Boolean = false,
     val isFocus: Boolean = false,
+    val timestamp: Long = 0,
+    val reportedCount: Int = 0,
     val createAt: Long = 0,
-    val timestamp: Long = 0
 )
