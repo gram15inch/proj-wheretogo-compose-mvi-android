@@ -9,5 +9,6 @@ data class ProfilePrivate(
     val accountCreation: Long = 0L,
     val isAdRemove: Boolean = false,
     val isAdmin: Boolean = false,
+    val reportedCount: Int = 0,
     val msgToken: String = ""
 )
