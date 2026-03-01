@@ -48,6 +48,7 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.dummy.getCourseDummy
+import com.wheretogo.domain.model.report.ReportReason
 import com.wheretogo.domain.model.util.ImageInfo
 import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.DriveFloatingVisibleMode
@@ -118,6 +119,9 @@ fun DriveScreen(
         DriveContent(
             state = driveState,
 
+            //debug overlay
+            onDebugOverlayClick = { handleIntent(DriveScreenIntent.DebugOverlayClick) },
+
             //GuidePopup
             onGuideClick = { handleIntent(DriveScreenIntent.GuidePopupClick(it)) },
 
@@ -146,7 +150,7 @@ fun DriveScreen(
             onCommentLikeClick = { handleIntent(DriveScreenIntent.CommentLikeClick(it)) },
             onCommentAddClick = { handleIntent(DriveScreenIntent.CommentAddClick(it)) },
             onCommentRemoveClick = { handleIntent(DriveScreenIntent.CommentRemoveClick(it)) },
-            onCommentReportClick = { handleIntent(DriveScreenIntent.CommentReportClick(it)) },
+            onCommentReportClick = { cm,reason-> handleIntent(DriveScreenIntent.CommentReportClick(cm,reason)) },
             onCommentEmogiPress = { handleIntent(DriveScreenIntent.CommentEmogiPress(it)) },
             onCommentTypePress = { handleIntent(DriveScreenIntent.CommentTypePress(it)) },
 
@@ -181,6 +185,9 @@ fun DriveScreen(
 fun DriveContent(
     state: DriveScreenState = DriveScreenState(),
 
+    //debug
+    onDebugOverlayClick: () -> Unit = {},
+
     //GuidePopup
     onGuideClick: (DriveTutorialStep) -> Unit = {},
 
@@ -209,7 +216,7 @@ fun DriveContent(
     onCommentLikeClick: (CommentState.CommentItemState) -> Unit = {},
     onCommentAddClick: (String) -> Unit = {},
     onCommentRemoveClick: (Comment) -> Unit = {},
-    onCommentReportClick: (Comment) -> Unit = {},
+    onCommentReportClick: (Comment, ReportReason) -> Unit = {a,b->},
     onCommentEmogiPress: (String) -> Unit = {},
     onCommentTypePress: (TypeEditText) -> Unit = {},
 
@@ -219,7 +226,7 @@ fun DriveContent(
     onImageChange: (ImageInfo) -> Unit = {},
 
     //InfoContent
-    onInfoReportClick: (String) -> Unit = {},
+    onInfoReportClick: (ReportReason) -> Unit = {},
     onInfoRemoveClick: () -> Unit = {},
 
     //FloatingButtons
@@ -290,6 +297,9 @@ fun DriveContent(
 
                 if (state.isTestUi && !isPreview)
                     Column(modifier = Modifier
+                        .clickable{
+                            onDebugOverlayClick()
+                        }
                         .align(alignment = Alignment.TopStart)
                         .padding(5.dp)) {
                         Text(

@@ -19,5 +19,7 @@ data class LocalCheckPoint(
     val caption: String = "",
     val imageId: String = "",
     val description: String = "",
-    val timestamp: Long = 0L
+    val timestamp: Long = 0L,
+    val reportedCount: Int = 0,
+    val createAt: Long = 0L
 )

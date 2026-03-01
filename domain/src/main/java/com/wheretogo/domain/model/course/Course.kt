@@ -19,6 +19,6 @@ data class Course(
     val isUserCreated: Boolean = false,
     val zoom: String = "",
     val like: Int = 0,
+    val reportedCount: Int = 0,
     val createAt: Long = 0
-    //todo 미니맵 추가
 )

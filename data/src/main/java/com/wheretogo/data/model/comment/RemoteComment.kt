@@ -10,7 +10,8 @@ data class RemoteComment(
     val emoji: String = "",
     val oneLineReview: String = "",
     val detailedReview: String = "",
-    val createAt: Long = 0,
     val like: Int = 0,
-    val isFocus: Boolean = false
+    val isFocus: Boolean = false,
+    val reportedCount: Int = 0,
+    val createAt: Long = 0,
 )

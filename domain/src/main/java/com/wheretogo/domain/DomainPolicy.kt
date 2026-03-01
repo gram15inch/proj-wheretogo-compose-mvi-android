@@ -82,10 +82,6 @@ enum class HistoryType {
     COMMENT, COURSE, CHECKPOINT, LIKE, REPORT
 }
 
-enum class ReportType {
-    USER, COURSE, COMMENT, CHECKPOINT
-}
-
 enum class SearchType {
     ADDRESS, COURSE, ALL
 }
@@ -144,10 +140,6 @@ enum class RouteAttrItem {
 
 enum class CourseAddValid {
     NAME, ROUTE, ATTR
-}
-
-enum class ReportStatus {
-    PENDING, REVIEWED, REJECTED, ACCEPTED
 }
 
 enum class ImageSize(val pathName: String, val width: Int, val height: Int) {

@@ -7,20 +7,19 @@ import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
 import com.wheretogo.domain.usecase.checkpoint.AddCheckpointToCourseUseCase
 import com.wheretogo.domain.usecase.checkpoint.GetCheckpointForMarkerUseCase
 import com.wheretogo.domain.usecase.checkpoint.RemoveCheckPointUseCase
-import com.wheretogo.domain.usecase.checkpoint.ReportCheckPointUseCase
 import com.wheretogo.domain.usecase.comment.AddCommentToCheckPointUseCase
 import com.wheretogo.domain.usecase.comment.GetCommentForCheckPointUseCase
 import com.wheretogo.domain.usecase.comment.RemoveCommentToCheckPointUseCase
-import com.wheretogo.domain.usecase.comment.ReportCommentUseCase
 import com.wheretogo.domain.usecase.course.AddCourseUseCase
 import com.wheretogo.domain.usecase.course.FilterListCourseUseCase
 import com.wheretogo.domain.usecase.course.GetNearByCourseUseCase
 import com.wheretogo.domain.usecase.course.RemoveCourseUseCase
-import com.wheretogo.domain.usecase.course.ReportCourseUseCase
+import com.wheretogo.domain.usecase.report.ReportContentUseCase
 import com.wheretogo.domain.usecase.user.DeleteUserUseCase
 import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
 import com.wheretogo.domain.usecase.user.UserSignUpAndSignInUseCase
+import com.wheretogo.domain.usecase.util.ClearCacheUseCase
 import com.wheretogo.domain.usecase.util.CourseAddValidUseCase
 import com.wheretogo.domain.usecase.util.CreateRouteUseCase
 import com.wheretogo.domain.usecase.util.GetImageForPopupUseCase
@@ -34,20 +33,19 @@ import com.wheretogo.domain.usecaseimpl.app.ObserveSettingsUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.checkpoint.AddCheckpointToCourseUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.checkpoint.GetCheckpointForMarkerUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.checkpoint.RemoveCheckPointUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.checkpoint.ReportCheckPointUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.comment.AddCommentToCheckPointUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.comment.GetCommentForCheckPointUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.comment.RemoveCommentToCheckPointUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.comment.ReportCommentUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.course.AddCourseUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.course.FilterListCourseUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.course.GetNearByCourseUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.course.RemoveCourseUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.course.ReportCourseUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.report.ReportContentUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.DeleteUserUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.GetUserProfileStreamUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.UserSignOutUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.UserSignUpAndSignInUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.util.ClearCacheUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.util.CourseAddValidUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.util.CreateRouteUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.util.GetImageForPopupUseCaseImpl
@@ -106,13 +104,7 @@ abstract class UseCaseModule {
     abstract fun bindRemoveCheckPointUseCase(useCaseImpl: RemoveCheckPointUseCaseImpl): RemoveCheckPointUseCase
 
     @Binds
-    abstract fun bindReportCommentUseCase(useCaseImpl: ReportCommentUseCaseImpl): ReportCommentUseCase
-
-    @Binds
-    abstract fun bindReportCourseUseCase(useCaseImpl: ReportCourseUseCaseImpl): ReportCourseUseCase
-
-    @Binds
-    abstract fun bindReportCheckPointUseCase(useCaseImpl: ReportCheckPointUseCaseImpl): ReportCheckPointUseCase
+    abstract fun bindReportContentUseCase(useCaseImpl: ReportContentUseCaseImpl): ReportContentUseCase
 
     @Binds
     abstract fun bindGetImageForPopupUseCase(useCaseImpl: GetImageForPopupUseCaseImpl): GetImageForPopupUseCase
@@ -146,6 +138,9 @@ abstract class UseCaseModule {
 
     @Binds
     abstract fun bindFilterScreenCourseUseCase(useCaseImpl: FilterListCourseUseCaseImpl): FilterListCourseUseCase
+
+    @Binds
+    abstract fun bindClearCacheUseCaseFilterScreenCourseUseCase(useCaseImpl: ClearCacheUseCaseImpl): ClearCacheUseCase
 
 }
 

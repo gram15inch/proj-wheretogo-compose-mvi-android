@@ -2,6 +2,7 @@ package com.wheretogo.presentation.intent
 
 import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.model.comment.Comment
+import com.wheretogo.domain.model.report.ReportReason
 import com.wheretogo.domain.model.util.ImageInfo
 import com.wheretogo.presentation.AppEvent
 import com.wheretogo.presentation.AppLifecycle
@@ -40,7 +41,7 @@ sealed class DriveScreenIntent {
     data class CommentLikeClick(val itemState: CommentItemState) : DriveScreenIntent()
     data class CommentAddClick(val editText: String) : DriveScreenIntent()
     data class CommentRemoveClick(val comment: Comment) : DriveScreenIntent()
-    data class CommentReportClick(val comment: Comment) : DriveScreenIntent()
+    data class CommentReportClick(val comment: Comment, val reason: ReportReason) : DriveScreenIntent()
     data class CommentEmogiPress(val emogi: String) : DriveScreenIntent()
     data class CommentTypePress(val typeEditText: TypeEditText) : DriveScreenIntent()
 
@@ -60,11 +61,14 @@ sealed class DriveScreenIntent {
     data class CheckpointDescriptionEnterClick(val text : String) : DriveScreenIntent()
     data class CheckpointImageChange(val imageInfo: ImageInfo) : DriveScreenIntent()
     data object CheckpointSubmitClick : DriveScreenIntent()
-    data class InfoReportClick(val reason: String) : DriveScreenIntent()
+    data class InfoReportClick(val reason: ReportReason) : DriveScreenIntent()
     data object InfoRemoveClick : DriveScreenIntent()
 
     // 공통
     data class LifecycleChange(val event: AppLifecycle) : DriveScreenIntent()
     data class EventReceive(val event: AppEvent, val result: Boolean) : DriveScreenIntent()
     data object BlurClick : DriveScreenIntent()
+
+    // 디버그
+    data object DebugOverlayClick : DriveScreenIntent()
 }

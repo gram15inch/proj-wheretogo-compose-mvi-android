@@ -6,5 +6,6 @@ data class LocalProfilePrivate(
     val lastVisited: Long = 0L,
     val accountCreation: Long = 0L,
     val isAdRemove: Boolean = false,
+    val reportedCount: Int = 0,
     val isAdmin: Boolean = false
 )

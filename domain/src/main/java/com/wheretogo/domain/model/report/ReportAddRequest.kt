@@ -1,22 +1,22 @@
 package com.wheretogo.domain.model.report
 
 import com.wheretogo.domain.DOMAIN_EMPTY
-import com.wheretogo.domain.ReportStatus
-import com.wheretogo.domain.ReportType
 
 data class ReportAddRequest(
-    val type: ReportType = ReportType.COMMENT,
-    val userId: String = DOMAIN_EMPTY,
-    val contentId: String = DOMAIN_EMPTY,
-    val targetUserId: String = "",
-    val targetUserName: String = "",
-    val reason: String = "",
-    val status: ReportStatus = ReportStatus.PENDING
+    val contentId: String,
+    val contentGroupId: String = DOMAIN_EMPTY,
+    val type: ReportType,
+    val reason: ReportReason = ReportReason.SPAM,
+    val targetUserId: String,
+    val targetUserName: String = DOMAIN_EMPTY,
+    val reporterId: String,
 ) {
     fun valid(): ReportAddRequest {
-        require(contentId.isNotBlank()) { "inValid contentId id" }
-        require(userId.isNotBlank()) { "inValid userId id" }
-        require(targetUserId.isNotBlank()) { "inValid target userId id" }
+        require(contentId.isNotBlank()) { "need contentId" }
+        require(reporterId.isNotBlank()) { "need reporterId" }
+        require(targetUserId.isNotBlank()) { "need targetUserId" }
+        if(type == ReportType.COMMENT)
+            require(contentGroupId.isNotBlank()) { "need contentGroupId" }
         return this
     }
 }

@@ -5,6 +5,7 @@ import com.wheretogo.data.datasourceimpl.service.ContentApiService
 import com.wheretogo.data.datasourceimpl.service.GuestApiService
 import com.wheretogo.data.datasourceimpl.service.NaverFreeApiService
 import com.wheretogo.data.datasourceimpl.service.NaverMapApiService
+import com.wheretogo.data.datasourceimpl.service.ReportApiService
 import com.wheretogo.data.datasourceimpl.service.UserApiService
 import dagger.Module
 import dagger.Provides
@@ -52,6 +53,12 @@ object ApiServiceModule {
     @Provides
     fun provideAppApiService(retrofit: Retrofit): AppApiService {
         return retrofit.create(AppApiService::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun provideReportApiService(@Named("privateRetrofit") retrofit: Retrofit): ReportApiService {
+        return retrofit.create(ReportApiService::class.java)
     }
 
 }
