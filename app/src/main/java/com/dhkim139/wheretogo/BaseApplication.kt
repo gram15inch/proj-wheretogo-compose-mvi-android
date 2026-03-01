@@ -47,7 +47,14 @@ class BaseApplication : Application(), Configuration.Provider {
             FirebaseApp.initializeApp(this@BaseApplication)
             FirebaseCrashlytics.getInstance().isCrashlyticsCollectionEnabled = buildConfig.isCrashlytics
             FirebaseStorage.getInstance()
-            FirebaseAuth.getInstance()
+            FirebaseAuth.getInstance().apply {
+                if (BuildConfig.DEBUG) {
+                    this.currentUser?.getIdToken(true)?.addOnSuccessListener {
+                        println("auth_ claims: ${it.claims}")
+                        println("auth_ token: ${it.token}")
+                    }
+                }
+            }
             FirebaseFirestore.getInstance()
             FirebaseMessaging.getInstance()
         }

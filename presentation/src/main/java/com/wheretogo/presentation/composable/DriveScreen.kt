@@ -118,6 +118,9 @@ fun DriveScreen(
         DriveContent(
             state = driveState,
 
+            //debug overlay
+            onDebugOverlayClick = { handleIntent(DriveScreenIntent.DebugOverlayClick) },
+
             //GuidePopup
             onGuideClick = { handleIntent(DriveScreenIntent.GuidePopupClick(it)) },
 
@@ -180,6 +183,9 @@ fun DriveScreen(
 @Composable
 fun DriveContent(
     state: DriveScreenState = DriveScreenState(),
+
+    //debug
+    onDebugOverlayClick: () -> Unit = {},
 
     //GuidePopup
     onGuideClick: (DriveTutorialStep) -> Unit = {},
@@ -290,6 +296,9 @@ fun DriveContent(
 
                 if (state.isTestUi && !isPreview)
                     Column(modifier = Modifier
+                        .clickable{
+                            onDebugOverlayClick()
+                        }
                         .align(alignment = Alignment.TopStart)
                         .padding(5.dp)) {
                         Text(

@@ -16,6 +16,7 @@ import com.wheretogo.domain.model.course.Course
 import com.wheretogo.domain.model.dummy.guideCheckPoint
 import com.wheretogo.domain.model.dummy.guideCourse
 import com.wheretogo.domain.model.util.ImageInfo
+import com.wheretogo.domain.model.util.AppCache
 import com.wheretogo.domain.usecase.app.GuideMoveStepUseCase
 import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
 import com.wheretogo.domain.usecase.checkpoint.AddCheckpointToCourseUseCase
@@ -31,6 +32,7 @@ import com.wheretogo.domain.usecase.course.GetNearByCourseUseCase
 import com.wheretogo.domain.usecase.course.RemoveCourseUseCase
 import com.wheretogo.domain.usecase.course.ReportCourseUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
+import com.wheretogo.domain.usecase.util.ClearCacheUseCase
 import com.wheretogo.domain.usecase.util.GetImageForPopupUseCase
 import com.wheretogo.domain.usecase.util.SearchKeywordUseCase
 import com.wheretogo.domain.usecase.util.UpdateLikeUseCase
@@ -107,6 +109,7 @@ class DriveViewModel @Inject constructor(
     private val signOutUseCase: UserSignOutUseCase,
     private val guideMoveStepUseCase: GuideMoveStepUseCase,
     private val filterListCourseUseCase: FilterListCourseUseCase,
+    private val clearCacheUseCase: ClearCacheUseCase,
     private val nativeAdServiceOld: AdService,
     private val mapOverlayService: MapOverlayService,
 ) : ViewModel() {
@@ -171,6 +174,8 @@ class DriveViewModel @Inject constructor(
                 is DriveScreenIntent.EventReceive -> eventReceive(intent.event, intent.result)
                 is DriveScreenIntent.BlurClick -> blurClick()
 
+                //디버그
+                is DriveScreenIntent.DebugOverlayClick -> debugOverlayClick()
             }
         }
     }
@@ -1678,5 +1683,12 @@ class DriveViewModel @Inject constructor(
                 listState = ListState()
             )
         }
+    }
+
+    // ======================== 디버그
+    private suspend fun debugOverlayClick(){
+        clearCacheUseCase(setOf(AppCache.HISTORY))
+        clearScreen()
+        handler.handle(DriveEvent.UNKNOWN_ERR)
     }
 }

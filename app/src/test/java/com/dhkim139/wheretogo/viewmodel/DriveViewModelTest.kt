@@ -31,6 +31,7 @@ import com.wheretogo.domain.usecase.course.GetNearByCourseUseCase
 import com.wheretogo.domain.usecase.course.RemoveCourseUseCase
 import com.wheretogo.domain.usecase.course.ReportCourseUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
+import com.wheretogo.domain.usecase.util.ClearCacheUseCase
 import com.wheretogo.domain.usecase.util.GetImageForPopupUseCase
 import com.wheretogo.domain.usecase.util.SearchKeywordUseCase
 import com.wheretogo.domain.usecase.util.UpdateLikeUseCase
@@ -2423,6 +2424,7 @@ class DriveViewModelTest {
             signOutUseCase,
             guideMoveStepUseCase,
             filterListCourseUseCase,
+            clearCacheUseCase,
             nativeAdService,
             mapOverlayService
         )
@@ -2448,6 +2450,7 @@ class DriveViewModelTest {
     private val signOutUseCase = mockk<UserSignOutUseCase>()
     private val guideMoveStepUseCase = mockk<GuideMoveStepUseCase>()
     private val filterListCourseUseCase = mockk<FilterListCourseUseCase>()
+    private val clearCacheUseCase = mockk<ClearCacheUseCase>()
     private val mapOverlayService = mockk<MapOverlayService>()
     private val nativeAdService = mockk<AdService>()
 

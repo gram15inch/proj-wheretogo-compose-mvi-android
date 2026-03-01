@@ -67,4 +67,7 @@ sealed class DriveScreenIntent {
     data class LifecycleChange(val event: AppLifecycle) : DriveScreenIntent()
     data class EventReceive(val event: AppEvent, val result: Boolean) : DriveScreenIntent()
     data object BlurClick : DriveScreenIntent()
+
+    // 디버그
+    data object DebugOverlayClick : DriveScreenIntent()
 }
