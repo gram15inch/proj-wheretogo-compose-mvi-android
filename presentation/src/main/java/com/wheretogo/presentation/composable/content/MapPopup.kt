@@ -57,6 +57,7 @@ import com.skydoves.landscapist.glide.GlideImage
 import com.valentinilk.shimmer.shimmer
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.dummy.getCommentDummy
+import com.wheretogo.domain.model.report.ReportReason
 import com.wheretogo.presentation.CommentType
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.SheetVisibleMode
@@ -95,7 +96,7 @@ fun MapPopup(
     onCommentListItemLongClick: (Comment) -> Unit,
     onCommentLikeClick: (CommentItemState) -> Unit,
     onCommentRemoveClick: (Comment) -> Unit,
-    onCommentReportClick: (Comment) -> Unit,
+    onCommentReportClick: (Comment, ReportReason) -> Unit,
     onCommentAddClick: (String) -> Unit,
     onCommentEmogiPress: (String) -> Unit,
     onCommentTypePress: (TypeEditText) -> Unit
@@ -169,7 +170,7 @@ fun CommentDragSheet(
     onCommentListItemLongClick: (Comment) -> Unit,
     onCommentLikeClick: (CommentItemState) -> Unit,
     onCommentRemoveClick: (Comment) -> Unit,
-    onCommentReportClick: (Comment) -> Unit,
+    onCommentReportClick: (Comment, ReportReason) -> Unit,
     onSheetStateChange: (SheetVisibleMode) -> Unit
 ) {
     val isPreview = LocalInspectionMode.current
@@ -593,7 +594,7 @@ fun PopupPreview() {
             onCommentListItemLongClick = {},
             onCommentLikeClick = {},
             onCommentRemoveClick = {},
-            onCommentReportClick = {},
+            onCommentReportClick = {_,_->},
             onCommentAddClick = {},
             onCommentEmogiPress = {},
             onCommentTypePress = {},

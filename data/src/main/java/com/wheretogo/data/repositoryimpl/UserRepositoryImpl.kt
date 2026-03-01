@@ -6,6 +6,7 @@ import com.wheretogo.data.datasource.UserRemoteDatasource
 import com.wheretogo.data.feature.dataErrorCatching
 import com.wheretogo.data.feature.mapDomainError
 import com.wheretogo.data.feature.mapSuccess
+import com.wheretogo.data.model.history.LocalHistory
 import com.wheretogo.data.toDataHistoryType
 import com.wheretogo.data.toDomainResult
 import com.wheretogo.data.toHistory
@@ -39,7 +40,7 @@ class UserRepositoryImpl @Inject constructor(
         }.mapSuccess { uid ->
             userRemoteDatasource.deleteUser(uid)
         }.mapCatching {
-            clearCache()
+            clearUserCache()
         }.mapDomainError()
     }
 
@@ -58,7 +59,7 @@ class UserRepositoryImpl @Inject constructor(
         }.toDomainResult()
     }
 
-    override suspend fun clearCache() {
+    override suspend fun clearUserCache() {
         userLocalDatasource.clearUser()
     }
 
@@ -141,5 +142,9 @@ class UserRepositoryImpl @Inject constructor(
             throw DataError.UserInvalid("")
 
         return profile.toProfile()
+    }
+
+    override suspend fun clearHistoryCache() {
+        userLocalDatasource.iniHistory(LocalHistory())
     }
 }

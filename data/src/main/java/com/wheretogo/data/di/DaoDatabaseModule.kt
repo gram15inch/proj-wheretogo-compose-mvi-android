@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.room.Room
 import com.wheretogo.data.datasourceimpl.database.CheckPointDatabase
 import com.wheretogo.data.datasourceimpl.database.CourseDatabase
-import com.wheretogo.data.datasourceimpl.database.ReportDatabase
 import com.wheretogo.data.datasourceimpl.database.RouteDatabase
 import dagger.Module
 import dagger.Provides
@@ -36,17 +35,6 @@ object DaoDatabaseModule {
             context,
             CheckPointDatabase::class.java,
             "checkpoint_db"
-        ).fallbackToDestructiveMigration()
-            .build()
-    }
-
-    @Provides
-    @Singleton
-    fun provideReportDatabase(@ApplicationContext context: Context): ReportDatabase {
-        return Room.databaseBuilder(
-            context,
-            ReportDatabase::class.java,
-            "report_db"
         ).fallbackToDestructiveMigration()
             .build()
     }

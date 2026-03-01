@@ -12,14 +12,11 @@ import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
 import com.wheretogo.domain.usecase.checkpoint.AddCheckpointToCourseUseCase
 import com.wheretogo.domain.usecase.checkpoint.GetCheckpointForMarkerUseCase
 import com.wheretogo.domain.usecase.checkpoint.RemoveCheckPointUseCase
-import com.wheretogo.domain.usecase.checkpoint.ReportCheckPointUseCase
 import com.wheretogo.domain.usecase.comment.AddCommentToCheckPointUseCase
 import com.wheretogo.domain.usecase.comment.GetCommentForCheckPointUseCase
 import com.wheretogo.domain.usecase.comment.RemoveCommentToCheckPointUseCase
-import com.wheretogo.domain.usecase.comment.ReportCommentUseCase
 import com.wheretogo.domain.usecase.course.GetNearByCourseUseCase
 import com.wheretogo.domain.usecase.course.RemoveCourseUseCase
-import com.wheretogo.domain.usecase.course.ReportCourseUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
 import com.wheretogo.domain.usecase.util.GetImageForPopupUseCase
 import com.wheretogo.domain.usecase.util.SearchKeywordUseCase
@@ -132,9 +129,6 @@ class ViewModelTestByGuide {
     private val removeCourseUseCase = mockk<RemoveCourseUseCase>()
     private val removeCheckPointUseCase = mockk<RemoveCheckPointUseCase>()
     private val removeCommentToCheckPointUseCase = mockk<RemoveCommentToCheckPointUseCase>()
-    private val reportCourseUseCase = mockk<ReportCourseUseCase>()
-    private val reportCheckPointUseCase = mockk<ReportCheckPointUseCase>()
-    private val reportCommentUseCase = mockk<ReportCommentUseCase>()
     private val searchKeywordUseCase = mockk<SearchKeywordUseCase>()
     private val signOutUseCase = mockk<UserSignOutUseCase>()
     private val guideMoveStepUseCase = mockk<GuideMoveStepUseCase>()

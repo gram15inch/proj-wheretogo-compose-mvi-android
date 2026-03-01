@@ -15,21 +15,21 @@ import com.wheretogo.domain.model.checkpoint.CheckPoint
 import com.wheretogo.domain.model.checkpoint.CheckPointContent
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.course.Course
+import com.wheretogo.domain.model.report.ReportReason
+import com.wheretogo.domain.model.report.ReportType
 import com.wheretogo.domain.model.util.ImageInfo
 import com.wheretogo.domain.usecase.app.GuideMoveStepUseCase
 import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
 import com.wheretogo.domain.usecase.checkpoint.AddCheckpointToCourseUseCase
 import com.wheretogo.domain.usecase.checkpoint.GetCheckpointForMarkerUseCase
 import com.wheretogo.domain.usecase.checkpoint.RemoveCheckPointUseCase
-import com.wheretogo.domain.usecase.checkpoint.ReportCheckPointUseCase
 import com.wheretogo.domain.usecase.comment.AddCommentToCheckPointUseCase
 import com.wheretogo.domain.usecase.comment.GetCommentForCheckPointUseCase
 import com.wheretogo.domain.usecase.comment.RemoveCommentToCheckPointUseCase
-import com.wheretogo.domain.usecase.comment.ReportCommentUseCase
 import com.wheretogo.domain.usecase.course.FilterListCourseUseCase
 import com.wheretogo.domain.usecase.course.GetNearByCourseUseCase
 import com.wheretogo.domain.usecase.course.RemoveCourseUseCase
-import com.wheretogo.domain.usecase.course.ReportCourseUseCase
+import com.wheretogo.domain.usecase.report.ReportContentUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
 import com.wheretogo.domain.usecase.util.ClearCacheUseCase
 import com.wheretogo.domain.usecase.util.GetImageForPopupUseCase
@@ -836,6 +836,7 @@ class DriveViewModelTest {
         coEvery { updateLikeUseCase(likeCommentItemState.data, true) } returnsMany
                 listOf(Result.failure(domainError), Result.success(Unit))
         coEvery { driveHandler.handle(domainError.toAppError()) } returns domainError.toAppError()
+        coEvery { driveHandler.handle(DriveEvent.UNKNOWN_ERR) } returns Unit
 
         viewModel.driveScreenState.test {
             assertEquals(initState.popUpState, awaitItem().popUpState)
@@ -943,6 +944,7 @@ class DriveViewModelTest {
             )
         } returns Unit
         coEvery { driveHandler.handle(domainError.toAppError()) } returns domainError.toAppError()
+        coEvery { driveHandler.handle(DriveEvent.UNKNOWN_ERR) } returns Unit
         viewModel.driveScreenState.test {
             assertEquals(initState, awaitItem())
 
@@ -1102,7 +1104,16 @@ class DriveViewModelTest {
             )
         }
         val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
-        coEvery { reportCommentUseCase(reportComment) } returns Result.success("rp1")
+        coEvery {
+            reportContentUseCase(
+                contentId = reportComment.commentId,
+                contentGroupId = reportComment.groupId,
+                type = ReportType.COMMENT,
+                reason = ReportReason.OTHER,
+                targetUserId = reportComment.userId,
+                targetUserName = reportComment.userName
+            )
+        } returns Result.success(Unit)
         coEvery { getCheckPointForMarkerUseCase(course.courseId) } returns
                 Result.success(listOf(refreshedCheckPoint))
         coEvery {
@@ -1116,7 +1127,7 @@ class DriveViewModelTest {
             assertEquals(initState, awaitItem())
 
             // @ 신고 클릭
-            viewModel.handleIntent(DriveScreenIntent.CommentReportClick(reportComment))
+            viewModel.handleIntent(DriveScreenIntent.CommentReportClick(reportComment, ReportReason.OTHER))
 
             // 로딩 시작
             val loadingExpect = initState.replaceCommentSettingLoading(true)
@@ -1889,6 +1900,7 @@ class DriveViewModelTest {
             )
         } returns Result.success(Unit)
         coEvery { driveHandler.handle(domainError.toAppError()) } returns domainError.toAppError()
+        coEvery { driveHandler.handle(DriveEvent.UNKNOWN_ERR) } returns Unit
 
         viewModel.driveScreenState.test {
             assertEquals(initState, awaitItem())
@@ -1967,7 +1979,16 @@ class DriveViewModelTest {
         }
 
         val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
-        coEvery { reportCourseUseCase(reportCourse, "reason") } returns Result.success("rp1")
+        coEvery {
+            reportContentUseCase(
+                contentId = reportCourse.courseId,
+                contentGroupId = "",
+                type = ReportType.COURSE,
+                reason = ReportReason.OTHER,
+                targetUserId = reportCourse.userId,
+                targetUserName = reportCourse.userName
+            )
+        } returns Result.success(Unit)
         coEvery { driveHandler.handle(DriveEvent.REPORT_DONE) } returns Unit
         coEvery { mapOverlayService.removeCourseMarkerAndPath(listOf(reportCourse.courseId)) } returns Unit
         coEvery { mapOverlayService.removeCheckPointCluster(reportCourse.courseId) } returns Unit
@@ -1991,7 +2012,7 @@ class DriveViewModelTest {
             assertEquals(initState, awaitItem())
 
             // @ 인포 신고 클릭 (by 코스)
-            viewModel.handleIntent(DriveScreenIntent.InfoReportClick("reason"))
+            viewModel.handleIntent(DriveScreenIntent.InfoReportClick(ReportReason.OTHER))
 
             // 로딩 시작
             val loadingExpect = initState.replaceInfoLoading(true)
@@ -2046,11 +2067,15 @@ class DriveViewModelTest {
 
         val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
         coEvery {
-            reportCheckPointUseCase(
-                reprotCheckpoint,
-                "reason"
+            reportContentUseCase(
+                contentId = reprotCheckpoint.checkPointId,
+                contentGroupId = reprotCheckpoint.courseId,
+                type = ReportType.CHECKPOINT,
+                reason = ReportReason.OTHER,
+                targetUserId = reprotCheckpoint.userId,
+                targetUserName = reprotCheckpoint.userName
             )
-        } returns Result.success("rp1")
+        } returns Result.success(Unit)
         coEvery { driveHandler.handle(DriveEvent.REPORT_DONE) } returns Unit
         coEvery {
             mapOverlayService.removeCheckPointLeaf(
@@ -2062,7 +2087,7 @@ class DriveViewModelTest {
             assertEquals(initState, awaitItem())
 
             // @ 인포 신고 클릭 (by 체크포인트)
-            viewModel.handleIntent(DriveScreenIntent.InfoReportClick("reason"))
+            viewModel.handleIntent(DriveScreenIntent.InfoReportClick(ReportReason.OTHER))
             // 로딩 시작
             val loadingExpect = initState.replaceInfoLoading(true)
             assertEquals(loadingExpect, awaitItem())
@@ -2417,9 +2442,7 @@ class DriveViewModelTest {
             removeCourseUseCase,
             removeCheckPointUseCase,
             removeCommentToCheckPointUseCase,
-            reportCourseUseCase,
-            reportCheckPointUseCase,
-            reportCommentUseCase,
+            reportContentUseCase,
             searchKeywordUseCase,
             signOutUseCase,
             guideMoveStepUseCase,
@@ -2443,9 +2466,7 @@ class DriveViewModelTest {
     private val removeCourseUseCase = mockk<RemoveCourseUseCase>()
     private val removeCheckPointUseCase = mockk<RemoveCheckPointUseCase>()
     private val removeCommentToCheckPointUseCase = mockk<RemoveCommentToCheckPointUseCase>()
-    private val reportCourseUseCase = mockk<ReportCourseUseCase>()
-    private val reportCheckPointUseCase = mockk<ReportCheckPointUseCase>()
-    private val reportCommentUseCase = mockk<ReportCommentUseCase>()
+    private val reportContentUseCase = mockk<ReportContentUseCase>()
     private val searchKeywordUseCase = mockk<SearchKeywordUseCase>()
     private val signOutUseCase = mockk<UserSignOutUseCase>()
     private val guideMoveStepUseCase = mockk<GuideMoveStepUseCase>()

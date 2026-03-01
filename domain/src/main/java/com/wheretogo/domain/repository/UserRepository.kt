@@ -42,5 +42,7 @@ interface UserRepository {
         historyId: String
     ): Result<Unit>
 
-    suspend fun clearCache()
+    suspend fun clearUserCache()
+
+    suspend fun clearHistoryCache()
 }

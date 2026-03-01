@@ -2,7 +2,7 @@ package com.wheretogo.domain.handler
 
 
 enum class DriveEvent {
-    ADD_DONE, REMOVE_DONE, REPORT_DONE
+    ADD_DONE, REMOVE_DONE, REPORT_DONE, UNKNOWN_ERR
 }
 
 enum class HomeEvent {

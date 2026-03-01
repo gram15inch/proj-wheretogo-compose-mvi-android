@@ -12,8 +12,8 @@ import com.wheretogo.data.model.history.LocalHistoryGroupWrapper
 import com.wheretogo.data.model.history.LocalHistoryIdGroup
 import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
 import com.wheretogo.data.model.map.DataLatLng
-import com.wheretogo.data.model.report.LocalReport
-import com.wheretogo.data.model.report.RemoteReport
+import com.wheretogo.data.model.report.ReportRequest
+import com.wheretogo.data.model.report.ReportResponse
 import com.wheretogo.data.model.route.LocalRoute
 import com.wheretogo.data.model.route.RemoteRoute
 import com.wheretogo.data.model.user.LocalProfile
@@ -23,8 +23,6 @@ import com.wheretogo.data.model.user.RemoteProfilePublic
 import com.wheretogo.data.model.user.RemoteSyncUser
 import com.wheretogo.domain.AuthCompany
 import com.wheretogo.domain.HistoryType
-import com.wheretogo.domain.ReportStatus
-import com.wheretogo.domain.ReportType
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.auth.SyncToken
 import com.wheretogo.domain.model.checkpoint.CheckPoint
@@ -37,6 +35,9 @@ import com.wheretogo.domain.model.history.HistoryGroupWrapper
 import com.wheretogo.domain.model.history.HistoryIdGroup
 import com.wheretogo.domain.model.report.Report
 import com.wheretogo.domain.model.report.ReportAddRequest
+import com.wheretogo.domain.model.report.ReportReason
+import com.wheretogo.domain.model.report.ReportStatus
+import com.wheretogo.domain.model.report.ReportType
 import com.wheretogo.domain.model.route.Route
 import com.wheretogo.domain.model.user.History
 import com.wheretogo.domain.model.user.Profile
@@ -157,47 +158,15 @@ fun ProfilePrivate.toRemoteProfilePrivate(): RemoteProfilePrivate {
     )
 }
 
-fun ReportAddRequest.toRemoteReport(reportId: String): RemoteReport {
-    return RemoteReport(
-        reportId = reportId,
-        type = type.toDataReportType(),
-        userId = userId,
+fun ReportAddRequest.toReportRequest(): ReportRequest {
+    return ReportRequest(
+        userId = reporterId,
         contentId = contentId,
+        contentGroupId = contentGroupId,
         targetUserId = targetUserId,
         targetUserName = targetUserName,
-        reason = reason,
-        status = status.name,
-        createAt = System.currentTimeMillis()
-    )
-}
-
-fun RemoteReport.toLocalReport(): LocalReport {
-    return LocalReport(
-        reportId = reportId,
-        type = type,
-        userId = userId,
-        contentId = contentId,
-        targetUserId = targetUserId,
-        targetUserName = targetUserName,
-        reason = reason,
-        status = status,
-        createAt = createAt,
-        timestamp = System.currentTimeMillis()
-    )
-}
-
-fun LocalReport.toReport(): Report {
-    return Report(
-        reportId = reportId,
-        type = type.toReportType(),
-        userId = userId,
-        contentId = contentId,
-        targetUserId = targetUserId,
-        targetUserName = targetUserName,
-        reason = reason,
-        status = ReportStatus.valueOf(status),
-        createAt = createAt,
-        timestamp = timestamp
+        type = type.name,
+        reason = reason.name,
     )
 }
 
@@ -238,37 +207,21 @@ fun RemoteRoute.toRoute(): Route {
     )
 }
 
-fun RemoteReport.toReport(): Report {
+fun ReportResponse.toReport(): Report {
     return Report(
         reportId = reportId,
-        type = type.toReportType(),
         userId = userId,
         contentId = contentId,
         targetUserId = targetUserId,
         targetUserName = targetUserName,
-        reason = reason,
-        status = ReportStatus.valueOf(status),
+        type = ReportType.parseString(type),
+        reason = ReportReason.parseString(reason),
+        status = ReportStatus.parseString(status),
+        moderate = moderate,
         createAt = createAt
     )
 }
 
-fun ReportType.toDataReportType(): DataReportType{
-    return when(this){
-        ReportType.USER -> DataReportType.USER
-        ReportType.COURSE -> DataReportType.COURSE
-        ReportType.COMMENT -> DataReportType.COMMENT
-        ReportType.CHECKPOINT -> DataReportType.CHECKPOINT
-    }
-}
-
-fun DataReportType.toReportType(): ReportType{
-    return when(this){
-        DataReportType.USER -> ReportType.USER
-        DataReportType.COURSE -> ReportType.COURSE
-        DataReportType.COMMENT -> ReportType.COMMENT
-        DataReportType.CHECKPOINT -> ReportType.CHECKPOINT
-    }
-}
 fun RemoteComment.toComment(): Comment {
     return Comment(
         commentId = commentId,

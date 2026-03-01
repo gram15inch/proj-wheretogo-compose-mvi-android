@@ -9,12 +9,13 @@ import com.wheretogo.domain.feature.sucessMap
 import com.wheretogo.domain.handler.DriveEvent
 import com.wheretogo.domain.handler.DriveHandler
 import com.wheretogo.domain.model.address.LatLng
-import com.wheretogo.domain.model.app.AppBuildConfig
 import com.wheretogo.domain.model.checkpoint.CheckPoint
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.course.Course
 import com.wheretogo.domain.model.dummy.guideCheckPoint
 import com.wheretogo.domain.model.dummy.guideCourse
+import com.wheretogo.domain.model.report.ReportReason
+import com.wheretogo.domain.model.report.ReportType
 import com.wheretogo.domain.model.util.ImageInfo
 import com.wheretogo.domain.model.util.AppCache
 import com.wheretogo.domain.usecase.app.GuideMoveStepUseCase
@@ -22,15 +23,13 @@ import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
 import com.wheretogo.domain.usecase.checkpoint.AddCheckpointToCourseUseCase
 import com.wheretogo.domain.usecase.checkpoint.GetCheckpointForMarkerUseCase
 import com.wheretogo.domain.usecase.checkpoint.RemoveCheckPointUseCase
-import com.wheretogo.domain.usecase.checkpoint.ReportCheckPointUseCase
 import com.wheretogo.domain.usecase.comment.AddCommentToCheckPointUseCase
 import com.wheretogo.domain.usecase.comment.GetCommentForCheckPointUseCase
 import com.wheretogo.domain.usecase.comment.RemoveCommentToCheckPointUseCase
-import com.wheretogo.domain.usecase.comment.ReportCommentUseCase
 import com.wheretogo.domain.usecase.course.FilterListCourseUseCase
 import com.wheretogo.domain.usecase.course.GetNearByCourseUseCase
 import com.wheretogo.domain.usecase.course.RemoveCourseUseCase
-import com.wheretogo.domain.usecase.course.ReportCourseUseCase
+import com.wheretogo.domain.usecase.report.ReportContentUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
 import com.wheretogo.domain.usecase.util.ClearCacheUseCase
 import com.wheretogo.domain.usecase.util.GetImageForPopupUseCase
@@ -102,9 +101,7 @@ class DriveViewModel @Inject constructor(
     private val removeCourseUseCase: RemoveCourseUseCase,
     private val removeCheckPointUseCase: RemoveCheckPointUseCase,
     private val removeCommentToCheckPointUseCase: RemoveCommentToCheckPointUseCase,
-    private val reportCourseUseCase: ReportCourseUseCase,
-    private val reportCheckPointUseCase: ReportCheckPointUseCase,
-    private val reportCommentUseCase: ReportCommentUseCase,
+    private val reportContentUseCase: ReportContentUseCase,
     private val searchKeywordUseCase: SearchKeywordUseCase,
     private val signOutUseCase: UserSignOutUseCase,
     private val guideMoveStepUseCase: GuideMoveStepUseCase,
@@ -148,7 +145,7 @@ class DriveViewModel @Inject constructor(
                 is DriveScreenIntent.CommentLikeClick -> commentLikeClick(intent.itemState)
                 is DriveScreenIntent.CommentAddClick -> commentAddClick(intent.editText)
                 is DriveScreenIntent.CommentRemoveClick -> commentRemoveClick(intent.comment)
-                is DriveScreenIntent.CommentReportClick -> commentReportClick(intent.comment)
+                is DriveScreenIntent.CommentReportClick -> commentReportClick(intent.comment, intent.reason)
                 is DriveScreenIntent.CommentEmogiPress -> commentEmogiPress(intent.emogi)
                 is DriveScreenIntent.CommentTypePress -> commentTypePress(intent.typeEditText)
 
@@ -207,6 +204,10 @@ class DriveViewModel @Inject constructor(
             is AppError.NeedSignIn -> {
                 clearAd()
                 signOutUseCase()
+            }
+
+            is AppError.UnexpectedException -> {
+                handler.handle(DriveEvent.UNKNOWN_ERR)
             }
 
             else -> {}
@@ -720,10 +721,19 @@ class DriveViewModel @Inject constructor(
         _driveScreenState.update { it.replaceCommentSettingLoading(false) }
     }
 
-    private suspend fun commentReportClick(comment: Comment) {
+    private suspend fun commentReportClick(comment: Comment, reason: ReportReason) {
         val course = _driveScreenState.value.selectedCourse
         _driveScreenState.update { it.replaceCommentSettingLoading(true) }
-        val result = withContext(Dispatchers.IO) { reportCommentUseCase(comment) }
+        val result = withContext(Dispatchers.IO) {
+            reportContentUseCase(
+                contentId = comment.commentId,
+                contentGroupId = comment.groupId,
+                type = ReportType.COMMENT,
+                reason = reason,
+                targetUserId = comment.userId,
+                targetUserName = comment.userName
+            )
+        }
         result.onSuccess {
             _driveScreenState.updateComment(comment, false)
             withContext(Dispatchers.IO) {
@@ -1272,7 +1282,7 @@ class DriveViewModel @Inject constructor(
         _driveScreenState.update { it.replaceInfoLoading(false) }
     }
 
-    private suspend fun infoReportClick(reason: String) {
+    private suspend fun infoReportClick(reason: ReportReason) {
         val content = _driveScreenState.value.bottomSheetState.content
         val camera = _driveScreenState.value.naverMapState.latestCameraState
         _driveScreenState.update { it.replaceInfoLoading(true) }
@@ -1281,27 +1291,43 @@ class DriveViewModel @Inject constructor(
             DriveBottomSheetContent.COURSE_INFO -> {
                 val course = _driveScreenState.value.selectedCourse
                 withContext(Dispatchers.IO) {
-                    reportCourseUseCase(course, reason).onSuccess {
-                        handler.handle(DriveEvent.REPORT_DONE)
-                        _driveScreenState.update {
-                            it.clearCourseInfo()
-                        }
-                    }
-                }.sucessMap {
-                    refreshNearCourse(camera).sucessMap {
-                        filterListCourseUseCase(camera.viewport, camera.zoom, it)
-                    }.onSuccess { courseGroup ->
-                        _driveScreenState.update { it.updateListItem(courseGroup) }
+                    reportContentUseCase(
+                        contentId = course.courseId,
+                        contentGroupId = "",
+                        type = ReportType.COURSE,
+                        reason = reason,
+                        targetUserId = course.userId,
+                        targetUserName = course.userName
+                    )
+                }.onSuccess {
+                    handler.handle(DriveEvent.REPORT_DONE)
+                    _driveScreenState.update {
+                        it.clearCourseInfo()
                     }
                 }.onFailure {
                     handleError(it)
+                }
+
+                refreshNearCourse(camera).sucessMap {
+                    filterListCourseUseCase(camera.viewport, camera.zoom, it)
+                }.onSuccess { courseGroup ->
+                    _driveScreenState.update {
+                        it.updateListItem(courseGroup)
+                    }
                 }
             }
 
             DriveBottomSheetContent.CHECKPOINT_INFO -> {
                 val checkPoint = _driveScreenState.value.selectedCheckPoint
                 val result = withContext(Dispatchers.IO) {
-                    reportCheckPointUseCase(checkPoint, reason)
+                    reportContentUseCase(
+                        contentId = checkPoint.checkPointId,
+                        contentGroupId = checkPoint.courseId,
+                        type = ReportType.CHECKPOINT,
+                        reason = reason,
+                        targetUserId = checkPoint.userId,
+                        targetUserName = checkPoint.userName
+                    )
                 }
                 result.onSuccess {
                     handler.handle(DriveEvent.REPORT_DONE)

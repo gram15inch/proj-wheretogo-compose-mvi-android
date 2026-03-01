@@ -16,6 +16,7 @@ class DriveHandlerImpl(val errorHandler: ErrorHandler) : DriveHandler {
             DriveEvent.ADD_DONE -> EventBus.send(AppEvent.SnackBar(EventMsg(R.string.add_done)))
             DriveEvent.REMOVE_DONE -> EventBus.send(AppEvent.SnackBar(EventMsg(R.string.remove_done)))
             DriveEvent.REPORT_DONE -> EventBus.send(AppEvent.SnackBar(EventMsg(R.string.report_done)))
+            DriveEvent.UNKNOWN_ERR -> EventBus.send(AppEvent.SnackBar(EventMsg(R.string.retry_guide)))
         }
     }
 
