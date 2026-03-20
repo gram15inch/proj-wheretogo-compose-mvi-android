@@ -23,5 +23,7 @@ interface CourseRepository {
 
     suspend fun removeIndexBySnapshot(refId: String, index: String): Result<Unit>
 
+    suspend fun clearExpired():  Result<Int>
+
     suspend fun clearCache(): Result<Unit>
 }

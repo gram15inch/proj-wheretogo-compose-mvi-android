@@ -11,15 +11,14 @@ import androidx.room.TypeConverters
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import com.wheretogo.data.model.course.LocalSnapshot
 import com.wheretogo.data.model.course.LocalCourse
+import com.wheretogo.data.model.course.LocalSnapshot
 import com.wheretogo.data.model.map.DataLatLng
-import com.wheretogo.data.model.meta.LocalMetaGeoHash
 import java.lang.reflect.Type
 
 @TypeConverters(CourseJsonConverters::class)
 @Database(
-    entities = [LocalCourse::class, LocalMetaGeoHash::class],
+    entities = [LocalCourse::class],
     version = 2,
     exportSchema = false
 )
@@ -39,26 +38,20 @@ interface CourseDao {
     @Query("SELECT * FROM LocalCourse WHERE geoHash LIKE :geoHash || '%' COLLATE NOCASE")
     suspend fun selectByGeoHash(geoHash: String): List<LocalCourse>
 
+    @Query("SELECT * FROM LocalCourse WHERE isHide = :isHide")
+    suspend fun selectByIsHide(isHide: Boolean): List<LocalCourse>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(entity: List<LocalCourse>)
 
     @Query("DELETE FROM LocalCourse WHERE courseId = :courseId")
     suspend fun delete(courseId: String)
 
-    @Query("SELECT * FROM LocalMetaGeoHash")
-    suspend fun getMetaGeoHashGroup(): List<LocalMetaGeoHash>
-
-    @Query("SELECT * FROM LocalMetaGeoHash WHERE geoHash = :geoHash")
-    suspend fun getMetaGeoHash(geoHash: String): LocalMetaGeoHash?
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun setMetaGeoHash(entity: LocalMetaGeoHash)
-
     @Query("UPDATE LocalCourse SET checkpointSnapshot = :localSnapshot WHERE courseId = :courseId")
     suspend fun updateSnapshot(courseId: String, localSnapshot: LocalSnapshot)
 
     @Query("SELECT checkpointSnapshot FROM LocalCourse WHERE courseId = :courseId")
-    suspend fun getCheckPointSnapshot(courseId: String):LocalSnapshot
+    suspend fun getCheckPointSnapshot(courseId: String): LocalSnapshot
 }
 
 class CourseJsonConverters {

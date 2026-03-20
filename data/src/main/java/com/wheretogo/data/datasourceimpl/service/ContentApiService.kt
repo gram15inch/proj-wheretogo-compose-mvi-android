@@ -1,18 +1,21 @@
 package com.wheretogo.data.datasourceimpl.service
 
 import com.wheretogo.data.model.comment.RemoteComment
+import com.wheretogo.data.model.content.ContentFilterRequest
 import com.wheretogo.data.model.content.ContentLike
+import com.wheretogo.data.model.course.RemoteCourse
 import com.wheretogo.data.model.firebase.DataResponse
 import com.wheretogo.data.model.firebase.MessageResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Query
 
 interface ContentApiService {
-    @POST("api/content/comment/like")
+    @PATCH("api/content/comment/like")
     suspend fun like(
         @Body body: ContentLike
     ): Response<MessageResponse>

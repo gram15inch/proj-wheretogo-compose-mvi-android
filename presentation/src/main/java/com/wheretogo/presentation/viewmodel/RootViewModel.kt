@@ -9,6 +9,7 @@ import com.wheretogo.domain.handler.RootHandler
 import com.wheretogo.domain.usecase.app.AppCheckBySignatureUseCase
 import com.wheretogo.domain.usecase.app.ObserveMsgUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
+import com.wheretogo.domain.usecase.util.ClearExpireCacheUseCase
 import com.wheretogo.presentation.AppEvent
 import com.wheretogo.presentation.state.RootScreenState
 import com.wheretogo.presentation.toAppError
@@ -23,6 +24,7 @@ import javax.inject.Inject
 class RootViewModel @Inject constructor(
     private val handler: RootHandler,
     private val appCheckBySignatureUseCase: AppCheckBySignatureUseCase,
+    private val clearExpireCacheUseCase: ClearExpireCacheUseCase,
     private val userSignOutUseCase: UserSignOutUseCase,
     private val observeMsgUseCase: ObserveMsgUseCase,
 ) :
@@ -55,6 +57,10 @@ class RootViewModel @Inject constructor(
                         else -> {}
                     }
                 }
+            }
+
+            launch {
+                clearExpireCacheUseCase()
             }
         }
     }

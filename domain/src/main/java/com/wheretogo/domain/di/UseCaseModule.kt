@@ -20,6 +20,7 @@ import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
 import com.wheretogo.domain.usecase.user.UserSignUpAndSignInUseCase
 import com.wheretogo.domain.usecase.util.ClearCacheUseCase
+import com.wheretogo.domain.usecase.util.ClearExpireCacheUseCase
 import com.wheretogo.domain.usecase.util.CourseAddValidUseCase
 import com.wheretogo.domain.usecase.util.CreateRouteUseCase
 import com.wheretogo.domain.usecase.util.GetImageForPopupUseCase
@@ -46,6 +47,7 @@ import com.wheretogo.domain.usecaseimpl.user.GetUserProfileStreamUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.UserSignOutUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.UserSignUpAndSignInUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.util.ClearCacheUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.util.ClearExpireCacheUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.util.CourseAddValidUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.util.CreateRouteUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.util.GetImageForPopupUseCaseImpl
@@ -137,10 +139,13 @@ abstract class UseCaseModule {
     abstract fun bindCourseAddValidUseCase(useCaseImpl: CourseAddValidUseCaseImpl): CourseAddValidUseCase
 
     @Binds
-    abstract fun bindFilterScreenCourseUseCase(useCaseImpl: FilterListCourseUseCaseImpl): FilterListCourseUseCase
+    abstract fun bindFilterListCourseUseCase(useCaseImpl: FilterListCourseUseCaseImpl): FilterListCourseUseCase
 
     @Binds
-    abstract fun bindClearCacheUseCaseFilterScreenCourseUseCase(useCaseImpl: ClearCacheUseCaseImpl): ClearCacheUseCase
+    abstract fun bindClearCacheUseCase(useCaseImpl: ClearCacheUseCaseImpl): ClearCacheUseCase
+
+    @Binds
+    abstract fun bindClearExpireCacheUseCase(useCaseImpl: ClearExpireCacheUseCaseImpl): ClearExpireCacheUseCase
 
 }
 
