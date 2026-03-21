@@ -21,5 +21,7 @@ data class LocalCheckPoint(
     val description: String = "",
     val timestamp: Long = 0L,
     val reportedCount: Int = 0,
+    val isHide: Boolean = false,
+    val updateAt: Long = 0,
     val createAt: Long = 0L
 )

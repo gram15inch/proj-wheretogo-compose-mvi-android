@@ -14,6 +14,8 @@ data class CheckPoint(
     val thumbnail: String = "",
     val description: String = "",
     val isUserCreated: Boolean = false,
+    val isHide: Boolean = false,
     val reportedCount: Int = 0,
+    val updateAt: Long = 0L,
     val createAt: Long = 0L
 )

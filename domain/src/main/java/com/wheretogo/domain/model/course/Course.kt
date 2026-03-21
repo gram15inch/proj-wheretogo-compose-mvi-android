@@ -17,8 +17,10 @@ data class Course(
     val relation: String = "",
     val cameraLatLng: LatLng = LatLng(),
     val isUserCreated: Boolean = false,
+    val isHide: Boolean = false,
     val zoom: String = "",
     val like: Int = 0,
     val reportedCount: Int = 0,
+    val updateAt: Long = 0,
     val createAt: Long = 0
 )

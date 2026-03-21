@@ -30,5 +30,7 @@ data class LocalCourse(
     val zoom: String = "",
     val like: Int = 0,
     val reportedCount: Int = 0,
+    val isHide: Boolean = false,
+    val updateAt: Long = 0,
     val createAt: Long = 0,
 )

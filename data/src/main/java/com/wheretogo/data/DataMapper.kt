@@ -232,9 +232,11 @@ fun RemoteComment.toComment(): Comment {
         oneLineReview = oneLineReview,
         detailedReview = detailedReview,
         like = like,
-        isFocus = isFocus,
+        isFocus = focus,
         timestamp = System.currentTimeMillis(),
         reportedCount = reportedCount,
+        isHide = hide,
+        updateAt = updateAt,
         createAt = createAt,
     )
 }
@@ -253,12 +255,15 @@ fun Comment.toRemoteComment(): RemoteComment {
         oneLineReview = oneLineReview,
         detailedReview = detailedReview,
         like = like,
-        isFocus = isFocus,
+        focus = isFocus,
+        hide = isHide,
+        updateAt = updateAt,
         createAt = createAt
     )
 }
 
 fun CommentAddRequest.toComment(commentId: String): Comment {
+    val current= System.currentTimeMillis()
     return Comment(
         commentId = commentId,
         groupId = content.groupId,
@@ -271,7 +276,8 @@ fun CommentAddRequest.toComment(commentId: String): Comment {
         isUserCreated = true,
         isUserLiked = false,
         isFocus = false,
-        createAt = System.currentTimeMillis(),
+        updateAt = current,
+        createAt = current,
         timestamp = 0
     )
 }
@@ -287,6 +293,7 @@ fun LocalSnapshot.toSnapshot(): Snapshot {
 fun CheckPointAddRequest.toRemoteCheckPoint(
     checkPointId: String
 ): RemoteCheckPoint {
+    val current = System.currentTimeMillis()
     return RemoteCheckPoint(
         checkPointId = checkPointId,
         courseId = content.courseId,
@@ -295,7 +302,9 @@ fun CheckPointAddRequest.toRemoteCheckPoint(
         latLng = content.latLng.toDataLatLng(),
         caption = "",
         imageId = image.imageId,
-        description = content.description
+        description = content.description,
+        updateAt = current,
+        createAt = current
     )
 }
 
@@ -312,6 +321,8 @@ fun RemoteCheckPoint.toLocalCheckPoint(): LocalCheckPoint {
         description = description,
         timestamp = System.currentTimeMillis(),
         reportedCount = reportedCount,
+        isHide = hide,
+        updateAt = updateAt,
         createAt = createAt
     )
 }
@@ -328,6 +339,8 @@ fun LocalCheckPoint.toCheckPoint(imageLocalPath: String = ""): CheckPoint {
         description = description,
         thumbnail = imageLocalPath,
         reportedCount = reportedCount,
+        isHide = isHide,
+        updateAt = updateAt,
         createAt = createAt
     )
 }
@@ -341,6 +354,7 @@ fun List<LocalCheckPoint>.toDomain() = map { it.toCheckPoint() }
 fun CourseAddRequest.toCourse(
     courseId: String,
 ): RemoteCourse {
+    val current = System.currentTimeMillis()
     return RemoteCourse(
         courseId = courseId,
         courseName = content.courseName,
@@ -357,7 +371,8 @@ fun CourseAddRequest.toCourse(
         relation = content.relation,
         cameraLatLng = content.cameraLatLng.toDataLatLng(),
         zoom = content.zoom,
-        createAt = System.currentTimeMillis()
+        updateAt = current,
+        createAt = current
     )
 }
 
@@ -378,7 +393,9 @@ fun LocalCourse.toCourse(): Course {
         zoom = zoom,
         like = like,
         reportedCount = reportedCount,
-        createAt = createAt
+        isHide = isHide,
+        updateAt = updateAt,
+        createAt = createAt,
     )
 }
 
@@ -401,29 +418,9 @@ fun RemoteCourse.toLocalCourse(): LocalCourse {
         zoom = zoom,
         like = 0,
         reportedCount = reportedCount,
+        isHide = hide,
+        updateAt = updateAt,
         createAt = createAt
-    )
-}
-
-fun Course.toRemoteCourse(
-    keyword: List<String> = emptyList()
-): RemoteCourse {
-    return RemoteCourse(
-        courseId = courseId,
-        courseName = courseName,
-        userId = userId,
-        userName = userName,
-        latitude = cameraLatLng.latitude,
-        longitude = cameraLatLng.longitude,
-        geoHash = cameraLatLng.toGeoHash(6),
-        waypoints = waypoints.toDataLatLngGroup(),
-        keyword = keyword,
-        duration = duration,
-        type = type,
-        level = level,
-        relation = relation,
-        cameraLatLng = cameraLatLng.toDataLatLng(),
-        zoom = zoom
     )
 }
 
@@ -442,7 +439,10 @@ fun RemoteCourse.toCourse(): Course {
         relation = relation,
         cameraLatLng = cameraLatLng.toLatLng(),
         zoom = zoom,
-        like = 0
+        like = 0,
+        isHide = hide,
+        updateAt = updateAt,
+        createAt = createAt
     )
 }
 

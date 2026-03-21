@@ -20,5 +20,7 @@ data class RemoteCourse(
     val cameraLatLng: DataLatLng = DataLatLng(),
     val zoom: String = "",
     val reportedCount: Int = 0,
+    val hide: Boolean = false,
+    val updateAt: Long = 0,
     val createAt: Long = 0,
 )

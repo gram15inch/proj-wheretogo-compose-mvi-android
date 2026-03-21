@@ -3,7 +3,6 @@ package com.dhkim139.wheretogo.di
 import com.dhkim139.wheretogo.mock.model.MockRemoteUser
 import com.wheretogo.data.model.course.RemoteCourse
 import com.wheretogo.data.toLocalHistoryIdGroup
-import com.wheretogo.data.toRemoteCourse
 import com.wheretogo.domain.AuthCompany
 import com.wheretogo.domain.feature.hashSha256
 import com.wheretogo.domain.model.dummy.getCourseDummy
@@ -57,6 +56,6 @@ class MockModelModule {
     @Provides
     @Singleton
     fun provideRemoteCourseGroup(): List<RemoteCourse> {
-        return courseGroup.map { it.toRemoteCourse() }
+        return emptyList()
     }
 }
