@@ -21,7 +21,6 @@ data class LocalCourse(
     val longitude: Double = 0.0,
     val geoHash: String = "",
     val waypoints: List<DataLatLng> = emptyList(),
-    val checkpointSnapshot: LocalSnapshot = LocalSnapshot(),
     val duration: String = "",
     val type: String = "",
     val level: String = "",
@@ -30,5 +29,7 @@ data class LocalCourse(
     val zoom: String = "",
     val like: Int = 0,
     val reportedCount: Int = 0,
+    val isHide: Boolean = false,
+    val updateAt: Long = 0,
     val createAt: Long = 0,
 )

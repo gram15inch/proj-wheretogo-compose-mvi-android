@@ -5,7 +5,6 @@ import com.wheretogo.data.model.checkpoint.LocalCheckPoint
 import com.wheretogo.data.model.checkpoint.RemoteCheckPoint
 import com.wheretogo.data.model.comment.RemoteComment
 import com.wheretogo.data.model.course.LocalCourse
-import com.wheretogo.data.model.course.LocalSnapshot
 import com.wheretogo.data.model.course.RemoteCourse
 import com.wheretogo.data.model.history.LocalHistory
 import com.wheretogo.data.model.history.LocalHistoryGroupWrapper
@@ -42,7 +41,6 @@ import com.wheretogo.domain.model.route.Route
 import com.wheretogo.domain.model.user.History
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePrivate
-import com.wheretogo.domain.model.util.Snapshot
 import com.wheretogo.domain.toGeoHash
 
 fun RemoteSyncUser.toProfileHistoryPair(): Pair<Profile, History> {
@@ -232,9 +230,11 @@ fun RemoteComment.toComment(): Comment {
         oneLineReview = oneLineReview,
         detailedReview = detailedReview,
         like = like,
-        isFocus = isFocus,
+        isFocus = focus,
         timestamp = System.currentTimeMillis(),
         reportedCount = reportedCount,
+        isHide = hide,
+        updateAt = updateAt,
         createAt = createAt,
     )
 }
@@ -253,12 +253,15 @@ fun Comment.toRemoteComment(): RemoteComment {
         oneLineReview = oneLineReview,
         detailedReview = detailedReview,
         like = like,
-        isFocus = isFocus,
+        focus = isFocus,
+        hide = isHide,
+        updateAt = updateAt,
         createAt = createAt
     )
 }
 
 fun CommentAddRequest.toComment(commentId: String): Comment {
+    val current= System.currentTimeMillis()
     return Comment(
         commentId = commentId,
         groupId = content.groupId,
@@ -271,22 +274,16 @@ fun CommentAddRequest.toComment(commentId: String): Comment {
         isUserCreated = true,
         isUserLiked = false,
         isFocus = false,
-        createAt = System.currentTimeMillis(),
+        updateAt = current,
+        createAt = current,
         timestamp = 0
-    )
-}
-
-fun LocalSnapshot.toSnapshot(): Snapshot {
-    return Snapshot(
-        indexIdGroup = indexIdGroup,
-        refId = refId,
-        updateAt = updateAt
     )
 }
 
 fun CheckPointAddRequest.toRemoteCheckPoint(
     checkPointId: String
 ): RemoteCheckPoint {
+    val current = System.currentTimeMillis()
     return RemoteCheckPoint(
         checkPointId = checkPointId,
         courseId = content.courseId,
@@ -295,7 +292,9 @@ fun CheckPointAddRequest.toRemoteCheckPoint(
         latLng = content.latLng.toDataLatLng(),
         caption = "",
         imageId = image.imageId,
-        description = content.description
+        description = content.description,
+        updateAt = current,
+        createAt = current
     )
 }
 
@@ -312,6 +311,8 @@ fun RemoteCheckPoint.toLocalCheckPoint(): LocalCheckPoint {
         description = description,
         timestamp = System.currentTimeMillis(),
         reportedCount = reportedCount,
+        isHide = hide,
+        updateAt = updateAt,
         createAt = createAt
     )
 }
@@ -328,6 +329,8 @@ fun LocalCheckPoint.toCheckPoint(imageLocalPath: String = ""): CheckPoint {
         description = description,
         thumbnail = imageLocalPath,
         reportedCount = reportedCount,
+        isHide = isHide,
+        updateAt = updateAt,
         createAt = createAt
     )
 }
@@ -341,6 +344,7 @@ fun List<LocalCheckPoint>.toDomain() = map { it.toCheckPoint() }
 fun CourseAddRequest.toCourse(
     courseId: String,
 ): RemoteCourse {
+    val current = System.currentTimeMillis()
     return RemoteCourse(
         courseId = courseId,
         courseName = content.courseName,
@@ -357,7 +361,8 @@ fun CourseAddRequest.toCourse(
         relation = content.relation,
         cameraLatLng = content.cameraLatLng.toDataLatLng(),
         zoom = content.zoom,
-        createAt = System.currentTimeMillis()
+        updateAt = current,
+        createAt = current
     )
 }
 
@@ -368,7 +373,6 @@ fun LocalCourse.toCourse(): Course {
         userId = userId,
         userName = userName,
         waypoints = waypoints.toLatLngGroup(),
-        checkpointIdGroup = checkpointSnapshot.indexIdGroup,
         points = emptyList(),
         duration = duration,
         type = type,
@@ -378,7 +382,9 @@ fun LocalCourse.toCourse(): Course {
         zoom = zoom,
         like = like,
         reportedCount = reportedCount,
-        createAt = createAt
+        isHide = isHide,
+        updateAt = updateAt,
+        createAt = createAt,
     )
 }
 
@@ -392,7 +398,6 @@ fun RemoteCourse.toLocalCourse(): LocalCourse {
         longitude = cameraLatLng.longitude,
         geoHash = cameraLatLng.toLatLng().toGeoHash(6),
         waypoints = waypoints,
-        checkpointSnapshot = LocalSnapshot(refId = courseId),
         duration = duration,
         type = type,
         level = level,
@@ -401,29 +406,9 @@ fun RemoteCourse.toLocalCourse(): LocalCourse {
         zoom = zoom,
         like = 0,
         reportedCount = reportedCount,
+        isHide = hide,
+        updateAt = updateAt,
         createAt = createAt
-    )
-}
-
-fun Course.toRemoteCourse(
-    keyword: List<String> = emptyList()
-): RemoteCourse {
-    return RemoteCourse(
-        courseId = courseId,
-        courseName = courseName,
-        userId = userId,
-        userName = userName,
-        latitude = cameraLatLng.latitude,
-        longitude = cameraLatLng.longitude,
-        geoHash = cameraLatLng.toGeoHash(6),
-        waypoints = waypoints.toDataLatLngGroup(),
-        keyword = keyword,
-        duration = duration,
-        type = type,
-        level = level,
-        relation = relation,
-        cameraLatLng = cameraLatLng.toDataLatLng(),
-        zoom = zoom
     )
 }
 
@@ -442,15 +427,10 @@ fun RemoteCourse.toCourse(): Course {
         relation = relation,
         cameraLatLng = cameraLatLng.toLatLng(),
         zoom = zoom,
-        like = 0
-    )
-}
-
-fun Snapshot.toLocalSnapshot(): LocalSnapshot {
-    return LocalSnapshot(
-        refId = refId,
-        indexIdGroup = indexIdGroup,
-        updateAt = updateAt
+        like = 0,
+        isHide = hide,
+        updateAt = updateAt,
+        createAt = createAt
     )
 }
 

@@ -6,9 +6,9 @@ interface CourseRemoteDatasource {
 
     suspend fun getCourse(courseId: String): Result<RemoteCourse>
 
-    suspend fun getCourseGroupByGeoHash(start: String, end: String): Result<List<RemoteCourse>>
-
     suspend fun getCourseGroupByKeyword(keyword: String): Result<List<RemoteCourse>>
+
+    suspend fun getCourseGroupByUpdateAt(updateAt: Long): Result<List<RemoteCourse>>
 
     suspend fun setCourse(course: RemoteCourse): Result<Unit>
 

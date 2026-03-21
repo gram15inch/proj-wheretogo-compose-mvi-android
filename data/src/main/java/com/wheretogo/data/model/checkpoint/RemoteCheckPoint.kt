@@ -13,5 +13,7 @@ data class RemoteCheckPoint(
     val imageId: String = "",
     val description: String = "",
     val reportedCount: Int = 0,
+    val hide: Boolean = false,
+    val updateAt: Long = 0,
     val createAt: Long = 0L
 )

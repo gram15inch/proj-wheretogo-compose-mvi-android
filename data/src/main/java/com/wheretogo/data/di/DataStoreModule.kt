@@ -18,6 +18,7 @@ import javax.inject.Singleton
 object DataStoreModule {
     private val Context.userDataStore: DataStore<Preferences> by preferencesDataStore(name = "user")
     private val Context.appDataStore: DataStore<Preferences> by preferencesDataStore(name = "app")
+    private val Context.contentDataStore: DataStore<Preferences> by preferencesDataStore(name = "content")
 
     @Provides
     @Singleton
@@ -31,6 +32,13 @@ object DataStoreModule {
     @Named("appDataStore")
     fun provideAppDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
         return context.appDataStore
+    }
+
+    @Provides
+    @Singleton
+    @Named("contentDataStore")
+    fun provideContentDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
+        return context.contentDataStore
     }
 
 }

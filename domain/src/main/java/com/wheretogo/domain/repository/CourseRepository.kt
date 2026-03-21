@@ -2,7 +2,6 @@ package com.wheretogo.domain.repository
 
 import com.wheretogo.domain.model.course.Course
 import com.wheretogo.domain.model.course.CourseAddRequest
-import com.wheretogo.domain.model.util.Snapshot
 
 interface CourseRepository {
     suspend fun getCourse(courseId: String): Result<Course>
@@ -15,13 +14,7 @@ interface CourseRepository {
 
     suspend fun removeCourse(courseId: String): Result<Unit>
 
-    suspend fun getSnapshot(courseId: String): Result<Snapshot>
-
-    suspend fun updateSnapshot(snapshot: Snapshot): Result<Unit>
-
-    suspend fun appendIndexBySnapshot(refId: String, index: String): Result<Unit>
-
-    suspend fun removeIndexBySnapshot(refId: String, index: String): Result<Unit>
+    suspend fun clearExpired():  Result<Int>
 
     suspend fun clearCache(): Result<Unit>
 }

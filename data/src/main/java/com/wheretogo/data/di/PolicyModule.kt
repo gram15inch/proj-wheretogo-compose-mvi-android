@@ -2,6 +2,7 @@ package com.wheretogo.data.di
 
 import com.wheretogo.data.CachePolicy
 import com.wheretogo.data.CheckpointPolicy
+import com.wheretogo.data.ClearPolicy
 import com.wheretogo.data.CommentPolicy
 import com.wheretogo.data.CoursePolicy
 import dagger.Module
@@ -37,6 +38,13 @@ class PolicyModule {
     fun provideCommentPolicy(): CachePolicy {
         return CommentPolicy
     }
+
+    @Singleton
+    @ClearCache
+    @Provides
+    fun provideClearPolicy(): CachePolicy {
+        return ClearPolicy
+    }
 }
 
 
@@ -51,3 +59,7 @@ annotation class CommentCache
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class CourseCache
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class ClearCache

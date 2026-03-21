@@ -1,8 +1,6 @@
 package com.wheretogo.data.datasource
 
 import com.wheretogo.data.model.course.LocalCourse
-import com.wheretogo.data.model.course.LocalSnapshot
-import com.wheretogo.data.model.meta.LocalMetaGeoHash
 
 
 interface CourseLocalDatasource {
@@ -15,17 +13,11 @@ interface CourseLocalDatasource {
 
     suspend fun getCourseGroupByGeoHash(geoHash: String): Result<List<LocalCourse>>
 
-    suspend fun getMetaGeoHash(): Result<List<LocalMetaGeoHash>>
-
-    suspend fun isExistMetaGeoHash(geoHash: String): Result<Boolean>
-
-    suspend fun setMetaGeoHash(entity: LocalMetaGeoHash): Result<Unit>
-
-    suspend fun updateSnapshot(localSnapshot: LocalSnapshot): Result<Unit>
-
-    suspend fun appendIndex(localSnapshot: LocalSnapshot): Result<Unit>
-
-    suspend fun removeIndex(localSnapshot: LocalSnapshot): Result<Unit>
-
     suspend fun clear(): Result<Unit>
+
+    suspend fun getLatestUpdate(): Result<Long>
+
+    suspend fun setLatestUpdate(updateAt: Long): Result<Unit>
+
+    suspend fun getCourseByIsHide(isHide: Boolean): Result<List<LocalCourse>>
 }

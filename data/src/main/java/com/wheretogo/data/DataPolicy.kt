@@ -29,9 +29,11 @@ data class DataBuildConfig(
 
 const val DATA_NULL = ""
 
+// 전체 갱신용
 val CheckpointPolicy = DefaultPolicy(60, 15)
 val CommentPolicy = DefaultPolicy(20, 5)
-val CoursePolicy = DefaultPolicy(60, 15)
+val CoursePolicy = DefaultPolicy(60*24, 60*6)
+val ClearPolicy = DefaultPolicy(60*24*7, 60*24*7)
 
 @JsonClass(generateAdapter = false)
 enum class DataAuthCompany {

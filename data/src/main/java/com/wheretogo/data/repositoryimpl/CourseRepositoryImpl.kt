@@ -1,28 +1,28 @@
 package com.wheretogo.data.repositoryimpl
 
 import com.wheretogo.data.CachePolicy
+import com.wheretogo.data.CoursePolicy
 import com.wheretogo.data.datasource.CourseLocalDatasource
 import com.wheretogo.data.datasource.CourseRemoteDatasource
-import com.wheretogo.data.di.CheckpointCache
+import com.wheretogo.data.di.ClearCache
+import com.wheretogo.data.di.CourseCache
 import com.wheretogo.data.feature.mapDataError
 import com.wheretogo.data.feature.mapDomainError
 import com.wheretogo.data.feature.mapSuccess
-import com.wheretogo.data.model.meta.LocalMetaGeoHash
 import com.wheretogo.data.toCourse
 import com.wheretogo.data.toLocalCourse
-import com.wheretogo.data.toLocalSnapshot
-import com.wheretogo.data.toSnapshot
 import com.wheretogo.domain.model.course.Course
 import com.wheretogo.domain.model.course.CourseAddRequest
-import com.wheretogo.domain.model.util.Snapshot
 import com.wheretogo.domain.repository.CourseRepository
 import de.huxhorn.sulky.ulid.ULID
+import timber.log.Timber
 import javax.inject.Inject
 
 class CourseRepositoryImpl @Inject constructor(
     private val courseRemoteDatasource: CourseRemoteDatasource,
     private val courseLocalDatasource: CourseLocalDatasource,
-    @CheckpointCache private val cachePolicy: CachePolicy
+    @CourseCache private val coursePolicy: CachePolicy,
+    @ClearCache private val clearPolicy: CachePolicy
 ) : CourseRepository {
     private val cacheCourseGroupByKeyword = mutableMapOf<String, List<Course>>()
 
@@ -39,22 +39,28 @@ class CourseRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getCourseGroupByGeoHash(geoHash: String): Result<List<Course>> {
-        return courseLocalDatasource.isExistMetaGeoHash(geoHash).mapSuccess { isExist ->
-            if (isExist)
-                return@mapSuccess courseLocalDatasource.getCourseGroupByGeoHash(geoHash)
+        return courseLocalDatasource.getLatestUpdate().mapSuccess { old ->
+            val now = System.currentTimeMillis()
+            val num = (now - old).toFloat() / (1000 * 60 * if(old == 0L) CoursePolicy.minuteWhenEmpty else CoursePolicy.minuteWhenNotEmpty)
+            val formatStr = String.format("%.1f%%", num * 100)
+            Timber.d("course expire: $formatStr")
 
-            courseRemoteDatasource.getCourseGroupByGeoHash(geoHash, "$geoHash\uf8ff")
-                .mapSuccess {
-                    courseLocalDatasource.setCourse(it.map { it.toLocalCourse() })  // 불러온 코스 저장
-                        .mapSuccess {
-                            courseLocalDatasource.setMetaGeoHash(
-                                LocalMetaGeoHash(geoHash, System.currentTimeMillis())
-                            )
-                        }
-                }.mapSuccess {
-                    courseLocalDatasource.getCourseGroupByGeoHash(geoHash)
+            // 코스 업데이트 확인
+            val isExpire = coursePolicy.isExpired(old, old==0L)
+
+            if (isExpire) {
+                courseLocalDatasource.setLatestUpdate(now)
+                // 변경 or 추가된 코스 가져오기
+                courseRemoteDatasource.getCourseGroupByUpdateAt(old).mapSuccess { remote->
+                    remote.map { it.toLocalCourse() }.run {
+                        courseLocalDatasource.setCourse(this)
+                        Result.success(this)
+                    }
                 }
-        }.mapDataError().mapCatching { it.map { it.toCourse() } }.mapDomainError()
+            } else {
+                courseLocalDatasource.getCourseGroupByGeoHash(geoHash)
+            }.map { local-> local.map { it.toCourse() }}
+        }.mapDomainError()
     }
 
     override suspend fun getCourseGroupByKeyword(keyword: String): Result<List<Course>> {
@@ -89,58 +95,22 @@ class CourseRepositoryImpl @Inject constructor(
         }.mapDataError().mapDomainError()
     }
 
-    override suspend fun getSnapshot(courseId: String): Result<Snapshot> {
-        return runCatching {
-            check(courseId.isNotBlank()) { "courseId Empty!!" } // 스냅샷 초기화시 refId 빠지는 실수 방지
-        }.mapSuccess {
-            courseLocalDatasource.getCourse(courseId)
-        }.mapSuccess {
-            val snapshot = it?.checkpointSnapshot
-            if (snapshot == null) {
 
-                return Result.success(Snapshot(refId = courseId))
+    override suspend fun clearExpired(): Result<Int> {
+        var removed = 0
+
+        return courseLocalDatasource.getCourseByIsHide(true).mapCatching {
+            it.filter { course->
+                clearPolicy.isExpired( course.updateAt ,false)
             }
-
-            return Result.success(snapshot.toSnapshot())
-        }
-    }
-
-    override suspend fun updateSnapshot(snapshot: Snapshot): Result<Unit> {
-        return getSnapshot(snapshot.refId).mapSuccess {
-            val oldIdGroup = it.indexIdGroup
-            val isExpire = cachePolicy.isExpired(
-                snapshot.updateAt,
-                snapshot.indexIdGroup.isEmpty()
-            )
-            val isEqual = oldIdGroup.toSet() == snapshot.indexIdGroup.toSet()
-            if (isEqual && !isExpire)
-                return Result.success(Unit)
-
-            val snapshot = snapshot.copy(updateAt = System.currentTimeMillis())
-            courseLocalDatasource.updateSnapshot(snapshot.toLocalSnapshot())
-        }
-    }
-
-    override suspend fun appendIndexBySnapshot(refId: String, index: String): Result<Unit> {
-        return getSnapshot(refId).mapSuccess {
-            val newSnapshot = it.run {
-                copy(indexIdGroup = indexIdGroup + index)
+        }.mapSuccess { filtered->
+            runCatching {
+                filtered.forEach {
+                    courseLocalDatasource.removeCourse(it.courseId)
+                    removed++
+                }
             }
-            courseLocalDatasource.appendIndex(
-                localSnapshot = newSnapshot.toLocalSnapshot()
-            )
-        }
-    }
-
-    override suspend fun removeIndexBySnapshot(refId: String, index: String): Result<Unit> {
-        return getSnapshot(refId).mapSuccess {
-            val newSnapshot = it.run {
-                copy(indexIdGroup = indexIdGroup - index)
-            }
-            courseLocalDatasource.appendIndex(
-                localSnapshot = newSnapshot.toLocalSnapshot()
-            )
-        }
+        }.mapCatching { removed }
     }
 
     override suspend fun clearCache(): Result<Unit> {

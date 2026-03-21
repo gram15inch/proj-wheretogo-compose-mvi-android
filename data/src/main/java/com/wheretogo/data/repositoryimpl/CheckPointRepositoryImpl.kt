@@ -1,23 +1,28 @@
 package com.wheretogo.data.repositoryimpl
 
 import com.wheretogo.data.CachePolicy
+import com.wheretogo.data.CheckpointPolicy
+import com.wheretogo.data.DataError
 import com.wheretogo.data.datasource.CheckPointLocalDatasource
 import com.wheretogo.data.datasource.CheckPointRemoteDatasource
 import com.wheretogo.data.di.CheckpointCache
 import com.wheretogo.data.feature.mapDataError
 import com.wheretogo.data.feature.mapDomainError
 import com.wheretogo.data.feature.mapSuccess
+import com.wheretogo.data.model.checkpoint.LocalCheckPoint
 import com.wheretogo.data.toCheckPoint
 import com.wheretogo.data.toDomain
+import com.wheretogo.data.toDomainResult
 import com.wheretogo.data.toLocal
 import com.wheretogo.data.toLocalCheckPoint
 import com.wheretogo.data.toRemoteCheckPoint
 import com.wheretogo.domain.ImageSize
+import com.wheretogo.domain.feature.sucessMap
 import com.wheretogo.domain.model.checkpoint.CheckPoint
 import com.wheretogo.domain.model.checkpoint.CheckPointAddRequest
-import com.wheretogo.domain.model.util.Snapshot
 import com.wheretogo.domain.repository.CheckPointRepository
 import de.huxhorn.sulky.ulid.ULID
+import timber.log.Timber
 import javax.inject.Inject
 
 class CheckPointRepositoryImpl @Inject constructor(
@@ -26,31 +31,67 @@ class CheckPointRepositoryImpl @Inject constructor(
     @CheckpointCache private val cachePolicy: CachePolicy
 ) : CheckPointRepository {
 
-    override suspend fun getCheckPointGroup(
-        checkpointIdGroup: List<String>
-    ): Result<List<CheckPoint>> {
-        return checkPointLocalDatasource
-            .getCheckPointGroup(checkpointIdGroup)
-            .mapSuccess { localGroup ->
-                val expectExpireIdGroup = localGroup
-                    .filter { cachePolicy.isExpired(it.timestamp, false) }
-                    .map { it.checkPointId }
-                if (expectExpireIdGroup.isEmpty())
-                    return Result.success(localGroup.toDomain())
+    private suspend fun refreshAndGetCheckPointGroup(
+        checkPointGroup: List<LocalCheckPoint>
+    ): Result<List<LocalCheckPoint>> {
+        val expireGroup = checkPointGroup
+            .filter { it.timestamp == 0L }
+            .map { it.checkPointId }
+        if (expireGroup.isEmpty())
+            return Result.success(checkPointGroup)
 
-                checkPointRemoteDatasource
-                    .getCheckPointGroup(expectExpireIdGroup)
-                    .mapSuccess { cpGroup ->
-                        checkPointLocalDatasource.setCheckPoint(cpGroup.toLocal())
-                            .mapCatching { cpGroup.map { it.checkPointId } }
-                    }.mapSuccess { actualExpireIdGroup ->
-                        expectExpireIdGroup
-                            .filter { it !in actualExpireIdGroup }
-                            .forEach { checkPointLocalDatasource.removeCheckPoint(it) }
-                        checkPointLocalDatasource
-                            .getCheckPointGroup(checkpointIdGroup)
-                    }
-            }.mapCatching { it.toDomain() }.mapDataError().mapDomainError()
+        // 만료된 체크포인트 리프레시
+        return checkPointRemoteDatasource
+            .getCheckPointGroup(expireGroup)
+            .onSuccess { remoteGroup ->
+                // 갱신된 체크포인트 로컬 저장
+                checkPointLocalDatasource.setCheckPoint(remoteGroup.toLocal())
+                    .mapCatching { remoteGroup.map { it.checkPointId } }
+                val actualExpireIdGroup = remoteGroup.map { it.checkPointId }
+                // 갱신 했으나 서버에 없는 체크포인트 삭제
+                expireGroup
+                    .filter { it !in actualExpireIdGroup }
+                    .forEach { checkPointLocalDatasource.removeCheckPoint(it) }
+            }.map { it.toLocal() }
+    }
+
+    override suspend fun getCheckPointGroupByCourseId(courseId: String): Result<List<CheckPoint>> {
+        val old = checkPointLocalDatasource.getLatestUpdate().getOrDefault(0L)
+        val now = System.currentTimeMillis()
+        val num =
+            (now - old).toFloat() / (1000 * 60 * if (old == 0L) CheckpointPolicy.minuteWhenEmpty else CheckpointPolicy.minuteWhenNotEmpty)
+        val formatStr = String.format("%.1f%%", num * 100)
+
+        // 전체 만료 체크
+        return if (cachePolicy.isExpired(old, old == 0L).apply {
+                Timber.d("cp expire: $formatStr $this")
+            }) {
+            checkPointLocalDatasource.setLatestUpdate(now)
+            checkPointRemoteDatasource.getCheckPointGroupByCourseId(courseId)
+                .map { it.toLocal() }
+                .onSuccess { checkPointLocalDatasource.replaceCheckpointByCourse(courseId, it) }
+        } else {
+            //개별 만료 체크
+            checkPointLocalDatasource.getCheckpointByCourseId(courseId).sucessMap {
+                refreshAndGetCheckPointGroup(it)
+            }
+        }.map { it.toDomain() }.toDomainResult()
+    }
+
+    override suspend fun getCheckPoint(
+        checkPointId: String,
+        isRemote: Boolean
+    ): Result<CheckPoint> {
+        return if (isRemote) {
+            checkPointRemoteDatasource.getCheckPointGroup(listOf(checkPointId)).mapCatching {
+                it.firstOrNull() ?: throw DataError.NotFound("$checkPointId NOT_FOUND")
+            }.map { it.toLocalCheckPoint() }.onSuccess {
+                checkPointLocalDatasource.setCheckPoint(listOf(it))
+            }
+        } else {
+            checkPointLocalDatasource.getCheckPoint(checkPointId)
+                .map { it ?: throw DataError.NotFound("$checkPointId NOT_FOUND") }
+        }.map { it.toCheckPoint() }
     }
 
     override suspend fun addCheckPoint(request: CheckPointAddRequest): Result<CheckPoint> {
@@ -71,31 +112,6 @@ class CheckPointRepositoryImpl @Inject constructor(
             .mapSuccess {
                 checkPointLocalDatasource.removeCheckPoint(checkPointId)
             }.mapDataError().mapDomainError()
-    }
-
-    override suspend fun refreshSnapshot(snapshot: Snapshot): Result<Snapshot> {
-        return runCatching {
-            check(snapshot.refId.isNotBlank()) { "refId Empty!!" }
-            if (!cachePolicy.isExpired(
-                    timestamp = snapshot.updateAt,
-                    isEmpty = snapshot.indexIdGroup.isEmpty()
-                )
-            ) {
-                return Result.success(snapshot)
-            }
-
-            Unit
-        }.mapSuccess {
-            checkPointRemoteDatasource.getCheckPointGroupByCourseId(snapshot.refId)
-        }.mapSuccess { remote ->
-            checkPointLocalDatasource.setCheckPoint(remote.toLocal())
-                .mapCatching {
-                    snapshot.copy(
-                        indexIdGroup = remote.map { it.checkPointId },
-                        updateAt = System.currentTimeMillis()
-                    )
-                }
-        }.mapDataError().mapDomainError()
     }
 
     override suspend fun forceCacheExpire(checkPointId: String): Result<Unit> {

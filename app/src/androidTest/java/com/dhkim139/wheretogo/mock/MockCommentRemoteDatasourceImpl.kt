@@ -32,7 +32,7 @@ class MockCommentRemoteDatasourceImpl @Inject constructor() : CommentRemoteDatas
     }
 
     override suspend fun changeCommentLike(request: ContentLike): Result<Unit> {
-        val diff = if (request.isLike) 1 else -1
+        val diff = if (request.like) 1 else -1
         val data =
             _commentGroup.getOrDefault(request.groupId, emptyList())
                 .map {

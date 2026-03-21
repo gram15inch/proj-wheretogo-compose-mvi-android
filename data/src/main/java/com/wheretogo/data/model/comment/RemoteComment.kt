@@ -11,7 +11,9 @@ data class RemoteComment(
     val oneLineReview: String = "",
     val detailedReview: String = "",
     val like: Int = 0,
-    val isFocus: Boolean = false,
+    val focus: Boolean = false,
     val reportedCount: Int = 0,
+    val hide: Boolean = false,
+    val updateAt: Long = 0,
     val createAt: Long = 0,
 )
