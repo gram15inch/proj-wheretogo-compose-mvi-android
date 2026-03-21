@@ -8,6 +8,8 @@ interface CheckPointLocalDatasource {
 
     suspend fun getCheckPoint(checkPointId: String): Result<LocalCheckPoint?>
 
+    suspend fun getCheckpointByCourseId(courseId: String): Result<List<LocalCheckPoint>>
+
     suspend fun setCheckPoint(checkPointGroup: List<LocalCheckPoint>): Result<Unit>
 
     suspend fun replaceCheckpointByCourse(courseId: String, checkPointGroup: List<LocalCheckPoint>): Result<Unit>
@@ -15,6 +17,10 @@ interface CheckPointLocalDatasource {
     suspend fun removeCheckPoint(checkPointId: String): Result<Unit>
 
     suspend fun updateCheckPoint(checkPointId: String, caption: String): Result<Unit>
+
+    suspend fun getLatestUpdate(): Result<Long>
+
+    suspend fun setLatestUpdate(updateAt: Long): Result<Unit>
 
     suspend fun initTimestamp(checkPointId: String): Result<Unit>
 

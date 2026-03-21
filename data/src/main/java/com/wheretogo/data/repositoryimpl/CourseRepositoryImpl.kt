@@ -4,7 +4,6 @@ import com.wheretogo.data.CachePolicy
 import com.wheretogo.data.CoursePolicy
 import com.wheretogo.data.datasource.CourseLocalDatasource
 import com.wheretogo.data.datasource.CourseRemoteDatasource
-import com.wheretogo.data.di.CheckpointCache
 import com.wheretogo.data.di.ClearCache
 import com.wheretogo.data.di.CourseCache
 import com.wheretogo.data.feature.mapDataError
@@ -12,21 +11,16 @@ import com.wheretogo.data.feature.mapDomainError
 import com.wheretogo.data.feature.mapSuccess
 import com.wheretogo.data.toCourse
 import com.wheretogo.data.toLocalCourse
-import com.wheretogo.data.toLocalSnapshot
-import com.wheretogo.data.toSnapshot
 import com.wheretogo.domain.model.course.Course
 import com.wheretogo.domain.model.course.CourseAddRequest
-import com.wheretogo.domain.model.util.Snapshot
 import com.wheretogo.domain.repository.CourseRepository
 import de.huxhorn.sulky.ulid.ULID
 import timber.log.Timber
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class CourseRepositoryImpl @Inject constructor(
     private val courseRemoteDatasource: CourseRemoteDatasource,
     private val courseLocalDatasource: CourseLocalDatasource,
-    @CheckpointCache private val metaCheckpointPolicy: CachePolicy,
     @CourseCache private val coursePolicy: CachePolicy,
     @ClearCache private val clearPolicy: CachePolicy
 ) : CourseRepository {
@@ -99,60 +93,6 @@ class CourseRepositoryImpl @Inject constructor(
         return courseRemoteDatasource.removeCourse(courseId).mapSuccess {
             courseLocalDatasource.removeCourse(courseId)
         }.mapDataError().mapDomainError()
-    }
-
-    override suspend fun getSnapshot(courseId: String): Result<Snapshot> {
-        return runCatching {
-            check(courseId.isNotBlank()) { "courseId Empty!!" } // 스냅샷 초기화시 refId 빠지는 실수 방지
-        }.mapSuccess {
-            courseLocalDatasource.getCourse(courseId)
-        }.mapSuccess {
-            val snapshot = it?.checkpointSnapshot
-            if (snapshot == null) {
-
-                return Result.success(Snapshot(refId = courseId))
-            }
-
-            return Result.success(snapshot.toSnapshot())
-        }
-    }
-
-    override suspend fun updateSnapshot(snapshot: Snapshot): Result<Unit> {
-        return getSnapshot(snapshot.refId).mapSuccess {
-            val oldIdGroup = it.indexIdGroup
-            val isExpire = metaCheckpointPolicy.isExpired(
-                snapshot.updateAt,
-                snapshot.indexIdGroup.isEmpty()
-            )
-            val isEqual = oldIdGroup.toSet() == snapshot.indexIdGroup.toSet()
-            if (isEqual && !isExpire)
-                return Result.success(Unit)
-
-            val snapshot = snapshot.copy(updateAt = System.currentTimeMillis())
-            courseLocalDatasource.updateSnapshot(snapshot.toLocalSnapshot())
-        }
-    }
-
-    override suspend fun appendIndexBySnapshot(refId: String, index: String): Result<Unit> {
-        return getSnapshot(refId).mapSuccess {
-            val newSnapshot = it.run {
-                copy(indexIdGroup = indexIdGroup + index)
-            }
-            courseLocalDatasource.appendIndex(
-                localSnapshot = newSnapshot.toLocalSnapshot()
-            )
-        }
-    }
-
-    override suspend fun removeIndexBySnapshot(refId: String, index: String): Result<Unit> {
-        return getSnapshot(refId).mapSuccess {
-            val newSnapshot = it.run {
-                copy(indexIdGroup = indexIdGroup - index)
-            }
-            courseLocalDatasource.appendIndex(
-                localSnapshot = newSnapshot.toLocalSnapshot()
-            )
-        }
     }
 
 

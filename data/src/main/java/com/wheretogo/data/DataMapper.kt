@@ -5,7 +5,6 @@ import com.wheretogo.data.model.checkpoint.LocalCheckPoint
 import com.wheretogo.data.model.checkpoint.RemoteCheckPoint
 import com.wheretogo.data.model.comment.RemoteComment
 import com.wheretogo.data.model.course.LocalCourse
-import com.wheretogo.data.model.course.LocalSnapshot
 import com.wheretogo.data.model.course.RemoteCourse
 import com.wheretogo.data.model.history.LocalHistory
 import com.wheretogo.data.model.history.LocalHistoryGroupWrapper
@@ -42,7 +41,6 @@ import com.wheretogo.domain.model.route.Route
 import com.wheretogo.domain.model.user.History
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePrivate
-import com.wheretogo.domain.model.util.Snapshot
 import com.wheretogo.domain.toGeoHash
 
 fun RemoteSyncUser.toProfileHistoryPair(): Pair<Profile, History> {
@@ -282,14 +280,6 @@ fun CommentAddRequest.toComment(commentId: String): Comment {
     )
 }
 
-fun LocalSnapshot.toSnapshot(): Snapshot {
-    return Snapshot(
-        indexIdGroup = indexIdGroup,
-        refId = refId,
-        updateAt = updateAt
-    )
-}
-
 fun CheckPointAddRequest.toRemoteCheckPoint(
     checkPointId: String
 ): RemoteCheckPoint {
@@ -383,7 +373,6 @@ fun LocalCourse.toCourse(): Course {
         userId = userId,
         userName = userName,
         waypoints = waypoints.toLatLngGroup(),
-        checkpointIdGroup = checkpointSnapshot.indexIdGroup,
         points = emptyList(),
         duration = duration,
         type = type,
@@ -409,7 +398,6 @@ fun RemoteCourse.toLocalCourse(): LocalCourse {
         longitude = cameraLatLng.longitude,
         geoHash = cameraLatLng.toLatLng().toGeoHash(6),
         waypoints = waypoints,
-        checkpointSnapshot = LocalSnapshot(refId = courseId),
         duration = duration,
         type = type,
         level = level,
@@ -443,14 +431,6 @@ fun RemoteCourse.toCourse(): Course {
         isHide = hide,
         updateAt = updateAt,
         createAt = createAt
-    )
-}
-
-fun Snapshot.toLocalSnapshot(): LocalSnapshot {
-    return LocalSnapshot(
-        refId = refId,
-        indexIdGroup = indexIdGroup,
-        updateAt = updateAt
     )
 }
 

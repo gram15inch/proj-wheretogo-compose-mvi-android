@@ -8,7 +8,6 @@ import com.wheretogo.data.datasource.CourseLocalDatasource
 import com.wheretogo.data.datasourceimpl.database.CourseDatabase
 import com.wheretogo.data.feature.dataErrorCatching
 import com.wheretogo.data.model.course.LocalCourse
-import com.wheretogo.data.model.course.LocalSnapshot
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -38,42 +37,19 @@ class CourseLocalDatasourceImpl @Inject constructor(
         return runCatching { courseDao.selectByGeoHash(geoHash) }
     }
 
-    override suspend fun updateSnapshot(
-        localSnapshot: LocalSnapshot
-    ): Result<Unit> {
-        return runCatching {
-            courseDao.updateSnapshot(
-                courseId = localSnapshot.refId,
-                localSnapshot = localSnapshot,
-            )
+    override suspend fun clear(): Result<Unit> {
+        return dataErrorCatching {
+            setLatestUpdate(0)
+            courseDatabase.clearAllTables()
         }
     }
 
-    override suspend fun appendIndex(
-        localSnapshot: LocalSnapshot
-    ): Result<Unit> {
-        return runCatching {
-            val oldGroup = courseDao.getCheckPointSnapshot(localSnapshot.refId).indexIdGroup
-            val newGroup = oldGroup + localSnapshot.indexIdGroup
-            courseDao.updateSnapshot(
-                localSnapshot.refId,
-                localSnapshot.copy(indexIdGroup = newGroup)
-            )
+    override suspend fun getCourseByIsHide(isHide: Boolean): Result<List<LocalCourse>> {
+        return dataErrorCatching {
+            courseDao.selectByIsHide(isHide)
         }
     }
 
-    override suspend fun removeIndex(
-        localSnapshot: LocalSnapshot
-    ): Result<Unit> {
-        return runCatching {
-            val oldGroup = courseDao.getCheckPointSnapshot(localSnapshot.refId).indexIdGroup
-            val newGroup = oldGroup - localSnapshot.indexIdGroup.toSet()
-            courseDao.updateSnapshot(
-                localSnapshot.refId,
-                localSnapshot.copy(indexIdGroup = newGroup)
-            )
-        }
-    }
 
     override suspend fun getLatestUpdate(): Result<Long> {
         return dataErrorCatching {
@@ -89,19 +65,6 @@ class CourseLocalDatasourceImpl @Inject constructor(
                 preferences[courseCacheKey] = updateAt
             }
             Unit
-        }
-    }
-
-    override suspend fun clear(): Result<Unit> {
-        return dataErrorCatching {
-            setLatestUpdate(0)
-            courseDatabase.clearAllTables()
-        }
-    }
-
-    override suspend fun getCourseByIsHide(isHide: Boolean): Result<List<LocalCourse>> {
-        return dataErrorCatching {
-            courseDao.selectByIsHide(isHide)
         }
     }
 }

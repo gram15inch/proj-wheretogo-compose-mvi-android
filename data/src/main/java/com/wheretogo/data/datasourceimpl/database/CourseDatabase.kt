@@ -12,7 +12,6 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.wheretogo.data.model.course.LocalCourse
-import com.wheretogo.data.model.course.LocalSnapshot
 import com.wheretogo.data.model.map.DataLatLng
 import java.lang.reflect.Type
 
@@ -46,12 +45,6 @@ interface CourseDao {
 
     @Query("DELETE FROM LocalCourse WHERE courseId = :courseId")
     suspend fun delete(courseId: String)
-
-    @Query("UPDATE LocalCourse SET checkpointSnapshot = :localSnapshot WHERE courseId = :courseId")
-    suspend fun updateSnapshot(courseId: String, localSnapshot: LocalSnapshot)
-
-    @Query("SELECT checkpointSnapshot FROM LocalCourse WHERE courseId = :courseId")
-    suspend fun getCheckPointSnapshot(courseId: String): LocalSnapshot
 }
 
 class CourseJsonConverters {
@@ -64,7 +57,6 @@ class CourseJsonConverters {
         Types.newParameterizedType(List::class.java, DataLatLng::class.java)
     private val latLngGroupAdapter = moshi.adapter<List<DataLatLng>>(latLngListType)
     private val latLngAdapter = moshi.adapter(DataLatLng::class.java)
-    private val snapshotAdapter = moshi.adapter(LocalSnapshot::class.java)
 
     @TypeConverter
     fun fromLatLngList(latLngList: List<DataLatLng>?): String? {
@@ -85,15 +77,4 @@ class CourseJsonConverters {
     fun fromLatLng(latlng: DataLatLng?): String? {
         return latlng?.let { latLngAdapter.toJson(it) }
     }
-
-    @TypeConverter
-    fun toSnapshot(jsonString: String?): LocalSnapshot? {
-        return jsonString?.let { snapshotAdapter.fromJson(it) }
-    }
-
-    @TypeConverter
-    fun fromSnapshot(checkpoint: LocalSnapshot?): String? {
-        return checkpoint?.let { snapshotAdapter.toJson(it) }
-    }
-
 }

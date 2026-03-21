@@ -681,7 +681,7 @@ class DriveViewModel @Inject constructor(
         }.onSuccess { newComment ->
             _driveScreenState.updateComment(newComment, true)
             withContext(Dispatchers.IO) {
-                getCheckPointForMarkerUseCase(course.courseId, listOf(newComment.groupId))
+                getCheckPointForMarkerUseCase(course.courseId)
             }.onSuccess { checkPointGroup ->
                 val caption =
                     checkPointGroup.firstOrNull { it.checkPointId == newComment.groupId }?.caption ?: ""

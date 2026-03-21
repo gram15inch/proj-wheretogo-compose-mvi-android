@@ -1,7 +1,6 @@
 package com.wheretogo.data.datasource
 
 import com.wheretogo.data.model.course.LocalCourse
-import com.wheretogo.data.model.course.LocalSnapshot
 
 
 interface CourseLocalDatasource {
@@ -13,12 +12,6 @@ interface CourseLocalDatasource {
     suspend fun removeCourse(courseId: String): Result<Unit>
 
     suspend fun getCourseGroupByGeoHash(geoHash: String): Result<List<LocalCourse>>
-
-    suspend fun updateSnapshot(localSnapshot: LocalSnapshot): Result<Unit>
-
-    suspend fun appendIndex(localSnapshot: LocalSnapshot): Result<Unit>
-
-    suspend fun removeIndex(localSnapshot: LocalSnapshot): Result<Unit>
 
     suspend fun clear(): Result<Unit>
 
