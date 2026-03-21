@@ -18,7 +18,7 @@ import java.lang.reflect.Type
 @TypeConverters(CourseJsonConverters::class)
 @Database(
     entities = [LocalCourse::class],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class CourseDatabase : RoomDatabase() {
