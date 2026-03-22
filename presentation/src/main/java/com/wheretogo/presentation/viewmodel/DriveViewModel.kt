@@ -345,11 +345,7 @@ class DriveViewModel @Inject constructor(
                 if (isMapUpdate) {
                     isMapUpdate = false
                     _driveScreenState.update { it.replaceScreenLoading(true) }
-                    refreshNearCourse(cameraState).sucessMap {
-                        filterListCourseUseCase(cameraState.viewport, cameraState.zoom, it)
-                    }.onSuccess { courseGroup ->
-                        _driveScreenState.update { it.updateListItem(courseGroup) }
-                    }.onFailure { handleError(it) }
+                    refreshNearCourseOverlayAndList(cameraState)
                     _driveScreenState.update { it.replaceScreenLoading(false) }
                     isMapUpdate = true
                 }
@@ -556,23 +552,10 @@ class DriveViewModel @Inject constructor(
             }.moveCamera(course.cameraLatLng, source = CameraUpdateSource.LIST_ITEM)
         }
 
-        // 체크포인트 마커 추가
-        val checkPointGroup =
-            withContext(Dispatchers.IO) { getCheckPointForMarkerUseCase(course.courseId) }
-                .getOrDefault(emptyList())
+        // 체크포인트 가져오기
+        refreshCheckpointLeafOverlay(course.courseId)
 
         _driveScreenState.update {
-            mapOverlayService.addCheckPointCluster(
-                courseId = course.courseId,
-                checkPointGroup = checkPointGroup,
-                onLeafRendered = {
-                    mapOverlayService.scaleToPointLeafInCluster(
-                        course.courseId,
-                        _driveScreenState.value.naverMapState.latestCameraState.latLng
-                    )
-                },
-                onLeafClick = ::checkPointLeafClick
-            )
             it.copy(
                 isLoading = false
             )
@@ -680,17 +663,6 @@ class DriveViewModel @Inject constructor(
             handleError(it)
         }.onSuccess { newComment ->
             _driveScreenState.updateComment(newComment, true)
-            withContext(Dispatchers.IO) {
-                getCheckPointForMarkerUseCase(course.courseId)
-            }.onSuccess { checkPointGroup ->
-                val caption =
-                    checkPointGroup.firstOrNull { it.checkPointId == newComment.groupId }?.caption ?: ""
-                mapOverlayService.updateCheckPointLeafCaption(
-                    course.courseId,
-                    content.groupId,
-                    caption
-                )
-            }
         }
         _driveScreenState.update { it.initCommentAddState() }
     }
@@ -706,17 +678,8 @@ class DriveViewModel @Inject constructor(
         }
         deleteResult.onSuccess {
             _driveScreenState.updateComment(comment, false)
-            withContext(Dispatchers.IO) {
-                getCheckPointForMarkerUseCase(course.courseId)
-            }.onSuccess {
-                val caption = it.firstOrNull { it.checkPointId == comment.groupId }?.caption ?: ""
-                mapOverlayService.updateCheckPointLeafCaption(
-                    course.courseId,
-                    comment.groupId,
-                    caption
-                )
-                _driveScreenState.update { it.replaceCommentSettingVisible(false) }
-            }
+            refreshCheckpointLeafOverlay(course.courseId)
+            _driveScreenState.update { it.replaceCommentSettingVisible(false) }
         }
         _driveScreenState.update { it.replaceCommentSettingLoading(false) }
     }
@@ -736,17 +699,8 @@ class DriveViewModel @Inject constructor(
         }
         result.onSuccess {
             _driveScreenState.updateComment(comment, false)
-            withContext(Dispatchers.IO) {
-                getCheckPointForMarkerUseCase(course.courseId)
-            }.onSuccess {
-                val caption = it.firstOrNull { it.checkPointId == comment.groupId }?.caption ?: ""
-                mapOverlayService.updateCheckPointLeafCaption(
-                    course.courseId,
-                    comment.groupId,
-                    caption
-                )
-                _driveScreenState.update { it.replaceCommentSettingVisible(false) }
-            }
+            refreshCheckpointLeafOverlay(course.courseId)
+            _driveScreenState.update { it.replaceCommentSettingVisible(false) }
         }.onFailure {
             handleError(it)
         }
@@ -854,23 +808,11 @@ class DriveViewModel @Inject constructor(
 
     // 플로팅
     private suspend fun commentFloatingButtonClick() {
-        val state = _driveScreenState.value
         val checkpoint = _driveScreenState.value.selectedCheckPoint
-  /*      if (state.floatingButtonState.stateMode == DriveFloatingVisibleMode.Hide) {
-            _driveScreenState.update {
-                it.run {
-                    copy(
-                        floatingButtonState = floatingButtonState.copy(
-                            stateMode = DriveFloatingVisibleMode.Default
-                        ),
-                        popUpState = popUpState.copy(
-                            commentState = CommentState()
-                        )
-                    )
-                }
-            }
-            return
-        }*/
+
+        if(checkpoint.checkPointId.isBlank())
+            return clearScreen()
+
         // 가이드
         val step = _driveScreenState.value.guideState.tutorialStep
         if (step == DriveTutorialStep.COMMENT_FLOAT_CLICK) {
@@ -894,27 +836,12 @@ class DriveViewModel @Inject constructor(
             }
         }
 
-        // 코멘트 가져오기 및 로딩 중지
-        val commentResult =
-            withContext(Dispatchers.IO) { getCommentForCheckPointUseCase(checkpoint.checkPointId) }
-        delay(300)
-        commentResult.onSuccess { commentGroup ->
-            val itemGroup =
-                commentGroup.map { it.toCommentItemState() }
-            _driveScreenState.update {
-                it.run {
-                    if (popUpState.commentState.isContentVisible)
-                        copy(
-                            popUpState = popUpState.copy(
-                                commentState = popUpState.commentState.copy(
-                                    isLoading = false,
-                                    commentItemGroup = itemGroup
-                                )
-                            )
-                        )
-                    else this
-                }
-            }
+        // 코멘트 가져오기
+        refreshCommentList(checkpoint.checkPointId)
+
+        // 로딩 중지
+        _driveScreenState.update {
+            it.replaceCommentListLoading(false)
         }
     }
 
@@ -1254,14 +1181,7 @@ class DriveViewModel @Inject constructor(
                     _driveScreenState.update {
                         it.clearCourseInfo()
                     }
-                }.sucessMap {
-                    refreshNearCourse(camera).sucessMap {
-                        filterListCourseUseCase(camera.viewport, camera.zoom, it)
-                    }.onSuccess { courseGroup ->
-                        _driveScreenState.update { it.updateListItem(courseGroup) }
-                    }
-                }.onFailure {
-                    handleError(it)
+                    refreshNearCourseOverlayAndList(camera)
                 }
             }
 
@@ -1308,13 +1228,7 @@ class DriveViewModel @Inject constructor(
                     handleError(it)
                 }
 
-                refreshNearCourse(camera).sucessMap {
-                    filterListCourseUseCase(camera.viewport, camera.zoom, it)
-                }.onSuccess { courseGroup ->
-                    _driveScreenState.update {
-                        it.updateListItem(courseGroup)
-                    }
-                }
+                refreshNearCourseOverlayAndList(camera)
             }
 
             DriveBottomSheetContent.CHECKPOINT_INFO -> {
@@ -1342,17 +1256,73 @@ class DriveViewModel @Inject constructor(
         _driveScreenState.update { it.replaceInfoLoading(false) }
     }
 
-    private suspend fun refreshNearCourse(cameraState: CameraState): Result<List<Course>> {
-        return withContext(Dispatchers.IO) {
+    private suspend fun refreshNearCourseOverlayAndList(cameraState: CameraState) {
+        withContext(Dispatchers.IO) {
             getNearByCourseUseCase(cameraState.latLng, cameraState.zoom)
         }.sucessMap { courseGroup ->
             runCatching {
-                mapOverlayService.addCourseMarkerAndPath(courseGroup)
+                val (hideGroup, showGroup)  = courseGroup.partition { it.isHide }
+                mapOverlayService.addCourseMarkerAndPath(showGroup)
+                mapOverlayService.removeCourseMarkerAndPath(hideGroup.map { it.courseId })
                 mapOverlayService.showAllOverlays()
-                courseGroup
+                showGroup
             }
-        }
+        }.sucessMap {
+            filterListCourseUseCase(cameraState.viewport, cameraState.zoom, it)
+        }.onSuccess { courseGroup ->
+            _driveScreenState.update { it.updateListItem(courseGroup) }
+        }.onFailure { handleError(it) }
     }
+
+    private suspend fun refreshCheckpointLeafOverlay(courseId: String) {
+        withContext(Dispatchers.IO) { getCheckPointForMarkerUseCase(courseId) }
+            .onSuccess { courseGroup ->
+                mapOverlayService.removeCheckPointCluster(courseId)
+                val (hideGroup, showGroup) = courseGroup.partition { it.isHide }
+                mapOverlayService.addCheckPointCluster(
+                    courseId = courseId,
+                    checkPointGroup = showGroup,
+                    onLeafRendered = {
+                        mapOverlayService.scaleToPointLeafInCluster(
+                            courseId,
+                            _driveScreenState.value.naverMapState.latestCameraState.latLng
+                        )
+                    },
+                    onLeafClick = ::checkPointLeafClick
+                )
+                hideGroup.forEach {
+                    mapOverlayService.removeCheckPointLeaf(it.courseId, it.checkPointId)
+                }
+            }.onFailure {
+                handleError(it)
+            }
+    }
+
+    private suspend fun refreshCommentList(checkPointId:String){
+        withContext(Dispatchers.IO) { getCommentForCheckPointUseCase(checkPointId) }
+            .onSuccess { originalGroup ->
+                delay(200) // 바텀시트 에니메이션 대기
+                val itemGroup = originalGroup
+                    .filter { !it.isHide }
+                    .map { it.toCommentItemState() }
+                _driveScreenState.update {
+                    it.run {
+                        if (popUpState.commentState.isContentVisible)
+                            copy(
+                                popUpState = popUpState.copy(
+                                    commentState = popUpState.commentState.copy(
+                                        commentItemGroup = itemGroup
+                                    )
+                                )
+                            )
+                        else this
+                    }
+                }
+            }.onFailure {
+                handleError(it)
+            }
+    }
+
 
     private fun DriveScreenState.updateListItem(courseGroup: List<Course>): DriveScreenState {
         return copy(
