@@ -982,32 +982,33 @@ class DriveViewModel @Inject constructor(
                         )
                     }
                 }
-                when (content) {
-                    DriveBottomSheetContent.COURSE_INFO -> {
-                        _driveScreenState.update {
-                            it.copy(
-                                stateMode = DriveVisibleMode.CourseDetail,
-                                floatingButtonState = it.floatingButtonState.copy(
-                                    stateMode = DriveFloatingVisibleMode.Default
+                if(DriveScreenState.bottomSheetVisible.contains(_driveScreenState.value.stateMode))
+                    when (content) {
+                        DriveBottomSheetContent.COURSE_INFO -> {
+                            _driveScreenState.update {
+                                it.copy(
+                                    stateMode = DriveVisibleMode.CourseDetail,
+                                    floatingButtonState = it.floatingButtonState.copy(
+                                        stateMode = DriveFloatingVisibleMode.Default
+                                    )
                                 )
-                            )
-                        }
-                    }
-
-                    DriveBottomSheetContent.CHECKPOINT_INFO -> {
-                        _driveScreenState.update {
-                            it.copy(
-                                stateMode = DriveVisibleMode.BlurCheckpointDetail,
-                                floatingButtonState = it.floatingButtonState.copy(
-                                    stateMode = DriveFloatingVisibleMode.Popup
-                                )
-                            )
+                            }
                         }
 
-                    }
+                        DriveBottomSheetContent.CHECKPOINT_INFO -> {
+                            _driveScreenState.update {
+                                it.copy(
+                                    stateMode = DriveVisibleMode.BlurCheckpointDetail,
+                                    floatingButtonState = it.floatingButtonState.copy(
+                                        stateMode = DriveFloatingVisibleMode.Popup
+                                    )
+                                )
+                            }
 
-                    else -> {}
-                }
+                        }
+
+                        else -> {}
+                    }
             }
 
             SheetVisibleMode.Closed -> {
@@ -1024,31 +1025,32 @@ class DriveViewModel @Inject constructor(
                         )
                     }
                 }
-                when (content) {
-                    DriveBottomSheetContent.CHECKPOINT_ADD -> {
-                        mapOverlayService.removeOneTimeMarker(listOf(CHECKPOINT_ADD_MARKER))
-                        _driveScreenState.update {
-                            it.moveCamera(
-                                course.cameraLatLng,
-                                source = CameraUpdateSource.BOTTOM_SHEET_DOWN,
-                            ).copy(
-                                stateMode = DriveVisibleMode.CourseDetail,
-                                bottomSheetState = BottomSheetState(),
-                                floatingButtonState = it.floatingButtonState.copy(
-                                    stateMode = DriveFloatingVisibleMode.Default
+                if(DriveScreenState.bottomSheetVisible.contains(_driveScreenState.value.stateMode))
+                    when (content) {
+                        DriveBottomSheetContent.CHECKPOINT_ADD -> {
+                            mapOverlayService.removeOneTimeMarker(listOf(CHECKPOINT_ADD_MARKER))
+                            _driveScreenState.update {
+                                it.moveCamera(
+                                    course.cameraLatLng,
+                                    source = CameraUpdateSource.BOTTOM_SHEET_DOWN,
+                                ).copy(
+                                    stateMode = DriveVisibleMode.CourseDetail,
+                                    bottomSheetState = BottomSheetState(),
+                                    floatingButtonState = it.floatingButtonState.copy(
+                                        stateMode = DriveFloatingVisibleMode.Default
+                                    )
                                 )
-                            )
+                            }
                         }
-                    }
 
-                    else -> {
-                        _driveScreenState.update {
-                            it.copy(
-                                bottomSheetState = BottomSheetState()
-                            )
+                        else -> {
+                            _driveScreenState.update {
+                                it.copy(
+                                    bottomSheetState = BottomSheetState()
+                                )
+                            }
                         }
                     }
-                }
 
                 val step = _driveScreenState.value.guideState.tutorialStep
                 if (step == DriveTutorialStep.COMMENT_SHEET_DRAG) {
