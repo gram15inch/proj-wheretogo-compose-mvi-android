@@ -1099,7 +1099,7 @@ class DriveViewModel @Inject constructor(
     private fun checkpointDescriptionEnterClick(text: String) {
         _driveScreenState.update {
             val isValidateAddCheckPoint =
-                it.bottomSheetState.checkPointAddState.isValidateAddCheckPoint().isSuccess
+                it.bottomSheetState.checkPointAddState.copy(description = text).isValidateAddCheckPoint().isSuccess
             it.copy(
                 bottomSheetState = it.bottomSheetState.copy(
                     checkPointAddState = it.bottomSheetState.checkPointAddState.copy(
@@ -1138,7 +1138,9 @@ class DriveViewModel @Inject constructor(
             _driveScreenState.value.bottomSheetState.checkPointAddState
                 .toCheckPointContent(course.courseId)
         val result =
-            withContext(Dispatchers.IO) { addCheckpointToCourseUseCase(content) }
+            withContext(Dispatchers.IO) {
+                addCheckpointToCourseUseCase(content)
+            }
 
         result.onSuccess { newCheckPoint ->
             handler.handle(DriveEvent.ADD_DONE)
