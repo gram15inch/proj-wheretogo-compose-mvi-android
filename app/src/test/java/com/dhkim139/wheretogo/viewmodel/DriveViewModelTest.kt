@@ -394,6 +394,7 @@ class DriveViewModelTest {
                 listOf(nearCourse)
             ) } returns Result.success(listOf(nearCourse))
         coEvery { mapOverlayService.addCourseMarkerAndPath(listOf(nearCourse)) } returns Unit
+        coEvery { mapOverlayService.removeCourseMarkerAndPath(listOf()) } returns Unit
         coEvery { mapOverlayService.showAllOverlays() } returns Unit
 
         viewModel.driveScreenState.test {
@@ -617,6 +618,11 @@ class DriveViewModelTest {
         coEvery { mapOverlayService.focusAndHideOthers(focus.first) } returns Unit
         coEvery { getCheckPointForMarkerUseCase(focus.first.courseId) } returns
                 Result.success(listOf(focus.second))
+        coEvery {
+            mapOverlayService.removeCheckPointCluster(
+                focus.first.courseId
+            )
+        } returns Unit
         coEvery {
             mapOverlayService.addCheckPointCluster(
                 courseId = focus.first.courseId,
@@ -931,10 +937,7 @@ class DriveViewModelTest {
         coEvery { addCommentToCheckPointUseCase(commentContent) } returnsMany
                 listOf(Result.failure(domainError), Result.success(addedComment))
         coEvery {
-            getCheckPointForMarkerUseCase(
-                course.courseId,
-                listOf(addedComment.groupId)
-            )
+            getCheckPointForMarkerUseCase(course.courseId)
         } returns Result.success(listOf(refreshedCheckPoint))
         coEvery {
             mapOverlayService.updateCheckPointLeafCaption(
@@ -1028,18 +1031,23 @@ class DriveViewModelTest {
                 removeComment.groupId,
                 removeComment.commentId
             )
-        } returns
-                Result.success(Unit)
+        } returns Result.success(Unit)
         coEvery { getCheckPointForMarkerUseCase(course.courseId) } returns Result.success(
             listOf(refreshedCheckPoint)
         )
         coEvery {
-            mapOverlayService.updateCheckPointLeafCaption(
-                refreshedCheckPoint.courseId,
-                refreshedCheckPoint.checkPointId,
-                refreshedCheckPoint.caption
+            mapOverlayService.removeCheckPointCluster(
+                refreshedCheckPoint.courseId
             )
         } returns Unit
+        coEvery {
+            mapOverlayService.addCheckPointCluster(
+                refreshedCheckPoint.courseId,
+                listOf(refreshedCheckPoint),
+                any(),
+                any()
+            )
+        } returns Result.success(Unit)
         viewModel.driveScreenState.test {
             assertEquals(initState, awaitItem())
 
@@ -1117,12 +1125,18 @@ class DriveViewModelTest {
         coEvery { getCheckPointForMarkerUseCase(course.courseId) } returns
                 Result.success(listOf(refreshedCheckPoint))
         coEvery {
-            mapOverlayService.updateCheckPointLeafCaption(
-                refreshedCheckPoint.courseId,
-                refreshedCheckPoint.checkPointId,
-                refreshedCheckPoint.caption
+            mapOverlayService.removeCheckPointCluster(
+                refreshedCheckPoint.courseId
             )
         } returns Unit
+        coEvery {
+            mapOverlayService.addCheckPointCluster(
+                refreshedCheckPoint.courseId,
+                listOf(refreshedCheckPoint),
+                any(),
+                any()
+            )
+        } returns Result.success(Unit)
         viewModel.driveScreenState.test {
             assertEquals(initState, awaitItem())
 
@@ -1306,21 +1320,30 @@ class DriveViewModelTest {
             }
             assertEquals(clickUiExpect, awaitItem())
 
-            // 코멘트 가져오기 (성공) : 코멘트 아이템 그룹 추가 및 로딩중지
+            // 코멘트 가져오기 (성공) : 코멘트 아이템 그룹 추가
             val commentAddExpect = clickUiExpect.run {
                 copy(
                     popUpState = popUpState.copy(
                         commentState = popUpState.commentState.copy(
-                            isLoading = false,
                             commentItemGroup = listOf(refreshedComment.toCommentItemState())
                         )
                     )
                 )
             }
 
-            val commentAddActual = awaitItem()
-            assertEquals(commentAddExpect, commentAddActual)
+            assertEquals(commentAddExpect, awaitItem())
 
+            // 로딩 중지
+            val commentLoadingStopExpect = commentAddExpect.run {
+                copy(
+                    popUpState = popUpState.copy(
+                        commentState = popUpState.commentState.copy(
+                            isLoading = false
+                        )
+                    )
+                )
+            }
+            assertEquals(commentLoadingStopExpect, awaitItem())
         }
     }
 
@@ -1949,7 +1972,7 @@ class DriveViewModelTest {
             cameraLatLng = LatLng(1.0, 1.0),
             waypoints = listOf(LatLng(1.0, 1.0))
         )
-        val reportCourse = Course("cs1", isUserCreated = true, checkpointIdGroup = listOf("cp1"))
+        val reportCourse = Course("cs2", isUserCreated = true, checkpointIdGroup = listOf("cp1"))
         val checkpoint =
             CheckPoint(courseId = reportCourse.courseId, checkPointId = "cp1", isUserCreated = true)
         val normalItemState = ListItemState(course = normalCourse)
@@ -1992,7 +2015,7 @@ class DriveViewModelTest {
         coEvery { driveHandler.handle(DriveEvent.REPORT_DONE) } returns Unit
         coEvery { mapOverlayService.removeCourseMarkerAndPath(listOf(reportCourse.courseId)) } returns Unit
         coEvery { mapOverlayService.removeCheckPointCluster(reportCourse.courseId) } returns Unit
-        coEvery { mapOverlayService.showAllOverlays() } returns Unit
+
         coEvery {
             getNearByCourseUseCase(
                 centerCamera.latLng,
@@ -2007,6 +2030,8 @@ class DriveViewModelTest {
             )
         } returns Result.success(listOf(normalCourse))
         coEvery { mapOverlayService.addCourseMarkerAndPath(listOf(normalCourse)) } returns Unit
+        coEvery { mapOverlayService.removeCourseMarkerAndPath(emptyList()) } returns Unit
+        coEvery { mapOverlayService.showAllOverlays() } returns Unit
 
         viewModel.driveScreenState.test {
             assertEquals(initState, awaitItem())
@@ -2154,7 +2179,6 @@ class DriveViewModelTest {
         coEvery { driveHandler.handle(DriveEvent.REMOVE_DONE) } returns Unit
         coEvery { mapOverlayService.removeCourseMarkerAndPath(listOf(removeCourse.courseId)) } returns Unit
         coEvery { mapOverlayService.removeCheckPointCluster(removeCourse.courseId) } returns Unit
-        coEvery { mapOverlayService.showAllOverlays() } returns Unit
 
         coEvery {
             getNearByCourseUseCase(centerCamera.latLng, centerCamera.zoom)
@@ -2167,6 +2191,8 @@ class DriveViewModelTest {
             )
         } returns Result.success(listOf(normalCourse))
         coEvery { mapOverlayService.addCourseMarkerAndPath(listOf(normalCourse)) } returns Unit
+        coEvery { mapOverlayService.removeCourseMarkerAndPath(emptyList()) } returns Unit
+        coEvery { mapOverlayService.showAllOverlays() } returns Unit
 
         viewModel.driveScreenState.test {
             assertEquals(initState, awaitItem())

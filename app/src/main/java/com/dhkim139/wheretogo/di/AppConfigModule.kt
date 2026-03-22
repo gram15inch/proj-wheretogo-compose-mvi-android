@@ -43,7 +43,7 @@ object AppConfigModule {
         val config = when (BuildConfig.BUILD_TYPE) {
             "release" -> {
                 PresentationBuildConfig(
-                    nativeAdId = testAdId, // todo 실제 앱 출시시 변경 // BuildConfig.NATIVE_AD_ID
+                    nativeAdId = BuildConfig.NATIVE_AD_ID,
                     isTestUi = false,
                     isAdPreLoad = true
                 )
