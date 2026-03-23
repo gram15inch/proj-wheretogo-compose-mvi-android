@@ -31,6 +31,9 @@ proguard/
 # Log Files
 *.log
 
+# mac
+.DS_Store
+
 # Android Studio
 /*/build/
 /*/local.properties
