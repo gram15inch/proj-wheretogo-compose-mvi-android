@@ -56,7 +56,6 @@ dependencies {
 
     // Firebase (BOM)
     implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.crashlytics)
     implementation(libs.firebase.database)
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.firebase.storage.ktx)

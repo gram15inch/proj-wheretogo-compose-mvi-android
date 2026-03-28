@@ -2,7 +2,6 @@ package com.wheretogo.data
 
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import com.wheretogo.data.feature.safeErrorBody
@@ -123,7 +122,6 @@ fun DataError.toDomainError(): DomainError{
         is DataError.UserUnavailable->{ DomainError.UserUnavailable(this.msg) }
         is DataError.AuthInvalid->{ DomainError.SignInError(this.msg) }
         else -> {
-            FirebaseCrashlytics.getInstance().recordException(this)
             DomainError.UnexpectedException(this)
         }
     }
