@@ -2,7 +2,7 @@ package com.wheretogo.data.datasource
 
 
 import com.wheretogo.data.model.comment.RemoteComment
-import com.wheretogo.data.model.content.ContentLike
+import com.wheretogo.data.model.content.ContentLikeRequest
 
 interface CommentRemoteDatasource {
 
@@ -12,5 +12,5 @@ interface CommentRemoteDatasource {
 
     suspend fun removeComment(groupId: String, contentId: String): Result<Unit>
 
-    suspend fun changeCommentLike(request: ContentLike): Result<Unit>
+    suspend fun changeCommentLike(request: ContentLikeRequest): Result<Unit>
 }

@@ -7,7 +7,7 @@ import com.wheretogo.data.di.CommentCache
 import com.wheretogo.data.feature.dataErrorCatching
 import com.wheretogo.data.feature.mapDomainError
 import com.wheretogo.data.model.comment.CacheCommentGroupWrapper
-import com.wheretogo.data.model.content.ContentLike
+import com.wheretogo.data.model.content.ContentLikeRequest
 import com.wheretogo.data.toComment
 import com.wheretogo.data.toCommentGroup
 import com.wheretogo.data.toRemoteComment
@@ -75,7 +75,7 @@ class CommentRepositoryImpl @Inject constructor(
         isLike: Boolean
     ): Result<Unit> {
 
-        return remoteDatasource.changeCommentLike(ContentLike(groupId, commentId, isLike))
+        return remoteDatasource.changeCommentLike(ContentLikeRequest(groupId, commentId, isLike))
             .mapCatching {
                 updateComment(groupId, commentId) {
                     val diff = if (isLike) 1 else -1

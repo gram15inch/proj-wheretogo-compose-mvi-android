@@ -39,11 +39,13 @@ espresso = "3.6.1"
 googleid = "1.1.1"
 play-services-location = "21.3.0"
 play-services-ads = "24.4.0"
+material = "1.12.0"
 
 # Other libs
 mockk = "1.13.13"
 mockito-junit-jupiter = "3.9.0"
 lottie-compose = "6.5.2"
+coil-compose = "2.7.0"
 sulky-ulid = "8.2.0"
 kakao-maps = "2.11.9"
 naver-maps = "3.22.1"
@@ -55,6 +57,7 @@ ui-automator = "2.3.0"
 coroutines-play-services = "1.9.0"
 coroutines-test = "1.10.2"
 turbine = "1.2.1"
+splashscreen = "1.2.0"
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -154,11 +157,14 @@ firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
 google-identity-googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
 google-play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "play-services-location" }
 google-play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "play-services-ads" }
+google-material = { module = "com.google.android.material:material", version.ref = "material" }
 
 # Other libs
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito-junit-jupiter" }
 lottie-compose = { module = "com.airbnb.android:lottie-compose", version.ref = "lottie-compose" }
+coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil-compose" }
+androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "splashscreen" }
 sulky-ulid = { module = "de.huxhorn.sulky:de.huxhorn.sulky.ulid", version.ref = "sulky-ulid" }
 
 kakao-maps = { module = "com.kakao.maps.open:android", version.ref = "kakao-maps" }

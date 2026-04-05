@@ -2,7 +2,7 @@ package com.dhkim139.wheretogo.mock
 
 import com.wheretogo.data.datasource.CommentRemoteDatasource
 import com.wheretogo.data.model.comment.RemoteComment
-import com.wheretogo.data.model.content.ContentLike
+import com.wheretogo.data.model.content.ContentLikeRequest
 import javax.inject.Inject
 
 class MockCommentRemoteDatasourceImpl @Inject constructor() : CommentRemoteDatasource {
@@ -31,7 +31,7 @@ class MockCommentRemoteDatasourceImpl @Inject constructor() : CommentRemoteDatas
         return Result.success(Unit)
     }
 
-    override suspend fun changeCommentLike(request: ContentLike): Result<Unit> {
+    override suspend fun changeCommentLike(request: ContentLikeRequest): Result<Unit> {
         val diff = if (request.like) 1 else -1
         val data =
             _commentGroup.getOrDefault(request.groupId, emptyList())
