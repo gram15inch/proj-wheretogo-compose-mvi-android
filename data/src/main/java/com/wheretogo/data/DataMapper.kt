@@ -310,7 +310,6 @@ fun RemoteCheckPoint.toLocalCheckPoint(): LocalCheckPoint {
         caption = caption,
         imageId = imageId,
         description = description,
-        timestamp = System.currentTimeMillis(),
         reportedCount = reportedCount,
         isHide = hide,
         updateAt = updateAt,

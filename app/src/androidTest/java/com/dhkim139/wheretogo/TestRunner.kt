@@ -16,6 +16,6 @@ class TestRunner : AndroidJUnitRunner() {
 
 @RunWith(Suite::class)
 @Suite.SuiteClasses(
-    value = []
+    value = [CheckPointDaoTest::class]
 )
 class AllTests

@@ -45,7 +45,7 @@ class CourseRepositoryImpl @Inject constructor(
             val formatStr = String.format("%.1f%%", num * 100)
             Timber.d("course expire: $formatStr")
 
-            // 코스 업데이트 확인
+            // 전체 코스 업데이트 확인
             val isExpire = coursePolicy.isExpired(old, old==0L)
 
             if (isExpire) {
