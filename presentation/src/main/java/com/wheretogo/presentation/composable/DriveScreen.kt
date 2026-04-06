@@ -59,9 +59,9 @@ import com.wheretogo.presentation.WIDE_WIDTH
 import com.wheretogo.presentation.composable.content.AnimationDirection
 import com.wheretogo.presentation.composable.content.BottomSheet
 import com.wheretogo.presentation.composable.content.CheckPointAddContent
+import com.wheretogo.presentation.composable.content.DriveListContent
 import com.wheretogo.presentation.composable.content.DelayLottieAnimation
 import com.wheretogo.presentation.composable.content.DescriptionTextField
-import com.wheretogo.presentation.composable.content.DriveListContent
 import com.wheretogo.presentation.composable.content.FadeAnimation
 import com.wheretogo.presentation.composable.content.FloatingButtons
 import com.wheretogo.presentation.composable.content.GuidePopup
@@ -413,7 +413,7 @@ fun DriveContent(
                         ) {
                             DriveListContent(
                                 modifier = Modifier
-                                    .padding(horizontal = 4.dp)
+                                    .padding(bottom = 10.dp)
                                     .align(alignment = Alignment.BottomCenter),
                                 state = state.listState,
                                 onItemClick = onListItemClick,

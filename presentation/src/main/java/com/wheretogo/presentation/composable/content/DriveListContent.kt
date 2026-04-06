@@ -10,14 +10,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,7 +46,7 @@ import com.wheretogo.presentation.toStrRes
 
 @Preview
 @Composable
-fun DriveListPreview() {
+fun DriveListSinglePreview() {
     DriveListContent(
         modifier = Modifier,
         state = ListState(
@@ -56,6 +54,31 @@ fun DriveListPreview() {
                 ListState.ListItemState(
                     course = Course(
                         courseName = "노르테유 스카이웨이"
+                    )
+                )
+            )
+        ),
+        onItemClick = {},
+        onBookmarkClick = {},
+        onHeightChange = {}
+    )
+}
+
+@Preview
+@Composable
+fun DriveListMultiPreview() {
+    DriveListContent(
+        modifier = Modifier,
+        state = ListState(
+            listItemGroup = listOf(
+                ListState.ListItemState(
+                    course = Course(
+                        courseName = "노르테유 스카이웨이"
+                    )
+                ),
+                ListState.ListItemState(
+                    course = Course(
+                        courseName = "빌리지 손가락"
                     )
                 )
             )
@@ -75,28 +98,29 @@ fun DriveListContent(
     onBookmarkClick: (ListState.ListItemState) -> Unit = {}
 ) {
     val density = LocalDensity.current
+    val isSingle = state.listItemGroup.size == 1
 
-    val listState = rememberLazyListState()
     Box(modifier.onSizeChanged { size ->
         onHeightChange(with(density) { size.height.toDp() })
     }) {
-        LazyColumn(
-            modifier = modifier.height(100.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
-            state = listState
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(
+                start = 16.dp,
+                end = 16.dp
+            )
         ) {
             items(state.listItemGroup) { item ->
                 DriveListItem(
                     modifier = Modifier
+                        .fillParentMaxWidth(if (isSingle) 1f else 0.95f)
                         .clip(RoundedCornerShape(16.dp))
-                        .clickable {
-                            onItemClick(item)
-                        },
+                        .clickable { onItemClick(item) },
                     listItem = item,
                     onBookmarkClick = onBookmarkClick
                 )
             }
-            item { Spacer(modifier = Modifier.height(1.dp)) }
         }
     }
 }
