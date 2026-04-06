@@ -13,7 +13,7 @@ interface CheckPointRepository {
 
     suspend fun removeCheckPoint(checkPointId: String): Result<Unit>
 
-    suspend fun forceCacheExpire(checkPointId: String): Result<Unit>
+    suspend fun refreshCheckPoint(checkpointIds: List<String>): Result<Unit>
 
     suspend fun clearCache(): Result<Unit>
 }

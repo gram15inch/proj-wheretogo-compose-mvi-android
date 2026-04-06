@@ -6,19 +6,26 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.RoomDatabase
+import androidx.room.Transaction
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
+import androidx.room.Upsert
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import com.wheretogo.data.model.checkpoint.CheckPointGroup
+import com.wheretogo.data.model.checkpoint.CheckPointGroupMeta
 import com.wheretogo.data.model.checkpoint.LocalCheckPoint
 import com.wheretogo.data.model.map.DataLatLng
 
 
 @TypeConverters(CheckPointJsonConverters::class)
 @Database(
-    entities = [LocalCheckPoint::class],
-    version = 3,
-    exportSchema = false
+    entities = [
+        LocalCheckPoint::class,
+        CheckPointGroupMeta::class
+    ],
+    version = 4,
+    exportSchema = true
 )
 abstract class CheckPointDatabase : RoomDatabase() {
     abstract fun checkPointDao(): CheckPointDao
@@ -27,29 +34,33 @@ abstract class CheckPointDatabase : RoomDatabase() {
 @Dao
 interface CheckPointDao {
 
-    @Query("SELECT * FROM LocalCheckPoint WHERE checkPointId = :checkPointId")
-    suspend fun select(checkPointId: String): LocalCheckPoint?
-
     @Query("SELECT * FROM LocalCheckPoint Where checkPointId IN (:checkpointIdGroup)")
-    suspend fun selectByGroup(checkpointIdGroup: List<String>): List<LocalCheckPoint>
-
-    @Query("SELECT * FROM LocalCheckPoint WHERE courseId = :courseId")
-    suspend fun selectByCourseId(courseId: String): List<LocalCheckPoint>
+    suspend fun select(checkpointIdGroup: List<String>): List<LocalCheckPoint>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(entity: List<LocalCheckPoint>)
 
-    @Query("DELETE FROM LocalCheckPoint WHERE checkPointId = :checkPointId")
-    suspend fun delete(checkPointId: String)
-
     @Query("DELETE FROM LocalCheckPoint WHERE courseId IN (:checkPointIdGroup)")
-    suspend fun deleteByGroup(checkPointIdGroup: List<String>)
+    suspend fun delete(checkPointIdGroup: List<String>)
 
-    @Query("UPDATE LocalCheckPoint SET caption =:caption WHERE checkPointId = :checkPointId")
-    suspend fun updateCaption(checkPointId: String, caption: String)
+    @Upsert
+    suspend fun upsert(checkpoints: List<LocalCheckPoint>)
 
-    @Query("UPDATE LocalCheckPoint SET timestamp =:timestamp WHERE checkPointId = :checkPointId")
-    suspend fun updateTimestamp(checkPointId: String, timestamp: Long)
+    @Upsert
+    suspend fun upsertMeta(meta: CheckPointGroupMeta)
+
+    @Query("SELECT * FROM CheckPointGroupMeta WHERE groupId = :groupId")
+    fun selectMeta(groupId: String): CheckPointGroupMeta?
+
+    @Transaction
+    @Query("SELECT * FROM CheckPointGroupMeta WHERE groupId = :groupId")
+    fun getCheckPointGroup(groupId: String): CheckPointGroup?
+
+    @Query("DELETE FROM CheckPointGroupMeta WHERE groupId = :groupId")
+    suspend fun deleteMeta(groupId: String)
+
+    @Query("DELETE FROM LocalCheckPoint WHERE courseId = :groupId")
+    suspend fun deleteGroup(groupId: String)
 
 }
 

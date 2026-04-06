@@ -1262,7 +1262,7 @@ class DriveViewModel @Inject constructor(
 
     private suspend fun refreshNearCourseOverlayAndList(cameraState: CameraState) {
         withContext(Dispatchers.IO) {
-            getNearByCourseUseCase(cameraState.latLng, cameraState.zoom)
+            getNearByCourseUseCase(cameraState.latLng, cameraState.zoom, cameraState.viewport)
         }.sucessMap { courseGroup ->
             runCatching {
                 val (hideGroup, showGroup)  = courseGroup.partition { it.isHide }
