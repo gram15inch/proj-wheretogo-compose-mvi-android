@@ -76,8 +76,12 @@
 
 
     <string name="checkpoint">체크포인트</string>
+    <string name="start">시작</string>
+    <string name="end">끝</string>
     <string name="photo">사진</string>
+    <string name="photo_hint">사진을 선택하세요</string>
     <string name="description">설명</string>
+    <string name="description_hint">내용을 입력해 주세요...</string>
     <string name="submit">등록</string>
     <string name="click_need_more_marker">지도를 클릭해 마커를 더 추가해 주세요.</string>
     <string name="invalid_name">생성 할 수 없는 이름 입니다.</string>

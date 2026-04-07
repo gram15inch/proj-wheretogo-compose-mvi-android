@@ -610,7 +610,8 @@ fun CheckpointAddContentPreview() {
     DriveContent(
         state = DriveScreenState().run {
             copy(
-                stateMode = DriveVisibleMode.CourseDetail,
+                stateMode = DriveVisibleMode.BlurBottomSheetExpand,
+                isTestUi = true,
                 bottomSheetState = bottomSheetState.copy(
                     infoState = InfoState(isRemoveButton = true),
                     content = DriveBottomSheetContent.CHECKPOINT_ADD,
@@ -632,6 +633,7 @@ fun CheckpointImagePreview() {
         state = DriveScreenState().run {
             copy(
                 stateMode = DriveVisibleMode.BlurCheckpointDetail,
+                isTestUi = true,
                 floatingButtonState = floatingButtonState.copy(
                     stateMode = DriveFloatingVisibleMode.Popup
                 )
