@@ -28,6 +28,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -62,7 +63,6 @@ import com.naver.maps.map.NaverMap
 import com.wheretogo.domain.RouteAttr
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.route.RouteCategory
-import com.wheretogo.presentation.BuildConfig
 import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.SheetVisibleMode
@@ -470,10 +470,18 @@ fun RouteDetailContent(
                 selectedItem = selectedItemGroup.getOrDefault(RouteAttr.TYPE,-1),
                 onCategorySelect = onCategorySelect
             )
+            HorizontalDivider(
+                color = Color.Gray.copy(alpha = 0.2f),
+                thickness = 0.5.dp
+            )
             RouteCategory(
                 type = RouteAttr.LEVEL,
                 selectedItem = selectedItemGroup.getOrDefault(RouteAttr.LEVEL,-1),
                 onCategorySelect = onCategorySelect
+            )
+            HorizontalDivider(
+                color = Color.Gray.copy(alpha = 0.2f),
+                thickness = 0.5.dp
             )
             RouteCategory(
                 type = RouteAttr.RELATION,
@@ -747,7 +755,7 @@ fun CourseAddOneStepPreview() {
     )
 }
 
-@Preview(widthDp = 350, heightDp = 600)
+@Preview(widthDp = 350, heightDp = 700)
 @Composable
 fun CourseAddTwoStepPreview() {
     CourseAddSheetContent(
