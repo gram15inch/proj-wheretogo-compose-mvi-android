@@ -41,10 +41,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.airbnb.lottie.compose.LottieAnimation
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.animateLottieCompositionAsState
-import com.airbnb.lottie.compose.rememberLottieComposition
 import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.dummy.getCourseDummy
@@ -59,9 +55,9 @@ import com.wheretogo.presentation.WIDE_WIDTH
 import com.wheretogo.presentation.composable.content.AnimationDirection
 import com.wheretogo.presentation.composable.content.BottomSheet
 import com.wheretogo.presentation.composable.content.CheckPointAddContent
-import com.wheretogo.presentation.composable.content.DriveListContent
 import com.wheretogo.presentation.composable.content.DelayLottieAnimation
 import com.wheretogo.presentation.composable.content.DescriptionTextField
+import com.wheretogo.presentation.composable.content.DriveListContent
 import com.wheretogo.presentation.composable.content.FadeAnimation
 import com.wheretogo.presentation.composable.content.FloatingButtons
 import com.wheretogo.presentation.composable.content.GuidePopup
@@ -69,6 +65,7 @@ import com.wheretogo.presentation.composable.content.InfoContent
 import com.wheretogo.presentation.composable.content.MapPopup
 import com.wheretogo.presentation.composable.content.NaverMapSheet
 import com.wheretogo.presentation.composable.content.OneHandArea
+import com.wheretogo.presentation.composable.content.OneTimeLottieAnimation
 import com.wheretogo.presentation.composable.content.SearchBar
 import com.wheretogo.presentation.composable.content.SlideAnimation
 import com.wheretogo.presentation.composable.content.ZIndexOfDriveContentArea
@@ -256,23 +253,25 @@ fun DriveContent(
             val systemBarBottomPadding by remember {
                 derivedStateOf { systemBars.calculateBottomPadding() }
             }
-            NaverMapSheet(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .zIndex(0f),
-                state = state.naverMapState,
-                overlayGroup = state.overlayGroup,
-                fingerPrint = state.fingerPrint,
-                onMapAsync = { onMapAsync() },
-                onCameraUpdate = onCameraUpdate,
-                onMarkerClick = onMarkerClick,
-                contentPadding = ContentPadding(
-                    start = systemBars.calculateStartPadding(LocalLayoutDirection.current),
-                    end = systemBars.calculateEndPadding(LocalLayoutDirection.current),
-                    top = systemBars.calculateTopPadding(),
-                    bottom = maxOf(mapBottomPadding, systemBarBottomPadding)
+
+            if(state.showMap)
+                NaverMapSheet(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .zIndex(0f),
+                    state = state.naverMapState,
+                    overlayGroup = state.overlayGroup,
+                    fingerPrint = state.fingerPrint,
+                    onMapAsync = { onMapAsync() },
+                    onCameraUpdate = onCameraUpdate,
+                    onMarkerClick = onMarkerClick,
+                    contentPadding = ContentPadding(
+                        start = systemBars.calculateStartPadding(LocalLayoutDirection.current),
+                        end = systemBars.calculateEndPadding(LocalLayoutDirection.current),
+                        top = systemBars.calculateTopPadding(),
+                        bottom = maxOf(mapBottomPadding, systemBarBottomPadding)
+                    )
                 )
-            )
 
             FadeAnimation(
                 modifier = Modifier
@@ -297,7 +296,7 @@ fun DriveContent(
 
                 if (state.isTestUi && !isPreview)
                     Column(modifier = Modifier
-                        .clickable{
+                        .clickable {
                             onDebugOverlayClick()
                         }
                         .align(alignment = Alignment.TopStart)
@@ -313,20 +312,11 @@ fun DriveContent(
                     }
 
                 if(state.isCongrats){
-                    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.lt_congrats))
-                    val progress by animateLottieCompositionAsState(
-                        composition = composition,
-                        iterations = 1,
-                        isPlaying = true,
-                        speed = 1.0f
-                    )
-
-                    LottieAnimation(
+                    OneTimeLottieAnimation(
                         modifier = Modifier
                             .zIndex(999f)
                             .fillMaxSize(),
-                        composition = composition,
-                        progress = { progress }
+                        ltRes = R.raw.lt_congrats
                     )
                 }
 
@@ -355,12 +345,13 @@ fun DriveContent(
 
                 DelayLottieAnimation(
                     modifier = Modifier
-                        .padding(top = 40.dp, end = 10.dp)
-                        .size(50.dp)
-                        .align(alignment = Alignment.TopEnd),
-                    ltRes = R.raw.lt_loading,
+                        .padding(bottom = 200.dp, end = 10.dp)
+                        .size(130.dp)
+                        .align(alignment = Alignment.Center),
+                    ltRes = R.raw.lt_star_search,
                     isVisible = state.isLoading,
-                    delay = 300
+                    delay = 300,
+                    max = 1f
                 )
 
                 OneHandArea {
@@ -565,6 +556,7 @@ fun ExplorerContentPreview() {
         state = DriveScreenState().run {
             copy(
                 stateMode = DriveVisibleMode.Explorer,
+                showMap = false,
                 listState = listState.copy(
                     listItemGroup = newListItemGroup
                 ),
@@ -587,6 +579,7 @@ fun CourseContentPreview() {
         state = DriveScreenState().run {
             copy(
                 stateMode = DriveVisibleMode.CourseDetail,
+                showMap = false,
                 popUpState = popUpState.copy(
                     commentState = popUpState.commentState.copy(
                         isContentVisible = true,
@@ -612,6 +605,7 @@ fun CheckpointAddContentPreview() {
             copy(
                 stateMode = DriveVisibleMode.BlurBottomSheetExpand,
                 isTestUi = true,
+                showMap = false,
                 bottomSheetState = bottomSheetState.copy(
                     infoState = InfoState(isRemoveButton = true),
                     content = DriveBottomSheetContent.CHECKPOINT_ADD,
@@ -634,6 +628,7 @@ fun CheckpointImagePreview() {
             copy(
                 stateMode = DriveVisibleMode.BlurCheckpointDetail,
                 isTestUi = true,
+                showMap = false,
                 floatingButtonState = floatingButtonState.copy(
                     stateMode = DriveFloatingVisibleMode.Popup
                 )

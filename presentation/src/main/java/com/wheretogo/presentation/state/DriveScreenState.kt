@@ -25,6 +25,7 @@ data class DriveScreenState(
     val isLoading: Boolean = false,
     val isCongrats: Boolean = false,
     val isTestUi: Boolean = false,
+    val showMap: Boolean = true,
     val error: String? = null
 ) {
 

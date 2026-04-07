@@ -321,7 +321,7 @@ fun BarIcon(isLoading: Boolean) {
                 Modifier,
                 ltRes = R.raw.lt_loading,
                 isVisible = true,
-                0
+                delay = 0
             )
         else
             Image(

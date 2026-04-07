@@ -35,14 +35,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun DelayLottieAnimation(modifier: Modifier, ltRes: Int, isVisible: Boolean, delay: Long = 0) {
+fun DelayLottieAnimation(modifier: Modifier, ltRes: Int, isVisible: Boolean, delay: Long = 0, max: Float=0.4f) { // lt_loading : 0.4f
     var shouldShowAnimation by remember { mutableStateOf(false) }
     var animation by remember { mutableStateOf<Job?>(null) }
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(ltRes))
     val progress by animateLottieCompositionAsState(
         composition = composition,
         iterations = LottieConstants.IterateForever,
-        clipSpec = LottieClipSpec.Progress(0f, 0.4f),
+        clipSpec = LottieClipSpec.Progress(0f, max),
     )
 
     LaunchedEffect(isVisible) {
@@ -64,6 +64,23 @@ fun DelayLottieAnimation(modifier: Modifier, ltRes: Int, isVisible: Boolean, del
             composition = composition,
             progress = { progress },
         )
+}
+
+@Composable
+fun OneTimeLottieAnimation(modifier: Modifier = Modifier, ltRes: Int){
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(ltRes))
+    val progress by animateLottieCompositionAsState(
+        composition = composition,
+        iterations = 1,
+        isPlaying = true,
+        speed = 1.0f
+    )
+
+    LottieAnimation(
+        modifier = modifier,
+        composition = composition,
+        progress = { progress }
+    )
 }
 
 @Composable
