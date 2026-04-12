@@ -36,6 +36,7 @@ sealed class DriveScreenIntent {
 
     //팝업
     data object DismissPopupComment :DriveScreenIntent()
+    data class PopupImageSlide(val index:Int) :DriveScreenIntent()
     data class CommentListItemClick(val itemState: CommentItemState) : DriveScreenIntent()
     data class CommentListItemLongClick(val comment: Comment) : DriveScreenIntent()
     data class CommentLikeClick(val itemState: CommentItemState) : DriveScreenIntent()

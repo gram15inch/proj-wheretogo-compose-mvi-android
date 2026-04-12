@@ -137,27 +137,12 @@ data class DriveScreenState(
         }
     }
 
-
-    // 교체
-    fun replaceCommentListLoading(
-        isLoading: Boolean,
-    ): DriveScreenState {
-        return copy(
-            popUpState = popUpState.copy(
-                commentState = popUpState.commentState.copy(
-                    isLoading = isLoading
-                )
-            )
-        )
-    }
-
-
     fun replaceCommentLoading(
         commentId: String,
         isLoading: Boolean,
     ): DriveScreenState {
         val newCommentGroup =
-            popUpState.commentState.commentItemGroup.map {
+            popUpState.commentState.commentItemGroup?.map {
                 if (it.data.commentId == commentId) it.copy(isLoading = isLoading) else it
             }
 

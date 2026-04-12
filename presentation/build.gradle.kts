@@ -72,6 +72,7 @@ dependencies {
     implementation(libs.landscapist.glide)
     implementation(libs.compose.shimmer)
     implementation(libs.timber)
+    implementation(libs.coil.compose)
 }
 
 fun getLocalProperties(key: String): String{

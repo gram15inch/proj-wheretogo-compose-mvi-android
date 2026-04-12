@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -45,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -66,29 +66,36 @@ import com.wheretogo.presentation.theme.hancomSansFontFamily
 @Composable
 fun CommentList(
     modifier: Modifier = Modifier,
-    isLoading: Boolean,
-    commentItemGroup: List<CommentItemState>,
+    commentItemGroup: List<CommentItemState>?,
     onItemClick: (CommentItemState) -> Unit,
     onItemLongClick: (Comment) -> Unit,
     onLikeClick: (CommentItemState) -> Unit
 ) {
     Box(
         modifier = modifier
-            .fillMaxSize(),
+            .fillMaxSize()
     ) {
-        if (commentItemGroup.isEmpty()) {
+        if(commentItemGroup == null){
             Box(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxWidth().height(50.dp),
+                contentAlignment = Alignment.TopCenter
+            ) {
+                DelayLottieAnimation(Modifier.width(100.dp), R.raw.lt_loading, true,450,max = 1f)
+            }
+        }
+
+        if(commentItemGroup.isNullOrEmpty()){
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp),
                 contentAlignment = Alignment.Center
             ) {
-                if (isLoading)
-                    DelayLottieAnimation(Modifier.width(50.dp), R.raw.lt_loading, true, 350)
-                else
-                    Text(
-                        text = "첫 발자국을 남겨보세요.",
-                        fontFamily = hancomMalangFontFamily,
-                        fontSize = 14.sp
-                    )
+                Text(
+                    text = stringResource(R.string.comment_hint),
+                    fontFamily = hancomMalangFontFamily,
+                    fontSize = 14.sp
+                )
             }
         } else {
             LazyColumn(
@@ -100,10 +107,10 @@ fun CommentList(
                     val temp = commentItemGroup.firstOrNull { it.data.isFocus }
                     temp ?: commentItemGroup[0]
                 } else null
-
                 if (focusItem != null) {
                     item {
                         CommentFocusItem(
+                            modifier= Modifier.animateItem(),
                             comment = focusItem,
                             onItemLongClick = { item ->
                                 onItemLongClick(item.data)
@@ -121,6 +128,7 @@ fun CommentList(
                             )
                     items(sortedCommentGroup) { item ->
                         CommentListItem(
+                            modifier= Modifier.animateItem(),
                             comment = item,
                             onItemClick = {
                                 onItemClick(it)
