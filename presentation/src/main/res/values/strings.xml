@@ -23,6 +23,7 @@
     <string name="visit_first_sub">이용방법을 알려 드릴게요</string>
     <string name="banner_main">크리에이터 \n신청 하러 가기</string>
     <string name="banner_sub">나만의 코스를 등록하고 싶다면?</string>
+    <string name="comment_hint">첫 발자국을 남겨보세요.</string>
 
     <string name="created_by">✨ Created by %s</string>
 

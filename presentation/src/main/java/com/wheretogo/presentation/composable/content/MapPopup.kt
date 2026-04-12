@@ -2,6 +2,7 @@ package com.wheretogo.presentation.composable.content
 
 import android.view.MotionEvent
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -16,7 +17,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,24 +41,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import com.airbnb.lottie.compose.LottieAnimation
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.animateLottieCompositionAsState
-import com.airbnb.lottie.compose.rememberLottieComposition
-import com.skydoves.landscapist.ImageOptions
-import com.skydoves.landscapist.glide.GlideImage
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.valentinilk.shimmer.shimmer
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.dummy.getCommentDummy
@@ -67,6 +71,7 @@ import com.wheretogo.presentation.feature.BlurEffect
 import com.wheretogo.presentation.feature.ImeStickyBox
 import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.feature.topShadow
+import com.wheretogo.presentation.model.SlideItem
 import com.wheretogo.presentation.model.TypeEditText
 import com.wheretogo.presentation.state.CommentState
 import com.wheretogo.presentation.state.CommentState.CommentAddState
@@ -81,7 +86,6 @@ import com.wheretogo.presentation.theme.White
 import com.wheretogo.presentation.theme.hancomMalangFontFamily
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.io.File
 
 @Composable
 fun MapPopup(
@@ -91,6 +95,7 @@ fun MapPopup(
     isImageBlur : Boolean,
     requestCommentOpen: () -> Unit,
     onPopupBlurClick: () -> Unit,
+    onPopupSlide: (index: Int) -> Unit,
     onCommentSheetStateChange: (SheetVisibleMode)-> Unit,
     onCommentListItemClick: (CommentItemState) -> Unit,
     onCommentListItemLongClick: (Comment) -> Unit,
@@ -121,17 +126,22 @@ fun MapPopup(
             paddingHorizontalWhenExtend = 40.dp,
             holdContent = {
                 Column(modifier = Modifier.align(Alignment.TopStart)) {
-                    PopUpImage( // 고정
+                    PopUpImageSlide(
                         modifier = Modifier.consumptionEvent(true),
-                        imagePath = state.imagePath,
+                        slideItems = state.slideItems,
+                        initPage = state.initPage,
                         isBlur = isImageBlur || (state.commentState.isContentVisible && !isWideSize),
+                        onPopupSlide = onPopupSlide,
                         onPopupBlurClick = onPopupBlurClick
                     )
                 }
             },
             moveContent = { // 이동
                 val maxHeight = (if (isWideSize) 500 else 460)
-                Column(modifier = Modifier.align(Alignment.BottomEnd).sizeIn(maxHeight = maxHeight.dp)) {
+                Column(modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .sizeIn(maxHeight = maxHeight.dp)
+                ) {
                     CommentDragSheet(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -177,7 +187,8 @@ fun CommentDragSheet(
     Box(modifier = modifier) {
         BottomSheet(
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .sizeIn(maxHeight = 500.dp),
             isOpen = state.isContentVisible,
             minHeight = if (isPreview) 400.dp else 0.dp,
             onSheetStateChange = onSheetStateChange,
@@ -187,30 +198,23 @@ fun CommentDragSheet(
         ) {
             Box{
                 if(state.isDragGuide){
-                    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.lt_arrow_down))
-                    val progress by animateLottieCompositionAsState(
-                        composition = composition,
-                        iterations = 100,
-                        isPlaying = true,
-                        speed = 1.0f
-                    )
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .align(Alignment.TopCenter)
                             .zIndex(999f)
                             .background(
                                 brush = Brush.verticalGradient(
                                     colors = listOf(Gray6080, Gray5050)
                                 )
-                            )
+                            ),
                     ) {
-                        LottieAnimation(
+                        DelayLottieAnimation(
                             modifier = Modifier
                                 .size(100.dp)
-                                .align(Alignment.Center),
-                            composition = composition,
-                            progress = { progress },
+                                .align(Alignment.TopCenter),
+                            ltRes = R.raw.lt_arrow_down,
+                            isVisible = true,
+                            max = 1f
                         )
                     }
                 }
@@ -254,7 +258,6 @@ fun CommentContent(
 ) {
     Box(modifier = modifier) {
         CommentList(
-            isLoading = commentState.isLoading,
             commentItemGroup = commentState.commentItemGroup,
             onItemClick = { item ->
                 onCommentListItemClick(item)
@@ -513,48 +516,163 @@ fun CommentEmojiGroupAndOneLinePreview(
 
 }
 
-
 @Composable
-fun PopUpImage(
+fun PopUpImageSlide(
     modifier: Modifier,
-    imagePath: String,
+    slideItems: List<SlideItem>,
+    initPage: Int? = null,
     isBlur: Boolean,
-    onPopupBlurClick: () -> Unit
+    onPopupBlurClick: () -> Unit,
+    onPopupSlide: (index: Int) -> Unit
 ) {
-    val isPreview = LocalInspectionMode.current
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
             .sizeIn(maxWidth = 260.dp, maxHeight = 500.dp),
         contentAlignment = Alignment.Center
     ) {
-        val imageFile = File(imagePath)
-        if (!isPreview && imageFile.exists()) {
-            GlideImage(
-                modifier = Modifier
-                    .fillMaxSize(),
-                imageModel = { imageFile },
-                imageOptions = ImageOptions(contentScale = ContentScale.Crop)
-            )
-        } else {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .shimmer()
-                    .background(White)
-            ) {}
-        }
+        if (initPage != null) {
+            val pagerState = rememberPagerState(initPage, pageCount = { slideItems.size })
 
-        FadeAnimation(visible = isBlur) {
-            BlurEffect(
-                onClick = {
-                    onPopupBlurClick()
-                })
+            LaunchedEffect(pagerState.currentPage) {
+                onPopupSlide(pagerState.currentPage)
+            }
+
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize(),
+                beyondViewportPageCount = 1
+            ) { page ->
+                val item = slideItems.getOrNull(page)
+                val url = item?.url
+                when {
+                    url != null -> {
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(url)
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+
+                    else -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .shimmer()
+                                .background(White)
+                        )
+                    }
+                }
+            }
+
+            FadeAnimation(visible = isBlur) {
+                BlurEffect(onClick = { onPopupBlurClick() })
+            }
+
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.75f))
+                        )
+                    )
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                SlideIndicator(
+                    currentIndex = pagerState.currentPage,
+                    totalCount = slideItems.size,
+                    modifier = Modifier.padding(bottom = 6.dp)
+                )
+                val item = slideItems.getOrNull(pagerState.currentPage)
+                ImageCation(
+                    modifier = Modifier.fillMaxWidth(),
+                    title = item?.title,
+                    subTitle = item?.subtitle
+                )
+            }
+        } else {
+            Box(modifier = Modifier.fillMaxSize())
         }
     }
-
 }
 
+@Composable
+private fun ImageCation(
+    modifier: Modifier = Modifier,
+    title: String?,
+    subTitle: String?
+) {
+    Box(
+        modifier = modifier
+            .sizeIn(minHeight = 50.dp)
+    ) {
+        Column(horizontalAlignment = Alignment.Start) {
+            title?.let {
+                Text(
+                    text = it,
+                    color = Color.White,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            subTitle?.let {
+                Text(
+                    text = it,
+                    color = Color.White.copy(alpha = 0.65f),
+                    fontSize = 11.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SlideIndicator(
+    currentIndex: Int,
+    totalCount: Int,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        repeat(totalCount) { index ->
+            val isActive = index == currentIndex
+            val width by animateDpAsState(
+                targetValue = if (isActive) 18.dp else 6.dp,
+                animationSpec = tween(durationMillis = 250),
+                label = "dot_width"
+            )
+            Box(
+                modifier = Modifier
+                    .height(6.dp)
+                    .width(width)
+                    .clip(CircleShape)
+                    .background(
+                        if (isActive) Color.White
+                        else Color.White.copy(alpha = 0.4f)
+                    )
+            )
+        }
+    }
+}
+
+val previewItems = listOf(
+    SlideItem(title = "설악산 대청봉 일출", subtitle = "강원도 속초시 · 해발 1,708m"),
+    SlideItem(title = "지리산 천왕봉", subtitle = "경남 산청군 · 해발 1,915m"),
+    SlideItem(title = "한라산 백록담", subtitle = "제주특별자치도 · 해발 1,947m"),
+)
 
 @Preview(widthDp = 800, heightDp = 900)
 @Preview(widthDp = 400, heightDp = 600)
@@ -564,9 +682,12 @@ fun PopupPreview() {
         MapPopup(
             modifier = Modifier.align(alignment = Alignment.BottomEnd),
             state = PopUpState(
+                slideItems = previewItems,
+                initPage = 1,
                 commentState = CommentState(
                     isContentVisible = true,
                     isDragGuide = true,
+                    isImeVisible = true,
                     commentItemGroup = getCommentDummy().mapIndexed { idx, item ->
                         val comment = item.copy(
                             isUserLiked = if (item.like % 2 == 0) false else true,
@@ -583,8 +704,7 @@ fun PopupPreview() {
                         emogiGroup = defaultCommentEmogiGroup()
                     ),
                     commentSettingState = CommentState.CommentSettingState()
-                ),
-                imagePath = "",
+                )
             ),
             isLoading = false,
             isImageBlur = false,
@@ -598,7 +718,20 @@ fun PopupPreview() {
             onCommentAddClick = {},
             onCommentEmogiPress = {},
             onCommentTypePress = {},
-            onCommentSheetStateChange = {}
+            onCommentSheetStateChange = {},
+            onPopupSlide = {}
         )
     }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF5F5F5)
+@Composable
+private fun PopUpImagePreview() {
+    PopUpImageSlide(
+        modifier = Modifier,
+        slideItems = previewItems,
+        isBlur = false,
+        onPopupBlurClick = {},
+        onPopupSlide = {}
+    )
 }

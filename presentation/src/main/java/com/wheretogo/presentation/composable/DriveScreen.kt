@@ -142,6 +142,7 @@ fun DriveScreen(
             //MapPopup
             onPopupImageClick = {},
             onPopupBlurClick = { handleIntent(DriveScreenIntent.DismissPopupComment) },
+            onPopupSlide = { handleIntent(DriveScreenIntent.PopupImageSlide(it)) },
             onCommentListItemLongClick = { handleIntent(DriveScreenIntent.CommentListItemLongClick(it)) },
             onCommentListItemClick = { handleIntent(DriveScreenIntent.CommentListItemClick(it)) },
             onCommentLikeClick = { handleIntent(DriveScreenIntent.CommentLikeClick(it)) },
@@ -208,6 +209,7 @@ fun DriveContent(
     //MapPopup
     onPopupImageClick: () -> Unit = {},
     onPopupBlurClick: () -> Unit = {},
+    onPopupSlide: (Int) -> Unit = {},
     onCommentListItemClick: (CommentState.CommentItemState) -> Unit = {},
     onCommentListItemLongClick: (Comment) -> Unit = {},
     onCommentLikeClick: (CommentState.CommentItemState) -> Unit = {},
@@ -426,6 +428,7 @@ fun DriveContent(
                                 isImageBlur = zIdxs.mapPopup == 0f,
                                 requestCommentOpen = onCommentFloatClick,
                                 onPopupBlurClick = onBlurClick,
+                                onPopupSlide = onPopupSlide,
                                 onCommentListItemClick = onCommentListItemClick,
                                 onCommentListItemLongClick = onCommentListItemLongClick,
                                 onCommentLikeClick = onCommentLikeClick,

@@ -49,6 +49,7 @@ import com.wheretogo.presentation.DriveVisibleMode
 import com.wheretogo.presentation.MoveAnimation
 import com.wheretogo.presentation.SEARCH_MARKER
 import com.wheretogo.presentation.SheetVisibleMode
+import com.wheretogo.presentation.model.SlideItem
 import com.wheretogo.presentation.feature.ads.AdService
 import com.wheretogo.presentation.feature.map.MapOverlayService
 import com.wheretogo.presentation.intent.DriveScreenIntent
@@ -105,7 +106,7 @@ class DriveViewModelTest {
     @Test
     fun guidePopupClick() = runTest {
         val initState = DriveScreenState()
-        val viewModel= initViewModel(StandardTestDispatcher(testScheduler), initState)
+        val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
         coEvery { guideMoveStepUseCase(true) } returns Result.success(Unit)
         viewModel.driveScreenState.test {
             assertEquals(initState, awaitItem())
@@ -212,7 +213,7 @@ class DriveViewModelTest {
 
             )
         }
-        val viewModel= initViewModel(StandardTestDispatcher(testScheduler), initState)
+        val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
         coEvery { mapOverlayService.removeOneTimeMarker(listOf(SEARCH_MARKER)) } returns Unit
         coEvery { nativeAdService.getAd() } returns Result.success(emptyList())
 
@@ -222,7 +223,7 @@ class DriveViewModelTest {
 
             // @ 서치바 클릭(광고있음)
             viewModel.handleIntent(DriveScreenIntent.SearchBarClick(true))
-            val activeExpect= initState.run {
+            val activeExpect = initState.run {
                 copy(
                     stateMode = DriveVisibleMode.SearchBarExpand,
                     searchBarState = searchBarState.copy(
@@ -248,7 +249,7 @@ class DriveViewModelTest {
                 )
             )
         }
-        val viewModel= initViewModel(StandardTestDispatcher(testScheduler), initState)
+        val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
 
         coEvery { mapOverlayService.removeOneTimeMarker(listOf(SEARCH_MARKER)) } returns Unit
 
@@ -257,7 +258,7 @@ class DriveViewModelTest {
 
             // @ 서치바 닫기 클릭
             viewModel.handleIntent(DriveScreenIntent.SearchBarClose)
-            val inActiveExpect= initState.run {
+            val inActiveExpect = initState.run {
                 copy(
                     stateMode = DriveVisibleMode.Explorer,
                     searchBarState = searchBarState.copy(
@@ -338,7 +339,7 @@ class DriveViewModelTest {
     @Test
     fun mapAsync() = runTest {
         val initState = DriveScreenState()
-        val viewModel= initViewModel(StandardTestDispatcher(testScheduler), initState)
+        val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
         val fpFlow = MutableStateFlow<Int>(0)
 
         every { mapOverlayService.fingerPrintFlow } returns fpFlow
@@ -369,12 +370,12 @@ class DriveViewModelTest {
         }
     }
 
-   @Test
+    @Test
     fun cameraUpdated() = runTest {
         // 지도 탐색 상태
-       val latest = CameraState(LatLng(1.0, 1.0), 0.0)
-       val current = CameraState(LatLng(2.0, 2.0), DRIVE_LIST_MIN_ZOOM)
-       val nearCourse = Course(
+        val latest = CameraState(LatLng(1.0, 1.0), 0.0)
+        val current = CameraState(LatLng(2.0, 2.0), DRIVE_LIST_MIN_ZOOM)
+        val nearCourse = Course(
             courseId = "cs1",
             waypoints = listOf(current.latLng),
             points = listOf(current.latLng),
@@ -387,12 +388,20 @@ class DriveViewModelTest {
             )
         )
         val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
-        coEvery { getNearByCourseUseCase(current.latLng, current.zoom) } returns Result.success(listOf(nearCourse))
-        coEvery { filterListCourseUseCase(
+        coEvery {
+            getNearByCourseUseCase(
+                current.latLng,
+                current.zoom,
+                current.viewport
+            )
+        } returns Result.success(listOf(nearCourse))
+        coEvery {
+            filterListCourseUseCase(
                 current.viewport,
                 current.zoom,
                 listOf(nearCourse)
-            ) } returns Result.success(listOf(nearCourse))
+            )
+        } returns Result.success(listOf(nearCourse))
         coEvery { mapOverlayService.addCourseMarkerAndPath(listOf(nearCourse)) } returns Unit
         coEvery { mapOverlayService.removeCourseMarkerAndPath(listOf()) } returns Unit
         coEvery { mapOverlayService.showAllOverlays() } returns Unit
@@ -438,73 +447,73 @@ class DriveViewModelTest {
         }
 
 
-       // 코스 세부보기 상태
-       val moveCanera = CameraState(latLng = LatLng(3.0,3.0), zoom = 11.0)
-       val scaleCpId = "cp1"
-       val seletedCourse = Course("cs1", checkpointIdGroup = listOf(scaleCpId, "cp2"))
-       val initState2 = DriveScreenState(
-           stateMode = DriveVisibleMode.CourseDetail,
-           naverMapState = NaverMapState(
-               latestCameraState = latest
-           ),
-           selectedCourse = seletedCourse
-       )
-       val viewModel2 = initViewModel(StandardTestDispatcher(testScheduler), initState2)
-       coEvery {
-           mapOverlayService.scaleToPointLeafInCluster(seletedCourse.courseId, moveCanera.latLng)
-       } returns Result.success(scaleCpId)
+        // 코스 세부보기 상태
+        val moveCanera = CameraState(latLng = LatLng(3.0, 3.0), zoom = 11.0)
+        val scaleCpId = "cp1"
+        val seletedCourse = Course("cs1", checkpointIdGroup = listOf(scaleCpId, "cp2"))
+        val initState2 = DriveScreenState(
+            stateMode = DriveVisibleMode.CourseDetail,
+            naverMapState = NaverMapState(
+                latestCameraState = latest
+            ),
+            selectedCourse = seletedCourse
+        )
+        val viewModel2 = initViewModel(StandardTestDispatcher(testScheduler), initState2)
+        coEvery {
+            mapOverlayService.scaleToPointLeafInCluster(seletedCourse.courseId, moveCanera.latLng)
+        } returns Result.success(scaleCpId)
 
-       coEvery { mapOverlayService.removeCheckPointCluster(seletedCourse.courseId) } returns Unit
-       coEvery { mapOverlayService.showAllOverlays() } returns Unit
+        coEvery { mapOverlayService.removeCheckPointCluster(seletedCourse.courseId) } returns Unit
+        coEvery { mapOverlayService.showAllOverlays() } returns Unit
 
-       viewModel2.driveScreenState.test {
-           assertEquals(initState2, awaitItem())
+        viewModel2.driveScreenState.test {
+            assertEquals(initState2, awaitItem())
 
-           // @ 지도 타일 이동 (현재위치)
-           viewModel2.handleIntent(DriveScreenIntent.CameraUpdated(moveCanera))
+            // @ 지도 타일 이동 (현재위치)
+            viewModel2.handleIntent(DriveScreenIntent.CameraUpdated(moveCanera))
 
-           // 클러스터 리프 스케일
+            // 클러스터 리프 스케일
 
-           // 카메라 이동 업데이트
-           val cameraExpect = initState2.run {
-               copy(
-                   naverMapState = naverMapState.copy(
-                       latestCameraState = moveCanera
-                   )
-               )
-           }
-           assertEquals(cameraExpect, awaitItem())
+            // 카메라 이동 업데이트
+            val cameraExpect = initState2.run {
+                copy(
+                    naverMapState = naverMapState.copy(
+                        latestCameraState = moveCanera
+                    )
+                )
+            }
+            assertEquals(cameraExpect, awaitItem())
 
-           // @ 지도 줌아웃 (코스 세부 최소줌)
-           val zoomOutCamera = moveCanera.copy(zoom= COURSE_DETAIL_MIN_ZOOM)
-           viewModel2.handleIntent(DriveScreenIntent.CameraUpdated(zoomOutCamera))
+            // @ 지도 줌아웃 (코스 세부 최소줌)
+            val zoomOutCamera = moveCanera.copy(zoom = COURSE_DETAIL_MIN_ZOOM)
+            viewModel2.handleIntent(DriveScreenIntent.CameraUpdated(zoomOutCamera))
 
-           // 클러스터 리프 스케일
+            // 클러스터 리프 스케일
 
-           // 지도 탐험 돌아가기
-           val exploreExpect = cameraExpect.run {
-               copy(
-                   stateMode = DriveVisibleMode.Explorer,
-                   searchBarState = SearchBarState(),
-                   popUpState = PopUpState(),
-                   bottomSheetState = BottomSheetState(),
-                   floatingButtonState = FloatingButtonState(),
-                   selectedCourse = Course(),
-                   selectedCheckPoint = CheckPoint()
-               )
-           }
-           assertEquals(exploreExpect, awaitItem())
+            // 지도 탐험 돌아가기
+            val exploreExpect = cameraExpect.run {
+                copy(
+                    stateMode = DriveVisibleMode.Explorer,
+                    searchBarState = SearchBarState(),
+                    popUpState = PopUpState(),
+                    bottomSheetState = BottomSheetState(),
+                    floatingButtonState = FloatingButtonState(),
+                    selectedCourse = Course(),
+                    selectedCheckPoint = CheckPoint()
+                )
+            }
+            assertEquals(exploreExpect, awaitItem())
 
-           // 카메라 줌 레벨 업데이트
-           val zoomExpect = exploreExpect.run {
-               copy(
-                   naverMapState = naverMapState.copy(
-                       latestCameraState = zoomOutCamera
-                   )
-               )
-           }
-           assertEquals(zoomExpect, awaitItem())
-       }
+            // 카메라 줌 레벨 업데이트
+            val zoomExpect = exploreExpect.run {
+                copy(
+                    naverMapState = naverMapState.copy(
+                        latestCameraState = zoomOutCamera
+                    )
+                )
+            }
+            assertEquals(zoomExpect, awaitItem())
+        }
 
     }
 
@@ -514,7 +523,7 @@ class DriveViewModelTest {
         val cp = CheckPoint(
             checkPointId = "cp1",
             imageId = "img1",
-            thumbnail = "small/img1.jpg"
+            thumbnail = "small/img1.webp"
         )
         val marker = MarkerInfo(
             contentId = cp.checkPointId,
@@ -550,21 +559,9 @@ class DriveViewModelTest {
 
             // 체크포인트 가져오기 시도 (성공)
             val cpExpect = clickExpect.run {
-                copy(
-                    selectedCheckPoint = cp
-                )
+                copy(selectedCheckPoint = cp)
             }
             assertEquals(cpExpect, awaitItem())
-
-            // 체크포인트 썸네일 가져오기 시도 (성공)
-            val imgExpect = cpExpect.run {
-                copy(
-                    popUpState = popUpState.copy(
-                        imagePath = cp.thumbnail
-                    )
-                )
-            }
-            assertEquals(imgExpect, awaitItem())
         }
     }
 
@@ -583,7 +580,7 @@ class DriveViewModelTest {
             CheckPoint(
                 checkPointId = "cp1",
                 imageId = "img1",
-                thumbnail = "small/img1.jpg",
+                thumbnail = "small/img1.webp",
                 latLng = LatLng(1.0, 1.0),
             )
         )
@@ -598,7 +595,7 @@ class DriveViewModelTest {
             CheckPoint(
                 checkPointId = "cp2",
                 imageId = "img1",
-                thumbnail = "small/img1.jpg",
+                thumbnail = "small/img1.webp",
                 latLng = LatLng(1.0, 1.0),
             )
         )
@@ -679,7 +676,7 @@ class DriveViewModelTest {
     @Test
     fun dismissCommentPopUp() = runTest {
         val initState = DriveScreenState()
-        val viewModel= initViewModel(StandardTestDispatcher(testScheduler), initState)
+        val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
 
         viewModel.driveScreenState.test {
             assertEquals(initState, awaitItem())
@@ -702,6 +699,74 @@ class DriveViewModelTest {
     }
 
     @Test
+    fun popupImageSlide() = runTest {
+        val selectCourse = Course("cs0")
+        val checkPoint =
+            CheckPoint(checkPointId = "cp0", courseId = selectCourse.courseId, imageId = "img0")
+        val item = SlideItem(contentId = "cp0", imageId = checkPoint.imageId)
+        val selectedCheckPoint =
+            CheckPoint(checkPointId = "cp1", courseId = selectCourse.courseId, imageId = "img1")
+        val selectedItems = SlideItem(contentId = "cp1", imageId = selectedCheckPoint.imageId)
+
+        val checkPoints = listOf(checkPoint, selectedCheckPoint)
+        val items = listOf(item, selectedItems)
+
+        // 이미지
+        val img0 = "img0.jpg"
+        val img1 = "img1.jpg"
+
+        // 댓글
+        val cm1 = Comment(commentId = "cm1", groupId = "cp1")
+
+        // 체크포인트가(cp0) 선택된 상태
+        val initState = DriveScreenState().run {
+            copy(
+                selectedCourse = selectCourse,
+                selectedCheckPoint = checkPoint,
+                popUpState = PopUpState(
+                    commentState = CommentState(isContentVisible = true),
+                    initPage = 0, // 0 부터 시작
+                    slideItems = items
+                )
+            )
+        }
+        coEvery { getCheckPointForMarkerUseCase(selectCourse.courseId) } returns Result.success(checkPoints)
+        coEvery { getImageForPopupUseCase(checkPoint.imageId) } returns img0
+        coEvery { getImageForPopupUseCase(selectedCheckPoint.imageId) } returns img1
+        coEvery { getCommentForCheckPointUseCase(selectedCheckPoint.checkPointId) } returns Result.success(listOf(cm1))
+
+        val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
+        viewModel.driveScreenState.test {
+            assertEquals(initState, awaitItem())
+
+            //page(1) 슬라이드
+            viewModel.handleIntent(DriveScreenIntent.PopupImageSlide(1))
+
+            // 선택된 체크포인트 갱신
+            val selectedExpect = initState.run {
+                copy(
+                    selectedCheckPoint = selectedCheckPoint
+                )
+            }
+
+            assertEquals(selectedExpect, awaitItem())
+
+            // 이미지, 댓글 갱신
+            val imageAndCommentRefreshExpect = selectedExpect.run {
+                copy(
+                    popUpState = popUpState.copy(
+                        slideItems = listOf(item.copy(url = img0), selectedItems.copy(url = img1)),
+                        commentState = popUpState.commentState.copy(
+                            commentItemGroup = listOf(cm1.toCommentItemState())
+                        )
+                    )
+                )
+            }
+            assertEquals(imageAndCommentRefreshExpect, awaitItem())
+        }
+    }
+
+    @Test
     fun commentListItemClick() = runTest {
         // 접힌 댓글(세부o)
         val cm1 = CommentState.CommentItemState(
@@ -718,12 +783,12 @@ class DriveViewModelTest {
             copy(
                 popUpState = popUpState.copy(
                     commentState = popUpState.commentState.copy(
-                        commentItemGroup = listOf(cm1,cm2)
+                        commentItemGroup = listOf(cm1, cm2)
                     )
                 )
             )
         }
-        val viewModel= initViewModel(StandardTestDispatcher(testScheduler), initState)
+        val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
 
         viewModel.driveScreenState.test {
             assertEquals(initState, awaitItem())
@@ -736,7 +801,7 @@ class DriveViewModelTest {
                 copy(
                     popUpState = popUpState.copy(
                         commentState = popUpState.commentState.copy(
-                            commentItemGroup = listOf(cm1.copy(isFold = false) ,cm2)
+                            commentItemGroup = listOf(cm1.copy(isFold = false), cm2)
                         )
                     )
                 )
@@ -754,7 +819,7 @@ class DriveViewModelTest {
                 copy(
                     popUpState = popUpState.copy(
                         commentState = popUpState.commentState.copy(
-                            commentItemGroup = listOf(cm1.copy(isFold = true) ,cm2)
+                            commentItemGroup = listOf(cm1.copy(isFold = true), cm2)
                         )
                     )
                 )
@@ -776,23 +841,23 @@ class DriveViewModelTest {
         )
         val initState = DriveScreenState().run {
             copy(
-               popUpState =popUpState.copy(
-                   commentState = popUpState.commentState.copy(
-                       commentSettingState = popUpState.commentState.commentSettingState.copy(
-                           isVisible = false
-                       )
-                   )
-               )
+                popUpState = popUpState.copy(
+                    commentState = popUpState.commentState.copy(
+                        commentSettingState = popUpState.commentState.commentSettingState.copy(
+                            isVisible = false
+                        )
+                    )
+                )
             )
         }
-        val viewModel= initViewModel(StandardTestDispatcher(testScheduler), initState)
+        val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
 
         viewModel.driveScreenState.test {
             assertEquals(initState, awaitItem())
             viewModel.handleIntent(DriveScreenIntent.CommentListItemLongClick(comment))
 
             // 댓글 설정화면 보임
-            val showExpect= initState.run {
+            val showExpect = initState.run {
                 copy(
                     popUpState = popUpState.copy(
                         commentState = popUpState.commentState.copy(
@@ -884,7 +949,7 @@ class DriveViewModelTest {
                 copy(
                     popUpState = popUpState.copy(
                         commentState = popUpState.commentState.copy(
-                            commentItemGroup = popUpState.commentState.commentItemGroup.map {
+                            commentItemGroup = popUpState.commentState.commentItemGroup?.map {
                                 if (it.data.commentId == likeCommentItemState.data.commentId)
                                     it.copy(isLoading = false)
                                 else it
@@ -1141,7 +1206,12 @@ class DriveViewModelTest {
             assertEquals(initState, awaitItem())
 
             // @ 신고 클릭
-            viewModel.handleIntent(DriveScreenIntent.CommentReportClick(reportComment, ReportReason.OTHER))
+            viewModel.handleIntent(
+                DriveScreenIntent.CommentReportClick(
+                    reportComment,
+                    ReportReason.OTHER
+                )
+            )
 
             // 로딩 시작
             val loadingExpect = initState.replaceCommentSettingLoading(true)
@@ -1185,7 +1255,7 @@ class DriveViewModelTest {
             viewModel.handleIntent(DriveScreenIntent.CommentEmogiPress(seletedEmogi))
 
             // 댓글 추가 대표 이모지 변경
-             val largeExpect= initState.run {
+            val largeExpect = initState.run {
                 copy(
                     popUpState = popUpState.copy(
                         commentState = popUpState.commentState.copy(
@@ -1227,7 +1297,7 @@ class DriveViewModelTest {
 
 
             // 한줄평 미리보기 표시
-            val showExpect= initState.run {
+            val showExpect = initState.run {
                 copy(
                     popUpState = popUpState.copy(
                         commentState = popUpState.commentState.copy(
@@ -1252,7 +1322,7 @@ class DriveViewModelTest {
             viewModel.handleIntent(DriveScreenIntent.CommentTypePress(oneTypeClick))
 
             // 한줄평 미리보기 숨기기
-            val hideExpect= showExpect.run {
+            val hideExpect = showExpect.run {
                 copy(
                     popUpState = popUpState.copy(
                         commentState = popUpState.commentState.copy(
@@ -1312,8 +1382,7 @@ class DriveViewModelTest {
                     popUpState = popUpState.copy(
                         commentState = popUpState.commentState.copy(
                             isContentVisible = true,
-                            isImeVisible = true,
-                            isLoading = true
+                            isImeVisible = true
                         )
                     )
                 )
@@ -1332,35 +1401,24 @@ class DriveViewModelTest {
             }
 
             assertEquals(commentAddExpect, awaitItem())
-
-            // 로딩 중지
-            val commentLoadingStopExpect = commentAddExpect.run {
-                copy(
-                    popUpState = popUpState.copy(
-                        commentState = popUpState.commentState.copy(
-                            isLoading = false
-                        )
-                    )
-                )
-            }
-            assertEquals(commentLoadingStopExpect, awaitItem())
         }
     }
 
     @Test
     fun checkpointAddFloatingButtonClick() = runTest {
         // 코스 세부 보기 상태
-        val selectedCourse = Course(courseId = "cs1", points = listOf(LatLng(1.0,1.0)))
+        val selectedCourse = Course(courseId = "cs1", points = listOf(LatLng(1.0, 1.0)))
         val initState = DriveScreenState().run {
             copy(
                 stateMode = DriveVisibleMode.CourseDetail,
                 selectedCourse = selectedCourse
             )
         }
-        val viewModel= initViewModel(StandardTestDispatcher(testScheduler), initState)
+        val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
 
-        val addMarkerInfo = MarkerInfo(contentId = CHECKPOINT_ADD_MARKER, position = selectedCourse.points.first())
-         coEvery { mapOverlayService.addOneTimeMarker(listOf(addMarkerInfo)) } returns Unit
+        val addMarkerInfo =
+            MarkerInfo(contentId = CHECKPOINT_ADD_MARKER, position = selectedCourse.points.first())
+        coEvery { mapOverlayService.addOneTimeMarker(listOf(addMarkerInfo)) } returns Unit
 
         viewModel.driveScreenState.test {
             assertEquals(initState, awaitItem())
@@ -1468,7 +1526,7 @@ class DriveViewModelTest {
             )
         }
 
-        val viewModel= initViewModel(StandardTestDispatcher(testScheduler), initState)
+        val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
         coEvery { nativeAdService.getAd() } returns Result.success(emptyList())
 
         viewModel.driveScreenState.test {
@@ -1509,7 +1567,7 @@ class DriveViewModelTest {
     @Test
     fun exportMapAppButtonClick() = runTest {
         val initState = DriveScreenState()
-        val viewModel= initViewModel(StandardTestDispatcher(testScheduler), initState)
+        val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
         val error = AppError.MapNotSupportExcludeLocation()
 
         coEvery { driveHandler.handle(error) } returns error
@@ -1532,7 +1590,7 @@ class DriveViewModelTest {
                 selectedCourse = selectedCourse
             )
         }
-        val viewModel= initViewModel(StandardTestDispatcher(testScheduler), initState)
+        val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
 
         coEvery { mapOverlayService.removeCheckPointCluster(selectedCourse.courseId) } returns Unit
         coEvery { mapOverlayService.showAllOverlays() } returns Unit
@@ -1560,22 +1618,22 @@ class DriveViewModelTest {
     }
 
 
-
     // 바텀시트
     @Test
     fun bottomSheetChange() = runTest {
-        val seltedCourse = Course("cs1", cameraLatLng = LatLng(1.0,1.0))
+        val seltedCourse = Course("cs1", cameraLatLng = LatLng(1.0, 1.0))
 
-        // 추가(체크포인트) 바텀시트 닫힌 상태
+        // 추가(체크포인트) 확장 상태
         val initState1 = DriveScreenState().run {
             copy(
+                stateMode = DriveVisibleMode.BottomSheetExpand,
                 bottomSheetState = bottomSheetState.copy(
                     content = DriveBottomSheetContent.CHECKPOINT_ADD
                 ),
                 selectedCourse = seltedCourse
             )
         }
-        val viewModel1= initViewModel(StandardTestDispatcher(testScheduler), initState1)
+        val viewModel1 = initViewModel(StandardTestDispatcher(testScheduler), initState1)
         coEvery { mapOverlayService.removeOneTimeMarker(listOf(CHECKPOINT_ADD_MARKER)) } returns Unit
         viewModel1.driveScreenState.test {
             assertEquals(initState1, awaitItem())
@@ -1584,7 +1642,7 @@ class DriveViewModelTest {
             viewModel1.handleIntent(DriveScreenIntent.BottomSheetChange(SheetVisibleMode.Opened))
 
             // 카메라 이동 - 바텀시트 높이만큼 상승
-            val cameraUpExpect = initState1.run{
+            val cameraUpExpect = initState1.run {
                 copy(
                     naverMapState = naverMapState.copy(
                         requestCameraState = naverMapState.latestCameraState.copy(
@@ -1601,7 +1659,7 @@ class DriveViewModelTest {
             viewModel1.handleIntent(DriveScreenIntent.BottomSheetChange(SheetVisibleMode.Closed))
 
             // 카메라 이동 및 코스 세부 정보 돌아가기 - 바텀시트 높이만큼 하강
-            val cameraDown = cameraUpExpect.run{
+            val cameraDown = cameraUpExpect.run {
                 copy(
                     stateMode = DriveVisibleMode.CourseDetail,
                     naverMapState = naverMapState.copy(
@@ -1632,7 +1690,7 @@ class DriveViewModelTest {
                 selectedCourse = seltedCourse
             )
         }
-        val viewModel2= initViewModel(StandardTestDispatcher(testScheduler), initState2)
+        val viewModel2 = initViewModel(StandardTestDispatcher(testScheduler), initState2)
         viewModel2.driveScreenState.test {
             assertEquals(initState2, awaitItem())
 
@@ -1640,7 +1698,7 @@ class DriveViewModelTest {
             viewModel2.handleIntent(DriveScreenIntent.BottomSheetChange(SheetVisibleMode.Closing))
 
             // 코스 세부 정보로 돌아가기
-            val courseExpect = initState2.run{
+            val courseExpect = initState2.run {
                 copy(
                     stateMode = DriveVisibleMode.CourseDetail,
                     floatingButtonState = floatingButtonState.copy(
@@ -1654,7 +1712,7 @@ class DriveViewModelTest {
             viewModel2.handleIntent(DriveScreenIntent.BottomSheetChange(SheetVisibleMode.Closed))
 
             // 바텀시트 초기화
-            val clearExpect = courseExpect.run{
+            val clearExpect = courseExpect.run {
                 copy(
                     bottomSheetState = BottomSheetState()
                 )
@@ -1675,7 +1733,7 @@ class DriveViewModelTest {
                 selectedCourse = seltedCourse
             )
         }
-        val viewModel3= initViewModel(StandardTestDispatcher(testScheduler), initState3)
+        val viewModel3 = initViewModel(StandardTestDispatcher(testScheduler), initState3)
         viewModel3.driveScreenState.test {
             assertEquals(initState3, awaitItem())
 
@@ -1683,7 +1741,7 @@ class DriveViewModelTest {
             viewModel3.handleIntent(DriveScreenIntent.BottomSheetChange(SheetVisibleMode.Closing))
 
             // 체크포인트 세부정보로 돌아가기
-            val checkExpect = initState3.run{
+            val checkExpect = initState3.run {
                 copy(
                     stateMode = DriveVisibleMode.BlurCheckpointDetail,
                     floatingButtonState = floatingButtonState.copy(
@@ -1697,7 +1755,7 @@ class DriveViewModelTest {
             viewModel3.handleIntent(DriveScreenIntent.BottomSheetChange(SheetVisibleMode.Closed))
 
             // 바텀시트 초기화
-            val clearExpect = checkExpect.run{
+            val clearExpect = checkExpect.run {
                 copy(
                     bottomSheetState = BottomSheetState()
                 )
@@ -1721,7 +1779,7 @@ class DriveViewModelTest {
                 selectedCourse = seltedCourse
             )
         }
-        val viewModel4= initViewModel(StandardTestDispatcher(testScheduler), initState4)
+        val viewModel4 = initViewModel(StandardTestDispatcher(testScheduler), initState4)
         viewModel4.driveScreenState.test {
             assertEquals(initState4, awaitItem())
 
@@ -1729,7 +1787,7 @@ class DriveViewModelTest {
             viewModel4.handleIntent(DriveScreenIntent.BottomSheetChange(SheetVisibleMode.Closing))
 
             // Ime 입력창 숨기기
-            val imeExpect = initState4.run{
+            val imeExpect = initState4.run {
                 copy(
                     popUpState = popUpState.copy(
                         commentState = popUpState.commentState.copy(
@@ -1744,7 +1802,7 @@ class DriveViewModelTest {
             viewModel4.handleIntent(DriveScreenIntent.BottomSheetChange(SheetVisibleMode.Closed))
 
             // 플로팅 버튼 보이기
-            val floatExpect = imeExpect.run{
+            val floatExpect = imeExpect.run {
                 copy(
                     stateMode = DriveVisibleMode.BlurCheckpointDetail,
                     floatingButtonState = floatingButtonState.copy(
@@ -1759,21 +1817,21 @@ class DriveViewModelTest {
         }
     }
 
-     @Test
+    @Test
     fun checkpointLocationSliderChange() = runTest {
         // 두개의 포인트를 가진 코스
-        val latLng1 = LatLng(1.0,1.0)
-        val latLng2 = LatLng(2.0,2.0)
-         val seletedCourse = Course(
-             "cs1",
-             points = listOf(latLng1,latLng2)
-         )
+        val latLng1 = LatLng(1.0, 1.0)
+        val latLng2 = LatLng(2.0, 2.0)
+        val seletedCourse = Course(
+            "cs1",
+            points = listOf(latLng1, latLng2)
+        )
         val initState = DriveScreenState().run {
             copy(
                 selectedCourse = seletedCourse
             )
         }
-        val viewModel= initViewModel(StandardTestDispatcher(testScheduler), initState)
+        val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
 
          coEvery { mapOverlayService.updateOneTimeMarker(
              MarkerInfo(contentId = CHECKPOINT_ADD_MARKER, type = MarkerType.DEFAULT, position = latLng1))
@@ -1825,7 +1883,7 @@ class DriveViewModelTest {
     @Test
     fun checkpointDescriptionEnterClick() = runTest {
         val initState = DriveScreenState()
-        val viewModel= initViewModel(StandardTestDispatcher(testScheduler), initState)
+        val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
 
         viewModel.driveScreenState.test {
             assertEquals(initState, awaitItem())
@@ -1851,7 +1909,7 @@ class DriveViewModelTest {
     @Test
     fun checkpointImageChange() = runTest {
         val initState = DriveScreenState()
-        val viewModel= initViewModel(StandardTestDispatcher(testScheduler), initState)
+        val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
 
         viewModel.driveScreenState.test {
             assertEquals(initState, awaitItem())
@@ -2019,7 +2077,8 @@ class DriveViewModelTest {
         coEvery {
             getNearByCourseUseCase(
                 centerCamera.latLng,
-                centerCamera.zoom
+                centerCamera.zoom,
+                centerCamera.viewport
             )
         } returns Result.success(listOf(normalCourse))
         coEvery {
@@ -2181,7 +2240,7 @@ class DriveViewModelTest {
         coEvery { mapOverlayService.removeCheckPointCluster(removeCourse.courseId) } returns Unit
 
         coEvery {
-            getNearByCourseUseCase(centerCamera.latLng, centerCamera.zoom)
+            getNearByCourseUseCase(centerCamera.latLng, centerCamera.zoom, centerCamera.viewport)
         } returns Result.success(listOf(normalCourse))
         coEvery {
             filterListCourseUseCase(
@@ -2304,7 +2363,7 @@ class DriveViewModelTest {
                 )
             )
         }
-        val viewModel= initViewModel(StandardTestDispatcher(testScheduler), initState)
+        val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
 
         coEvery { nativeAdService.getAd() } returns Result.success(loadedAd)
 
@@ -2350,7 +2409,6 @@ class DriveViewModelTest {
                     isActive = true
                 ),
                 popUpState = PopUpState(
-                    imagePath = "img1"
                 ),
                 bottomSheetState = BottomSheetState(
                     content = DriveBottomSheetContent.CHECKPOINT_ADD
@@ -2365,7 +2423,7 @@ class DriveViewModelTest {
                 )
             )
         }
-        val viewModel= initViewModel(StandardTestDispatcher(testScheduler), initState)
+        val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
 
         coEvery { nativeAdService.getAd() } returns Result.success(emptyList())
         coEvery { mapOverlayService.clear() } returns Unit
@@ -2404,7 +2462,7 @@ class DriveViewModelTest {
                 stateMode = DriveVisibleMode.BlurBottomSheetExpand
             )
         }
-        val viewModel1= initViewModel(StandardTestDispatcher(testScheduler), initState1)
+        val viewModel1 = initViewModel(StandardTestDispatcher(testScheduler), initState1)
         viewModel1.driveScreenState.test {
             assertEquals(initState1, awaitItem())
 
@@ -2427,7 +2485,7 @@ class DriveViewModelTest {
                 stateMode = DriveVisibleMode.BlurCheckpointBottomSheetExpand
             )
         }
-        val viewModel2= initViewModel(StandardTestDispatcher(testScheduler), initState2)
+        val viewModel2 = initViewModel(StandardTestDispatcher(testScheduler), initState2)
         viewModel2.driveScreenState.test {
             assertEquals(initState2, awaitItem())
 
@@ -2446,7 +2504,6 @@ class DriveViewModelTest {
             assertEquals(checkpointExpect, awaitItem())
         }
     }
-
 
 
     private fun initViewModel(

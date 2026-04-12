@@ -7,9 +7,8 @@ import com.wheretogo.presentation.defaultCommentEmogiGroup
 data class CommentState(
     val isContentVisible: Boolean = false,
     val isImeVisible: Boolean = false,
-    val isLoading: Boolean = false,
     val isDragGuide: Boolean = false,
-    val commentItemGroup: List<CommentItemState> = emptyList(),
+    val commentItemGroup: List<CommentItemState>? = null,
     val commentSettingState: CommentSettingState = CommentSettingState(),
     val commentAddState: CommentAddState = CommentAddState()
 ) {
