@@ -73,8 +73,7 @@ fun ProfilePrivate.toLocalProfilePrivate(): LocalProfilePrivate {
         authCompany = authCompany,
         lastVisited = lastVisited,
         accountCreation = accountCreation,
-        isAdRemove = isAdRemove,
-        isAdmin = isAdmin
+        isAdRemove = isAdRemove
     )
 }
 
@@ -85,7 +84,6 @@ fun LocalProfilePrivate.toProfilePrivate(): ProfilePrivate {
         lastVisited = lastVisited,
         accountCreation = accountCreation,
         isAdRemove = isAdRemove,
-        isAdmin = isAdmin
     )
 }
 
@@ -126,7 +124,6 @@ fun RemoteProfilePrivate.toProfilePrivate(): ProfilePrivate {
         lastVisited = lastVisited,
         accountCreation = accountCreation,
         isAdRemove = adRemove,
-        isAdmin = admin,
         reportedCount = reportedCount,
         msgToken = msgToken
     )
@@ -139,20 +136,7 @@ fun RemoteProfilePrivate.toLocalProfilePrivate(): LocalProfilePrivate {
         lastVisited = lastVisited,
         accountCreation = accountCreation,
         isAdRemove = adRemove,
-        reportedCount = reportedCount,
-        isAdmin = admin
-    )
-}
-
-fun ProfilePrivate.toRemoteProfilePrivate(): RemoteProfilePrivate {
-    return RemoteProfilePrivate(
-        mail = mail,
-        authCompany = authCompany,
-        lastVisited = lastVisited,
-        accountCreation = accountCreation,
-        adRemove = isAdRemove,
-        reportedCount = reportedCount,
-        admin = isAdmin
+        reportedCount = reportedCount
     )
 }
 

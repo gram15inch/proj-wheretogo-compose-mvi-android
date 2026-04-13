@@ -12,4 +12,6 @@ interface AuthRemoteDatasource {
     suspend fun getApiToken(isForceRefresh: Boolean): Result<String?>
 
     suspend fun getMsgToken(): Result<String>
+
+    suspend fun isAdmin(): Result<Boolean>
 }

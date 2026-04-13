@@ -1,6 +1,5 @@
 package com.wheretogo.data.model.user
 
-import com.squareup.moshi.Json
 import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
 
 data class RemoteSyncUser(
