@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.LIST_ITEM_ZOOM
 import com.wheretogo.domain.MarkerType
-import com.wheretogo.domain.feature.sucessMap
+import com.wheretogo.domain.feature.successMap
 import com.wheretogo.domain.handler.DriveEvent
 import com.wheretogo.domain.handler.DriveHandler
 import com.wheretogo.domain.model.address.LatLng
@@ -1347,7 +1347,7 @@ class DriveViewModel @Inject constructor(
     private suspend fun refreshNearCourseOverlayAndList(cameraState: CameraState) {
         withContext(Dispatchers.IO) {
             getNearByCourseUseCase(cameraState.latLng, cameraState.zoom, cameraState.viewport)
-        }.sucessMap { courseGroup ->
+        }.successMap { courseGroup ->
             runCatching {
                 val (hideGroup, showGroup)  = courseGroup.partition { it.isHide }
                 mapOverlayService.addCourseMarkerAndPath(showGroup)
@@ -1355,7 +1355,7 @@ class DriveViewModel @Inject constructor(
                 mapOverlayService.showAllOverlays()
                 showGroup
             }
-        }.sucessMap {
+        }.successMap {
             filterListCourseUseCase(cameraState.viewport, cameraState.zoom, it)
         }.onSuccess { courseGroup ->
             _driveScreenState.update { it.updateListItem(courseGroup) }

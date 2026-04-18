@@ -6,7 +6,7 @@ import com.wheretogo.domain.CourseAddValid
 import com.wheretogo.domain.PathType
 import com.wheretogo.domain.RouteAttr
 import com.wheretogo.domain.SearchType
-import com.wheretogo.domain.feature.sucessMap
+import com.wheretogo.domain.feature.successMap
 import com.wheretogo.domain.handler.CourseAddEvent
 import com.wheretogo.domain.handler.CourseAddHandler
 import com.wheretogo.domain.model.address.LatLng
@@ -316,9 +316,9 @@ class CourseAddViewModel @Inject constructor(
                 }
                 route
             }
-        }.sucessMap {
+        }.successMap {
             mapOverlayService.createFullPath(it.points)
-        }.sucessMap {
+        }.successMap {
             val content = _courseAddScreenState.value
                 .bottomSheetState.courseAddSheetState.toValidContent()
             courseAddValidUseCase(content)

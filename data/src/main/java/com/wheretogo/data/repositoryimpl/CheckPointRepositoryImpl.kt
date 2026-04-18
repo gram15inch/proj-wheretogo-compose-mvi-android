@@ -16,7 +16,7 @@ import com.wheretogo.data.toLocal
 import com.wheretogo.data.toLocalCheckPoint
 import com.wheretogo.data.toRemoteCheckPoint
 import com.wheretogo.domain.ImageSize
-import com.wheretogo.domain.feature.sucessMap
+import com.wheretogo.domain.feature.successMap
 import com.wheretogo.domain.model.checkpoint.CheckPoint
 import com.wheretogo.domain.model.checkpoint.CheckPointAddRequest
 import com.wheretogo.domain.repository.CheckPointRepository
@@ -46,7 +46,7 @@ class CheckPointRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getCheckPointGroupByCourseId(courseId: String): Result<List<CheckPoint>> {
-        return checkPointLocalDatasource.getCheckpointGroup(courseId).sucessMap { group ->
+        return checkPointLocalDatasource.getCheckpointGroup(courseId).successMap { group ->
             if(group == null || group.isExpired(cachePolicy)){
                 checkPointRemoteDatasource.getCheckPointGroupByCourseId(courseId)
                     .map { it.toLocal() }
