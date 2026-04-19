@@ -25,8 +25,8 @@ android {
 
     defaultConfig {
         applicationId = "com.dhkim139.wheretogo"
-        versionCode = 44
-        versionName = "1.0-rc15"
+        versionCode = 45
+        versionName = "1.0-rc16"
 
         testInstrumentationRunner = "com.dhkim139.wheretogo.TestRunner"
         vectorDrawables {
