@@ -163,6 +163,21 @@ enum class BanReason{
     OTHER               // 기타
 }
 
+
+
+enum class SignErrorReason{
+    SUSPEND_USER, OTHER;
+
+    companion object{
+        fun fromString(str:String): SignErrorReason{
+            return try {
+                SignErrorReason.valueOf(str)
+            }catch(_: Exception) {
+                OTHER
+            }
+        }
+    }
+}
 fun zoomToGeohashLength(zoom: Double): Int {
     return when (zoom) {
         in 0.0..<9.5 -> 3

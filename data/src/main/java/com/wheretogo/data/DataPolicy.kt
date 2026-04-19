@@ -6,6 +6,7 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import com.wheretogo.data.feature.safeErrorBody
 import com.wheretogo.domain.DomainError
+import com.wheretogo.domain.SignErrorReason
 import okio.IOException
 import retrofit2.Response
 import java.net.SocketTimeoutException
@@ -106,7 +107,7 @@ fun Throwable?.toDataError(): DataError{
         is SocketTimeoutException -> DataError.NetworkError("SocketTimeoutException")
         is java.io.IOException -> DataError.NetworkError("IOException")
         is FirebaseNetworkException -> DataError.NetworkError()
-        is FirebaseAuthInvalidUserException -> DataError.AuthInvalid()
+        is FirebaseAuthInvalidUserException -> DataError.AuthInvalid(SignErrorReason.SUSPEND_USER.name)
         null -> DataError.InternalError("알수없는 오류")
         else -> DataError.UnexpectedException(this)
     }
