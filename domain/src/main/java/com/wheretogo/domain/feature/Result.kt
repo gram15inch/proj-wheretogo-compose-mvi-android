@@ -2,7 +2,7 @@ package com.wheretogo.domain.feature
 
 import com.wheretogo.domain.toDomainError
 
-inline fun <T, R> Result<T>.sucessMap(
+inline fun <T, R> Result<T>.successMap(
     transform: (T) -> Result<R>
 ): Result<R> = fold(
     onSuccess = transform,

@@ -2,9 +2,9 @@ package com.wheretogo.domain.model.checkpoint
 
 import com.wheretogo.domain.model.address.LatLng
 
-data class CheckPointContent(
+data class CheckPointCreateContent(
     val courseId: String = "",
     val latLng: LatLng = LatLng(),
-    val imageUriString: String = "",
+    val imageId: String = "",
     val description: String = ""
 )

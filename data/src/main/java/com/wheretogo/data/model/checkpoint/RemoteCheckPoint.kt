@@ -3,7 +3,7 @@ package com.wheretogo.data.model.checkpoint
 import com.wheretogo.data.model.map.DataLatLng
 
 data class RemoteCheckPoint(
-    val checkPointId: String = "",
+    val id: String = "",
     val courseId: String = "",
     val userId: String = "",
     val userName: String = "",

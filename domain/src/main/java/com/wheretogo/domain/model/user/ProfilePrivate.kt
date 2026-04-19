@@ -8,7 +8,6 @@ data class ProfilePrivate(
     val lastVisited: Long = 0L,
     val accountCreation: Long = 0L,
     val isAdRemove: Boolean = false,
-    val isAdmin: Boolean = false,
     val reportedCount: Int = 0,
     val msgToken: String = ""
 )

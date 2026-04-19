@@ -249,7 +249,6 @@ fun getProfileDummy(): List<Profile> {
             0 -> {
                 p.copy(
                     private = p.private.copy(
-                        isAdmin = true,
                         isAdRemove = true
                     )
                 )
@@ -258,7 +257,6 @@ fun getProfileDummy(): List<Profile> {
             1 -> {
                 p.copy(
                     private = p.private.copy(
-                        isAdmin = false,
                         isAdRemove = true
                     )
                 )
@@ -266,10 +264,7 @@ fun getProfileDummy(): List<Profile> {
 
             2 -> {
                 p.copy(
-                    private = p.private.copy(
-                        isAdmin = false,
-                        isAdRemove = false
-                    )
+                    private = p.private.copy()
                 )
             }
 

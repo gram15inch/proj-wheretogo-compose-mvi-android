@@ -6,6 +6,7 @@ import com.google.android.gms.ads.AdLoader
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.LoadAdError
 import com.wheretogo.presentation.AppError
+import com.wheretogo.presentation.PresentationBuildConfig
 import com.wheretogo.presentation.model.AdItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +25,8 @@ import javax.inject.Inject
 class NativeAdServiceImpl @Inject constructor(
     val context: Context,
     val adId: String,
-    val refreshAdNumbers: Int
+    val refreshAdNumbers: Int,
+    val config: PresentationBuildConfig
 ) : AdService {
     private val _mutexAdCache = Mutex()
     private val _nativeAdCache: Deque<AdItem> = LinkedList()
@@ -35,6 +37,8 @@ class NativeAdServiceImpl @Inject constructor(
     private var _errorCount = 0
 
     override suspend fun getAd(): Result<List<AdItem>> {
+        if(!config.isAdPreLoad) return Result.success(emptyList())
+
         val isLoadSuccess = serviceScope.async {
             when {
                 _refreshTime != 0L -> {

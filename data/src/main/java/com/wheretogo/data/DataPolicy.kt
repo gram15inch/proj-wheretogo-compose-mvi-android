@@ -5,7 +5,9 @@ import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import com.wheretogo.data.feature.safeErrorBody
+import com.wheretogo.domain.BanReason
 import com.wheretogo.domain.DomainError
+import com.wheretogo.domain.SignErrorReason
 import okio.IOException
 import retrofit2.Response
 import java.net.SocketTimeoutException
@@ -78,6 +80,7 @@ sealed class DataError: IOException(){
     data class NotFound(val msg:String = ""): DataError()
     data class Conflict(val msg:String = ""): DataError()
     data class TooManyRequests(val msg:String = ""): DataError()
+    data class RiskContent(val msg:String = ""): DataError()
     data class ServerError(val msg:String = ""): DataError()
     data class InternalError(val msg:String = ""): DataError()
     data class UnexpectedException(val throwable:Throwable): DataError()
@@ -92,6 +95,7 @@ fun Response<*>.toDataError(): DataError {
         403 -> DataError.Forbidden(msg)
         404 -> DataError.NotFound(msg)
         409 -> DataError.Conflict(msg)
+        422 -> DataError.RiskContent(msg)
         429 -> DataError.TooManyRequests(msg)
         503 -> DataError.UserUnavailable(msg)
         else -> DataError.ServerError(msg)
@@ -106,7 +110,7 @@ fun Throwable?.toDataError(): DataError{
         is SocketTimeoutException -> DataError.NetworkError("SocketTimeoutException")
         is java.io.IOException -> DataError.NetworkError("IOException")
         is FirebaseNetworkException -> DataError.NetworkError()
-        is FirebaseAuthInvalidUserException -> DataError.AuthInvalid()
+        is FirebaseAuthInvalidUserException -> DataError.AuthInvalid(SignErrorReason.SUSPEND_USER.name)
         null -> DataError.InternalError("알수없는 오류")
         else -> DataError.UnexpectedException(this)
     }
@@ -121,6 +125,8 @@ fun DataError.toDomainError(): DomainError{
         is DataError.Unauthorized->{ DomainError.Unauthorized(this.msg) }
         is DataError.UserUnavailable->{ DomainError.UserUnavailable(this.msg) }
         is DataError.AuthInvalid->{ DomainError.SignInError(this.msg) }
+        is DataError.RiskContent->{ DomainError.PolicyDeny(BanReason.INAPPROPRIATE.name) }
+        is DataError.TooManyRequests->{ DomainError.PolicyDeny(BanReason.OTHER.name) }
         else -> {
             DomainError.UnexpectedException(this)
         }
@@ -132,7 +138,10 @@ fun<T> Result<T>.toDomainResult(): Result<T>{
     return fold(
         onSuccess = { Result.success(it) },
         onFailure = {
-            Result.failure((it as DataError).toDomainError())
+            if(it is DataError)
+                Result.failure(it.toDomainError())
+            else
+                Result.failure(it)
         }
     )
 }

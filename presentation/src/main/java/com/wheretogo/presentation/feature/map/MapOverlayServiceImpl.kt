@@ -6,7 +6,7 @@ import com.wheretogo.domain.DomainError
 import com.wheretogo.domain.FieldInvalidReason
 import com.wheretogo.domain.PathType
 import com.wheretogo.domain.RouteFieldType
-import com.wheretogo.domain.feature.sucessMap
+import com.wheretogo.domain.feature.successMap
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.checkpoint.CheckPoint
 import com.wheretogo.domain.model.course.Course
@@ -202,7 +202,7 @@ class MapOverlayServiceImpl @Inject constructor(
         clusterId: String,
         point: LatLng
     ): Result<String> = updateScope {
-        overlayProvider.getCluster(clusterKey(clusterId)).sucessMap { appCluster ->
+        overlayProvider.getCluster(clusterKey(clusterId)).successMap { appCluster ->
             runCatching {
                 val leafGroup = appCluster.getAppLeafGroup()
                 val minLeaf = leafGroup.minByOrNull {
@@ -319,7 +319,7 @@ class MapOverlayServiceImpl @Inject constructor(
                 points = waypoints,
                 type = PathType.SCAFFOLD,
             )
-        }.sucessMap { pathInfo ->
+        }.successMap { pathInfo ->
             overlayProvider.updatePath(coursePathKey(WAYPOINT_PATH_ID), pathInfo).run {
                 if (this.exceptionOrNull() is DomainError.NotFound) {
                     overlayProvider.addPath(coursePathKey(WAYPOINT_PATH_ID), pathInfo)
@@ -348,7 +348,7 @@ class MapOverlayServiceImpl @Inject constructor(
                 type = PathType.FULL
             )
             pathInfo
-        }.sucessMap { pathInfo ->
+        }.successMap { pathInfo ->
             overlayProvider.updatePath(coursePathKey(WAYPOINT_PATH_ID), pathInfo).run {
                 if (this.exceptionOrNull() is DomainError.NotFound) {
                     overlayProvider.addPath(coursePathKey(WAYPOINT_PATH_ID), pathInfo)

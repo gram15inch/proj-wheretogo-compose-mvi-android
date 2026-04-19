@@ -8,11 +8,13 @@ import androidx.credentials.exceptions.NoCredentialException
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.app.LegalNoticeActivity
 import com.naver.maps.map.app.OpenSourceLicenseActivity
+import com.wheretogo.domain.SignErrorReason
 import com.wheretogo.domain.DomainError
 import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.MarkerType
 import com.wheretogo.domain.PathType
 import com.wheretogo.domain.RouteAttrItem
+import com.wheretogo.domain.WarningReason
 import com.wheretogo.domain.model.util.Viewport
 import com.wheretogo.presentation.model.EventMsg
 import com.wheretogo.presentation.state.CameraState
@@ -84,6 +86,7 @@ sealed class AppError : Exception() {
     data class Ignore(val msg: String = "") : AppError()
     data class AdLoadError(val msg: String = "") : AppError()
     data class WaitCoolDown(val remainTimeInMinute: Int = 0) : AppError()
+    data class Warning(val reason: WarningReason) : AppError()
     data class UnexpectedException(val throwable: Throwable) : AppError()
 }
 
@@ -271,9 +274,19 @@ fun Throwable.toAppError(): AppError {
         is AppError -> this
         is DomainError.NetworkError -> AppError.NetworkError(msg)
         is DomainError.UserInvalid -> AppError.NeedSignIn(msg)
-        is DomainError.SignInError -> AppError.CredentialError(msg)
+        is DomainError.SignInError -> {
+            val error = SignErrorReason.fromString(msg)
+            when(error){
+                SignErrorReason.SUSPEND_USER -> AppError.Unavailable(msg)
+                else-> AppError.CredentialError(msg)
+            }
+        }
         is DomainError.ExpireData -> AppError.InvalidState(msg)
         is DomainError.UserUnavailable -> AppError.Unavailable(msg)
+        is DomainError.PolicyDeny -> {
+            val reason= WarningReason.fromString(msg)
+            AppError.Warning(reason)
+        }
         is DomainError.CoolDownData -> AppError.WaitCoolDown(remainingMinutes)
         is GetCredentialCancellationException -> AppError.Ignore(message?:"")
         is GetCredentialCustomException -> AppError.CredentialError(errorMessage.toString())

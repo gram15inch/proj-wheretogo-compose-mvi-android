@@ -25,7 +25,6 @@ import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.auth.SyncToken
 import com.wheretogo.domain.model.checkpoint.CheckPoint
-import com.wheretogo.domain.model.checkpoint.CheckPointAddRequest
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.comment.CommentAddRequest
 import com.wheretogo.domain.model.course.Course
@@ -73,8 +72,7 @@ fun ProfilePrivate.toLocalProfilePrivate(): LocalProfilePrivate {
         authCompany = authCompany,
         lastVisited = lastVisited,
         accountCreation = accountCreation,
-        isAdRemove = isAdRemove,
-        isAdmin = isAdmin
+        isAdRemove = isAdRemove
     )
 }
 
@@ -85,7 +83,6 @@ fun LocalProfilePrivate.toProfilePrivate(): ProfilePrivate {
         lastVisited = lastVisited,
         accountCreation = accountCreation,
         isAdRemove = isAdRemove,
-        isAdmin = isAdmin
     )
 }
 
@@ -126,7 +123,6 @@ fun RemoteProfilePrivate.toProfilePrivate(): ProfilePrivate {
         lastVisited = lastVisited,
         accountCreation = accountCreation,
         isAdRemove = adRemove,
-        isAdmin = admin,
         reportedCount = reportedCount,
         msgToken = msgToken
     )
@@ -139,20 +135,7 @@ fun RemoteProfilePrivate.toLocalProfilePrivate(): LocalProfilePrivate {
         lastVisited = lastVisited,
         accountCreation = accountCreation,
         isAdRemove = adRemove,
-        reportedCount = reportedCount,
-        isAdmin = admin
-    )
-}
-
-fun ProfilePrivate.toRemoteProfilePrivate(): RemoteProfilePrivate {
-    return RemoteProfilePrivate(
-        mail = mail,
-        authCompany = authCompany,
-        lastVisited = lastVisited,
-        accountCreation = accountCreation,
-        adRemove = isAdRemove,
-        reportedCount = reportedCount,
-        admin = isAdmin
+        reportedCount = reportedCount
     )
 }
 
@@ -280,28 +263,9 @@ fun CommentAddRequest.toComment(commentId: String): Comment {
     )
 }
 
-fun CheckPointAddRequest.toRemoteCheckPoint(
-    checkPointId: String
-): RemoteCheckPoint {
-    val current = System.currentTimeMillis()
-    return RemoteCheckPoint(
-        checkPointId = checkPointId,
-        courseId = content.courseId,
-        userId = profile.uid,
-        userName = profile.name,
-        latLng = content.latLng.toDataLatLng(),
-        caption = "",
-        captionId = "",
-        imageId = image.imageId,
-        description = content.description,
-        updateAt = current,
-        createAt = current
-    )
-}
-
 fun RemoteCheckPoint.toLocalCheckPoint(): LocalCheckPoint {
     return LocalCheckPoint(
-        checkPointId = checkPointId,
+        checkPointId = id,
         courseId = courseId,
         userId = userId,
         userName = userName,

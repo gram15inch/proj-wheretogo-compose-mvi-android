@@ -146,7 +146,7 @@ fun SettingContent(
     ) {
         ProfileSection(
             isProfile = settingState.isProfile,
-            isAdminIcon = settingState.profile.private.isAdmin,
+            isAdminIcon = settingState.profile.isAdmin,
             name = settingState.profile.name,
             authCompany = settingState.profile.private.authCompany,
             mail = settingState.profile.private.mail,
@@ -469,7 +469,6 @@ fun SettingContentPreview() {
             profile = Profile(
                 name = "어디갈까",
                 private = ProfilePrivate(
-                    isAdmin = true,
                     mail = "wheretogohelp@gmail.com"
                 )
             ),

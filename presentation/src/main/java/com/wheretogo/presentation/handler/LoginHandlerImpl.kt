@@ -33,7 +33,8 @@ class LoginHandlerImpl(val errorHandler: ErrorHandler) : LoginHandler {
                     AppEvent.SnackBar(
                         EventMsg(
                             R.string.unavailable_user,
-                            arg = appError.msg
+                            arg = appError.msg,
+                            isLongShow = true
                         )
                     )
                 )

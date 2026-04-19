@@ -54,7 +54,6 @@ class RootViewModel @Inject constructor(
                             userSignOutUseCase()
                             handler.handle(RootEvent.ACCOUNT_VALID_EXPIRE, msg.data)
                         }
-                        else -> {}
                     }
                 }
             }
