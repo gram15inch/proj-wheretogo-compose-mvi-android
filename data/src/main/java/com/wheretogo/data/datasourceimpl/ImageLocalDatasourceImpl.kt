@@ -3,6 +3,7 @@ package com.wheretogo.data.datasourceimpl
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
 import androidx.exifinterface.media.ExifInterface
 import com.wheretogo.data.ImageFormat
@@ -63,6 +64,32 @@ class ImageLocalDatasourceImpl @Inject constructor(
         }
     }
 
+    override suspend fun getDefaultImageBytes(size: ImageSize): Result<ByteArray> {
+        return runCatching {
+            val defaultPath = getDefaultImagePath(size)
+
+            if (defaultPath.exists()) {
+                return@runCatching defaultPath.readBytes()
+            }
+
+            val defaultBitmap = createDefaultBitmap()
+            val byteArray = ByteArrayOutputStream().use { stream ->
+                defaultBitmap.compress(
+                    imageConfig.format.toCompressFormat(),
+                    80,
+                    stream
+                )
+                stream.toByteArray()
+            }
+
+            if (!defaultPath.parentFile!!.exists()) {
+                defaultPath.parentFile?.mkdirs()
+            }
+            defaultPath.outputStream().write(byteArray)
+
+            byteArray
+        }
+    }
 
     override suspend fun openAndResizeImage(
         sourceUriString: String,
@@ -114,6 +141,21 @@ class ImageLocalDatasourceImpl @Inject constructor(
         return when (this) {
             ImageFormat.JPEG -> Bitmap.CompressFormat.JPEG
             ImageFormat.WEBP -> Bitmap.CompressFormat.WEBP
+        }
+    }
+
+    private fun getDefaultImagePath(size: ImageSize): File {
+        return File(
+            imageFile.parentFile,
+            "default/${size.pathName}/default.$ext"
+        )
+    }
+
+    private fun createDefaultBitmap(): Bitmap {
+        return createBitmap(100, 100).apply {
+            val canvas = android.graphics.Canvas(this)
+            val paint = android.graphics.Paint().apply { color = 0xFFE7F1DD.toInt() } // 회색
+            canvas.drawRect(0f, 0f, width.toFloat(), width.toFloat(), paint)
         }
     }
 }

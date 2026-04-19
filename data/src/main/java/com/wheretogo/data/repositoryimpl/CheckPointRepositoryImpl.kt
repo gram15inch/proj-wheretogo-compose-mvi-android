@@ -8,19 +8,17 @@ import com.wheretogo.data.di.CheckpointCache
 import com.wheretogo.data.feature.mapDataError
 import com.wheretogo.data.feature.mapDomainError
 import com.wheretogo.data.feature.mapSuccess
+import com.wheretogo.data.model.checkpoint.LocalCheckPoint
 import com.wheretogo.data.model.checkpoint.isExpired
 import com.wheretogo.data.toCheckPoint
 import com.wheretogo.data.toDomain
-import com.wheretogo.data.toDomainResult
 import com.wheretogo.data.toLocal
 import com.wheretogo.data.toLocalCheckPoint
-import com.wheretogo.data.toRemoteCheckPoint
 import com.wheretogo.domain.ImageSize
-import com.wheretogo.domain.feature.successMap
 import com.wheretogo.domain.model.checkpoint.CheckPoint
 import com.wheretogo.domain.model.checkpoint.CheckPointAddRequest
 import com.wheretogo.domain.repository.CheckPointRepository
-import de.huxhorn.sulky.ulid.ULID
+import timber.log.Timber
 import javax.inject.Inject
 
 class CheckPointRepositoryImpl @Inject constructor(
@@ -34,38 +32,36 @@ class CheckPointRepositoryImpl @Inject constructor(
         isRemote: Boolean
     ): Result<CheckPoint> {
         return if (isRemote) {
-            checkPointRemoteDatasource.getCheckPointGroup(listOf(checkPointId)).mapCatching {
-                it.firstOrNull() ?: throw DataError.NotFound("$checkPointId NOT_FOUND")
-            }.map { it.toLocalCheckPoint() }.onSuccess {
-                checkPointLocalDatasource.setCheckPoint(listOf(it))
+            runCatching {
+                fetchCheckPoint(listOf(checkPointId)).firstOrNull()
+                    ?: throw DataError.NotFound("$checkPointId NOT_FOUND")
             }
         } else {
             checkPointLocalDatasource.getCheckPoint(listOf(checkPointId))
                 .map { it.firstOrNull() ?: throw DataError.NotFound("$checkPointId NOT_FOUND") }
-        }.map { it.toCheckPoint() }
+        }.map { it.toCheckPoint() }.mapDomainError()
     }
 
     override suspend fun getCheckPointGroupByCourseId(courseId: String): Result<List<CheckPoint>> {
-        return checkPointLocalDatasource.getCheckpointGroup(courseId).successMap { group ->
-            if(group == null || group.isExpired(cachePolicy)){
-                checkPointRemoteDatasource.getCheckPointGroupByCourseId(courseId)
-                    .map { it.toLocal() }
-                    .onSuccess { checkPointLocalDatasource.replaceCheckpointGroup(courseId, it) }
-            }else{
-                Result.success(group.items)
-            }.map { it.toDomain() }.toDomainResult()
-        }
+        val localGroup = checkPointLocalDatasource.getCheckpointGroup(courseId).getOrNull()
+        return if (localGroup == null || localGroup.isExpired(cachePolicy)) {
+            checkPointRemoteDatasource.getCheckPointGroupByCourseId(courseId)
+                .map { it.toLocal() }
+                .onSuccess { localList ->
+                    checkPointLocalDatasource.replaceCheckpointGroup(courseId, localList)
+                }.map { it.toDomain() }
+        } else {
+            Result.success(localGroup.items.toDomain())
+        }.mapDomainError()
     }
 
     override suspend fun addCheckPoint(request: CheckPointAddRequest): Result<CheckPoint> {
-        val checkPointId = "CP${ULID().nextULID()}"
-        val remote = request.toRemoteCheckPoint(checkPointId)
-        val local = remote.toLocalCheckPoint()
-        return checkPointRemoteDatasource.setCheckPoint(remote)
-            .mapSuccess {
-                checkPointLocalDatasource.setCheckPoint(listOf(local))
-            }.mapCatching {
-                val imageLocalPath = request.image.uriPathGroup[ImageSize.SMALL]!!
+        return checkPointRemoteDatasource.setCheckPoint(request.content.copy(imageId = request.imageUris.imageId))
+            .mapSuccess { remote ->
+                val local = remote.toLocalCheckPoint()
+                checkPointLocalDatasource.setCheckPoint(listOf(local)).map { local }
+            }.mapCatching { local ->
+                val imageLocalPath = request.imageUris.uriPathGroup[ImageSize.SMALL]!!
                 local.toCheckPoint(imageLocalPath)
             }.mapDataError().mapDomainError()
     }
@@ -78,12 +74,24 @@ class CheckPointRepositoryImpl @Inject constructor(
     }
 
     override suspend fun refreshCheckPoint(checkpointIds: List<String>): Result<Unit> {
-        return checkPointRemoteDatasource.getCheckPointGroup(checkpointIds).mapSuccess {
-            checkPointLocalDatasource.setCheckPoint(it.toLocal())
-        }.mapDataError().mapDomainError()
+        return runCatching {
+            fetchCheckPoint(checkpointIds)
+        }.map { }.mapDataError().mapDomainError()
     }
 
     override suspend fun clearCache(): Result<Unit> {
         return checkPointLocalDatasource.clear().mapDataError().mapDomainError()
+    }
+
+    private suspend fun fetchCheckPoint(checkpointIds: List<String>): List<LocalCheckPoint> {
+        val remote =
+            checkPointRemoteDatasource.getCheckPointGroup(checkpointIds)
+                .onFailure {
+                    Timber.i("checkpoint_ $checkpointIds NOT_FOUND")
+                }.getOrDefault(emptyList())
+
+        val local = remote.toLocal()
+        checkPointLocalDatasource.setCheckPoint(local).getOrThrow()
+        return local
     }
 }

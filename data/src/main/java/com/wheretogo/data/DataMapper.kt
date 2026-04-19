@@ -25,7 +25,6 @@ import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.auth.SyncToken
 import com.wheretogo.domain.model.checkpoint.CheckPoint
-import com.wheretogo.domain.model.checkpoint.CheckPointAddRequest
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.comment.CommentAddRequest
 import com.wheretogo.domain.model.course.Course
@@ -264,28 +263,9 @@ fun CommentAddRequest.toComment(commentId: String): Comment {
     )
 }
 
-fun CheckPointAddRequest.toRemoteCheckPoint(
-    checkPointId: String
-): RemoteCheckPoint {
-    val current = System.currentTimeMillis()
-    return RemoteCheckPoint(
-        checkPointId = checkPointId,
-        courseId = content.courseId,
-        userId = profile.uid,
-        userName = profile.name,
-        latLng = content.latLng.toDataLatLng(),
-        caption = "",
-        captionId = "",
-        imageId = image.imageId,
-        description = content.description,
-        updateAt = current,
-        createAt = current
-    )
-}
-
 fun RemoteCheckPoint.toLocalCheckPoint(): LocalCheckPoint {
     return LocalCheckPoint(
-        checkPointId = checkPointId,
+        checkPointId = id,
         courseId = courseId,
         userId = userId,
         userName = userName,

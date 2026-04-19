@@ -35,7 +35,7 @@ object ServiceModule {
     @Provides
     fun provideAdService(@ApplicationContext context: Context, buildConfig: PresentationBuildConfig): AdService {
         val refreshSize = if (BuildConfig.DEBUG) DEBUG_AD_REFRESH_SIZE else AD_REFRESH_SIZE
-        return NativeAdServiceImpl(context, buildConfig.nativeAdId, refreshSize).apply {
+        return NativeAdServiceImpl(context, buildConfig.nativeAdId, refreshSize, buildConfig).apply {
             CoroutineScope(Dispatchers.IO).launch {
                 MobileAds.initialize(context)
                 if (buildConfig.isAdPreLoad)

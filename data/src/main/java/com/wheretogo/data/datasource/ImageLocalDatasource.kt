@@ -12,6 +12,8 @@ interface ImageLocalDatasource {
 
     suspend fun saveImage(byteArray: ByteArray, imageId: String, size: ImageSize): Result<File>
 
+    suspend fun getDefaultImageBytes(size: ImageSize): Result<ByteArray>
+
     suspend fun openAndResizeImage(
         sourceUriString: String,
         sizeGroup: List<ImageSize>,

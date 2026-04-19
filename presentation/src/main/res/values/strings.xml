@@ -149,12 +149,16 @@
 
     <string name="searchbar_guide_text">와인딩</string>
 
+    // 경고
+    <string name="warn_reason_inappropriate">부적절한 콘텐츠를 반복적으로 게시할 경우, 서비스 이용이 제한될 수 있습니다.</string>
+    <string name="warn_reason_other">부적절한 사용이 계속되면 서비스 이용이 제한될 수 있습니다.</string>
+
     // 차단
     <string name="banned_user">이용이 제한된 사용자입니다</string>
     <string name="ban_reason_spam">정지: 스팸 또는 도배 행위 %s</string>
     <string name="ban_reason_abuse">정지: 욕설 또는 비하 발언 %s</string>
     <string name="ban_reason_harassment">정지: 지속적인 괴롭힘 행위 %s</string>
-    <string name="ban_reason_inappropriate">정지: 부적절한 콘텐츠 게시 %s</string>
+    <string name="ban_reason_inappropriate">정지: 부적절한 콘텐츠 게시 - [해제] %s</string>
     <string name="ban_reason_illegal_content">정지: 불법 콘텐츠 게시 %s</string>
     <string name="ban_reason_fraud">정지: 사기 또는 기만 행위 %s</string>
     <string name="ban_reason_impersonation">정지: 타인 사칭 행위 %s</string>

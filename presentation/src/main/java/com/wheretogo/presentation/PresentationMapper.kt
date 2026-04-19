@@ -9,7 +9,7 @@ import com.wheretogo.domain.SearchType
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.address.SimpleAddress
 import com.wheretogo.domain.model.checkpoint.CheckPoint
-import com.wheretogo.domain.model.checkpoint.CheckPointContent
+import com.wheretogo.domain.model.checkpoint.CheckPointCreateContent
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.comment.CommentContent
 import com.wheretogo.domain.model.course.Course
@@ -85,11 +85,11 @@ fun CourseAddScreenState.CourseAddSheetState.toCourseContent(
     )
 }
 
-fun CheckPointAddState.toCheckPointContent(courseId: String): CheckPointContent {
-    return CheckPointContent(
+fun CheckPointAddState.toCheckPointContent(courseId: String): CheckPointCreateContent {
+    return CheckPointCreateContent(
         courseId = courseId,
         latLng = latLng,
-        imageUriString = imgUriString,
+        imageId = imgUriString,
         description = description
     )
 }

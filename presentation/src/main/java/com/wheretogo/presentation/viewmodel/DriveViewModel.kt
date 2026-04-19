@@ -628,7 +628,6 @@ class DriveViewModel @Inject constructor(
                     )
                 )
             }
-            println("tst_ ${_driveScreenState.value.popUpState.commentState}")
         }
     }
 

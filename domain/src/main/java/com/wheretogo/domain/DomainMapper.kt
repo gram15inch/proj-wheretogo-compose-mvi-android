@@ -7,7 +7,7 @@ import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.auth.SyncProfile
 import com.wheretogo.domain.model.auth.SyncToken
 import com.wheretogo.domain.model.checkpoint.CheckPointAddRequest
-import com.wheretogo.domain.model.checkpoint.CheckPointContent
+import com.wheretogo.domain.model.checkpoint.CheckPointCreateContent
 import com.wheretogo.domain.model.comment.CommentAddRequest
 import com.wheretogo.domain.model.comment.CommentContent
 import com.wheretogo.domain.model.course.CourseAddRequest
@@ -15,7 +15,7 @@ import com.wheretogo.domain.model.course.CourseContent
 import com.wheretogo.domain.model.history.HistoryIdGroup
 import com.wheretogo.domain.model.user.History
 import com.wheretogo.domain.model.user.Profile
-import com.wheretogo.domain.model.util.Image
+import com.wheretogo.domain.model.util.ImageUris
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -32,14 +32,12 @@ fun CourseContent.toCourseAddRequest(
     )
 }
 
-fun CheckPointContent.toCheckPointAddRequest(
-    profile: Profile,
-    image: Image
+fun CheckPointCreateContent.toCheckPointAddRequest(
+    imageUris: ImageUris
 ): CheckPointAddRequest {
     return CheckPointAddRequest(
         content = this,
-        image = image,
-        profile = profile
+        imageUris = imageUris,
     )
 }
 

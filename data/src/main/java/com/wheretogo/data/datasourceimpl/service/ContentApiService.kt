@@ -1,9 +1,11 @@
 package com.wheretogo.data.datasourceimpl.service
 
+import com.wheretogo.data.model.checkpoint.RemoteCheckPoint
 import com.wheretogo.data.model.comment.RemoteComment
 import com.wheretogo.data.model.content.ContentLikeRequest
 import com.wheretogo.data.model.firebase.DataResponse
 import com.wheretogo.data.model.firebase.MessageResponse
+import com.wheretogo.domain.model.checkpoint.CheckPointCreateContent
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -33,4 +35,10 @@ interface ContentApiService {
         @Query("groupId") groupId: String,
         @Query("contentId") contentId: String
     ): Response<MessageResponse>
+
+    @POST("api/content/checkpoint")
+    suspend fun addCheckPoint(
+        @Body body: CheckPointCreateContent
+    ): Response<DataResponse<RemoteCheckPoint>>
+
 }

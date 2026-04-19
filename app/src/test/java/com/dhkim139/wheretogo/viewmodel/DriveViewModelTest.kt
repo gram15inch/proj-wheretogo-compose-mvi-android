@@ -12,7 +12,7 @@ import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.address.SimpleAddress
 import com.wheretogo.domain.model.app.Settings
 import com.wheretogo.domain.model.checkpoint.CheckPoint
-import com.wheretogo.domain.model.checkpoint.CheckPointContent
+import com.wheretogo.domain.model.checkpoint.CheckPointCreateContent
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.course.Course
 import com.wheretogo.domain.model.report.ReportReason
@@ -1949,12 +1949,12 @@ class DriveViewModelTest {
             latLng = LatLng(2.0, 2.0),
             isSubmitActive = true
         )
-        val checkpointContent = CheckPointContent(
+        val checkpointCreateContent = CheckPointCreateContent(
             courseId = course.courseId,
             latLng = checkPointAddState.latLng
         )
         val addedCheckPoint =
-            CheckPoint("cp1", courseId = course.courseId, latLng = checkpointContent.latLng)
+            CheckPoint("cp1", courseId = course.courseId, latLng = checkpointCreateContent.latLng)
         val domainError = DomainError.InternalError("checkpoint add fail")
         val initState = DriveScreenState().run {
             copy(
@@ -1967,7 +1967,7 @@ class DriveViewModelTest {
         }
 
         val viewModel = initViewModel(StandardTestDispatcher(testScheduler), initState)
-        coEvery { addCheckpointToCourseUseCase(checkpointContent) } returnsMany
+        coEvery { addCheckpointToCourseUseCase(checkpointCreateContent) } returnsMany
                 listOf(Result.failure(domainError), Result.success(addedCheckPoint))
         coEvery { mapOverlayService.addOneTimeMarker(listOf(addedCheckPoint.toMarkerInfo())) } returns Unit
         coEvery { driveHandler.handle(DriveEvent.ADD_DONE) } returns Unit

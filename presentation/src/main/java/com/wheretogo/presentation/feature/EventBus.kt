@@ -63,6 +63,7 @@ suspend fun SnackbarHostState.show(
             actionLabel == null -> SnackbarDuration.Short
             else -> SnackbarDuration.Indefinite
         }
+        val delay = if(eventMsg.isLongShow) 1000*10L else 1500L
         val job = launch {
             val result = showSnackbar(
                 message = message,
@@ -73,7 +74,7 @@ suspend fun SnackbarHostState.show(
                 onActionPerformed(eventMsg.uri)
         }
 
-        delay(1500)
+        delay(delay)
         job.cancel()
     }
 }

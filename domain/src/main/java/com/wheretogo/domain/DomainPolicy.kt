@@ -30,6 +30,7 @@ sealed class DomainError : Exception() {
         val type: RouteFieldType,
         val reason: FieldInvalidReason = FieldInvalidReason.NONE
     ) : DomainError()
+    data class PolicyDeny(val msg: String = "") : DomainError()
     data class NotFound(val msg: String = "") : DomainError()
     data class InternalError(val msg: String = "") : DomainError()
     data class ExpireData(val msg: String = "") : DomainError()
@@ -148,8 +149,25 @@ enum class ImageSize(val pathName: String, val width: Int, val height: Int) {
 }
 
 enum class FcmMsg{
-    BAN, NOTICE
+    BAN
 }
+
+enum class WarningReason{
+    INAPPROPRIATE,
+    OTHER
+    ;
+
+    companion object{
+        fun fromString(str:String): WarningReason{
+            return try {
+                WarningReason.valueOf(str)
+            }catch(_: Exception) {
+                OTHER
+            }
+        }
+    }
+}
+
 enum class BanReason{
     SPAM,               // 스팸 / 도배
     ABUSE,              // 욕설 / 비하 / 혐오
