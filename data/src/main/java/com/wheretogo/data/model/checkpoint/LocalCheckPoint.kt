@@ -36,7 +36,7 @@ data class CheckPointGroupMeta(
     val cachedAt: Long
 )
 
-fun CheckPointGroup.isExpired(cachePolicy: CachePolicy): Boolean{
+fun CheckPointCluster.isExpired(cachePolicy: CachePolicy): Boolean{
     val now = System.currentTimeMillis()
     val old = meta.cachedAt
     val num =
@@ -50,7 +50,7 @@ fun CheckPointGroup.isExpired(cachePolicy: CachePolicy): Boolean{
 }
 
 
-data class CheckPointGroup(
+data class CheckPointCluster(
     @Embedded val meta: CheckPointGroupMeta,
     @Relation(
         parentColumn = "groupId",

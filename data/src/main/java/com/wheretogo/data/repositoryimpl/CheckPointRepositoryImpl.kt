@@ -37,18 +37,18 @@ class CheckPointRepositoryImpl @Inject constructor(
                     ?: throw DataError.NotFound("$checkPointId NOT_FOUND")
             }
         } else {
-            checkPointLocalDatasource.getCheckPoint(listOf(checkPointId))
+            checkPointLocalDatasource.getCheckPoints(listOf(checkPointId))
                 .map { it.firstOrNull() ?: throw DataError.NotFound("$checkPointId NOT_FOUND") }
         }.map { it.toCheckPoint() }.mapDomainError()
     }
 
     override suspend fun getCheckPointGroupByCourseId(courseId: String): Result<List<CheckPoint>> {
-        val localGroup = checkPointLocalDatasource.getCheckpointGroup(courseId).getOrNull()
+        val localGroup = checkPointLocalDatasource.getCluster(courseId).getOrNull()
         return if (localGroup == null || localGroup.isExpired(cachePolicy)) {
             checkPointRemoteDatasource.getCheckPointGroupByCourseId(courseId)
                 .map { it.toLocal() }
                 .onSuccess { localList ->
-                    checkPointLocalDatasource.replaceCheckpointGroup(courseId, localList)
+                    checkPointLocalDatasource.replaceCluster(courseId, localList)
                 }.map { it.toDomain() }
         } else {
             Result.success(localGroup.items.toDomain())
@@ -59,7 +59,7 @@ class CheckPointRepositoryImpl @Inject constructor(
         return checkPointRemoteDatasource.setCheckPoint(request.content.copy(imageId = request.imageUris.imageId))
             .mapSuccess { remote ->
                 val local = remote.toLocalCheckPoint()
-                checkPointLocalDatasource.setCheckPoint(listOf(local)).map { local }
+                checkPointLocalDatasource.saveCheckPoints(listOf(local)).map { local }
             }.mapCatching { local ->
                 val imageLocalPath = request.imageUris.uriPathGroup[ImageSize.SMALL]!!
                 local.toCheckPoint(imageLocalPath)
@@ -69,7 +69,7 @@ class CheckPointRepositoryImpl @Inject constructor(
     override suspend fun removeCheckPoint(checkPointId: String): Result<Unit> {
         return checkPointRemoteDatasource.removeCheckPoint(checkPointId)
             .mapSuccess {
-                checkPointLocalDatasource.clearCheckPointCache(listOf(checkPointId))
+                checkPointLocalDatasource.deleteCheckPoints(listOf(checkPointId))
             }.mapDataError().mapDomainError()
     }
 
@@ -91,7 +91,7 @@ class CheckPointRepositoryImpl @Inject constructor(
                 }.getOrDefault(emptyList())
 
         val local = remote.toLocal()
-        checkPointLocalDatasource.setCheckPoint(local).getOrThrow()
+        checkPointLocalDatasource.saveCheckPoints(local).getOrThrow()
         return local
     }
 }
