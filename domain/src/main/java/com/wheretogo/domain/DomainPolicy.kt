@@ -1,6 +1,7 @@
 package com.wheretogo.domain
 
 import com.wheretogo.domain.model.route.RouteCategory
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 const val SECOND = 1000L
@@ -35,7 +36,7 @@ sealed class DomainError : Exception() {
     data class InternalError(val msg: String = "") : DomainError()
     data class ExpireData(val msg: String = "") : DomainError()
     data class CoolDownData(val remainingMinutes: Int = 0) : DomainError()
-    data class UnexpectedException(val throwable: Throwable) : DomainError()
+    data class UnexpectedException(val msg: String="") : DomainError()
 }
 
 enum class RouteFieldType { NAME, POINT, KEYWORD }
@@ -48,7 +49,10 @@ fun Throwable?.toDomainError(): DomainError {
         is IllegalArgumentException -> DomainError.InternalError(this.message ?: "조건 오류")
         is IllegalStateException -> DomainError.InternalError(this.message ?: "상태 오류")
         null -> DomainError.InternalError("알수없는 오류")
-        else -> DomainError.UnexpectedException(this)
+        else -> {
+            Timber.e(this.stackTraceToString())
+            DomainError.UnexpectedException(this.message?:"")
+        }
     }
 }
 

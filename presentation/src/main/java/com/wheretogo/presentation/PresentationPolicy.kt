@@ -17,7 +17,8 @@ import com.wheretogo.domain.RouteAttrItem
 import com.wheretogo.domain.WarningReason
 import com.wheretogo.domain.model.util.Viewport
 import com.wheretogo.presentation.model.EventMsg
-import com.wheretogo.presentation.state.CameraState
+import com.wheretogo.domain.model.map.CameraState
+import timber.log.Timber
 import javax.inject.Qualifier
 
 data class PresentationBuildConfig(
@@ -87,7 +88,7 @@ sealed class AppError : Exception() {
     data class AdLoadError(val msg: String = "") : AppError()
     data class WaitCoolDown(val remainTimeInMinute: Int = 0) : AppError()
     data class Warning(val reason: WarningReason) : AppError()
-    data class UnexpectedException(val throwable: Throwable) : AppError()
+    data class UnexpectedException(val msg: String) : AppError()
 }
 
 sealed class AppEvent {
@@ -292,7 +293,8 @@ fun Throwable.toAppError(): AppError {
         is GetCredentialCustomException -> AppError.CredentialError(errorMessage.toString())
         is NoCredentialException -> AppError.CredentialError(errorMessage.toString())
         else -> {
-            AppError.UnexpectedException(this)
+            Timber.e("Throwable -> AppError: ${stackTraceToString()}")
+            AppError.UnexpectedException(message?:"")
         }
     }
 }

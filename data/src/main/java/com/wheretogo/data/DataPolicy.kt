@@ -2,6 +2,7 @@ package com.wheretogo.data
 
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import com.google.firebase.storage.StorageException
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import com.wheretogo.data.feature.safeErrorBody
@@ -10,9 +11,11 @@ import com.wheretogo.domain.DomainError
 import com.wheretogo.domain.SignErrorReason
 import okio.IOException
 import retrofit2.Response
+import timber.log.Timber
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
+import kotlin.stackTraceToString
 
 data class DataBuildConfig(
     val firebaseCloudApiUrl: String,
@@ -83,7 +86,7 @@ sealed class DataError: IOException(){
     data class RiskContent(val msg:String = ""): DataError()
     data class ServerError(val msg:String = ""): DataError()
     data class InternalError(val msg:String = ""): DataError()
-    data class UnexpectedException(val throwable:Throwable): DataError()
+    data class UnexpectedException(val msg:String): DataError()
 }
 
 fun Response<*>.toDataError(): DataError {
@@ -98,21 +101,42 @@ fun Response<*>.toDataError(): DataError {
         422 -> DataError.RiskContent(msg)
         429 -> DataError.TooManyRequests(msg)
         503 -> DataError.UserUnavailable(msg)
-        else -> DataError.ServerError(msg)
+        else -> {
+            Timber.e(
+                "HTTP [%d] message: %s",
+                code(),
+                msg
+            )
+            DataError.ServerError(msg)
+        }
     }
 }
 
+fun StorageException.toDataError(): DataError{
+    val msg = this.message?:""
+    return when(httpResultCode){
+        404 -> DataError.NotFound(msg)
+        else -> {
+            Timber.e("StorageException -> DataError: ${stackTraceToString()}")
+            DataError.UnexpectedException(msg)
+        }
+    }
+}
 
 fun Throwable?.toDataError(): DataError{
     return when(this){
         is DataError -> this
+        is StorageException -> toDataError()
         is UnknownHostException -> DataError.NetworkError("UnknownHostException")
         is SocketTimeoutException -> DataError.NetworkError("SocketTimeoutException")
         is java.io.IOException -> DataError.NetworkError("IOException")
         is FirebaseNetworkException -> DataError.NetworkError()
         is FirebaseAuthInvalidUserException -> DataError.AuthInvalid(SignErrorReason.SUSPEND_USER.name)
         null -> DataError.InternalError("알수없는 오류")
-        else -> DataError.UnexpectedException(this)
+        else -> {
+            Timber.e("Throwable -> DataError: ${stackTraceToString()}")
+            DataError.UnexpectedException(message?:"")
+        }
     }
 }
 
@@ -120,7 +144,10 @@ fun DataError.toDomainError(): DomainError{
     return when(this){
         is DataError.NotFound->{ DomainError.NotFound(this.msg) }
         is DataError.NetworkError->{ DomainError.NetworkError(this.msg) }
-        is DataError.ServerError->{ DomainError.NetworkError("Server Error") }
+        is DataError.ServerError->{
+            Timber.tag("data").e(this.stackTraceToString())
+            DomainError.NetworkError("Server Error")
+        }
         is DataError.UserInvalid->{ DomainError.UserInvalid(this.msg) }
         is DataError.Unauthorized->{ DomainError.Unauthorized(this.msg) }
         is DataError.UserUnavailable->{ DomainError.UserUnavailable(this.msg) }
@@ -128,7 +155,8 @@ fun DataError.toDomainError(): DomainError{
         is DataError.RiskContent->{ DomainError.PolicyDeny(BanReason.INAPPROPRIATE.name) }
         is DataError.TooManyRequests->{ DomainError.PolicyDeny(BanReason.OTHER.name) }
         else -> {
-            DomainError.UnexpectedException(this)
+            Timber.e("DataError -> DomainError: ${stackTraceToString()}")
+            DomainError.UnexpectedException()
         }
     }
 

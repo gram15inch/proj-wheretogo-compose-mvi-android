@@ -7,6 +7,7 @@ import com.wheretogo.data.datasource.ImageRemoteDatasource
 import com.wheretogo.data.model.confg.ImageConfig
 import com.wheretogo.domain.ImageSize
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -53,15 +54,10 @@ class ImageRemoteDatasourceImpl @Inject constructor(
 
     override suspend fun removeImage(filename: String, size: ImageSize): Result<Unit> {
         return runCatching {
-            val storageRef: StorageReference =
+            val storageRef =
                 firebaseStorage.reference.child("image/${size.pathName}/$filename.$ext")
-            suspendCancellableCoroutine { con ->
-                storageRef.delete().addOnSuccessListener { _ ->
-                    con.resume(Unit)
-                }.addOnFailureListener { e ->
-                    con.resumeWithException(e)
-                }
-            }
+            storageRef.delete().await()
+            Unit
         }
     }
 }

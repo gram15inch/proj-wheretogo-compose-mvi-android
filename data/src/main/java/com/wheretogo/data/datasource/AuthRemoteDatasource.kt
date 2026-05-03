@@ -13,5 +13,7 @@ interface AuthRemoteDatasource {
 
     suspend fun getMsgToken(): Result<String>
 
-    suspend fun isAdmin(): Result<Boolean>
+    suspend fun isAdmin(forceRefresh: Boolean): Result<Boolean>
+
+    suspend fun getCurrentUser(): Result<SyncProfile?>
 }
