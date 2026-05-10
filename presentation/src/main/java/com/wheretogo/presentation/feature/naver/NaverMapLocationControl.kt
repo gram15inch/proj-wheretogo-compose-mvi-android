@@ -2,16 +2,14 @@ package com.wheretogo.presentation.feature.naver
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.location.Location
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import com.naver.maps.map.CameraPosition
-import com.naver.maps.map.NaverMap
+import com.naver.maps.geometry.LatLng
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
 @SuppressLint("MissingPermission")
-suspend fun NaverMap.placeCurrentLocation(context: Context, zoom: Double = 13.0) {
+suspend fun getLastLatLng(context: Context): LatLng? {
     val fusedLocationProviderClient: FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(context)
     val location = suspendCancellableCoroutine { continuation ->
@@ -21,23 +19,7 @@ suspend fun NaverMap.placeCurrentLocation(context: Context, zoom: Double = 13.0)
             continuation.resume(null)
         }
     }
-    location?.let {
-        cameraPosition =
-            CameraPosition(com.naver.maps.geometry.LatLng(it.latitude, it.longitude), zoom)
+    return location?.let {
+        LatLng(location.latitude, location.longitude)
     }
-    return
-}
-
-@SuppressLint("MissingPermission")
-suspend fun Context.getCurrentLocation() : Location?{
-     val fusedLocationProviderClient: FusedLocationProviderClient =
-        LocationServices.getFusedLocationProviderClient(this)
-    val location = suspendCancellableCoroutine { continuation ->
-        fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
-            continuation.resume(location)
-        }.addOnFailureListener {
-            continuation.resume(null)
-        }
-    }
-    return location
 }

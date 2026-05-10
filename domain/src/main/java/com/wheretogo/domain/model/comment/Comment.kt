@@ -1,6 +1,9 @@
 package com.wheretogo.domain.model.comment
 
 import com.wheretogo.domain.DOMAIN_EMPTY
+import com.wheretogo.domain.model.report.ReportReason
+import com.wheretogo.domain.model.report.ReportType
+import com.wheretogo.domain.usecase.report.ReportContent
 
 data class Comment(
     val commentId: String = DOMAIN_EMPTY,
@@ -19,4 +22,15 @@ data class Comment(
     val reportedCount: Int = 0,
     val updateAt: Long = 0,
     val createAt: Long = 0,
-)
+) {
+    fun toReportContent(reason: ReportReason): ReportContent {
+        return ReportContent(
+            contentId = commentId,
+            contentGroupId = groupId,
+            type = ReportType.COMMENT,
+            reason = reason,
+            targetUserId = userId,
+            targetUserName = userName
+        )
+    }
+}

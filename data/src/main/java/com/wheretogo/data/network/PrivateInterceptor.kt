@@ -7,6 +7,7 @@ import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
+import java.nio.Buffer
 
 
 class PrivateInterceptor @Inject constructor(
@@ -41,4 +42,22 @@ class PrivateInterceptor @Inject constructor(
     private suspend fun refreshToken(): Boolean {
         return auth.getApiToken(true).isSuccess
     }
+}
+
+// 디버깅용
+fun Request.log(tag: String = "tst_"): Request {
+    println("$tag ┌──────────────── REQUEST ────────────────")
+    try { println("$tag │ ${method()} ${url()}") } catch (e: Exception) { println("$tag │ method/url 오류: ${e.message}") }
+    try {
+        println("$tag │ Headers:")
+        val h = headers()
+        for (i in 0 until h.size()) println("$tag │   ${h.name(i)}: ${h.value(i)}")
+    } catch (e: Exception) { println("$tag │ Headers 오류: ${e.message}") }
+    try {
+        val buf = okio.Buffer()
+        body()?.writeTo(buf)
+        println("$tag │ Body: ${buf.readUtf8().ifBlank { "<empty>" }}")
+    } catch (e: Exception) { println("$tag │ Body 오류: ${e.message}") }
+    println("$tag └─────────────────────────────────────────")
+    return this
 }

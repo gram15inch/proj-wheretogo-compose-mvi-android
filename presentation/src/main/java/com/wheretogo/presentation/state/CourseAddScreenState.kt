@@ -4,18 +4,15 @@ import androidx.compose.ui.unit.dp
 import com.wheretogo.domain.PathType
 import com.wheretogo.domain.RouteAttr
 import com.wheretogo.domain.model.address.LatLng
+import com.wheretogo.domain.model.map.MarkerInfo
 import com.wheretogo.domain.model.route.RouteWaypointItem
 import com.wheretogo.presentation.CourseAddVisibleMode
 import com.wheretogo.presentation.model.ContentPadding
-import com.wheretogo.presentation.model.MapOverlay
-import com.wheretogo.presentation.model.MarkerInfo
 import java.util.EnumSet
 
 data class CourseAddScreenState(
     val searchBarState: SearchBarState = SearchBarState(),
     val naverMapState: NaverMapState = NaverMapState(),
-    val overlayGroup: List<MapOverlay> = emptyList(),
-    val fingerPrint: Int = 0,
     val selectedMarkerItem: MarkerInfo? = null,
     val bottomSheetState: BottomSheetState = BottomSheetState(),
     val stateMode: CourseAddVisibleMode = CourseAddVisibleMode.BottomSheetCollapse,

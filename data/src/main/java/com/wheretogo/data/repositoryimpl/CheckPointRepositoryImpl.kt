@@ -11,10 +11,10 @@ import com.wheretogo.data.feature.mapSuccess
 import com.wheretogo.data.model.checkpoint.LocalCheckPoint
 import com.wheretogo.data.model.checkpoint.isExpired
 import com.wheretogo.data.toCheckPoint
+import com.wheretogo.data.toCreateContent
 import com.wheretogo.data.toDomain
 import com.wheretogo.data.toLocal
 import com.wheretogo.data.toLocalCheckPoint
-import com.wheretogo.domain.ImageSize
 import com.wheretogo.domain.model.checkpoint.CheckPoint
 import com.wheretogo.domain.model.checkpoint.CheckPointAddRequest
 import com.wheretogo.domain.repository.CheckPointRepository
@@ -56,12 +56,12 @@ class CheckPointRepositoryImpl @Inject constructor(
     }
 
     override suspend fun addCheckPoint(request: CheckPointAddRequest): Result<CheckPoint> {
-        return checkPointRemoteDatasource.setCheckPoint(request.content.copy(imageId = request.imageUris.imageId))
+        return checkPointRemoteDatasource.setCheckPoint(request.toCreateContent())
             .mapSuccess { remote ->
                 val local = remote.toLocalCheckPoint()
                 checkPointLocalDatasource.saveCheckPoints(listOf(local)).map { local }
             }.mapCatching { local ->
-                val imageLocalPath = request.imageUris.uriPathGroup[ImageSize.SMALL]!!
+                val imageLocalPath = request.thumbnail
                 local.toCheckPoint(imageLocalPath)
             }.mapDataError().mapDomainError()
     }

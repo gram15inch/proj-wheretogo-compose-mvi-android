@@ -31,7 +31,7 @@ import com.wheretogo.presentation.model.AppLeaf
 import com.wheretogo.presentation.model.ClusterHolder
 import com.wheretogo.presentation.model.ClusterInfo
 import com.wheretogo.presentation.model.LeafInfo
-import com.wheretogo.presentation.model.MarkerInfo
+import com.wheretogo.domain.model.map.MarkerInfo
 import com.wheretogo.presentation.model.PathInfo
 import com.wheretogo.presentation.toNaver
 import kotlinx.coroutines.CoroutineScope
@@ -176,17 +176,20 @@ class NaverMapOverlayModifier @Inject constructor(
             when {
                 //마커가 사진
                 markerInfo.iconPath != null -> {
-                    val overlayImage =
-                        createOverlayImage(markerInfo.iconPath, dpPair.first, dpPair.second)
-                    icon = overlayImage
+                    markerInfo.iconPath?.let {
+                        val overlayImage =
+                            createOverlayImage(it, dpPair.first, dpPair.second)
+                        icon = overlayImage
 
-                    zIndex = MarkerZIndex.PHOTO.ordinal
-
+                        zIndex = MarkerZIndex.PHOTO.ordinal
+                    }
                 }
                 //마커가 아이콘
                 markerInfo.iconRes != null -> {
-                    icon = OverlayImage.fromResource(markerInfo.iconRes)
-                    zIndex = MarkerZIndex.ICON.ordinal
+                    markerInfo.iconRes?.let {
+                        icon = OverlayImage.fromResource(it)
+                        zIndex = MarkerZIndex.ICON.ordinal
+                    }
                 }
 
                 else -> {
@@ -204,7 +207,9 @@ class NaverMapOverlayModifier @Inject constructor(
 
             captionOffset = 20
             captionTextSize = 16f
-            isHideCollidedMarkers = true
+            if(markerInfo.type != MarkerType.DEFAULT){
+                isHideCollidedMarkers = true
+            }
             setCaptionAligns(Align.Top, Align.Right)
             minZoom = when (markerInfo.type) {
                 MarkerType.COURSE -> {

@@ -1,7 +1,5 @@
 package com.wheretogo.presentation.composable
 
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -61,11 +59,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.naver.maps.map.CameraPosition
 import com.naver.maps.map.NaverMap
 import com.wheretogo.domain.RouteAttr
+import com.wheretogo.domain.ZOOM
 import com.wheretogo.domain.model.address.LatLng
+import com.wheretogo.domain.model.map.CameraState
+import com.wheretogo.domain.model.map.MarkerInfo
 import com.wheretogo.domain.model.route.RouteCategory
 import com.wheretogo.presentation.DriveBottomSheetContent
+import com.wheretogo.presentation.NamSan
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.SheetVisibleMode
 import com.wheretogo.presentation.composable.content.AnimationDirection
@@ -77,14 +80,14 @@ import com.wheretogo.presentation.composable.content.KeyboardTrack
 import com.wheretogo.presentation.composable.content.NaverMapSheet
 import com.wheretogo.presentation.composable.content.SearchBar
 import com.wheretogo.presentation.composable.content.SlideAnimation
+import com.wheretogo.presentation.composable.effect.LifecycleDisposer
 import com.wheretogo.presentation.feature.intervalTab
-import com.wheretogo.presentation.feature.naver.placeCurrentLocation
+import com.wheretogo.presentation.feature.naver.getLastLatLng
 import com.wheretogo.presentation.intent.CourseAddIntent
 import com.wheretogo.presentation.model.ContentPadding
-import com.wheretogo.presentation.model.MarkerInfo
+import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.BottomSheetState
-import com.wheretogo.presentation.state.CameraState
 import com.wheretogo.presentation.state.CourseAddScreenState
 import com.wheretogo.presentation.theme.Black
 import com.wheretogo.presentation.theme.Gray150
@@ -98,6 +101,9 @@ import com.wheretogo.presentation.theme.interBoldFontFamily
 import com.wheretogo.presentation.theme.interFontFamily
 import com.wheretogo.presentation.toStrRes
 import com.wheretogo.presentation.viewmodel.CourseAddViewModel
+import com.wheretogo.presentation.viewmodel.MapEvent
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 @Composable
@@ -105,15 +111,19 @@ fun CourseAddScreen(
     viewModel: CourseAddViewModel = hiltViewModel()
 ) {
     val state by viewModel.courseAddScreenState.collectAsState()
-    val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
 
+    LifecycleDisposer {
+        viewModel.handleIntent(CourseAddIntent.LifecycleChange(it))
+    }
 
     CourseAddSheetContent(
         state = state,
+        mapEvent = viewModel.mapEvent,
+        overlays = viewModel.overlays,
+        fingerPrint = viewModel.fingerPrint,
 
         //NaverMap
-        onMapAsync = { coroutineScope.launch { it.placeCurrentLocation(context) } },
+        onMapAsync = {},
         onCameraUpdate = { viewModel.handleIntent(CourseAddIntent.CameraUpdated(it)) },
         onMapClick = { viewModel.handleIntent(CourseAddIntent.MapClick(it)) },
         onMarkerClick = { viewModel.handleIntent(CourseAddIntent.WaypointMarkerClick(it)) },
@@ -144,6 +154,9 @@ fun CourseAddScreen(
 @Composable
 fun CourseAddSheetContent(
     state: CourseAddScreenState = CourseAddScreenState(),
+    mapEvent : SharedFlow<MapEvent>? =null,
+    overlays : List<MapOverlay> = emptyList(),
+    fingerPrint : StateFlow<Int>? = null,
 
     //NaverMap
     onMapAsync: (NaverMap) -> Unit = {},
@@ -172,25 +185,25 @@ fun CourseAddSheetContent(
     onMarkerRemoveClick: () -> Unit = {}
 ){
     val isPreview = LocalInspectionMode.current
+    val coroutineScope = rememberCoroutineScope()
     Scaffold(
         contentWindowInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout),
         content = { systemBars->
             var bottomSheetHeight by remember { mutableStateOf(0.dp) }
-            val mapBottomPadding by animateDpAsState(
-                targetValue = bottomSheetHeight,
-                animationSpec = tween(durationMillis = 300)
-            )
             val systemBarBottomPadding by remember {
                 derivedStateOf { systemBars.calculateBottomPadding() }
             }
+            val context= LocalContext.current
+            val bottomPadding = systemBars.calculateBottomPadding() + state.bottomSheetState.content.minHeight.dp
             NaverMapSheet(
                 modifier = Modifier
                     .zIndex(0f)
                     .fillMaxSize(),
                 state = state.naverMapState,
-                overlayGroup = state.overlayGroup,
-                fingerPrint = state.fingerPrint,
-                onMapAsync = onMapAsync,
+                event= mapEvent,
+                overlayGroup = overlays,
+                fingerPrint = fingerPrint,
+                onMapAsync = {},
                 onCameraUpdate = onCameraUpdate,
                 onMapClick = onMapClick,
                 onMarkerClick = onMarkerClick,
@@ -198,7 +211,7 @@ fun CourseAddSheetContent(
                     start = systemBars.calculateStartPadding(LocalLayoutDirection.current),
                     end = systemBars.calculateEndPadding(LocalLayoutDirection.current),
                     top = systemBars.calculateTopPadding(),
-                    bottom = mapBottomPadding
+                    bottom = bottomPadding
                 )
             )
 
@@ -225,9 +238,7 @@ fun CourseAddSheetContent(
                     modifier = Modifier,
                     bottomSpace = systemBarBottomPadding,
                     isOpen = CourseAddScreenState.isBottomSheetVisible.contains(state.stateMode),
-                    onSheetHeightChange = { dp ->
-                        bottomSheetHeight = dp
-                    },
+                    onSheetHeightChange = {},
                     onSheetStateChange = onSheetStateChange,
                     minHeight = state.bottomSheetState.content.minHeight.dp,
                     isSpaceVisibleWhenClose = true
@@ -250,7 +261,7 @@ fun CourseAddSheetContent(
                         start = systemBars.calculateStartPadding(LocalLayoutDirection.current),
                         end = systemBars.calculateEndPadding(LocalLayoutDirection.current),
                         top = systemBars.calculateTopPadding(),
-                        bottom = mapBottomPadding
+                        bottom = bottomPadding
                     )
             ) {
                 if (state.isTestUi) {
@@ -263,23 +274,28 @@ fun CourseAddSheetContent(
                             modifier = Modifier.align(alignment = Alignment.TopStart),
                         ) {
                             Text(
-                                text = "${state.overlayGroup.size}",
+                                text = "${overlays.size}",
                                 fontSize = 50.sp
                             )
                             Text(
                                 text = "${state.bottomSheetState.courseAddSheetState.pathType}",
                                 fontSize = 16.sp
                             )
+                            Text(
+                                text = "${fingerPrint?.value}",
+                                fontSize = 16.sp
+                            )
                         }
                     }
                 }
-                if (state.isFloatMarker)
-                    Box(// 중앙 마커
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .zIndex(1f),
-                        contentAlignment = Alignment.Center
-                    ) {
+
+                Box(// 중앙 마커
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .zIndex(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (state.isFloatMarker)
                         Image(
                             modifier = Modifier
                                 .width(30.dp)
@@ -287,16 +303,14 @@ fun CourseAddSheetContent(
                             painter = painterResource(R.drawable.ic_marker),
                             contentDescription = ""
                         )
+
+                    if (state.isFloatingButton) {
+                        FloatingButtonGroup(
+                            modifier = Modifier.padding(start = 120.dp, bottom = 30.dp),
+                            onMarkerMoveClick = onMarkerMoveClick,
+                            onMarkerRemoveClick = onMarkerRemoveClick
+                        )
                     }
-
-
-                if (state.isFloatingButton) {
-                    FloatingButtonGroup(
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd),
-                        onMarkerMoveClick = onMarkerMoveClick,
-                        onMarkerRemoveClick = onMarkerRemoveClick
-                    )
                 }
             }
         }
@@ -351,7 +365,9 @@ fun CourseAddSheetContent(
     onBackClick: () -> Unit,
 ) {
     val scrollState = rememberScrollState()
-    Column(modifier = Modifier.verticalScroll(scrollState).padding(bottom = 10.dp)) {
+    Column(modifier = Modifier
+        .verticalScroll(scrollState)
+        .padding(bottom = 10.dp)) {
         Box(modifier = Modifier.heightIn(min = 340.dp)) {
             SlideAnimation(
                 visible = !state.isCategoryStep,
@@ -695,6 +711,7 @@ fun RouteWaypointContent(
                         }
                     }
                 }
+
                 FadeAnimation(visible = waypointItemStateGroup.isEmpty()) {
                     Box(
                         modifier = Modifier

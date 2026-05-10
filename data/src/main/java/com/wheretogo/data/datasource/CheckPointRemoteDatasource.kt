@@ -1,7 +1,7 @@
 package com.wheretogo.data.datasource
 
 import com.wheretogo.data.model.checkpoint.RemoteCheckPoint
-import com.wheretogo.domain.model.checkpoint.CheckPointCreateContent
+import com.wheretogo.data.model.checkpoint.CheckPointCreateContent
 
 interface CheckPointRemoteDatasource {
 

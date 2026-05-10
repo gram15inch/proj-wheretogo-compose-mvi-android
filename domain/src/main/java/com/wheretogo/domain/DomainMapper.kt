@@ -7,15 +7,16 @@ import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.auth.SyncProfile
 import com.wheretogo.domain.model.auth.SyncToken
 import com.wheretogo.domain.model.checkpoint.CheckPointAddRequest
-import com.wheretogo.domain.model.checkpoint.CheckPointCreateContent
+import com.wheretogo.domain.model.checkpoint.CheckPointContent
 import com.wheretogo.domain.model.comment.CommentAddRequest
 import com.wheretogo.domain.model.comment.CommentContent
 import com.wheretogo.domain.model.course.CourseAddRequest
 import com.wheretogo.domain.model.course.CourseContent
 import com.wheretogo.domain.model.history.HistoryIdGroup
+import com.wheretogo.domain.model.report.ReportAddRequest
 import com.wheretogo.domain.model.user.History
 import com.wheretogo.domain.model.user.Profile
-import com.wheretogo.domain.model.util.ImageUris
+import com.wheretogo.domain.usecase.report.ReportContent
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -32,21 +33,47 @@ fun CourseContent.toCourseAddRequest(
     )
 }
 
-fun CheckPointCreateContent.toCheckPointAddRequest(
-    imageUris: ImageUris
+fun CheckPointContent.toAddRequest(
+    thumbnail: String,
+    imageId: String,
+    groupId: String? = null, // 선택된 코스에서 실제 Id 삽입시 사용
 ): CheckPointAddRequest {
+    val content = this.run {
+        if (groupId == null)
+            this
+        else
+            this.copy(groupId = groupId)
+    }
     return CheckPointAddRequest(
-        content = this,
-        imageUris = imageUris,
+        content = content,
+        imageId = imageId,
+        thumbnail = thumbnail,
     )
 }
 
-fun CommentContent.toCommentAddRequest(
-    profile: Profile
+fun CommentContent.toAddRequest(
+    profile: Profile,
+    groupId: String? = null,
 ): CommentAddRequest {
     return CommentAddRequest(
         content = this,
+        groupId = groupId ?: this.checkPointId,
         profile = profile
+    )
+}
+
+fun ReportContent.toAddRequest(
+    reporterId: String,
+    contentGroupId: String? = null
+): ReportAddRequest {
+    return ReportAddRequest(
+        contentId = contentId,
+        contentGroupId = contentGroupId ?: this.contentGroupId,
+        type = type,
+        reason = reason,
+        targetUserId = targetUserId,
+        targetUserName = targetUserName,
+        reporterId = reporterId
     )
 }
 

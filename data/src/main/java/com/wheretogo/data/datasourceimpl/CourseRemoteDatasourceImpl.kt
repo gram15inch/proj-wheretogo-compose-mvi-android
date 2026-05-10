@@ -10,6 +10,7 @@ import com.wheretogo.data.feature.safeApiCall
 import com.wheretogo.data.model.content.ContentFilterRequest
 import com.wheretogo.data.model.content.Filter
 import com.wheretogo.data.model.content.Operator
+import com.wheretogo.data.model.course.CourseCreateContent
 import com.wheretogo.data.model.course.RemoteCourse
 import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
@@ -72,11 +73,11 @@ class CourseRemoteDatasourceImpl @Inject constructor(
         }.mapDataError()
     }
 
-    override suspend fun setCourse(course: RemoteCourse): Result<Unit> {
+    override suspend fun setCourse(content: CourseCreateContent): Result<Unit> {
         return runCatching {
             suspendCancellableCoroutine { continuation ->
-                firestore.collection(courseRootCollection).document(course.courseId)
-                    .set(course)
+                firestore.collection(courseRootCollection).document(content.courseId)
+                    .set(content)
                     .addOnSuccessListener {
                         continuation.resume(Unit)
                     }.addOnFailureListener {

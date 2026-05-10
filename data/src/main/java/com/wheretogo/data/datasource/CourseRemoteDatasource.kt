@@ -1,5 +1,6 @@
 package com.wheretogo.data.datasource
 
+import com.wheretogo.data.model.course.CourseCreateContent
 import com.wheretogo.data.model.course.RemoteCourse
 
 interface CourseRemoteDatasource {
@@ -10,7 +11,7 @@ interface CourseRemoteDatasource {
 
     suspend fun getCourseGroupByUpdateAt(updateAt: Long): Result<List<RemoteCourse>>
 
-    suspend fun setCourse(course: RemoteCourse): Result<Unit>
+    suspend fun setCourse(content: CourseCreateContent): Result<Unit>
 
     suspend fun removeCourse(courseId: String): Result<Unit>
 }

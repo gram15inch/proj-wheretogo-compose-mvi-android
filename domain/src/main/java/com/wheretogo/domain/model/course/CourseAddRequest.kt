@@ -11,7 +11,7 @@ data class CourseAddRequest(
     val keyword: List<String> = emptyList(),
 ) {
     fun valid(): CourseAddRequest {
-        require(profile.uid.isNotBlank()) { "inValid user id" }
+        require(profile.uid.isNotBlank()) { throw DomainError.UserInvalid("inValid user id") }
         require(content.courseName.isNotBlank()) { "inValid groupId id" }
         when {
             keyword.isEmpty() ->

@@ -1,7 +1,7 @@
 package com.wheretogo.data.datasourceimpl.service
 
 import com.wheretogo.data.model.firebase.DataResponse
-import com.wheretogo.data.model.report.ReportRequest
+import com.wheretogo.data.model.report.ReportCreateContent
 import com.wheretogo.data.model.report.ReportResponse
 import retrofit2.Response
 import retrofit2.http.Body
@@ -17,6 +17,6 @@ interface ReportApiService {
 
     @POST("api/report/")
     suspend fun addReport(
-        @Body request: ReportRequest
+        @Body content: ReportCreateContent
     ): Response<DataResponse<String>>
 }

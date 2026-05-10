@@ -13,9 +13,37 @@ const val USER_DATE_FORMAT = "yyyy-MM-dd"
 const val LOG_DATE_FORMAT = "yyyy-MM-dd H:m:s"
 const val DOMAIN_EMPTY = ""
 
-const val ROUTE_MIN_ZOOM = 9.5
-const val CHECKPOINT_MIN_ZOOM = 9.5
-const val LIST_ITEM_ZOOM = 12.0
+
+enum class ZOOM(val level: Double) {
+    COUNTRY(8.0),  // 최소 줌
+    PROVINCE(9.5),
+    CITY(10.5),
+    DISTRICT(12.0),
+    Place(13.0);
+
+    companion object {
+        fun getZoomCategory(zoom: Double): ZOOM {
+            return when {
+                zoom == COUNTRY.level -> COUNTRY
+                COUNTRY.level< zoom && zoom <= PROVINCE.level -> PROVINCE
+                PROVINCE.level< zoom && zoom <= CITY.level -> CITY
+                CITY.level< zoom && zoom <= DISTRICT.level -> DISTRICT
+                else-> Place
+            }
+        }
+    }
+
+    fun areaIn(zoom: Double): Boolean {
+        val found = getZoomCategory(zoom)
+        return found.level >= this.level
+    }
+
+    fun areaOut(zoom: Double): Boolean {
+        val found = getZoomCategory(zoom)
+        return found.level < this.level
+    }
+
+}
 
 val CourseCooldown = DefaultCoolDownPolicy(600)
 val CheckpointCooldown = DefaultCoolDownPolicy(15)

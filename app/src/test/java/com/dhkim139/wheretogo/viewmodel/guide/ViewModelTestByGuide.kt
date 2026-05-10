@@ -1,4 +1,4 @@
-package com.dhkim139.wheretogo.viewmodel
+package com.dhkim139.wheretogo.viewmodel.guide
 
 import app.cash.turbine.test
 import com.dhkim139.wheretogo.feature.MainDispatcherRule
@@ -15,6 +15,7 @@ import com.wheretogo.domain.usecase.checkpoint.RemoveCheckPointUseCase
 import com.wheretogo.domain.usecase.comment.AddCommentToCheckPointUseCase
 import com.wheretogo.domain.usecase.comment.GetCommentForCheckPointUseCase
 import com.wheretogo.domain.usecase.comment.RemoveCommentToCheckPointUseCase
+import com.wheretogo.domain.usecase.course.FilterListCourseUseCase
 import com.wheretogo.domain.usecase.course.GetNearByCourseUseCase
 import com.wheretogo.domain.usecase.course.RemoveCourseUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
@@ -23,7 +24,6 @@ import com.wheretogo.domain.usecase.util.SearchKeywordUseCase
 import com.wheretogo.domain.usecase.util.UpdateLikeUseCase
 import com.wheretogo.presentation.HomeBodyBtn
 import com.wheretogo.presentation.HomeBodyBtnHighlight
-import com.wheretogo.domain.usecase.course.FilterListCourseUseCase
 import com.wheretogo.presentation.feature.ads.AdService
 import com.wheretogo.presentation.feature.map.MapOverlayService
 import com.wheretogo.presentation.intent.HomeIntent
@@ -32,7 +32,7 @@ import com.wheretogo.presentation.state.HomeScreenState
 import com.wheretogo.presentation.viewmodel.HomeViewModel
 import io.mockk.coEvery
 import io.mockk.mockk
-import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -40,14 +40,13 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
 
-
 class ViewModelTestByGuide {
 
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
     @Test
-    fun homeGuideTest() = runTest{
+    fun homeGuideTest() = runTest {
         coEvery { observeSettingsUseCase() } returns
                 flow {
                     emit(Result.success(Settings(tutorialStep = DriveTutorialStep.SKIP)))
@@ -71,7 +70,7 @@ class ViewModelTestByGuide {
             state = initState
         )
         viewModel.uiState.test {
-            assertEquals(initState, awaitItem())
+            TestCase.assertEquals(initState, awaitItem())
 
             // 드라이브 버튼 하이라이트
             viewModel.handleIntent(HomeIntent.BodyButtonClick(HomeBodyBtn.GUIDE))
@@ -85,7 +84,7 @@ class ViewModelTestByGuide {
                 )
             }
 
-            assertEquals(highlightOn, awaitItem())
+            TestCase.assertEquals(highlightOn, awaitItem())
 
             // 드라이브 화면 이동
             viewModel.handleIntent(HomeIntent.BodyButtonClick(HomeBodyBtn.DRIVE))
@@ -99,7 +98,7 @@ class ViewModelTestByGuide {
                 )
             }
 
-            assertEquals(moveToDrive, awaitItem())
+            TestCase.assertEquals(moveToDrive, awaitItem())
         }
     }
 

@@ -1,45 +1,65 @@
 package com.wheretogo.presentation.feature
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.ExperimentalForInheritanceCoroutinesApi
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableStateFlow
+import timber.log.Timber
 
-
+@OptIn(ExperimentalForInheritanceCoroutinesApi::class)
 class LoggingStateFlow<T>(
-    private val delegate: MutableStateFlow<T>,
-    private val log: (StackTraceElement?, T) -> Unit
-) : MutableStateFlow<T> by delegate {
+    initialValue: T,
+    private val name: String = "StateFlow",
+    val log:(T)->String = {_-> ""},
+) : MutableStateFlow<T> {
+
+    private val _flow = MutableStateFlow(initialValue)
 
     override var value: T
-        get() = delegate.value
-        set(newValue) {
-            logCaller(newValue)
-            delegate.value = newValue
+        get() = _flow.value
+        set(value) {
+            logCaller(value)
+            _flow.value = value
         }
 
-    override suspend fun emit(value: T) {
-        logCaller(value)
-        delegate.emit(value)
-    }
+    override val replayCache get() = _flow.replayCache
+    override val subscriptionCount get() = _flow.subscriptionCount
+
+    override suspend fun collect(collector: FlowCollector<T>) =
+        _flow.collect(collector)
 
     override fun tryEmit(value: T): Boolean {
-        logCaller(value)
-        return delegate.tryEmit(value)
+        return _flow.tryEmit(value)
     }
 
-    override fun compareAndSet(expect: T, update: T): Boolean {
-        logCaller(update)
-        return delegate.compareAndSet(expect, update)
+    @ExperimentalCoroutinesApi
+    override fun resetReplayCache() {
+
     }
 
-    private fun logCaller(newValue: T) {
-        val stackTrace = Thread.currentThread().stackTrace
-        val caller = stackTrace.getOrNull(4)
-        log(caller, newValue)
+    override suspend fun emit(value: T) {
+        _flow.emit(value)
+    }
+
+    override fun compareAndSet(expect: T, update: T) =
+        _flow.compareAndSet(expect, update)
+
+    fun update(function: (T) -> T) {
+        while (true) {
+            val prev = value
+            val next = function(prev)
+            if (_flow.compareAndSet(prev, next)) {
+                logCaller(next)
+                return
+            }
+        }
+    }
+
+    private fun logCaller(value: T) {
+        val stack = Throwable().stackTrace
+            .filter {
+                it.className.startsWith("com.wheretogo") && !it.className.contains("LoggingStateFlow")
+            }.joinToString("\n") { "${it.className}.${it.methodName}(${it.fileName}:${it.lineNumber})" }
+        Timber.d("update \n[$name] → [${log(value)}] ${stack}")
     }
 }
-
-fun <T> MutableStateFlow<T>.withLogging(
-    log: (StackTraceElement?, T) -> Unit
-): MutableStateFlow<T> = LoggingStateFlow(this, log)
-
-fun StackTraceElement.shortPath(): String =
-    "${fileName}:${lineNumber}.${methodName}"

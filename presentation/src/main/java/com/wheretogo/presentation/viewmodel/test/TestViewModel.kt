@@ -5,21 +5,18 @@ import androidx.lifecycle.viewModelScope
 import com.naver.maps.map.clustering.ClusteringKey
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
-import com.wheretogo.domain.DriveTutorialStep
-import com.wheretogo.domain.LIST_ITEM_ZOOM
 import com.wheretogo.domain.MarkerType
+import com.wheretogo.domain.ZOOM
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.dummy.guideCheckPoint
 import com.wheretogo.domain.model.dummy.guideCourse
 import com.wheretogo.domain.usecase.app.GuideMoveStepUseCase
 import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
-import com.wheretogo.presentation.CameraUpdateSource
-import com.wheretogo.presentation.MoveAnimation
 import com.wheretogo.presentation.OverlayType
 import com.wheretogo.presentation.model.AppMarker
-import com.wheretogo.presentation.model.MarkerInfo
+import com.wheretogo.domain.model.map.MarkerInfo
 import com.wheretogo.presentation.model.SearchBarItem
-import com.wheretogo.presentation.state.CameraState
+import com.wheretogo.domain.model.map.CameraState
 import com.wheretogo.presentation.state.test.TestState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -89,37 +86,6 @@ class TestViewModel @Inject constructor(
                 )
 
             }
-            //guideMoveStepUseCase(true)
-            launch {
-                observeSettingsUseCase().collect {
-                    it.onSuccess { setting ->
-                        state.update { old ->
-                            old.copy(
-                                step = setting.tutorialStep
-                            ).run {
-                                when (setting.tutorialStep) {
-                                    DriveTutorialStep.SKIP -> {
-                                        val camera = CameraState(
-                                            latLng = guideCourse.cameraLatLng,
-                                            zoom = LIST_ITEM_ZOOM,
-                                            updateSource = CameraUpdateSource.GUIDE
-                                        )
-                                        this.copy(
-                                            naverState = naverState.copy(
-                                                requestCameraState = camera
-                                            )
-                                        )
-                                    }
-
-                                    else -> {
-                                        this
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
 
@@ -128,7 +94,6 @@ class TestViewModel @Inject constructor(
             it.copy(
                 naverState = it.naverState.copy(
                     latestCameraState = cameraState.copy(
-                        updateSource = CameraUpdateSource.USER,
                         zoom = cameraState.zoom
                     )
                 )
@@ -150,9 +115,7 @@ class TestViewModel @Inject constructor(
                         naverState = naverState.copy(
                             latestCameraState = it.naverState.latestCameraState.copy(
                                 latLng = latlng,
-                                zoom = LIST_ITEM_ZOOM,
-                                updateSource = CameraUpdateSource.SEARCH_BAR,
-                                moveAnimation = MoveAnimation.APP_EASING
+                                zoom = ZOOM.DISTRICT.level
                             )
                         )
                     )

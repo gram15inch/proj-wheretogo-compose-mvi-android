@@ -1,5 +1,6 @@
 package com.wheretogo.presentation.composable.content
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -8,6 +9,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
@@ -129,15 +131,40 @@ fun SlideAnimation(
 fun FadeAnimation(
     modifier: Modifier = Modifier,
     visible: Boolean,
-    short:Boolean = false,
+    short: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    AnimatedVisibility(
+    val fadeIn = fadeIn(animationSpec = tween(durationMillis = if (short) 100 else 250))
+    val fadeOut = fadeOut(animationSpec = tween(durationMillis = 50))
+    AnimatedContent(
         modifier = modifier,
-        visible = visible,
-        enter = fadeIn(animationSpec = tween(durationMillis = if(short) 100 else 250)),
-        exit = fadeOut(animationSpec = tween(durationMillis = 50))
-    ) {
-        content()
+        targetState = visible,
+        transitionSpec = {
+            fadeIn togetherWith fadeOut using null
+        }
+    ) { target ->
+        if (target)
+            content()
+    }
+}
+
+@Composable
+fun <T> FadeAnimation(
+    modifier: Modifier = Modifier,
+    state: T? = null,
+    short: Boolean = false,
+    content: @Composable (T) -> Unit
+) {
+    val fadeIn = fadeIn(animationSpec = tween(durationMillis = if (short) 100 else 250))
+    val fadeOut = fadeOut(animationSpec = tween(durationMillis = 50))
+    AnimatedContent(
+        modifier = modifier,
+        targetState = state,
+        transitionSpec = {
+            fadeIn togetherWith fadeOut using null
+        }
+    ) { target ->
+        if (target != null)
+            content(target)
     }
 }

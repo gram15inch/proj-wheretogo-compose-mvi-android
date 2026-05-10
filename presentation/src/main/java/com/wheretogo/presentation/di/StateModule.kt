@@ -4,8 +4,8 @@ import com.wheretogo.presentation.PresentationBuildConfig
 import com.wheretogo.presentation.state.CourseAddScreenState
 import com.wheretogo.presentation.state.DriveScreenState
 import com.wheretogo.presentation.state.HomeScreenState
+import com.wheretogo.presentation.state.MapState
 import com.wheretogo.presentation.state.NaverMapState
-import com.wheretogo.presentation.state.SearchBarState
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,10 +28,6 @@ class StateModule {
         buildConfig: PresentationBuildConfig
     ): DriveScreenState {
         return DriveScreenState(
-            searchBarState = SearchBarState(
-                isAdVisible = true
-            ),
-            naverMapState = NaverMapState(isZoomControl = buildConfig.isTestUi),
             isTestUi = buildConfig.isTestUi
         )
     }
@@ -44,6 +40,16 @@ class StateModule {
         return CourseAddScreenState(
             naverMapState = NaverMapState(isZoomControl = buildConfig.isTestUi),
             isTestUi = buildConfig.isTestUi
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideMapState(
+        buildConfig: PresentationBuildConfig
+    ): MapState {
+        return MapState(
+            naverMapState = NaverMapState(isZoomControl = buildConfig.isTestUi),
         )
     }
 }

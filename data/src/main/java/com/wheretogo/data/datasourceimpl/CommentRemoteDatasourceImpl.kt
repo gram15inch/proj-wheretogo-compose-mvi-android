@@ -5,6 +5,7 @@ import com.wheretogo.data.datasource.CommentRemoteDatasource
 import com.wheretogo.data.datasourceimpl.service.ContentApiService
 import com.wheretogo.data.feature.dataErrorCatching
 import com.wheretogo.data.feature.mapSuccess
+import com.wheretogo.data.model.comment.CommentCreateContent
 import com.wheretogo.data.model.comment.RemoteComment
 import com.wheretogo.data.model.content.ContentLikeRequest
 import com.wheretogo.data.toDataError
@@ -23,7 +24,7 @@ class CommentRemoteDatasourceImpl @Inject constructor(
             }
     }
 
-    override suspend fun addComment(comment: RemoteComment): Result<Unit> {
+    override suspend fun addComment(comment: CommentCreateContent): Result<Unit> {
         return dataErrorCatching { contentApiService.addComment(comment) }
             .mapSuccess {
                 if (!it.isSuccessful)

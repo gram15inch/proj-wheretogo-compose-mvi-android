@@ -8,6 +8,7 @@ import com.wheretogo.data.repositoryimpl.CommentRepositoryImpl
 import com.wheretogo.data.repositoryimpl.CourseRepositoryImpl
 import com.wheretogo.data.repositoryimpl.GuestRepositoryImpl
 import com.wheretogo.data.repositoryimpl.ImageRepositoryImpl
+import com.wheretogo.data.repositoryimpl.MapContentRepositoryImpl
 import com.wheretogo.data.repositoryimpl.ReportRepositoryImpl
 import com.wheretogo.data.repositoryimpl.RouteRepositoryImpl
 import com.wheretogo.data.repositoryimpl.UserRepositoryImpl
@@ -19,11 +20,13 @@ import com.wheretogo.domain.repository.CommentRepository
 import com.wheretogo.domain.repository.CourseRepository
 import com.wheretogo.domain.repository.GuestRepository
 import com.wheretogo.domain.repository.ImageRepository
+import com.wheretogo.domain.repository.MapContentRepository
 import com.wheretogo.domain.repository.ReportRepository
 import com.wheretogo.domain.repository.RouteRepository
 import com.wheretogo.domain.repository.UserRepository
 import dagger.Binds
 import dagger.Module
+import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
@@ -77,4 +80,14 @@ abstract class RepositoryModule {
     @Binds
     abstract fun bindAddressRepository(repositoryImpl: AddressRepositoryImpl): AddressRepository
 
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+object RepositoryProvideModule {
+    @Singleton
+    @Provides
+    fun provideDriveMapContentRepository(): MapContentRepository {
+        return MapContentRepositoryImpl()
+    }
 }

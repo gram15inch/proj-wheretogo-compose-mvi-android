@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -31,6 +32,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -43,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.PlatformTextStyle
@@ -66,6 +69,7 @@ import com.wheretogo.presentation.theme.hancomSansFontFamily
 @Composable
 fun CommentList(
     modifier: Modifier = Modifier,
+    isVisible : Boolean,
     commentItemGroup: List<CommentItemState>?,
     onItemClick: (CommentItemState) -> Unit,
     onItemLongClick: (Comment) -> Unit,
@@ -75,74 +79,82 @@ fun CommentList(
         modifier = modifier
             .fillMaxSize()
     ) {
-        if(commentItemGroup == null){
-            Box(
-                modifier = Modifier.fillMaxWidth().height(50.dp),
-                contentAlignment = Alignment.TopCenter
-            ) {
-                DelayLottieAnimation(Modifier.width(100.dp), R.raw.lt_loading, true,450,max = 1f)
-            }
-        }
-
-        if(commentItemGroup.isNullOrEmpty()){
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(300.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = stringResource(R.string.comment_hint),
-                    fontFamily = hancomMalangFontFamily,
-                    fontSize = 14.sp
-                )
-            }
-        } else {
-            LazyColumn(
-                Modifier
-                    .fillMaxSize()
-                    .padding(2.dp)
-            ) {
-                val focusItem = if (commentItemGroup.isNotEmpty()) {
-                    val temp = commentItemGroup.firstOrNull { it.data.isFocus }
-                    temp ?: commentItemGroup[0]
-                } else null
-                if (focusItem != null) {
-                    item {
-                        CommentFocusItem(
-                            modifier= Modifier.animateItem(),
-                            comment = focusItem,
-                            onItemLongClick = { item ->
-                                onItemLongClick(item.data)
-                            },
-                            onLikeClick = { item ->
-                                onLikeClick(item)
-                            }
-                        )
+        when{
+            commentItemGroup == null ->{
+                if(isVisible) // 가려져있을때 실행 방지
+                    Box(
+                        modifier = Modifier.fillMaxWidth().fillMaxHeight(0.5f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if(LocalInspectionMode.current){
+                            CircularProgressIndicator()
+                        }else{
+                            DelayLottieAnimation(Modifier.width(50.dp), R.raw.lt_loading, true,450)
+                        }
                     }
-                    val sortedCommentGroup =
-                        commentItemGroup.filter { it.data.commentId != focusItem.data.commentId }
-                            .sortedWith(
-                                compareBy<CommentItemState> { it.data.isUserCreated }
-                                    .thenByDescending { it.data.createAt }
+            }
+            commentItemGroup.isEmpty() ->{
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(300.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = stringResource(R.string.comment_hint),
+                        fontFamily = hancomMalangFontFamily,
+                        fontSize = 14.sp
+                    )
+                }
+            }
+            else ->  {
+                LazyColumn(
+                    Modifier
+                        .fillMaxSize()
+                        .padding(2.dp)
+                ) {
+                    val focusItem = if (commentItemGroup.isNotEmpty()) {
+                        val temp = commentItemGroup.firstOrNull { it.data.isFocus }
+                        temp ?: commentItemGroup[0]
+                    } else null
+                    if (focusItem != null) {
+                        item {
+                            CommentFocusItem(
+                                modifier= Modifier.animateItem(),
+                                comment = focusItem,
+                                onItemLongClick = { item ->
+                                    onItemLongClick(item.data)
+                                },
+                                onLikeClick = { item ->
+                                    onLikeClick(item)
+                                }
                             )
-                    items(sortedCommentGroup) { item ->
-                        CommentListItem(
-                            modifier= Modifier.animateItem(),
-                            comment = item,
-                            onItemClick = {
-                                onItemClick(it)
-                            },
-                            onItemLongClick = {
-                                onItemLongClick(it.data)
-                            },
-                            onLikeClick = {
-                                onLikeClick(it)
-                            }
-                        )
+                        }
+                        val sortedCommentGroup =
+                            commentItemGroup.filter { it.data.commentId != focusItem.data.commentId }
+                                .sortedWith(
+                                    compareBy<CommentItemState> { it.data.isUserCreated }
+                                        .thenByDescending { it.data.createAt }
+                                )
+                        items(sortedCommentGroup) { item ->
+                            CommentListItem(
+                                modifier= Modifier.animateItem(),
+                                comment = item,
+                                onItemClick = {
+                                    onItemClick(it)
+                                },
+                                onItemLongClick = {
+                                    onItemLongClick(it.data)
+                                },
+                                onLikeClick = {
+                                    onLikeClick(it)
+                                }
+                            )
+                        }
                     }
                 }
             }
+
         }
     }
 
@@ -453,13 +465,38 @@ fun CommentSetting(
     }
 }
 
-@Preview(widthDp = 500, heightDp = 500)
+@Preview(widthDp = 300, heightDp = 400)
+@Composable
+fun CommentListLoadingPreview() {
+    CommentList(
+        modifier = Modifier.fillMaxSize(),
+        isVisible = true,
+        commentItemGroup = null,
+        onItemClick = {},
+        onItemLongClick = {},
+        onLikeClick = {}
+    )
+}
+
+@Preview(widthDp = 300, heightDp = 400)
+@Composable
+fun CommentListEmptyPreview() {
+    CommentList(
+        modifier = Modifier.fillMaxSize(),
+        isVisible = false,
+        commentItemGroup = emptyList(),
+        onItemClick = {},
+        onItemLongClick = {},
+        onLikeClick = {}
+    )
+}
+
+@Preview(widthDp = 300, heightDp = 400)
 @Composable
 fun CommentSettingPreview() {
     CommentSetting(
         modifier = Modifier.fillMaxSize(),
         state = CommentState.CommentSettingState(
-            isVisible = true,
         ),
         {},
         {_,_->},

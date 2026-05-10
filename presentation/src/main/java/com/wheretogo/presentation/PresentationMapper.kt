@@ -9,7 +9,7 @@ import com.wheretogo.domain.SearchType
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.address.SimpleAddress
 import com.wheretogo.domain.model.checkpoint.CheckPoint
-import com.wheretogo.domain.model.checkpoint.CheckPointCreateContent
+import com.wheretogo.domain.model.checkpoint.CheckPointContent
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.comment.CommentContent
 import com.wheretogo.domain.model.course.Course
@@ -17,7 +17,7 @@ import com.wheretogo.domain.model.course.CourseContent
 import com.wheretogo.domain.model.route.RouteCategory
 import com.wheretogo.domain.model.util.Navigation
 import com.wheretogo.presentation.model.LeafInfo
-import com.wheretogo.presentation.model.MarkerInfo
+import com.wheretogo.domain.model.map.MarkerInfo
 import com.wheretogo.presentation.model.PathInfo
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.CheckPointAddState
@@ -85,18 +85,17 @@ fun CourseAddScreenState.CourseAddSheetState.toCourseContent(
     )
 }
 
-fun CheckPointAddState.toCheckPointContent(courseId: String): CheckPointCreateContent {
-    return CheckPointCreateContent(
-        courseId = courseId,
+fun CheckPointAddState.toContent(courseId:String): CheckPointContent {
+    return CheckPointContent(
+        groupId = courseId,
         latLng = latLng,
-        imageId = imgUriString,
+        imgUriString = imgUriString,
         description = description
     )
 }
 
-fun CommentAddState.toCommentContent(groupId: String, editText: String): CommentContent {
+fun CommentAddState.toCommentContent(editText: String): CommentContent {
     return CommentContent(
-        groupId = groupId,
         emoji = this.titleEmoji.ifEmpty { emogiGroup.firstOrNull() ?: "" },
         oneLineReview = if (CommentType.ONE == commentType) editText else this.oneLineReview,
         detailedReview = if (CommentType.DETAIL == commentType) editText else this.detailReview
@@ -104,7 +103,7 @@ fun CommentAddState.toCommentContent(groupId: String, editText: String): Comment
 }
 
 
-fun Comment.toCommentItemState(): CommentState.CommentItemState {
+fun Comment.toItemState(): CommentState.CommentItemState {
     return CommentState.CommentItemState(
         this,
         !isFocus && detailedReview.length > 10

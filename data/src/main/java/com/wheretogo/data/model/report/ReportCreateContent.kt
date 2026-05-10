@@ -1,6 +1,6 @@
 package com.wheretogo.data.model.report
 
-data class ReportRequest(
+data class ReportCreateContent(
     val contentId: String = "",
     val contentGroupId: String = "",
     val type: String = "",

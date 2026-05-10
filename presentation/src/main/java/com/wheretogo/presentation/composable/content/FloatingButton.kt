@@ -1,5 +1,6 @@
 package com.wheretogo.presentation.composable.content
 
+import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -49,7 +50,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.model.course.Course
-import com.wheretogo.domain.model.util.Navigation
 import com.wheretogo.presentation.DriveFloatHighlight
 import com.wheretogo.presentation.DriveFloatingVisibleMode
 import com.wheretogo.presentation.ExportMap
@@ -72,13 +72,13 @@ fun FloatingButtons(
     state: FloatingButtonState = FloatingButtonState(),
     guideStep: DriveTutorialStep,
     isVisible: Boolean,
-    navigation: Navigation,
     onCommentClick: () -> Unit,
     onCheckpointAddClick: () -> Unit,
     onInfoClick: () -> Unit,
     onExportMapClick: () -> Unit,
     onMapAppClick: (Result<Unit>) -> Unit,
-    onFoldClick: () -> Unit
+    onFoldClick: () -> Unit,
+    onBackPressed: (() -> Unit)? = null
 ) {
     val scope = rememberCoroutineScope()
     val isCommentVisible = isVisible && FloatingButtonState.commentVisible.contains(state.stateMode)
@@ -92,6 +92,10 @@ fun FloatingButtons(
         isVisible && FloatingButtonState.backPlateVisible.contains(state.stateMode)
     val isFoldVisible: Boolean =
         isVisible && FloatingButtonState.foldVisible.contains(state.stateMode)
+
+    BackHandler(enabled = onBackPressed != null && isFoldVisible) {
+        onBackPressed?.invoke()
+    }
 
     Box(
         modifier = modifier,
@@ -192,35 +196,41 @@ fun FloatingButtons(
                         buttonEndPadding = buttonEndPadding,
                         onNaverClick = { isLongClick ->
                             scope.launch {
-                                onMapAppClick(
-                                    context.callMap(
-                                        ExportMap.NAVER,
-                                        navigation,
-                                        !isLongClick
+                                state.navigation?.let {
+                                    onMapAppClick(
+                                        context.callMap(
+                                            ExportMap.NAVER,
+                                            state.navigation,
+                                            !isLongClick
+                                        )
                                     )
-                                )
+                                }
                             }
                         },
                         onKaKaoClick = { isLongClick ->
                             scope.launch {
-                                onMapAppClick(
-                                    context.callMap(
-                                        ExportMap.KAKAO,
-                                        navigation,
-                                        !isLongClick
+                                state.navigation?.let {
+                                    onMapAppClick(
+                                        context.callMap(
+                                            ExportMap.KAKAO,
+                                            state.navigation,
+                                            !isLongClick
+                                        )
                                     )
-                                )
+                                }
                             }
                         },
                         onTClick = { isLongClick ->
                             scope.launch {
-                                onMapAppClick(
-                                    context.callMap(
-                                        ExportMap.SKT,
-                                        navigation,
-                                        !isLongClick
+                                state.navigation?.let {
+                                    onMapAppClick(
+                                        context.callMap(
+                                            ExportMap.SKT,
+                                            state.navigation,
+                                            !isLongClick
+                                        )
                                     )
-                                )
+                                }
                             }
                         },
                     ) {
@@ -502,11 +512,11 @@ fun FloatingLandscapeButtonPreview() {
         modifier = Modifier.background(Gray100),
         state = FloatingButtonState(
             adItemGroup = emptyList(),
+            navigation = Course().toNavigation(),
             stateMode = DriveFloatingVisibleMode.Default
         ),
         guideStep = DriveTutorialStep.SKIP,
         isVisible = true,
-        navigation = Course().toNavigation(),
         onCommentClick = {},
         onCheckpointAddClick = {},
         onInfoClick = {},

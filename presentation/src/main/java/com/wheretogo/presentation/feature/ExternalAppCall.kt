@@ -13,10 +13,10 @@ import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.util.Navigation
 import com.wheretogo.presentation.AppError
 import com.wheretogo.presentation.AppPermission
-import com.wheretogo.presentation.BuildConfig
 import com.wheretogo.presentation.ExportMap
-import com.wheretogo.presentation.feature.naver.getCurrentLocation
+import com.wheretogo.presentation.feature.naver.getLastLatLng
 import com.wheretogo.presentation.model.CallRoute
+import com.wheretogo.presentation.toDomainLatLng
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -51,7 +51,7 @@ suspend fun Context.callMap(
                 if (!requestPermission(this@callMap, AppPermission.LOCATION))
                     return@withContext Result.failure(AppError.LocationPermissionRequire())
             }
-            val myLatlng = if (startMyLocation) getCurrentLocation()?.toLatLng() else null
+            val myLatlng = if (startMyLocation) getLastLatLng(this@callMap)?.toDomainLatLng() else null
             when (map) {
                 ExportMap.KAKAO -> {
                     if (myLatlng == null)
@@ -181,10 +181,6 @@ private fun Context.openPlayStore(packageName: String) {
         )
         startActivity(webIntent)
     }
-}
-
-private fun Location.toLatLng(): LatLng {
-    return LatLng(latitude, longitude)
 }
 
 private fun Navigation.createCallRoute(myLatlng: LatLng?): CallRoute {

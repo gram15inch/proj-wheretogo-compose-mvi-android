@@ -10,7 +10,7 @@ import com.wheretogo.presentation.model.AppPath
 import com.wheretogo.presentation.model.ClusterInfo
 import com.wheretogo.presentation.model.LeafInfo
 import com.wheretogo.presentation.model.MapOverlay
-import com.wheretogo.presentation.model.MarkerInfo
+import com.wheretogo.domain.model.map.MarkerInfo
 import com.wheretogo.presentation.model.PathInfo
 import com.wheretogo.presentation.model.TraceList
 import com.wheretogo.presentation.toOverlayType

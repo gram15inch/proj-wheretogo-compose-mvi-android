@@ -10,7 +10,7 @@ import com.wheretogo.data.model.comment.CacheCommentGroupWrapper
 import com.wheretogo.data.model.content.ContentLikeRequest
 import com.wheretogo.data.toComment
 import com.wheretogo.data.toCommentGroup
-import com.wheretogo.data.toRemoteComment
+import com.wheretogo.data.toCreateContent
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.comment.CommentAddRequest
 import com.wheretogo.domain.repository.CommentRepository
@@ -47,7 +47,7 @@ class CommentRepositoryImpl @Inject constructor(
         val newCommentId = "CM${ULID().nextULID()}"
         val newComment = request.toComment(newCommentId)
 
-        return remoteDatasource.addComment(newComment.toRemoteComment()).mapCatching {
+        return remoteDatasource.addComment(newComment.toCreateContent()).mapCatching {
             val commentGroup = _cacheByGroupId
                 .safeGet(newComment.groupId)
                 .commentGroup + newComment

@@ -21,7 +21,7 @@ import com.wheretogo.presentation.model.AppLeaf
 import com.wheretogo.presentation.model.AppMarker
 import com.wheretogo.presentation.model.ClusterInfo
 import com.wheretogo.presentation.model.MapOverlay
-import com.wheretogo.presentation.model.MarkerInfo
+import com.wheretogo.domain.model.map.MarkerInfo
 import com.wheretogo.presentation.model.PathInfo
 import com.wheretogo.presentation.toDomainLatLng
 import com.wheretogo.presentation.toLeafInfo
@@ -111,10 +111,12 @@ class MapOverlayServiceImpl @Inject constructor(
         val key = oneTimeMarkerKey(markerInfo.contentId)
         overlayProvider.getMarker(key).onSuccess {
             if (markerInfo.caption != null && markerInfo.caption != it.markerInfo.caption)
-                overlayProvider.updateMarkerCaption(key, markerInfo.caption)
+                overlayProvider.updateMarkerCaption(key, markerInfo.caption?:"")
 
             if (markerInfo.position != null && markerInfo.position != it.markerInfo.position)
-                overlayProvider.updateMarkerPosition(key, markerInfo.position)
+                markerInfo.position?.let { latlng->
+                    overlayProvider.updateMarkerPosition(key, latlng)
+                }
         }
     }
 
@@ -128,7 +130,7 @@ class MapOverlayServiceImpl @Inject constructor(
         }
     }
 
-    override fun removeCourseMarkerAndPath(courseIdGroup: List<String>): Unit = updateScope {
+    override fun removeCourseMarkerAndPath(courseIdGroup: List<String>){
         courseIdGroup.forEach { courseId ->
             overlayProvider.removeOverlay(listOf(courseMarkerKey(courseId)))
             overlayProvider.removeOverlay(listOf(coursePathKey(courseId)))
@@ -143,7 +145,7 @@ class MapOverlayServiceImpl @Inject constructor(
         }
     }
 
-    override fun removeCheckPointCluster(courseId: String): Unit = updateScope {
+    override fun removeCheckPointCluster(courseId: String) {
         overlayProvider.removeCluster(clusterKey(courseId))
         latestScaleId = ""
     }

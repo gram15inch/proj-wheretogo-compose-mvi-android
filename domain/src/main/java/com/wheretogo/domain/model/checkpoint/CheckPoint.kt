@@ -1,6 +1,9 @@
 package com.wheretogo.domain.model.checkpoint
 
 import com.wheretogo.domain.model.address.LatLng
+import com.wheretogo.domain.model.report.ReportReason
+import com.wheretogo.domain.model.report.ReportType
+import com.wheretogo.domain.usecase.report.ReportContent
 
 data class CheckPoint(
     val checkPointId: String = "",
@@ -18,4 +21,15 @@ data class CheckPoint(
     val reportedCount: Int = 0,
     val updateAt: Long = 0L,
     val createAt: Long = 0L
-)
+) {
+    fun toReportContent(reason: ReportReason): ReportContent {
+        return ReportContent(
+            contentId = checkPointId,
+            contentGroupId = courseId,
+            type = ReportType.CHECKPOINT,
+            reason = reason,
+            targetUserId = userId,
+            targetUserName = userName
+        )
+    }
+}
