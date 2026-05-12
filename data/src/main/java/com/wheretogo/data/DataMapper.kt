@@ -11,7 +11,7 @@ import com.wheretogo.data.model.history.LocalHistoryGroupWrapper
 import com.wheretogo.data.model.history.LocalHistoryIdGroup
 import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
 import com.wheretogo.data.model.map.DataLatLng
-import com.wheretogo.data.model.report.ReportRequest
+import com.wheretogo.data.model.report.ReportCreateContent
 import com.wheretogo.data.model.report.ReportResponse
 import com.wheretogo.data.model.route.LocalRoute
 import com.wheretogo.data.model.route.RemoteRoute
@@ -25,6 +25,10 @@ import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.auth.SyncToken
 import com.wheretogo.domain.model.checkpoint.CheckPoint
+import com.wheretogo.domain.model.checkpoint.CheckPointAddRequest
+import com.wheretogo.data.model.checkpoint.CheckPointCreateContent
+import com.wheretogo.data.model.comment.CommentCreateContent
+import com.wheretogo.data.model.course.CourseCreateContent
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.comment.CommentAddRequest
 import com.wheretogo.domain.model.course.Course
@@ -139,8 +143,8 @@ fun RemoteProfilePrivate.toLocalProfilePrivate(): LocalProfilePrivate {
     )
 }
 
-fun ReportAddRequest.toReportRequest(): ReportRequest {
-    return ReportRequest(
+fun ReportAddRequest.toCreateContent(): ReportCreateContent {
+    return ReportCreateContent(
         userId = reporterId,
         contentId = contentId,
         contentGroupId = contentGroupId,
@@ -226,8 +230,8 @@ fun List<RemoteComment>?.toCommentGroup(): List<Comment> {
     return this?.map { it.toComment() } ?: emptyList()
 }
 
-fun Comment.toRemoteComment(): RemoteComment {
-    return RemoteComment(
+fun Comment.toCreateContent(): CommentCreateContent {
+    return CommentCreateContent(
         commentId = commentId,
         commentGroupId = groupId,
         userId = userId,
@@ -244,10 +248,10 @@ fun Comment.toRemoteComment(): RemoteComment {
 }
 
 fun CommentAddRequest.toComment(commentId: String): Comment {
-    val current= System.currentTimeMillis()
+    val current = System.currentTimeMillis()
     return Comment(
         commentId = commentId,
-        groupId = content.groupId,
+        groupId = groupId,
         userId = profile.uid,
         userName = profile.name,
         emoji = content.emoji,
@@ -260,6 +264,15 @@ fun CommentAddRequest.toComment(commentId: String): Comment {
         updateAt = current,
         createAt = current,
         timestamp = 0
+    )
+}
+
+fun CheckPointAddRequest.toCreateContent(): CheckPointCreateContent {
+    return CheckPointCreateContent(
+        courseId = content.groupId,
+        latLng = content.latLng.toDataLatLng(),
+        imageId = imageId,
+        description = content.description
     )
 }
 
@@ -306,11 +319,11 @@ fun List<RemoteCheckPoint>.toLocal() = map { it.toLocalCheckPoint() }
 @JvmName("fromLocalCheckPointToDomain")
 fun List<LocalCheckPoint>.toDomain() = map { it.toCheckPoint() }
 
-fun CourseAddRequest.toCourse(
+fun CourseAddRequest.toCreateContent(
     courseId: String,
-): RemoteCourse {
+): CourseCreateContent {
     val current = System.currentTimeMillis()
-    return RemoteCourse(
+    return CourseCreateContent(
         courseId = courseId,
         courseName = content.courseName,
         userId = profile.uid,
@@ -354,6 +367,30 @@ fun LocalCourse.toCourse(): Course {
 }
 
 fun RemoteCourse.toLocalCourse(): LocalCourse {
+    return LocalCourse(
+        courseId = courseId,
+        courseName = courseName,
+        userId = userId,
+        userName = userName,
+        latitude = cameraLatLng.latitude,
+        longitude = cameraLatLng.longitude,
+        geoHash = cameraLatLng.toLatLng().toGeoHash(6),
+        waypoints = waypoints,
+        duration = duration,
+        type = type,
+        level = level,
+        relation = relation,
+        cameraLatLng = cameraLatLng,
+        zoom = zoom,
+        like = 0,
+        reportedCount = reportedCount,
+        isHide = hide,
+        updateAt = updateAt,
+        createAt = createAt
+    )
+}
+
+fun CourseCreateContent.toLocalCourse(): LocalCourse {
     return LocalCourse(
         courseId = courseId,
         courseName = courseName,
@@ -461,23 +498,23 @@ fun HistoryGroupWrapper.toRemoteHistoryGroupWrapper(): RemoteHistoryGroupWrapper
     )
 }
 
-fun AuthCompany.toDataAuthCompany(): DataAuthCompany{
-    return when(this){
+fun AuthCompany.toDataAuthCompany(): DataAuthCompany {
+    return when (this) {
         AuthCompany.PROFILE -> DataAuthCompany.PROFILE
         AuthCompany.GOOGLE -> DataAuthCompany.GOOGLE
     }
 }
 
-fun DataAuthCompany.toAuthCompany(): AuthCompany{
-    return when(this){
+fun DataAuthCompany.toAuthCompany(): AuthCompany {
+    return when (this) {
         DataAuthCompany.PROFILE -> AuthCompany.PROFILE
         DataAuthCompany.GOOGLE -> AuthCompany.GOOGLE
     }
 }
 
 
-fun HistoryType.toDataHistoryType(): DataHistoryType{
-    return when(this){
+fun HistoryType.toDataHistoryType(): DataHistoryType {
+    return when (this) {
         HistoryType.COURSE -> DataHistoryType.COURSE
         HistoryType.CHECKPOINT -> DataHistoryType.CHECKPOINT
         HistoryType.COMMENT -> DataHistoryType.COMMENT
@@ -486,8 +523,8 @@ fun HistoryType.toDataHistoryType(): DataHistoryType{
     }
 }
 
-fun DataHistoryType.toHistoryType(): HistoryType{
-    return when(this){
+fun DataHistoryType.toHistoryType(): HistoryType {
+    return when (this) {
         DataHistoryType.COURSE -> HistoryType.COURSE
         DataHistoryType.CHECKPOINT -> HistoryType.CHECKPOINT
         DataHistoryType.COMMENT -> HistoryType.COMMENT
@@ -558,7 +595,7 @@ fun History.remoteGroupWrapper(): List<RemoteHistoryGroupWrapper> {
     )
 }
 
-fun SyncToken.toDataSyncToken(): DataSyncToken{
+fun SyncToken.toDataSyncToken(): DataSyncToken {
     return DataSyncToken(
         authCompany = authCompany.toDataAuthCompany(),
         idToken = idToken,

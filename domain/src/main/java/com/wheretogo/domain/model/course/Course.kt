@@ -2,6 +2,9 @@ package com.wheretogo.domain.model.course
 
 import com.wheretogo.domain.DOMAIN_EMPTY
 import com.wheretogo.domain.model.address.LatLng
+import com.wheretogo.domain.model.report.ReportReason
+import com.wheretogo.domain.model.report.ReportType
+import com.wheretogo.domain.usecase.report.ReportContent
 
 data class Course(
     val courseId: String = DOMAIN_EMPTY,
@@ -23,4 +26,15 @@ data class Course(
     val reportedCount: Int = 0,
     val updateAt: Long = 0,
     val createAt: Long = 0
-)
+) {
+    fun toReportContent(reason: ReportReason): ReportContent {
+        return ReportContent(
+            contentId = courseId,
+            contentGroupId = "",
+            type = ReportType.COURSE,
+            reason = reason,
+            targetUserId = userId,
+            targetUserName = userName
+        )
+    }
+}

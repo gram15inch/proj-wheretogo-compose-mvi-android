@@ -1,6 +1,6 @@
 package com.wheretogo.presentation.state
 
-import com.wheretogo.presentation.model.SlideItem
+import com.wheretogo.domain.model.map.SlideItem
 
 data class PopUpState(
     val initPage:Int? = null,

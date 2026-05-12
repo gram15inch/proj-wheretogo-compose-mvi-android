@@ -6,6 +6,7 @@ import com.wheretogo.domain.CourseAddValid
 import com.wheretogo.domain.PathType
 import com.wheretogo.domain.RouteAttr
 import com.wheretogo.domain.SearchType
+import com.wheretogo.domain.ZOOM
 import com.wheretogo.domain.feature.successMap
 import com.wheretogo.domain.handler.CourseAddEvent
 import com.wheretogo.domain.handler.CourseAddHandler
@@ -18,20 +19,22 @@ import com.wheretogo.domain.usecase.util.CreateRouteUseCase
 import com.wheretogo.domain.usecase.util.SearchKeywordUseCase
 import com.wheretogo.presentation.CLEAR_ADDRESS
 import com.wheretogo.presentation.COURSE_NAME_MAX_LENGTH
-import com.wheretogo.presentation.CameraUpdateSource
+import com.wheretogo.domain.model.map.CameraMoveTrigger
 import com.wheretogo.presentation.CourseAddVisibleMode
 import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.MainDispatcher
-import com.wheretogo.presentation.MoveAnimation
+import com.wheretogo.domain.model.map.MoveAnimation
 import com.wheretogo.presentation.SheetVisibleMode
 import com.wheretogo.presentation.feature.map.MapOverlayService
 import com.wheretogo.presentation.intent.CourseAddIntent
 import com.wheretogo.presentation.model.AppMarker
 import com.wheretogo.presentation.model.AppPath
-import com.wheretogo.presentation.model.MarkerInfo
+import com.wheretogo.domain.model.map.MarkerInfo
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.BottomSheetState
-import com.wheretogo.presentation.state.CameraState
+import com.wheretogo.domain.model.map.CameraState
+import com.wheretogo.presentation.AppLifecycle
+import com.wheretogo.presentation.model.CameraOption
 import com.wheretogo.presentation.state.CourseAddScreenState
 import com.wheretogo.presentation.state.NaverMapState
 import com.wheretogo.presentation.toCourseContent
@@ -39,7 +42,9 @@ import com.wheretogo.presentation.toSearchBarItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -63,24 +68,14 @@ class CourseAddViewModel @Inject constructor(
             bottomSheetState = BottomSheetState(
                 content = DriveBottomSheetContent.COURSE_ADD
             ),
-            overlayGroup = mapOverlayService.overlays
         )
     )
     val courseAddScreenState: StateFlow<CourseAddScreenState> = _courseAddScreenState
+    private val _mapEvent = MutableSharedFlow<MapEvent>()
+    val mapEvent : SharedFlow<MapEvent> = _mapEvent
 
-    init {
-        observe()
-    }
-
-    private fun observe() {
-        viewModelScope.launch(dispatcher) {
-            launch {
-                mapOverlayService.fingerPrintFlow.collect { fp ->
-                    _courseAddScreenState.update { it.copy(fingerPrint = fp) }
-                }
-            }
-        }
-    }
+    val overlays = mapOverlayService.overlays
+    val fingerPrint = mapOverlayService.fingerPrintFlow
 
     fun handleIntent(intent: CourseAddIntent) {
         viewModelScope.launch(dispatcher) {
@@ -109,6 +104,9 @@ class CourseAddViewModel @Inject constructor(
                 is CourseAddIntent.CommendClick -> commendClick()
                 is CourseAddIntent.DetailBackClick -> detailBackClick()
 
+                // 공통
+                is CourseAddIntent.LifecycleChange -> lifecycleChange(intent.event)
+
             }
         }
     }
@@ -117,21 +115,23 @@ class CourseAddViewModel @Inject constructor(
         handler.handle(error)
     }
 
-
     //서치바
-    private fun searchBarItemClick(item: SearchBarItem) {
+    private suspend fun searchBarItemClick(item: SearchBarItem) {
         if (item.label != CLEAR_ADDRESS && item.latlng != null) {
+            val zoom = _courseAddScreenState.value.naverMapState.latestCameraState.zoom
             _courseAddScreenState.update {
                 it.run {
                     copy(
                         searchBarState = searchBarState.copy(isLoading = false)
-                    ).moveCamera(
-                        latLng = item.latlng,
-                        source = CameraUpdateSource.SEARCH_BAR,
-                        animation = MoveAnimation.APP_EASING
                     )
                 }
             }
+            moveCamera(
+                latLng = item.latlng,
+                zoom = zoom,
+                trigger = CameraMoveTrigger.SEARCH_BAR,
+                animation = MoveAnimation.APP_EASING
+            )
         } else {
             _courseAddScreenState.update { it.searchBarInit() }
         }
@@ -208,20 +208,18 @@ class CourseAddViewModel @Inject constructor(
             it.run {
                 copy(
                     naverMapState = NaverMapState(
-                        latestCameraState = cameraState.copy(
-                            updateSource = CameraUpdateSource.USER
-                        )
+                        latestCameraState = cameraState
                     )
                 )
             }
         }
     }
 
-    private fun waypointMarkerClick(info: MarkerInfo) {
+    private suspend fun waypointMarkerClick(info: MarkerInfo) {
         val isFloatMarker = _courseAddScreenState.value.isFloatMarker
         val position = info.position
-
-        if (!isFloatMarker && position != null)
+        val zoom = _courseAddScreenState.value.naverMapState.latestCameraState.zoom
+        if (!isFloatMarker && position != null) {
             _courseAddScreenState.update {
                 it.run {
                     mapOverlayService.hideWaypoint(info.contentId)
@@ -229,12 +227,16 @@ class CourseAddViewModel @Inject constructor(
                         isFloatingButton = true,
                         isFloatMarker = true,
                         selectedMarkerItem = info,
-                    ).moveCamera(
-                        latLng = position,
-                        source = CameraUpdateSource.MARKER
+                        stateMode = CourseAddVisibleMode.BottomSheetCollapse
                     )
                 }
             }
+            moveCamera(
+                latLng = position,
+                zoom = zoom,
+                trigger = CameraMoveTrigger.MARKER
+            )
+        }
     }
 
     //플로팅
@@ -386,35 +388,26 @@ class CourseAddViewModel @Inject constructor(
         }
     }
 
-    private fun CourseAddScreenState.moveCamera(
-        latLng: LatLng? = null,
-        zoom: Double? = null,
-        source: CameraUpdateSource = CameraUpdateSource.USER,
-        animation: MoveAnimation = MoveAnimation.APP_LINEAR
-    ): CourseAddScreenState {
-        return if (latLng != null) {
-            run {
-                val zoom = zoom ?: naverMapState.latestCameraState.zoom
-                copy(
-                    naverMapState = naverMapState.copy(
-                        requestCameraState = naverMapState.latestCameraState.copy(
-                            latLng = latLng,
-                            zoom = zoom,
-                            updateSource = source,
-                            moveAnimation = animation
-                        )
-                    )
-                )
-            }
-        } else{
-            copy(
-                naverMapState = naverMapState.copy(
-                    requestCameraState = naverMapState.latestCameraState.copy(
-                        isMyLocation = true
-                    )
+    private suspend fun moveCamera(
+        latLng: LatLng? = null, // 널이면 기본위치
+        zoom: Double,
+        trigger: CameraMoveTrigger = CameraMoveTrigger.DEFAULT,
+        animation: MoveAnimation = MoveAnimation.APP_LINEAR,
+    ){
+        val isMyLocation = latLng == null
+        val latlng = latLng?:LatLng()
+        val zoom = if(zoom == 0.0) ZOOM.Place.level else zoom
+        _mapEvent.emit(
+            MapEvent.MoveCamera(
+                CameraOption(
+                    latLng = latlng,
+                    zoom = zoom,
+                    updateSource = trigger,
+                    moveAnimation = animation,
+                    isMyLocation = isMyLocation
                 )
             )
-        }
+        )
     }
 
     private fun CourseAddScreenState.CourseAddSheetState.toValidContent(): CourseAddValidContent {
@@ -551,6 +544,23 @@ class CourseAddViewModel @Inject constructor(
                 return false
         }
         return true
+    }
+
+    //공통
+    private suspend fun lifecycleChange(event: AppLifecycle) {
+        when (event) {
+            AppLifecycle.onLaunch -> {
+                val latest= _courseAddScreenState.value.naverMapState.latestCameraState
+                if(latest.latLng!= LatLng())
+                    moveCamera(
+                        latLng = latest.latLng,
+                        zoom = latest.zoom,
+                        trigger = CameraMoveTrigger.RESTART,
+                        animation = MoveAnimation.APP_JUMP
+                    )
+            }
+            else -> {}
+        }
     }
 
     private fun CourseAddScreenState.setContentLoading(isLoading: Boolean): CourseAddScreenState {

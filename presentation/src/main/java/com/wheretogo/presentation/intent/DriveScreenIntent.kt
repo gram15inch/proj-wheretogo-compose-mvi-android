@@ -8,10 +8,8 @@ import com.wheretogo.presentation.AppEvent
 import com.wheretogo.presentation.AppLifecycle
 import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.SheetVisibleMode
-import com.wheretogo.presentation.model.MarkerInfo
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.model.TypeEditText
-import com.wheretogo.presentation.state.CameraState
 import com.wheretogo.presentation.state.CommentState.CommentItemState
 import com.wheretogo.presentation.state.ListState.ListItemState
 
@@ -25,12 +23,6 @@ sealed class DriveScreenIntent {
     data object SearchBarClose : DriveScreenIntent()
     data class SearchSubmit(val submit:String) : DriveScreenIntent()
 
-    //지도
-    object MapAsync : DriveScreenIntent()
-    data class CameraUpdated(val cameraState: CameraState) : DriveScreenIntent()
-    data class MarkerClick(val markerInfo: MarkerInfo) : DriveScreenIntent()
-
-
     //목록
     data class DriveListItemClick(val itemState: ListItemState) : DriveScreenIntent()
 
@@ -39,8 +31,8 @@ sealed class DriveScreenIntent {
     data class PopupImageSlide(val index:Int) :DriveScreenIntent()
     data class CommentListItemClick(val itemState: CommentItemState) : DriveScreenIntent()
     data class CommentListItemLongClick(val comment: Comment) : DriveScreenIntent()
-    data class CommentLikeClick(val itemState: CommentItemState) : DriveScreenIntent()
     data class CommentAddClick(val editText: String) : DriveScreenIntent()
+    data class CommentLikeClick(val itemState: CommentItemState) : DriveScreenIntent()
     data class CommentRemoveClick(val comment: Comment) : DriveScreenIntent()
     data class CommentReportClick(val comment: Comment, val reason: ReportReason) : DriveScreenIntent()
     data class CommentEmogiPress(val emogi: String) : DriveScreenIntent()

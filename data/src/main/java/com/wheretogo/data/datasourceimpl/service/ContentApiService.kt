@@ -5,7 +5,8 @@ import com.wheretogo.data.model.comment.RemoteComment
 import com.wheretogo.data.model.content.ContentLikeRequest
 import com.wheretogo.data.model.firebase.DataResponse
 import com.wheretogo.data.model.firebase.MessageResponse
-import com.wheretogo.domain.model.checkpoint.CheckPointCreateContent
+import com.wheretogo.data.model.checkpoint.CheckPointCreateContent
+import com.wheretogo.data.model.comment.CommentCreateContent
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -27,7 +28,7 @@ interface ContentApiService {
 
     @POST("api/content/comment")
     suspend fun addComment(
-        @Body body: RemoteComment
+        @Body body: CommentCreateContent
     ): Response<MessageResponse>
 
     @DELETE("api/content/comment")

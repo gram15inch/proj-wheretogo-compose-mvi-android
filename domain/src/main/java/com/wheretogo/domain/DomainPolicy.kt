@@ -1,6 +1,7 @@
 package com.wheretogo.domain
 
 import com.wheretogo.domain.model.route.RouteCategory
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 const val SECOND = 1000L
@@ -12,9 +13,37 @@ const val USER_DATE_FORMAT = "yyyy-MM-dd"
 const val LOG_DATE_FORMAT = "yyyy-MM-dd H:m:s"
 const val DOMAIN_EMPTY = ""
 
-const val ROUTE_MIN_ZOOM = 9.5
-const val CHECKPOINT_MIN_ZOOM = 9.5
-const val LIST_ITEM_ZOOM = 12.0
+
+enum class ZOOM(val level: Double) {
+    COUNTRY(8.0),  // 최소 줌
+    PROVINCE(9.5),
+    CITY(10.5),
+    DISTRICT(12.0),
+    Place(13.0);
+
+    companion object {
+        fun getZoomCategory(zoom: Double): ZOOM {
+            return when {
+                zoom == COUNTRY.level -> COUNTRY
+                COUNTRY.level< zoom && zoom <= PROVINCE.level -> PROVINCE
+                PROVINCE.level< zoom && zoom <= CITY.level -> CITY
+                CITY.level< zoom && zoom <= DISTRICT.level -> DISTRICT
+                else-> Place
+            }
+        }
+    }
+
+    fun areaIn(zoom: Double): Boolean {
+        val found = getZoomCategory(zoom)
+        return found.level >= this.level
+    }
+
+    fun areaOut(zoom: Double): Boolean {
+        val found = getZoomCategory(zoom)
+        return found.level < this.level
+    }
+
+}
 
 val CourseCooldown = DefaultCoolDownPolicy(600)
 val CheckpointCooldown = DefaultCoolDownPolicy(15)
@@ -35,7 +64,7 @@ sealed class DomainError : Exception() {
     data class InternalError(val msg: String = "") : DomainError()
     data class ExpireData(val msg: String = "") : DomainError()
     data class CoolDownData(val remainingMinutes: Int = 0) : DomainError()
-    data class UnexpectedException(val throwable: Throwable) : DomainError()
+    data class UnexpectedException(val msg: String="") : DomainError()
 }
 
 enum class RouteFieldType { NAME, POINT, KEYWORD }
@@ -48,7 +77,10 @@ fun Throwable?.toDomainError(): DomainError {
         is IllegalArgumentException -> DomainError.InternalError(this.message ?: "조건 오류")
         is IllegalStateException -> DomainError.InternalError(this.message ?: "상태 오류")
         null -> DomainError.InternalError("알수없는 오류")
-        else -> DomainError.UnexpectedException(this)
+        else -> {
+            Timber.e(this.stackTraceToString())
+            DomainError.UnexpectedException(this.message?:"")
+        }
     }
 }
 

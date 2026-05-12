@@ -1,6 +1,7 @@
 package com.wheretogo.presentation.model
 
 import com.naver.maps.map.overlay.Marker
+import com.wheretogo.domain.model.map.MarkerInfo
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.presentation.OverlayType
 import com.wheretogo.presentation.toNaver

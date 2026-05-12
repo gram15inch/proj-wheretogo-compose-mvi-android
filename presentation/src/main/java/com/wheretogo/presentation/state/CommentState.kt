@@ -9,7 +9,7 @@ data class CommentState(
     val isImeVisible: Boolean = false,
     val isDragGuide: Boolean = false,
     val commentItemGroup: List<CommentItemState>? = null,
-    val commentSettingState: CommentSettingState = CommentSettingState(),
+    val commentSettingState: CommentSettingState? = null,
     val commentAddState: CommentAddState = CommentAddState()
 ) {
     data class CommentItemState(

@@ -4,7 +4,7 @@ import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.checkpoint.CheckPoint
 import com.wheretogo.domain.model.course.Course
 import com.wheretogo.presentation.model.MapOverlay
-import com.wheretogo.presentation.model.MarkerInfo
+import com.wheretogo.domain.model.map.MarkerInfo
 import kotlinx.coroutines.flow.StateFlow
 
 interface MapOverlayService {

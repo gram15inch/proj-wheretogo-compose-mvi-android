@@ -10,6 +10,7 @@ import com.wheretogo.data.feature.mapDataError
 import com.wheretogo.data.feature.mapDomainError
 import com.wheretogo.data.feature.mapSuccess
 import com.wheretogo.data.toCourse
+import com.wheretogo.data.toCreateContent
 import com.wheretogo.data.toLocalCourse
 import com.wheretogo.domain.model.course.Course
 import com.wheretogo.domain.model.course.CourseAddRequest
@@ -79,9 +80,9 @@ class CourseRepositoryImpl @Inject constructor(
         request: CourseAddRequest
     ): Result<Course> {
         val courseId = "CS${ULID().nextULID()}"
-        val remote = request.toCourse(courseId)
-        val local = remote.toLocalCourse()
-        return courseRemoteDatasource.setCourse(remote)
+        val content = request.toCreateContent(courseId)
+        val local = content.toLocalCourse()
+        return courseRemoteDatasource.setCourse(content)
             .mapSuccess {
                 courseLocalDatasource.setCourse(listOf(local))
             }.mapSuccess {

@@ -3,9 +3,10 @@ package com.wheretogo.presentation.intent
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.route.RouteCategory
 import com.wheretogo.presentation.SheetVisibleMode
-import com.wheretogo.presentation.model.MarkerInfo
+import com.wheretogo.domain.model.map.MarkerInfo
 import com.wheretogo.presentation.model.SearchBarItem
-import com.wheretogo.presentation.state.CameraState
+import com.wheretogo.domain.model.map.CameraState
+import com.wheretogo.presentation.AppLifecycle
 
 sealed class CourseAddIntent {
 
@@ -31,4 +32,7 @@ sealed class CourseAddIntent {
     data class RouteCategorySelect(val item: RouteCategory) : CourseAddIntent()
     data object CommendClick : CourseAddIntent()
     data object DetailBackClick : CourseAddIntent()
+
+    //공통
+    data class LifecycleChange(val event: AppLifecycle) : CourseAddIntent()
 }

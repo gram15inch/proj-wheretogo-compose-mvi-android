@@ -1,7 +1,7 @@
 package com.wheretogo.domain.handler
 
 
-enum class DriveEvent {
+enum class DriveMsgEvent {
     ADD_DONE, REMOVE_DONE, REPORT_DONE, UNKNOWN_ERR
 }
 

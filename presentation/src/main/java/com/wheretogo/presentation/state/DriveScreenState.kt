@@ -1,10 +1,10 @@
 package com.wheretogo.presentation.state
 
+import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.checkpoint.CheckPoint
 import com.wheretogo.domain.model.course.Course
 import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.DriveVisibleMode
-import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.state.CommentState.CommentAddState
 import java.util.EnumSet
 
@@ -12,21 +12,15 @@ import java.util.EnumSet
 data class DriveScreenState(
     val guideState: GuideState = GuideState(),
     val searchBarState: SearchBarState = SearchBarState(),
-    val naverMapState: NaverMapState = NaverMapState(),
     val listState: ListState = ListState(),
     val popUpState: PopUpState = PopUpState(),
     val bottomSheetState: BottomSheetState = BottomSheetState(),
     val floatingButtonState: FloatingButtonState = FloatingButtonState(),
     val stateMode: DriveVisibleMode = DriveVisibleMode.Explorer,
-    val overlayGroup: List<MapOverlay> = emptyList(),
-    val fingerPrint: Int = 0,
-    val selectedCourse: Course = Course(),
-    val selectedCheckPoint: CheckPoint = CheckPoint(),
     val isLoading: Boolean = false,
     val isCongrats: Boolean = false,
     val isTestUi: Boolean = false,
-    val showMap: Boolean = true,
-    val error: String? = null
+    val isObserveSetting: Boolean = true
 ) {
 
     companion object {
@@ -69,7 +63,7 @@ data class DriveScreenState(
     }
 
     // 초기화
-    fun initSearchBar(isAdVisible: Boolean): DriveScreenState {
+    fun initSearchBar(): DriveScreenState {
         return copy(
             searchBarState = searchBarState.copy(
                 isActive = false,
@@ -77,15 +71,15 @@ data class DriveScreenState(
                 isEmptyVisible = false,
                 searchBarItemGroup = emptyList(),
                 adItemGroup = emptyList(),
-                isAdVisible = isAdVisible
+                isAdVisible = false
             )
         )
     }
 
-    fun initCheckPointAddState(): DriveScreenState {
+    fun initCheckPointAddState(latLng: LatLng): DriveScreenState {
         val newCheckPointAddState = bottomSheetState.checkPointAddState.run {
             copy(
-                latLng = selectedCourse.points.first(),
+                latLng = latLng,
                 sliderPercent = 0.0f,
             )
         }
@@ -96,33 +90,34 @@ data class DriveScreenState(
         )
     }
 
-    fun initInfoState(): DriveScreenState {
-        val infoState = when (bottomSheetState.content) {
-            DriveBottomSheetContent.COURSE_INFO -> {
-
+    fun initInfoState(course: Course?=null, checkPoint: CheckPoint? =null): DriveScreenState {
+        val infoState = when  {
+            course!=null -> {
                 bottomSheetState.infoState.copy(
-                    isRemoveButton = selectedCourse.isUserCreated,
+                    isRemoveButton = course.isUserCreated,
                     isReportButton = true,
-                    createdBy = selectedCourse.userName
+                    createdBy = course.userName
                 )
             }
 
-            DriveBottomSheetContent.CHECKPOINT_INFO -> {
+            checkPoint!=null -> {
                 bottomSheetState.infoState.copy(
-                    isRemoveButton = selectedCheckPoint.isUserCreated,
+                    isRemoveButton = checkPoint.isUserCreated,
                     isReportButton = true,
-                    createdBy = selectedCheckPoint.userName
+                    createdBy = checkPoint.userName
                 )
             }
 
             else -> bottomSheetState.infoState
         }
 
-        return copy(
-            bottomSheetState = bottomSheetState.copy(
-                infoState = infoState
+        return infoState.run {
+            copy(
+                bottomSheetState = bottomSheetState.copy(
+                    infoState = infoState
+                )
             )
-        )
+        }
     }
 
     fun initCommentAddState(): DriveScreenState{
@@ -163,26 +158,21 @@ data class DriveScreenState(
                 popUpState = popUpState.copy(
                     commentState = popUpState.commentState.copy(
                         commentSettingState =
-                            popUpState.commentState.commentSettingState.copy(
+                            popUpState.commentState.commentSettingState?.copy(
                                 isLoading = isLoading,
                             )
-
                     )
                 )
             )
         }
     }
 
-    fun replaceCommentSettingVisible(
-        isVisible: Boolean
-    ): DriveScreenState {
+    fun closeCommentSetting(): DriveScreenState {
         return run {
             copy(
                 popUpState = popUpState.copy(
                     commentState = popUpState.commentState.copy(
-                        commentSettingState = popUpState.commentState.commentSettingState.copy(
-                            isVisible = isVisible,
-                        )
+                        commentSettingState = null
                     )
                 )
             )

@@ -2,7 +2,7 @@ package com.wheretogo.data.repositoryimpl
 
 import com.wheretogo.data.datasource.ReportRemoteDatasource
 import com.wheretogo.data.toReport
-import com.wheretogo.data.toReportRequest
+import com.wheretogo.data.toCreateContent
 import com.wheretogo.domain.model.report.Report
 import com.wheretogo.domain.model.report.ReportAddRequest
 import com.wheretogo.domain.repository.ReportRepository
@@ -12,7 +12,7 @@ class ReportRepositoryImpl @Inject constructor(
     private val reportRemoteDatasource: ReportRemoteDatasource
 ) : ReportRepository {
     override suspend fun addReport(request: ReportAddRequest): Result<String> {
-        val request = request.toReportRequest()
+        val request = request.toCreateContent()
         return reportRemoteDatasource.addReport(request)
     }
 

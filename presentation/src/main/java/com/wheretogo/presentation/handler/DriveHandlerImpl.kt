@@ -2,7 +2,7 @@ package com.wheretogo.presentation.handler
 
 import androidx.annotation.StringRes
 import com.wheretogo.domain.WarningReason
-import com.wheretogo.domain.handler.DriveEvent
+import com.wheretogo.domain.handler.DriveMsgEvent
 import com.wheretogo.domain.handler.DriveHandler
 import com.wheretogo.domain.handler.ErrorHandler
 import com.wheretogo.presentation.AppError
@@ -13,12 +13,12 @@ import com.wheretogo.presentation.model.EventMsg
 import com.wheretogo.presentation.toAppError
 
 class DriveHandlerImpl(val errorHandler: ErrorHandler) : DriveHandler {
-    override suspend fun handle(event: DriveEvent) {
+    override suspend fun handle(event: DriveMsgEvent) {
         when (event) {
-            DriveEvent.ADD_DONE -> EventBus.send(AppEvent.SnackBar(EventMsg(R.string.add_done)))
-            DriveEvent.REMOVE_DONE -> EventBus.send(AppEvent.SnackBar(EventMsg(R.string.remove_done)))
-            DriveEvent.REPORT_DONE -> EventBus.send(AppEvent.SnackBar(EventMsg(R.string.report_done)))
-            DriveEvent.UNKNOWN_ERR -> EventBus.send(AppEvent.SnackBar(EventMsg(R.string.retry_guide)))
+            DriveMsgEvent.ADD_DONE -> EventBus.send(AppEvent.SnackBar(EventMsg(R.string.add_done)))
+            DriveMsgEvent.REMOVE_DONE -> EventBus.send(AppEvent.SnackBar(EventMsg(R.string.remove_done)))
+            DriveMsgEvent.REPORT_DONE -> EventBus.send(AppEvent.SnackBar(EventMsg(R.string.report_done)))
+            DriveMsgEvent.UNKNOWN_ERR -> EventBus.send(AppEvent.SnackBar(EventMsg(R.string.retry_guide)))
         }
     }
 

@@ -1,6 +1,7 @@
 package com.wheretogo.presentation.composable.content
 
 import android.view.MotionEvent
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
@@ -61,6 +62,7 @@ import coil.request.ImageRequest
 import com.valentinilk.shimmer.shimmer
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.dummy.getCommentDummy
+import com.wheretogo.domain.model.map.SlideItem
 import com.wheretogo.domain.model.report.ReportReason
 import com.wheretogo.presentation.CommentType
 import com.wheretogo.presentation.R
@@ -71,7 +73,6 @@ import com.wheretogo.presentation.feature.BlurEffect
 import com.wheretogo.presentation.feature.ImeStickyBox
 import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.feature.topShadow
-import com.wheretogo.presentation.model.SlideItem
 import com.wheretogo.presentation.model.TypeEditText
 import com.wheretogo.presentation.state.CommentState
 import com.wheretogo.presentation.state.CommentState.CommentAddState
@@ -104,11 +105,14 @@ fun MapPopup(
     onCommentReportClick: (Comment, ReportReason) -> Unit,
     onCommentAddClick: (String) -> Unit,
     onCommentEmogiPress: (String) -> Unit,
-    onCommentTypePress: (TypeEditText) -> Unit
+    onCommentTypePress: (TypeEditText) -> Unit,
+    onBackPressed: (() -> Unit)? = null
 ) {
     val isWideSize = screenSize(true) >= WIDE_WIDTH.dp
     val coroutineScope = rememberCoroutineScope()
-
+    BackHandler(enabled = onBackPressed != null) {
+        onBackPressed?.invoke()
+    }
     // 넒은화면시 댓글창 오픈으로 표시하기위해 사용
     LaunchedEffect(isWideSize) {
         if (isWideSize) {
@@ -233,16 +237,18 @@ fun CommentDragSheet(
             }
         }
 
+
+
         FadeAnimation(
             modifier = Modifier.clip(RoundedCornerShape(topStart = 28.5.dp, topEnd = 28.5.dp)),
-            visible = state.commentSettingState.isVisible
-        ) {
+            state = state.commentSettingState
+        ) { commentState ->
             CommentSetting(
-                state = state.commentSettingState,
+                state = commentState,
                 onCommentRemoveClick = onCommentRemoveClick,
                 onCommentReportClick = onCommentReportClick,
                 onBackgroundClick = {
-                    onCommentListItemLongClick(state.commentSettingState.comment)
+                    onCommentListItemLongClick(commentState.comment)
                 })
         }
     }
@@ -259,6 +265,7 @@ fun CommentContent(
     Box(modifier = modifier) {
         CommentList(
             commentItemGroup = commentState.commentItemGroup,
+            isVisible = commentState.isContentVisible,
             onItemClick = { item ->
                 onCommentListItemClick(item)
             },
@@ -533,7 +540,6 @@ fun PopUpImageSlide(
     ) {
         if (initPage != null) {
             val pagerState = rememberPagerState(initPage, pageCount = { slideItems.size })
-
             LaunchedEffect(pagerState.currentPage) {
                 onPopupSlide(pagerState.currentPage)
             }
@@ -687,7 +693,105 @@ fun PopupPreview() {
                 commentState = CommentState(
                     isContentVisible = true,
                     isDragGuide = true,
+                    isImeVisible = false,
+                    commentItemGroup = getCommentDummy().mapIndexed { idx, item ->
+                        val comment = item.copy(
+                            isUserLiked = if (item.like % 2 == 0) false else true,
+                            isFocus = idx == 0
+                        )
+                        CommentItemState(
+                            data = comment,
+                            isFold = if (comment.like % 2 == 0) true else false,
+                        )
+                    },
+                    commentAddState = CommentAddState(
+                        isOneLinePreview = false,
+                        isLoading = false,
+                        emogiGroup = defaultCommentEmogiGroup()
+                    ),
+                    commentSettingState = null
+                )
+            ),
+            isLoading = false,
+            isImageBlur = false,
+            requestCommentOpen = {},
+            onPopupBlurClick = {},
+            onCommentListItemClick = {},
+            onCommentListItemLongClick = {},
+            onCommentLikeClick = {},
+            onCommentRemoveClick = {},
+            onCommentReportClick = {_,_->},
+            onCommentAddClick = {},
+            onCommentEmogiPress = {},
+            onCommentTypePress = {},
+            onCommentSheetStateChange = {},
+            onPopupSlide = {}
+        )
+    }
+}
+
+@Preview(widthDp = 400, heightDp = 600)
+@Composable
+fun PopupNoSettingPreview() {
+    Box(modifier = Modifier.background(Green50)) {
+        MapPopup(
+            modifier = Modifier.align(alignment = Alignment.BottomEnd),
+            state = PopUpState(
+                slideItems = previewItems,
+                initPage = 1,
+                commentState = CommentState(
+                    isContentVisible = true,
+                    isDragGuide = false,
                     isImeVisible = true,
+                    commentItemGroup = getCommentDummy().mapIndexed { idx, item ->
+                        val comment = item.copy(
+                            isUserLiked = if (item.like % 2 == 0) false else true,
+                            isFocus = idx == 0
+                        )
+                        CommentItemState(
+                            data = comment,
+                            isFold = if (comment.like % 2 == 0) true else false,
+                        )
+                    },
+                    commentAddState = CommentAddState(
+                        isOneLinePreview = false,
+                        isLoading = false,
+                        emogiGroup = defaultCommentEmogiGroup()
+                    ),
+                    commentSettingState = null
+                )
+            ),
+            isLoading = false,
+            isImageBlur = false,
+            requestCommentOpen = {},
+            onPopupBlurClick = {},
+            onCommentListItemClick = {},
+            onCommentListItemLongClick = {},
+            onCommentLikeClick = {},
+            onCommentRemoveClick = {},
+            onCommentReportClick = {_,_->},
+            onCommentAddClick = {},
+            onCommentEmogiPress = {},
+            onCommentTypePress = {},
+            onCommentSheetStateChange = {},
+            onPopupSlide = {}
+        )
+    }
+}
+
+@Preview(widthDp = 400, heightDp = 600)
+@Composable
+fun PopupSettingPreview() {
+    Box(modifier = Modifier.background(Green50)) {
+        MapPopup(
+            modifier = Modifier.align(alignment = Alignment.BottomEnd),
+            state = PopUpState(
+                slideItems = previewItems,
+                initPage = 1,
+                commentState = CommentState(
+                    isContentVisible = true,
+                    isDragGuide = false,
+                    isImeVisible = false,
                     commentItemGroup = getCommentDummy().mapIndexed { idx, item ->
                         val comment = item.copy(
                             isUserLiked = if (item.like % 2 == 0) false else true,
@@ -724,12 +828,13 @@ fun PopupPreview() {
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFFF5F5F5)
+@Preview(widthDp = 300, heightDp = 600, showBackground = true, backgroundColor = 0xFFF5F5F5)
 @Composable
 private fun PopUpImagePreview() {
     PopUpImageSlide(
         modifier = Modifier,
         slideItems = previewItems,
+        initPage = 0,
         isBlur = false,
         onPopupBlurClick = {},
         onPopupSlide = {}

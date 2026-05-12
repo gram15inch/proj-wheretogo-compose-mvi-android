@@ -8,7 +8,7 @@ import com.wheretogo.data.datasource.CheckPointRemoteDatasource
 import com.wheretogo.data.datasourceimpl.service.ContentApiService
 import com.wheretogo.data.feature.safeApiCall
 import com.wheretogo.data.model.checkpoint.RemoteCheckPoint
-import com.wheretogo.domain.model.checkpoint.CheckPointCreateContent
+import com.wheretogo.data.model.checkpoint.CheckPointCreateContent
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 

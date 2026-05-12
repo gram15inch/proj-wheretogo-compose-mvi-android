@@ -4,7 +4,7 @@ import com.wheretogo.data.datasource.ReportRemoteDatasource
 import com.wheretogo.data.datasourceimpl.service.ReportApiService
 import com.wheretogo.data.feature.mapDataError
 import com.wheretogo.data.feature.safeApiCall
-import com.wheretogo.data.model.report.ReportRequest
+import com.wheretogo.data.model.report.ReportCreateContent
 import com.wheretogo.data.model.report.ReportResponse
 import javax.inject.Inject
 
@@ -12,9 +12,9 @@ class ReportRemoteDatasourceImpl @Inject constructor(
     private val reportApiService: ReportApiService
 ) : ReportRemoteDatasource {
 
-    override suspend fun addReport(request: ReportRequest): Result<String> {
+    override suspend fun addReport(content: ReportCreateContent): Result<String> {
         return safeApiCall {
-            reportApiService.addReport(request)
+            reportApiService.addReport(content)
         }.mapDataError()
     }
 

@@ -168,6 +168,7 @@ dependencies {
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.cash.turbine)
+    testImplementation(libs.google.truth)
 }
 
 tasks.withType(Test::class) {

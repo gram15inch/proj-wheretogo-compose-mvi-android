@@ -5,6 +5,7 @@ import androidx.annotation.StringRes
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.GetCredentialCustomException
 import androidx.credentials.exceptions.NoCredentialException
+import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.app.LegalNoticeActivity
 import com.naver.maps.map.app.OpenSourceLicenseActivity
@@ -15,9 +16,11 @@ import com.wheretogo.domain.MarkerType
 import com.wheretogo.domain.PathType
 import com.wheretogo.domain.RouteAttrItem
 import com.wheretogo.domain.WarningReason
+import com.wheretogo.domain.ZOOM
 import com.wheretogo.domain.model.util.Viewport
 import com.wheretogo.presentation.model.EventMsg
-import com.wheretogo.presentation.state.CameraState
+import com.wheretogo.domain.model.map.CameraState
+import timber.log.Timber
 import javax.inject.Qualifier
 
 data class PresentationBuildConfig(
@@ -27,8 +30,6 @@ data class PresentationBuildConfig(
 )
 
 
-const val DRIVE_LIST_MIN_ZOOM = 9.5
-const val COURSE_DETAIL_MIN_ZOOM = 10.5
 const val COURSE_NAME_MAX_LENGTH = 17
 const val WIDE_WIDTH = 600
 
@@ -39,6 +40,8 @@ const val DEBUG_AD_REFRESH_SIZE = 1
 const val AD_REFRESH_SIZE = 1
 const val AD_MAX_FONT_SCALE = 1.2f
 
+val NamSan = LatLng(37.55211251549546, 126.98787585585995)
+
 enum class OverlayType {
     DEFAULT_MARKER, COURSE_MARKER, ONE_TIME_MARKER, CLUSTER, LEAF_MARKER,
     SCAFFOLD_PATH, FULL_PATH
@@ -46,19 +49,6 @@ enum class OverlayType {
 
 enum class CommentType(@StringRes val typeRes: Int) {
     ONE(R.string.oneline_review), DETAIL(R.string.detail_review)
-}
-
-enum class CameraUpdateSource {
-    USER, MARKER,
-    LIST_ITEM,
-    SEARCH_BAR,
-    BOTTOM_SHEET_UP,
-    BOTTOM_SHEET_DOWN,
-    GUIDE
-}
-
-enum class MoveAnimation {
-    APP_EASING, APP_LINEAR
 }
 
 const val BANNER_URL =
@@ -87,7 +77,7 @@ sealed class AppError : Exception() {
     data class AdLoadError(val msg: String = "") : AppError()
     data class WaitCoolDown(val remainTimeInMinute: Int = 0) : AppError()
     data class Warning(val reason: WarningReason) : AppError()
-    data class UnexpectedException(val throwable: Throwable) : AppError()
+    data class UnexpectedException(val msg: String) : AppError()
 }
 
 sealed class AppEvent {
@@ -174,10 +164,10 @@ enum class MarkerZIndex{
 
 fun OverlayType.minZoomLevel(): Double {
     return when (this) {
-        OverlayType.COURSE_MARKER -> 8.0
-        OverlayType.FULL_PATH -> 9.5
-        OverlayType.CLUSTER -> 9.5
-        OverlayType.ONE_TIME_MARKER -> 9.5
+        OverlayType.COURSE_MARKER -> ZOOM.COUNTRY.level
+        OverlayType.FULL_PATH -> ZOOM.PROVINCE.level
+        OverlayType.CLUSTER -> ZOOM.PROVINCE.level
+        OverlayType.ONE_TIME_MARKER -> ZOOM.COUNTRY.level
         else -> 0.0
     }
 }
@@ -215,8 +205,7 @@ fun NaverMap.toCameraState(): CameraState {
                 southWest = southWest.toDomainLatLng(),
                 southEast = southEast.toDomainLatLng(),
                 center = center.toDomainLatLng()
-            ),
-            updateSource = CameraUpdateSource.USER
+            )
         )
     }
 }
@@ -292,7 +281,8 @@ fun Throwable.toAppError(): AppError {
         is GetCredentialCustomException -> AppError.CredentialError(errorMessage.toString())
         is NoCredentialException -> AppError.CredentialError(errorMessage.toString())
         else -> {
-            AppError.UnexpectedException(this)
+            Timber.e("Throwable -> AppError: ${stackTraceToString()}")
+            AppError.UnexpectedException(message?:"")
         }
     }
 }

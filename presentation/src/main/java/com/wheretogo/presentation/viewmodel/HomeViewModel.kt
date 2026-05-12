@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.handler.HomeEvent
 import com.wheretogo.domain.handler.HomeHandler
-import com.wheretogo.domain.usecase.app.GuideMoveStepUseCase
+import com.wheretogo.domain.usecase.app.DriveTutorialUseCase
 import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
 import com.wheretogo.presentation.AppLifecycle
 import com.wheretogo.presentation.HomeBodyBtn
@@ -28,7 +28,7 @@ class HomeViewModel @Inject constructor(
     private val handler: HomeHandler,
     @MainDispatcher private val dispatcher: CoroutineDispatcher,
     private val observeSettingsUseCase: ObserveSettingsUseCase,
-    private val guideMoveStepUseCase: GuideMoveStepUseCase
+    private val driveTutorialUseCase: DriveTutorialUseCase
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(stateInit)
     val uiState: StateFlow<HomeScreenState> = _uiState.asStateFlow()
@@ -49,7 +49,7 @@ class HomeViewModel @Inject constructor(
     private suspend fun buttonClick(btn: HomeBodyBtn) {
         when (btn) {
             HomeBodyBtn.DRIVE -> {
-                guideMoveStepUseCase(true)
+                driveTutorialUseCase(DriveTutorialStep.HOME_TO_DRIVE_CLICK)
                 handler.handle(HomeEvent.DRIVE_NAVIGATE)
             }
 
@@ -60,7 +60,7 @@ class HomeViewModel @Inject constructor(
             HomeBodyBtn.GUIDE -> {
                 if (_uiState.value.guideState.tutorialStep == DriveTutorialStep.SKIP) {
                     handler.handle(HomeEvent.GUIDE_START)
-                    guideMoveStepUseCase.start()
+                    driveTutorialUseCase.start()
                 }
             }
 
@@ -80,7 +80,7 @@ class HomeViewModel @Inject constructor(
 
                     else -> {
                         handler.handle(HomeEvent.GUIDE_STOP)
-                        guideMoveStepUseCase.skip()
+                        driveTutorialUseCase.skip()
                     }
                 }
             }
