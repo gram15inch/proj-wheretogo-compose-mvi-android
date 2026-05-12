@@ -105,10 +105,10 @@ class MapViewModel @Inject constructor(
             }
             launch {
                 mapContentRepository.selectedCheckPointState.collect {
-                    if(it == null) {
-                        _isLeafScale = false
-                    }else{
+                    if(it == null &&!_isContentUpdate) {
                         _isLeafScale = true
+                    }else{
+                        _isLeafScale = false
                     }
                 }
             }

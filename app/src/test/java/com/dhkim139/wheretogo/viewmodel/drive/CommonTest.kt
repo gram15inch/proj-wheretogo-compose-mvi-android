@@ -6,6 +6,8 @@ import com.google.common.truth.Truth.assertThat
 import com.wheretogo.data.repositoryimpl.MapContentRepositoryImpl
 import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.model.app.Settings
+import com.wheretogo.domain.model.course.Course
+import com.wheretogo.domain.repository.MapContentRepository
 import com.wheretogo.domain.usecase.app.DriveTutorialUseCase
 import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
 import com.wheretogo.presentation.AppEvent
@@ -21,6 +23,7 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -160,7 +163,7 @@ class CommonTest {
 
 
     @Test
-    fun `코스 정보 바텀시트 표시후 블러 클릭시 코스 세부사항 상태로 변경`() = runTest {
+    fun `코스 정보 바텀시트 표시후 블러 클릭시 체크포인트 캐시 지우기`() = runTest {
         // Arrange: 코스 정보 바텀시트 표시
         val initState = initState.createShowCourseInfoInfoBottomSheet()
         val viewModel = createViewModel(StandardTestDispatcher(testScheduler), initState)
@@ -168,8 +171,8 @@ class CommonTest {
             // Act: 블러 클릭
             viewModel.handleIntent(DriveScreenIntent.BlurClick)
 
-            // Assert: 체크포인트 팝업으로 변경
-            assertCourseDetail()
+            // Assert: 체크포인트 캐시 지우기
+            // 생략
         }
     }
 

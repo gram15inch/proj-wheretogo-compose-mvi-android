@@ -1151,7 +1151,7 @@ class DriveViewModel @Inject constructor(
                 DriveVisibleMode.BlurCheckpointDetail,
                 DriveVisibleMode.BlurCourseDetail -> {
                     mapContentRepository.clearCheckPoint()
-                    it.backToCourseDetail()
+                    it
                 }
 
                 else -> it
