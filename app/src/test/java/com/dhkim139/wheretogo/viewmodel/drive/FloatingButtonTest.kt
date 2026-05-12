@@ -3,6 +3,7 @@ package com.dhkim139.wheretogo.viewmodel.drive
 import com.dhkim139.wheretogo.feature.MainDispatcherRule
 import com.dhkim139.wheretogo.feature.assertFlows
 import com.google.common.truth.Truth.assertThat
+import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.app.Settings
 import com.wheretogo.domain.model.checkpoint.CheckPoint
@@ -10,6 +11,7 @@ import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.course.Course
 import com.wheretogo.domain.model.map.CameraMoveTrigger
 import com.wheretogo.domain.repository.MapContentRepository
+import com.wheretogo.domain.usecase.app.DriveTutorialUseCase
 import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
 import com.wheretogo.domain.usecase.comment.GetCommentForCheckPointUseCase
 import com.wheretogo.presentation.CHECKPOINT_ADD_MARKER
@@ -45,6 +47,7 @@ class FloatingButtonTest {
     private val observeSettingsUseCase = mockk<ObserveSettingsUseCase>()
     private val mapContentRepository = mockk<MapContentRepository>()
     private val getCommentForCheckPointUseCase = mockk<GetCommentForCheckPointUseCase>()
+    private val driveTutorialUseCase = mockk<DriveTutorialUseCase>()
     private val nativeAdService = mockk<AdService>()
 
 
@@ -76,7 +79,7 @@ class FloatingButtonTest {
             reportContentUseCase = mockk(),
             updateLikeUseCase = mockk(),
             searchKeywordUseCase = mockk(),
-            guideMoveStepUseCase = mockk(),
+            driveTutorialUseCase = driveTutorialUseCase,
             signOutUseCase = mockk(),
             clearCacheUseCase = mockk(),
             nativeAdService = nativeAdService,
@@ -92,13 +95,13 @@ class FloatingButtonTest {
         val comment = Comment("CM001")
         val viewModel = createViewModel(StandardTestDispatcher(testScheduler), initState)
 
+         coEvery { driveTutorialUseCase(DriveTutorialStep.COMMENT_FLOAT_CLICK) } returns Result.success(Unit)
          coEvery { mapContentRepository.selectedCheckPointState } returns MutableStateFlow(checkPoint)
          coEvery { getCommentForCheckPointUseCase(checkPoint.checkPointId) } returns Result.success(listOf(comment))
 
         assertFlows(viewModel.driveScreenState, viewModel.driveEvent) {
             // Act: 댓글 플로팅 버튼 클릭
             viewModel.handleIntent(DriveScreenIntent.CommentFloatingButtonClick)
-
             // Assert: 코스 세부 표시
             state.awaitItem().run {
                 popUpState.commentState.let {
@@ -233,7 +236,7 @@ class FloatingButtonTest {
         val viewModel = createViewModel(StandardTestDispatcher(testScheduler), initState)
 
         coEvery { nativeAdService.getAd() } returns Result.success(listOf(adItem))
-
+        coEvery { driveTutorialUseCase(DriveTutorialStep.EXPORT_FLOAT_CLICK) } returns Result.success(Unit)
         assertFlows(viewModel.driveScreenState, viewModel.driveEvent) {
             // Act: 외부 지도 플로팅 버튼 클릭
             viewModel.handleIntent(DriveScreenIntent.ExportMapFloatingButtonClick)
@@ -316,9 +319,6 @@ class FloatingButtonTest {
 
             // Assert: 코스 포커스 해제
             assertThat(event.awaitItem() is DriveEvent.Release)
-            state.awaitItem().run {
-                assertThat(stateMode).isEqualTo(DriveVisibleMode.Explorer)
-            }
         }
     }
 }

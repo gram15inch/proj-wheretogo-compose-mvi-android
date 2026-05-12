@@ -11,6 +11,7 @@ import com.wheretogo.presentation.state.SearchBarState
 fun DriveScreenState.createShowPopupCommentState(isImeVisible: Boolean = false) =
     run {
         copy(
+            stateMode = DriveVisibleMode.BlurCheckpointDetail,
             popUpState = popUpState.copy(
                 commentState = CommentState(
                     isContentVisible = true,
@@ -27,6 +28,7 @@ fun DriveScreenState.createShowPopupCommentState(isImeVisible: Boolean = false) 
 fun  DriveScreenState.createCommentStateWithCommentItem(item: List<CommentState.CommentItemState>) =
     run {
         copy(
+            stateMode = DriveVisibleMode.BlurCheckpointDetail,
             popUpState = popUpState.copy(
                 commentState = popUpState.commentState.copy(
                     commentItemGroup = item
@@ -96,6 +98,7 @@ fun DriveScreenState.createShowSearchBarExpandState(adItems: List<AdItem> = empt
 fun DriveScreenState.createExportMapAppFloatExpandState(adItems: List<AdItem> = emptyList()) =
     run {
         copy(
+            stateMode = DriveVisibleMode.BlurCheckpointDetail,
             floatingButtonState = floatingButtonState.copy(
                 stateMode = DriveFloatingVisibleMode.ExportExpand,
                 adItemGroup = adItems

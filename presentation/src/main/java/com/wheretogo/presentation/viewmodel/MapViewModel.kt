@@ -9,7 +9,6 @@ import com.wheretogo.domain.feature.LocationService
 import com.wheretogo.domain.feature.successMap
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.course.Course
-import com.wheretogo.domain.model.dummy.guideCheckPoint
 import com.wheretogo.domain.model.map.CameraMoveTrigger
 import com.wheretogo.domain.model.map.CameraState
 import com.wheretogo.domain.model.map.ContentOperation
@@ -20,7 +19,7 @@ import com.wheretogo.domain.model.map.OverlayOperation
 import com.wheretogo.domain.model.map.RefreshContentOption
 import com.wheretogo.domain.model.map.RefreshOverlayOption
 import com.wheretogo.domain.repository.MapContentRepository
-import com.wheretogo.domain.usecase.app.GuideMoveStepUseCase
+import com.wheretogo.domain.usecase.app.DriveTutorialUseCase
 import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
 import com.wheretogo.domain.usecase.checkpoint.GetCheckpointForMarkerUseCase
 import com.wheretogo.domain.usecase.course.FilterListCourseUseCase
@@ -44,7 +43,6 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 import javax.inject.Inject
 
 
@@ -57,7 +55,7 @@ class MapViewModel @Inject constructor(
     @MainDispatcher private val dispatcher: CoroutineDispatcher,
     private val initState: MapState,
     private val observeSettingsUseCase: ObserveSettingsUseCase,
-    private val guideMoveStepUseCase: GuideMoveStepUseCase,
+    private val driveTutorialUseCase: DriveTutorialUseCase,
     private val getNearByCourseUseCase: GetNearByCourseUseCase,
     private val filterListCourseUseCase: FilterListCourseUseCase,
     private val getCheckPointForMarkerUseCase: GetCheckpointForMarkerUseCase,
@@ -337,25 +335,15 @@ class MapViewModel @Inject constructor(
             mapOverlayService.scaleToPointLeafInCluster(
                 course.courseId,
                 latLng,
-            ).onSuccess {
-                if (guideCheckPoint.checkPointId == it &&
-                    step == DriveTutorialStep.MOVE_TO_LEAF
-                ) {
-                    guideMoveStepUseCase(true)
-                }
+            ).onSuccess { checkPointId->
+                driveTutorialUseCase(DriveTutorialStep.MOVE_TO_LEAF, checkPointId)
             }
         }
     }
 
-    private suspend fun releaseByZoom(zoom: Double){
-        val step = observeSettingsUseCase().firstOrNull()?.getOrNull()?.tutorialStep
-            ?: DriveTutorialStep.SKIP
+    private fun releaseByZoom(zoom: Double){
         if (ZOOM.CITY.areaOut(zoom)) {
             release()
-            // 가이드
-            if (step == DriveTutorialStep.FOLD_FLOAT_CLICK) {
-                guideMoveStepUseCase(true)
-            }
         }
     }
 
@@ -510,10 +498,7 @@ class MapViewModel @Inject constructor(
                 val newCheckPoint = checkpoints.first { it.checkPointId == markerId }
                 mapContentRepository.selectCheckPoint(newCheckPoint)
 
-                val step = observeSettingsUseCase().firstOrNull()?.getOrNull()?.tutorialStep
-                if (step == DriveTutorialStep.LEAF_CLICK) {
-                    guideMoveStepUseCase(true)
-                }
+                driveTutorialUseCase(DriveTutorialStep.LEAF_CLICK)
             }.onFailure {
                 mapOverlayService.clear()
             }

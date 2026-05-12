@@ -4,10 +4,11 @@ import com.dhkim139.wheretogo.feature.MainDispatcherRule
 import com.dhkim139.wheretogo.feature.assertFlows
 import com.google.common.truth.Truth.assertThat
 import com.wheretogo.data.repositoryimpl.MapContentRepositoryImpl
+import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.app.Settings
 import com.wheretogo.domain.model.course.Course
-import com.wheretogo.domain.model.map.ContentOperation
+import com.wheretogo.domain.usecase.app.DriveTutorialUseCase
 import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
 import com.wheretogo.presentation.DriveFloatingVisibleMode
 import com.wheretogo.presentation.DriveVisibleMode
@@ -35,6 +36,7 @@ class DriveListTest {
 
     private val initState = DriveScreenState(isObserveSetting = false)
     private val observeSettingsUseCase = mockk<ObserveSettingsUseCase>()
+    private val driveTutorialUseCase = mockk<DriveTutorialUseCase>()
 
     @Before
     fun flowClear() = runTest {
@@ -60,7 +62,7 @@ class DriveListTest {
             reportContentUseCase = mockk(),
             updateLikeUseCase = mockk(),
             searchKeywordUseCase = mockk(),
-            guideMoveStepUseCase = mockk(),
+            driveTutorialUseCase = driveTutorialUseCase,
             signOutUseCase = mockk(),
             clearCacheUseCase = mockk(),
             nativeAdService = mockk(),
@@ -75,6 +77,7 @@ class DriveListTest {
         val item = ListItemState(
             course = Course("CS001", cameraLatLng = LatLng(127.0, 35.0))
         )
+        coEvery { driveTutorialUseCase(DriveTutorialStep.DRIVE_LIST_ITEM_CLICK) } returns Result.success(Unit)
         val viewModel = createViewModel(StandardTestDispatcher(testScheduler), initState)
         assertFlows(viewModel.driveScreenState, viewModel.driveEvent) {
             // Act: 목록 아이템 클릭

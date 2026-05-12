@@ -13,6 +13,7 @@ import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
 import com.wheretogo.domain.usecase.comment.GetCommentForCheckPointUseCase
 import com.wheretogo.domain.usecase.comment.RemoveCommentToCheckPointUseCase
 import com.wheretogo.domain.repository.DefaultMapId
+import com.wheretogo.domain.usecase.app.DriveTutorialUseCase
 import com.wheretogo.domain.usecase.report.ReportContentUseCase
 import com.wheretogo.domain.usecase.util.GetImageForPopupUseCase
 import com.wheretogo.domain.usecase.util.UpdateLikeUseCase
@@ -49,6 +50,7 @@ class PopUpTest {
     private val removeCommentToCheckPointUseCase = mockk<RemoveCommentToCheckPointUseCase>()
     private val reportContentUseCase = mockk<ReportContentUseCase>()
     private val updateLikeUseCase = mockk<UpdateLikeUseCase>()
+    private val driveTutorialUseCase = mockk<DriveTutorialUseCase>()
 
     @Before
     fun flowClear() = runTest {
@@ -74,7 +76,7 @@ class PopUpTest {
             reportContentUseCase = reportContentUseCase,
             updateLikeUseCase = updateLikeUseCase,
             searchKeywordUseCase = mockk(),
-            guideMoveStepUseCase = mockk(),
+            driveTutorialUseCase = driveTutorialUseCase,
             signOutUseCase = mockk(),
             clearCacheUseCase = mockk(),
             nativeAdService = mockk(),

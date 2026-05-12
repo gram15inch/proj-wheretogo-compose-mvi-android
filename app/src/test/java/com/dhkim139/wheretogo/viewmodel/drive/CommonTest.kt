@@ -4,7 +4,9 @@ import com.dhkim139.wheretogo.feature.MainDispatcherRule
 import com.dhkim139.wheretogo.feature.assertFlows
 import com.google.common.truth.Truth.assertThat
 import com.wheretogo.data.repositoryimpl.MapContentRepositoryImpl
+import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.model.app.Settings
+import com.wheretogo.domain.usecase.app.DriveTutorialUseCase
 import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
 import com.wheretogo.presentation.AppEvent
 import com.wheretogo.presentation.AppLifecycle
@@ -36,6 +38,7 @@ class CommonTest {
     private val initState = DriveScreenState(isObserveSetting = false)
     private val observeSettingsUseCase = mockk<ObserveSettingsUseCase>()
     private val nativeAdService = mockk<AdService>()
+    private val driveTutorialUseCase = mockk<DriveTutorialUseCase>()
 
     @Before
     fun flowClear() = runTest {
@@ -61,7 +64,7 @@ class CommonTest {
             reportContentUseCase = mockk(),
             updateLikeUseCase = mockk(),
             searchKeywordUseCase = mockk(),
-            guideMoveStepUseCase = mockk(),
+            driveTutorialUseCase = driveTutorialUseCase,
             signOutUseCase = mockk(),
             clearCacheUseCase = mockk(),
             nativeAdService = nativeAdService,
@@ -72,6 +75,7 @@ class CommonTest {
     // ==================== eventReceive 테스트 ====================
     @Test
     fun `앱 이벤트(로그인 성공)수신시 화면 정리`() = runTest {
+        coEvery { driveTutorialUseCase(DriveTutorialStep.SEARCHBAR_CLICK) } returns Result.success(Unit)
         val viewModel = createViewModel(StandardTestDispatcher(testScheduler), initState)
         assertFlows(viewModel.driveScreenState, viewModel.driveEvent) {
             // Arrange: 초기 상태 이외의 임의 상태(서치바 확장)

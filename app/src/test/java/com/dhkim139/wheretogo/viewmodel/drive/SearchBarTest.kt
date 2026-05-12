@@ -5,11 +5,13 @@ import com.dhkim139.wheretogo.feature.MainDispatcherRule
 import com.dhkim139.wheretogo.feature.assertFlows
 import com.google.common.truth.Truth.assertThat
 import com.wheretogo.data.repositoryimpl.MapContentRepositoryImpl
+import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.ZOOM
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.address.SimpleAddress
 import com.wheretogo.domain.model.app.Settings
 import com.wheretogo.domain.model.map.CameraMoveTrigger
+import com.wheretogo.domain.usecase.app.DriveTutorialUseCase
 import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
 import com.wheretogo.domain.usecase.util.SearchKeywordUseCase
 import com.wheretogo.presentation.CLEAR_ADDRESS
@@ -45,6 +47,7 @@ class SearchBarTest {
     private val initState = DriveScreenState(isObserveSetting = false)
     private val observeSettingsUseCase = mockk<ObserveSettingsUseCase>()
     private val searchKeywordUseCase = mockk<SearchKeywordUseCase>()
+    private val driveTutorialUseCase = mockk<DriveTutorialUseCase>()
     private val nativeAdService = mockk<AdService>()
 
     @Before
@@ -71,7 +74,7 @@ class SearchBarTest {
             reportContentUseCase = mockk(),
             updateLikeUseCase = mockk(),
             searchKeywordUseCase = searchKeywordUseCase,
-            guideMoveStepUseCase = mockk(),
+            driveTutorialUseCase = driveTutorialUseCase,
             signOutUseCase = mockk(),
             clearCacheUseCase = mockk(),
             nativeAdService = nativeAdService,
@@ -112,7 +115,7 @@ class SearchBarTest {
             latlng = LatLng(37.566, 126.978),
             isCourse = true
         )
-
+        coEvery { driveTutorialUseCase(DriveTutorialStep.ADDRESS_CLICK) } returns Result.success(Unit)
         assertFlows(viewModel.driveScreenState, viewModel.driveEvent) {
 
             // Act: 코스 아이템 클릭
@@ -140,7 +143,7 @@ class SearchBarTest {
             latlng = LatLng(37.550, 126.940),
             isCourse = false
         )
-
+        coEvery { driveTutorialUseCase(DriveTutorialStep.ADDRESS_CLICK) } returns Result.success(Unit)
         assertFlows(viewModel.driveScreenState, viewModel.driveEvent) {
             // Act: 장소 아이템 클릭
             viewModel.handleIntent(DriveScreenIntent.AddressItemClick(placeItem))
@@ -168,6 +171,7 @@ class SearchBarTest {
         val loadAd = AdItem(createAt = 1)
 
         coEvery { nativeAdService.getAd() } returns Result.success(listOf(loadAd))
+        coEvery { driveTutorialUseCase(DriveTutorialStep.SEARCHBAR_CLICK) } returns Result.success(Unit)
         val viewModel= createViewModel(StandardTestDispatcher(testScheduler), initState)
         assertFlows(viewModel.driveScreenState, viewModel.driveEvent) {
 
@@ -214,7 +218,7 @@ class SearchBarTest {
         val address = SimpleAddress(query, "addr1", LatLng())
 
         coEvery { searchKeywordUseCase(query) } returns Result.success(listOf(address))
-
+        coEvery { driveTutorialUseCase(DriveTutorialStep.SEARCHBAR_EDIT) } returns Result.success(Unit)
 
         assertFlows(viewModel.driveScreenState, viewModel.driveEvent) {
             // Act: 서치바 클릭

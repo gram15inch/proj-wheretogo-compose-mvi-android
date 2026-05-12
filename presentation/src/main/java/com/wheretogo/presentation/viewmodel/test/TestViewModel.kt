@@ -10,7 +10,7 @@ import com.wheretogo.domain.ZOOM
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.dummy.guideCheckPoint
 import com.wheretogo.domain.model.dummy.guideCourse
-import com.wheretogo.domain.usecase.app.GuideMoveStepUseCase
+import com.wheretogo.domain.usecase.app.DriveTutorialUseCase
 import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
 import com.wheretogo.presentation.OverlayType
 import com.wheretogo.presentation.model.AppMarker
@@ -27,7 +27,7 @@ import javax.inject.Inject
 @HiltViewModel
 class TestViewModel @Inject constructor(
     private val observeSettingsUseCase: ObserveSettingsUseCase,
-    private val guideMoveStepUseCase: GuideMoveStepUseCase,
+    private val driveTutorialUseCase: DriveTutorialUseCase,
 ) : ViewModel() {
     val state = MutableStateFlow(TestState())
     val checkMarkerPointGroup = mutableListOf<Marker>()
@@ -102,9 +102,7 @@ class TestViewModel @Inject constructor(
     }
 
     fun markerClick(){
-        viewModelScope.launch {
-            guideMoveStepUseCase(true)
-        }
+
     }
 
     fun searchBarItemClick(item: SearchBarItem){

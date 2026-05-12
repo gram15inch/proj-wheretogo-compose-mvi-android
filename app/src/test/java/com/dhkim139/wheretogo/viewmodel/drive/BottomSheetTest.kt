@@ -4,6 +4,7 @@ import com.dhkim139.wheretogo.feature.FlowAssertions
 import com.dhkim139.wheretogo.feature.MainDispatcherRule
 import com.dhkim139.wheretogo.feature.assertFlows
 import com.google.common.truth.Truth.assertThat
+import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.MarkerType
 import com.wheretogo.domain.handler.DriveHandler
 import com.wheretogo.domain.handler.DriveMsgEvent
@@ -18,6 +19,7 @@ import com.wheretogo.domain.model.report.ReportType
 import com.wheretogo.domain.model.util.ImageInfo
 import com.wheretogo.domain.repository.DefaultMapId
 import com.wheretogo.domain.repository.MapContentRepository
+import com.wheretogo.domain.usecase.app.DriveTutorialUseCase
 import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
 import com.wheretogo.domain.usecase.checkpoint.AddCheckpointToCourseUseCase
 import com.wheretogo.domain.usecase.checkpoint.RemoveCheckPointUseCase
@@ -60,6 +62,7 @@ class BottomSheetTest {
     private val removeCheckPointUseCase = mockk<RemoveCheckPointUseCase>()
     private val reportContentUseCase = mockk<ReportContentUseCase>()
     private val mapContentRepository = mockk<MapContentRepository>()
+    private val driveTutorialUseCase = mockk<DriveTutorialUseCase>()
     @Before
     fun flowClear() = runTest {
         coEvery { observeSettingsUseCase() } returns flowOf(Result.success(Settings()))
@@ -88,7 +91,7 @@ class BottomSheetTest {
             reportContentUseCase = reportContentUseCase,
             updateLikeUseCase = mockk(),
             searchKeywordUseCase = mockk(),
-            guideMoveStepUseCase = mockk(),
+            driveTutorialUseCase = driveTutorialUseCase,
             signOutUseCase = mockk(),
             clearCacheUseCase = mockk(),
             nativeAdService = mockk(),
@@ -169,6 +172,8 @@ class BottomSheetTest {
         val initState = initState.createShowCheckPointAddBottomSheetState()
         val viewModel = createViewModel(StandardTestDispatcher(testScheduler), initState)
         val sheet = SheetVisibleMode.Closed
+        coEvery { driveTutorialUseCase(DriveTutorialStep.COMMENT_SHEET_DRAG) } returns Result.success(Unit)
+
         assertFlows(viewModel.driveScreenState, viewModel.driveEvent) {
             // Act: 바텀시트 변경(닫힌후)
             viewModel.handleIntent(DriveScreenIntent.BottomSheetChange(sheet))
@@ -193,6 +198,7 @@ class BottomSheetTest {
         val initState = initState.createShowPopupCommentState()
         val viewModel = createViewModel(StandardTestDispatcher(testScheduler), initState)
         val sheet = SheetVisibleMode.Closed
+        coEvery { driveTutorialUseCase(DriveTutorialStep.COMMENT_SHEET_DRAG) } returns Result.success(Unit)
         assertFlows(viewModel.driveScreenState, viewModel.driveEvent) {
             // Act: 바텀시트 변경(닫힌후)
             viewModel.handleIntent(DriveScreenIntent.BottomSheetChange(sheet))

@@ -7,7 +7,7 @@ import com.wheretogo.domain.handler.DriveHandler
 import com.wheretogo.domain.handler.HomeEvent
 import com.wheretogo.domain.handler.HomeHandler
 import com.wheretogo.domain.model.app.Settings
-import com.wheretogo.domain.usecase.app.GuideMoveStepUseCase
+import com.wheretogo.domain.usecase.app.DriveTutorialUseCase
 import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
 import com.wheretogo.domain.usecase.checkpoint.AddCheckpointToCourseUseCase
 import com.wheretogo.domain.usecase.checkpoint.GetCheckpointForMarkerUseCase
@@ -55,10 +55,10 @@ class ViewModelTestByGuide {
                 }
 
         coEvery { homeHandler.handle(HomeEvent.GUIDE_START) } returns Unit
-        coEvery { guideMoveStepUseCase.start() } returns Result.success(Unit)
+        coEvery { driveTutorialUseCase.start() } returns Result.success(Unit)
 
         coEvery { homeHandler.handle(HomeEvent.DRIVE_NAVIGATE) } returns Unit
-        coEvery { guideMoveStepUseCase(true) } returns Result.success(Unit)
+        coEvery { driveTutorialUseCase(DriveTutorialStep.HOME_TO_DRIVE_CLICK) } returns Result.success(Unit)
 
         val initState = HomeScreenState(
             guideState = GuideState(
@@ -111,7 +111,7 @@ class ViewModelTestByGuide {
             handler = homeHandler,
             dispatcher = dispatcher,
             observeSettingsUseCase,
-            guideMoveStepUseCase
+            driveTutorialUseCase
         )
     }
     private val homeHandler = mockk<HomeHandler>()
@@ -130,7 +130,7 @@ class ViewModelTestByGuide {
     private val removeCommentToCheckPointUseCase = mockk<RemoveCommentToCheckPointUseCase>()
     private val searchKeywordUseCase = mockk<SearchKeywordUseCase>()
     private val signOutUseCase = mockk<UserSignOutUseCase>()
-    private val guideMoveStepUseCase = mockk<GuideMoveStepUseCase>()
+    private val driveTutorialUseCase = mockk<DriveTutorialUseCase>()
     private val filterListCourseUseCase = mockk<FilterListCourseUseCase>()
     private val mapOverlayService = mockk<MapOverlayService>()
     private val nativeAdServiceOld = mockk<AdService>()
