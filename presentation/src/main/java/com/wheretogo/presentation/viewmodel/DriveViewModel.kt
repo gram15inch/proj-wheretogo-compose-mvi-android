@@ -61,6 +61,8 @@ import com.wheretogo.presentation.event.DriveEvent.Companion.refreshCourses
 import com.wheretogo.presentation.event.DriveEvent.Companion.stopCameraWhenSheetChange
 import com.wheretogo.presentation.event.DriveEvent.Companion.updateMarker
 import com.wheretogo.presentation.feature.ads.AdService
+import com.wheretogo.presentation.feature.executeAction
+import com.wheretogo.presentation.feature.executeActionWithUpdateUi
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.model.TypeEditText
@@ -141,8 +143,8 @@ class DriveViewModel @Inject constructor(
                 is DriveScreenIntent.PopupImageSlide -> popupImageSlide(intent.index)
                 is DriveScreenIntent.CommentListItemClick -> commentListItemClick(intent.itemState)
                 is DriveScreenIntent.CommentListItemLongClick -> commentListItemLongClick(intent.comment)
-                is DriveScreenIntent.CommentLikeClick -> commentLikeClick(intent.itemState)
                 is DriveScreenIntent.CommentAddClick -> commentAddClick(intent.editText)
+                is DriveScreenIntent.CommentLikeClick -> commentLikeClick(intent.itemState)
                 is DriveScreenIntent.CommentRemoveClick -> commentRemoveClick(intent.comment)
                 is DriveScreenIntent.CommentReportClick -> commentReportClick(intent.comment, intent.reason)
                 is DriveScreenIntent.CommentEmogiPress -> commentEmogiPress(intent.emogi)
@@ -345,28 +347,26 @@ class DriveViewModel @Inject constructor(
             searchBarClose()
             return
         }
-
-        _driveScreenState.update { it.replaceSearchBarLoading(true) }
-        val keywordResult = withContext(Dispatchers.IO) { searchKeywordUseCase(address) }
-
-        keywordResult.onSuccess { addressGroup ->
-            _driveScreenState.update {
-                it.copy(
-                    searchBarState = it.searchBarState.copy(
-                        isEmptyVisible = addressGroup.isEmpty(),
-                        searchBarItemGroup = addressGroup.map { it.toSearchBarItem() }
+        _driveScreenState.executeAction(
+            loading = { state, isLoading -> state.replaceSearchBarLoading(isLoading) },
+            action = { searchKeywordUseCase(address) },
+            onSuccess = { addressGroup ->
+                _driveScreenState.update {
+                    it.copy(
+                        searchBarState = it.searchBarState.copy(
+                            isEmptyVisible = addressGroup.isEmpty(),
+                            searchBarItemGroup = addressGroup.map { it.toSearchBarItem() }
+                        )
                     )
-                )
-            }
-            // 가이드
-            val step = _driveScreenState.value.guideState.tutorialStep
-            if (step == DriveTutorialStep.SEARCHBAR_EDIT) {
-                guideMoveStepUseCase(true)
-            }
-        }.onFailure {
-            handleError(it)
-        }
-        _driveScreenState.update { it.replaceSearchBarLoading(false) }
+                }
+                // 가이드
+                val step = _driveScreenState.value.guideState.tutorialStep
+                if (step == DriveTutorialStep.SEARCHBAR_EDIT) {
+                    guideMoveStepUseCase(true)
+                }
+            },
+            onFailure = { handleError(it) }
+        )
     }
 
     private suspend fun searchBarClose() {
@@ -489,36 +489,12 @@ class DriveViewModel @Inject constructor(
         }
     }
 
-    private suspend fun commentLikeClick(itemState: CommentState.CommentItemState) {
-        val commentId = itemState.data.commentId
-        _driveScreenState.update {
-            it.replaceCommentLoading(commentId, true)
-                .likeSwitch(commentId)
-        }
-
-        withContext(Dispatchers.IO) {
-            updateLikeUseCase(comment = itemState.data, isLike = !itemState.data.isUserLiked)
-        }.onSuccess {
-            _driveScreenState.update { it.replaceCommentLoading(commentId, false) }
-        }.onFailure { it ->
-            handleError(it)
-
-            _driveScreenState.update {
-                it.replaceCommentLoading(commentId, false)
-                    .likeSwitch(commentId)
-            }
-        }
-    }
-
     private suspend fun commentAddClick(editText: String) {
         val content = _driveScreenState.value.popUpState.commentState.commentAddState
             .toCommentContent(editText)
-        if (content.oneLineReview.isBlank()) {
-            return
-        }
+        if (content.oneLineReview.isBlank()) return
 
         _driveScreenState.update { it.replaceCommentAddStateLoading(true) }
-
         withContext(Dispatchers.IO) {
             addCommentToCheckPointUseCase(content)
         }.onSuccess { newComment ->
@@ -529,41 +505,35 @@ class DriveViewModel @Inject constructor(
         _driveScreenState.update { it.initCommentAddState() }
     }
 
+    private suspend fun commentLikeClick(itemState: CommentState.CommentItemState) {
+        val commentId = itemState.data.commentId
+        _driveScreenState.executeActionWithUpdateUi(
+            loading = { state, isLoading-> state.replaceCommentLoading(commentId, isLoading) },
+            onBeforeActionUi = { it.likeSwitch(commentId) },
+            action = { updateLikeUseCase(comment = itemState.data, isLike = !itemState.data.isUserLiked) },
+            onFailure = { handleError(it) },
+            onFailureUi = { it.likeSwitch(commentId) },
+        )
+    }
+
     private suspend fun commentRemoveClick(comment: Comment) {
-        _driveScreenState.update { it.replaceCommentSettingLoading(true) }
-        val deleteResult = withContext(Dispatchers.IO) {
-            removeCommentToCheckPointUseCase(
-                comment.groupId,
-                comment.commentId
-            )
-        }
-        deleteResult.onSuccess {
-            _driveScreenState.update {
-                it.updateComment(comment, false)
-                    .closeCommentSetting()
-            }
-            _driveEvent.refreshCluster(DefaultMapId.SELECT_COURSE_ID.name)
-        }.onFailure {
-            handler.handle(it)
-            _driveScreenState.update { it.replaceCommentSettingLoading(false) }
-        }
+        _driveScreenState.executeActionWithUpdateUi(
+            loading = { state, isLoading -> state.replaceCommentSettingLoading(isLoading) },
+            action = { removeCommentToCheckPointUseCase(comment.groupId, comment.commentId) },
+            onSuccessUi = { it.updateComment(comment, false).closeCommentSetting() },
+            onSuccess = { _driveEvent.refreshCluster(DefaultMapId.SELECT_COURSE_ID.name) },
+            onFailure = { handleError(it) }
+        )
     }
 
     private suspend fun commentReportClick(comment: Comment, reason: ReportReason) {
-        _driveScreenState.update { it.replaceCommentSettingLoading(true) }
-        val result = withContext(Dispatchers.IO) {
-            reportContentUseCase(comment.toReportContent(reason))
-        }
-        result.onSuccess {
-            _driveScreenState.update {
-                it.updateComment(comment, false)
-                    .closeCommentSetting()
-            }
-            _driveEvent.refreshCluster(DefaultMapId.SELECT_COURSE_ID.name)
-        }.onFailure {
-            handleError(it)
-            _driveScreenState.update { it.replaceCommentSettingLoading(false) }
-        }
+        _driveScreenState.executeActionWithUpdateUi(
+            loading = { state, isLoading -> state.replaceCommentSettingLoading(isLoading) },
+            action = { reportContentUseCase(comment.toReportContent(reason)) },
+            onSuccessUi = { it.updateComment(comment, false).closeCommentSetting() },
+            onSuccess = { _driveEvent.refreshCluster(DefaultMapId.SELECT_COURSE_ID.name) },
+            onFailure = { handleError(it) }
+        )
     }
 
     private fun MutableStateFlow<DriveScreenState>.updateComment(comment: Comment, isAdd: Boolean) {
@@ -604,7 +574,6 @@ class DriveViewModel @Inject constructor(
             )
         }
     }
-
 
     private fun DriveScreenState.switchFold(commentId: String): DriveScreenState {
         val oldCommentGroup =
@@ -851,13 +820,12 @@ class DriveViewModel @Inject constructor(
             SheetVisibleMode.Closed -> handleBottomSheetClosed(content, driveState)
         }
     }
-    val cameraDelay = 0L
+
     private suspend fun handleBottomSheetOpened(
         content: DriveBottomSheetContent
     ) {
         when (content) {
             DriveBottomSheetContent.CHECKPOINT_ADD -> {
-                delay(cameraDelay)
                 _driveEvent.emit(
                     DriveEvent.MoveCamera(
                         MoveCameraOption(
@@ -918,7 +886,6 @@ class DriveViewModel @Inject constructor(
             DriveBottomSheetContent.CHECKPOINT_ADD -> {
                 if (isSheetVisible) {
                     _driveEvent.deleteMarker(CHECKPOINT_ADD_MARKER)
-                    //delay(1000)
                     _driveEvent.emit(
                         DriveEvent.MoveCamera(
                             MoveCameraOption(
@@ -1024,88 +991,69 @@ class DriveViewModel @Inject constructor(
     private suspend fun checkpointSubmitClick() {
         if (!_driveScreenState.value.bottomSheetState.checkPointAddState.isSubmitActive)
             return
+        val content = _driveScreenState.value.bottomSheetState.checkPointAddState
+            .toContent(DefaultMapId.SELECT_COURSE_ID.name)
+        _driveScreenState.executeActionWithUpdateUi(
+            loading = { state, isLoading -> state.replaceCheckpointAddLoading(isLoading) },
+            action = { addCheckpointToCourseUseCase(content) },
+            onSuccess = { newCheckPoint ->
+                handler.handle(DriveMsgEvent.ADD_DONE)
+                _driveEvent.addLeaf(newCheckPoint)
+            },
+            onSuccessUi = { it.backToCourseDetail() },
+            isSuccessUiUpdateFirst = false
+        )
+    }
 
-        _driveScreenState.update { it.replaceCheckpointAddLoading(true) }
-        val content =
-            _driveScreenState.value.bottomSheetState.checkPointAddState
-                .toContent(DefaultMapId.SELECT_COURSE_ID.name)
-        val result =
-            withContext(Dispatchers.IO) {
-                addCheckpointToCourseUseCase(content)
+    private suspend fun infoReportClick(reason: ReportReason) =
+        executeActionByContent(
+            content = _driveScreenState.value.bottomSheetState.content,
+            courseAction = { reportContentUseCase.bySelect(ReportType.COURSE, reason) },
+            checkpointAction = { reportContentUseCase.bySelect(ReportType.CHECKPOINT, reason) },
+            courseOnSuccess = { handler.handle(DriveMsgEvent.REPORT_DONE) },
+            checkpointOnSuccess = { handler.handle(DriveMsgEvent.REPORT_DONE) }
+        )
+
+    private suspend fun infoRemoveClick() =
+        executeActionByContent(
+            content = _driveScreenState.value.bottomSheetState.content,
+            courseAction = { removeCourseUseCase(DefaultMapId.SELECT_COURSE_ID.name) },
+            checkpointAction = { removeCheckPointUseCase.bySelect() },
+            courseOnSuccess = { handler.handle(DriveMsgEvent.REMOVE_DONE) },
+            checkpointOnSuccess = { handler.handle(DriveMsgEvent.REMOVE_DONE) }
+        )
+
+    private suspend fun executeActionByContent(
+        content: DriveBottomSheetContent,
+        courseAction: suspend () -> Result<Any>,
+        checkpointAction: suspend () -> Result<Any>,
+        courseOnSuccess: suspend () -> Unit,
+        checkpointOnSuccess: suspend () -> Unit,
+        onError: suspend (Throwable) -> Unit = { handleError(it) }
+    ) {
+        _driveScreenState.update { it.replaceInfoLoading(true) }
+        withContext(Dispatchers.IO) {
+            when (content) {
+                DriveBottomSheetContent.COURSE_INFO -> courseAction()
+                DriveBottomSheetContent.CHECKPOINT_INFO -> checkpointAction()
+                else -> Result.failure(IllegalStateException("Invalid content: $content"))
             }
-        result.onSuccess { newCheckPoint ->
-            handler.handle(DriveMsgEvent.ADD_DONE)
-            _driveEvent.addLeaf(newCheckPoint)
-            _driveScreenState.update { it.backToCourseDetail() }
+        }.onSuccess {
+            when (content) {
+                DriveBottomSheetContent.COURSE_INFO -> {
+                    courseOnSuccess()
+                    _driveEvent.deleteSelectCourse()
+                    _driveEvent.refreshCourses()
+                }
+                DriveBottomSheetContent.CHECKPOINT_INFO -> {
+                    checkpointOnSuccess()
+                    _driveEvent.deleteSelectCheckPoint()
+                }
+                else -> {}
+            }
         }.onFailure {
-            handleError(it)
-            _driveScreenState.update { it.replaceCheckpointAddLoading(false) }
-        }
-    }
-
-    private suspend fun infoReportClick(reason: ReportReason) {
-        val content = _driveScreenState.value.bottomSheetState.content
-        _driveScreenState.update { it.replaceInfoLoading(true) }
-        when (content) {
-            DriveBottomSheetContent.COURSE_INFO -> {
-                withContext(Dispatchers.IO) {
-                    reportContentUseCase.bySelect(ReportType.COURSE,reason)
-                }.onSuccess {
-                    handler.handle(DriveMsgEvent.REPORT_DONE)
-                    _driveEvent.deleteSelectCourse()
-                    _driveEvent.refreshCourses()
-                }.onFailure {
-                    handleError(it)
-                    _driveScreenState.update { it.replaceInfoLoading(false) }
-                }
-            }
-
-            DriveBottomSheetContent.CHECKPOINT_INFO -> {
-                withContext(Dispatchers.IO) {
-                    reportContentUseCase.bySelect(ReportType.CHECKPOINT,reason)
-                }.onSuccess {
-                    handler.handle(DriveMsgEvent.REPORT_DONE)
-                    _driveEvent.deleteSelectCheckPoint()
-                }.onFailure {
-                    handleError(it)
-                    _driveScreenState.update { it.replaceInfoLoading(false) }
-                }
-            }
-
-            else -> {}
-        }
-    }
-
-    private suspend fun infoRemoveClick() {
-        val content = _driveScreenState.value.bottomSheetState.content
-        _driveScreenState.update { it.replaceInfoLoading(true) }
-        when (content) {
-            DriveBottomSheetContent.COURSE_INFO -> {
-                withContext(Dispatchers.IO) {
-                    removeCourseUseCase(DefaultMapId.SELECT_COURSE_ID.name)
-                }.onSuccess {
-                    handler.handle(DriveMsgEvent.REMOVE_DONE)
-                    _driveEvent.deleteSelectCourse()
-                    _driveEvent.refreshCourses()
-                }.onFailure {
-                    handleError(it)
-                    _driveScreenState.update { it.replaceInfoLoading(false) }
-                }
-            }
-
-            DriveBottomSheetContent.CHECKPOINT_INFO -> {
-                withContext(Dispatchers.IO) {
-                    removeCheckPointUseCase.bySelect()
-                }.onSuccess {
-                    handler.handle(DriveMsgEvent.REMOVE_DONE)
-                    _driveEvent.deleteSelectCheckPoint()
-                }.onFailure {
-                    handleError(it)
-                    _driveScreenState.update { it.replaceInfoLoading(false) }
-                }
-            }
-
-            else -> {}
+            _driveScreenState.update { it.replaceInfoLoading(false) }
+            onError(it)
         }
     }
 
@@ -1139,7 +1087,6 @@ class DriveViewModel @Inject constructor(
             }.getOrNull() ?: emptyList()
     }
 
-
     private fun DriveScreenState.updateListItem(courseGroup: List<Course>): DriveScreenState {
         val new = if (courseGroup.isEmpty()) emptyList() else courseGroup.map {
             ListState.ListItemState(course = it)
@@ -1150,7 +1097,6 @@ class DriveViewModel @Inject constructor(
             )
         )
     }
-
 
     private fun CheckPointAddState.isValidateAddCheckPoint(): Result<Unit> {
         return runCatching {
@@ -1505,7 +1451,6 @@ class DriveViewModel @Inject constructor(
             stateMode = DriveVisibleMode.BlurCheckpointDetail
         )
     }
-
 
     private fun DriveScreenState.backToExplorer(): DriveScreenState {
         return if(stateMode!= DriveVisibleMode.Explorer)
