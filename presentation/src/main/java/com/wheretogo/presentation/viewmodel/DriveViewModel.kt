@@ -64,6 +64,7 @@ import com.wheretogo.presentation.feature.executeAction
 import com.wheretogo.presentation.feature.executeActionWithUpdateUi
 import com.wheretogo.presentation.feature.guide.toStepState
 import com.wheretogo.presentation.intent.DriveScreenIntent
+import com.wheretogo.presentation.model.CourseListItem
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.model.TypeEditText
 import com.wheretogo.presentation.state.BottomSheetState
@@ -135,7 +136,7 @@ class DriveViewModel @Inject constructor(
                 is DriveScreenIntent.SearchSubmit -> searchSubmit(intent.submit)
 
                 //목록
-                is DriveScreenIntent.DriveListItemClick -> driveListItemClick(intent.itemState)
+                is DriveScreenIntent.DriveListItemClick -> driveListItemClick(intent.item)
 
                 //팝업
                 is DriveScreenIntent.DismissPopupComment -> dismissCommentPopUp()
@@ -365,12 +366,11 @@ class DriveViewModel @Inject constructor(
 
 
     //목록
-    private suspend fun driveListItemClick(listItemState: ListState.ListItemState) {
-        val course = listItemState.course
+    private suspend fun driveListItemClick(item: CourseListItem) {
         driveTutorialUseCase(DriveTutorialStep.DRIVE_LIST_ITEM_CLICK)
 
         // 코스 포커스
-        _driveEvent.emit(DriveEvent.Focus(course))
+        _driveEvent.emit(DriveEvent.Focus(item.toCourseByDirection()))
 
         _driveScreenState.update {
             it.run {
