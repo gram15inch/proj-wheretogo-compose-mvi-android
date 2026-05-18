@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -34,9 +36,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import com.wheretogo.domain.model.course.Course
 import com.wheretogo.domain.model.route.RouteCategory
 import com.wheretogo.presentation.composable.animation.highlightRoundedCorner
+import com.wheretogo.presentation.model.CourseListItem
+import com.wheretogo.presentation.model.StartDirection
 import com.wheretogo.presentation.state.ListState
 import com.wheretogo.presentation.theme.Gray250
 import com.wheretogo.presentation.theme.White10080
@@ -93,7 +98,7 @@ fun DriveListMultiPreview() {
 fun DriveListContent(
     modifier: Modifier,
     state: ListState = ListState(),
-    onItemClick: (ListState.ListItemState) -> Unit,
+    onItemClick: (CourseListItem) -> Unit,
     onHeightChange: (Dp) -> Unit = {},
     onBookmarkClick: (ListState.ListItemState) -> Unit = {}
 ) {
@@ -114,11 +119,9 @@ fun DriveListContent(
             items(state.listItemGroup) { item ->
                 DriveListItem(
                     modifier = Modifier
-                        .fillParentMaxWidth(if (isSingle) 1f else 0.95f)
-                        .clip(RoundedCornerShape(16.dp))
-                        .clickable { onItemClick(item) },
+                        .fillParentMaxWidth(if (isSingle) 1f else 0.95f),
                     listItem = item,
-                    onBookmarkClick = onBookmarkClick
+                    onItemClick = onItemClick
                 )
             }
         }
@@ -129,27 +132,63 @@ fun DriveListContent(
 fun DriveListItem(
     modifier: Modifier,
     listItem: ListState.ListItemState,
-    onBookmarkClick: (ListState.ListItemState) -> Unit
+    onItemClick: (CourseListItem) -> Unit
 ) {
     AnimatedVisibility(
-        modifier = Modifier
-            .highlightRoundedCorner(listItem.isHighlight, 5.dp, 16.dp)
-            .shadow(
-                elevation = 1.dp,
-                shape = RoundedCornerShape(16.dp),
-                clip = false
-            ),
         visible = true,
         enter = slideInHorizontally(initialOffsetX = { fullWidth -> fullWidth }) + fadeIn(),
         exit = fadeOut() + shrinkHorizontally()
     ) {
         Box(
             modifier = modifier
+                .clip(RoundedCornerShape(16.dp))
                 .fillMaxWidth()
+                .height(80.dp)
+                .highlightRoundedCorner(listItem.isHighlight, 5.dp, 16.dp)
+                .shadow(
+                    elevation = 1.dp,
+                    shape = RoundedCornerShape(16.dp),
+                    clip = false
+                )
                 .background(White10080)
-                .padding(8.dp)
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            // 방향 구분 버튼
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .zIndex(1f)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .weight(1f)
+                        .clickable {
+                            onItemClick(
+                                CourseListItem(
+                                    direction = StartDirection.REVERSE,
+                                    course = listItem.course
+                                )
+                            )
+                        }
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .weight(1f)
+                        .clickable {
+                            onItemClick(
+                                CourseListItem(
+                                    direction = StartDirection.FORWARD,
+                                    course = listItem.course
+                                )
+                            )
+                        }
+                )
+            }
+            // 아이템
+            Column(modifier = Modifier
+                .padding(8.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         modifier = Modifier.weight(1f),

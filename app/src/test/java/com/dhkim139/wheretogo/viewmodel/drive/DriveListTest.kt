@@ -14,8 +14,9 @@ import com.wheretogo.presentation.DriveFloatingVisibleMode
 import com.wheretogo.presentation.DriveVisibleMode
 import com.wheretogo.presentation.event.DriveEvent
 import com.wheretogo.presentation.intent.DriveScreenIntent
+import com.wheretogo.presentation.model.CourseListItem
+import com.wheretogo.presentation.model.StartDirection
 import com.wheretogo.presentation.state.DriveScreenState
-import com.wheretogo.presentation.state.ListState.ListItemState
 import com.wheretogo.presentation.viewmodel.DriveViewModel
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -74,8 +75,9 @@ class DriveListTest {
     @Test
     fun `드라이브 목록 아이템 클릭시 코스 포커스`() = runTest {
         // Arrange
-        val item = ListItemState(
-            course = Course("CS001", cameraLatLng = LatLng(127.0, 35.0))
+        val item = CourseListItem(
+            direction = StartDirection.FORWARD,
+            course =  Course("CS001", cameraLatLng = LatLng(127.0, 35.0))
         )
         coEvery { driveTutorialUseCase(DriveTutorialStep.DRIVE_LIST_ITEM_CLICK) } returns Result.success(Unit)
         val viewModel = createViewModel(StandardTestDispatcher(testScheduler), initState)

@@ -1,6 +1,5 @@
 package com.wheretogo.presentation.composable
 
-import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -80,6 +79,7 @@ import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.intent.MapIntent
 import com.wheretogo.presentation.model.ContentPadding
+import com.wheretogo.presentation.model.CourseListItem
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.model.TypeEditText
 import com.wheretogo.presentation.state.CheckPointAddState
@@ -165,7 +165,7 @@ fun DriveScreen(
             onCommentAddClick = { handleIntent(DriveScreenIntent.CommentAddClick(it)) },
             onCommentLikeClick = { handleIntent(DriveScreenIntent.CommentLikeClick(it)) },
             onCommentRemoveClick = { handleIntent(DriveScreenIntent.CommentRemoveClick(it)) },
-            onCommentReportClick = { cm,reason-> handleIntent(DriveScreenIntent.CommentReportClick(cm,reason)) },
+            onCommentReportClick = { cm, reason-> handleIntent(DriveScreenIntent.CommentReportClick(cm,reason)) },
             onCommentEmogiPress = { handleIntent(DriveScreenIntent.CommentEmogiPress(it)) },
             onCommentTypePress = { handleIntent(DriveScreenIntent.CommentTypePress(it)) },
 
@@ -217,7 +217,7 @@ fun DriveContent(
     onSearchBarClose: () -> Unit = {},
 
     //DriveListContent
-    onListItemClick: (ListState.ListItemState) -> Unit = {},
+    onListItemClick: (CourseListItem) -> Unit = {},
 
     //MapPopup
     onPopupImageClick: () -> Unit = {},
@@ -228,7 +228,7 @@ fun DriveContent(
     onCommentAddClick: (String) -> Unit = {},
     onCommentLikeClick: (CommentState.CommentItemState) -> Unit = {},
     onCommentRemoveClick: (Comment) -> Unit = {},
-    onCommentReportClick: (Comment, ReportReason) -> Unit = {a,b->},
+    onCommentReportClick: (Comment, ReportReason) -> Unit = { a, b->},
     onCommentEmogiPress: (String) -> Unit = {},
     onCommentTypePress: (TypeEditText) -> Unit = {},
 
