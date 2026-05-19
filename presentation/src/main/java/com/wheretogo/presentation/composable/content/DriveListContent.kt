@@ -14,8 +14,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -98,29 +98,23 @@ fun DriveListContent(
     onBookmarkClick: (ListState.ListItemState) -> Unit = {}
 ) {
     val density = LocalDensity.current
-    val isSingle = state.listItemGroup.size == 1
 
     Box(modifier.onSizeChanged { size ->
         onHeightChange(with(density) { size.height.toDp() })
     }) {
-        LazyRow(
+        val pagerState = rememberPagerState(pageCount = { state.listItemGroup.size })
+
+        HorizontalPager(
+            state = pagerState,
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(
-                start = 16.dp,
-                end = 16.dp
+            contentPadding = PaddingValues(horizontal = 32.dp),
+            pageSpacing = 12.dp
+        ) { page ->
+            DriveListItem(
+                modifier = Modifier,
+                listItem = state.listItemGroup[page],
+                onItemClick = onItemClick
             )
-        ) {
-            items(state.listItemGroup) { item ->
-                DriveListItem(
-                    modifier = Modifier
-                        .fillParentMaxWidth(if (isSingle) 1f else 0.95f)
-                        .clip(RoundedCornerShape(16.dp))
-                        .clickable { onItemClick(item) },
-                    listItem = item,
-                    onBookmarkClick = onBookmarkClick
-                )
-            }
         }
     }
 }
