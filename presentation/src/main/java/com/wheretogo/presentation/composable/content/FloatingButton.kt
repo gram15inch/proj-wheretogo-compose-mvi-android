@@ -50,7 +50,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.model.course.Course
-import com.wheretogo.domain.model.course.CourseDirectionItem
 import com.wheretogo.presentation.DriveFloatHighlight
 import com.wheretogo.presentation.DriveFloatingVisibleMode
 import com.wheretogo.presentation.ExportMap
@@ -513,7 +512,7 @@ fun FloatingLandscapeButtonPreview() {
         modifier = Modifier.background(Gray100),
         state = FloatingButtonState(
             adItemGroup = emptyList(),
-            navigation = CourseDirectionItem(Course()).toNavigation(),
+            navigation = Course().toNavigation(),
             stateMode = DriveFloatingVisibleMode.Default
         ),
         guideStep = DriveTutorialStep.SKIP,

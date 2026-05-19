@@ -6,22 +6,22 @@ import com.wheretogo.domain.DomainError
 import com.wheretogo.domain.FieldInvalidReason
 import com.wheretogo.domain.PathType
 import com.wheretogo.domain.RouteFieldType
-import com.wheretogo.domain.feature.LocationService
 import com.wheretogo.domain.feature.successMap
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.checkpoint.CheckPoint
 import com.wheretogo.domain.model.course.Course
-import com.wheretogo.domain.model.map.MarkerInfo
 import com.wheretogo.presentation.AppError
 import com.wheretogo.presentation.MarkerZIndex
 import com.wheretogo.presentation.OverlayType
 import com.wheretogo.presentation.R
+import com.wheretogo.domain.feature.LocationService
 import com.wheretogo.presentation.feature.model.StringKey
 import com.wheretogo.presentation.feature.naver.NaverMapOverlayProvider
 import com.wheretogo.presentation.model.AppLeaf
 import com.wheretogo.presentation.model.AppMarker
 import com.wheretogo.presentation.model.ClusterInfo
 import com.wheretogo.presentation.model.MapOverlay
+import com.wheretogo.domain.model.map.MarkerInfo
 import com.wheretogo.presentation.model.PathInfo
 import com.wheretogo.presentation.toDomainLatLng
 import com.wheretogo.presentation.toLeafInfo
@@ -66,9 +66,6 @@ class MapOverlayServiceImpl @Inject constructor(
         }
     }
 
-    override fun updateCourseMarkerPosition (courseId: String, position: LatLng) {
-        overlayProvider.updateMarkerPosition(courseMarkerKey(courseId),position)
-    }
 
     override fun addOneTimeMarker(
         markerInfoGroup: List<MarkerInfo>,
@@ -158,21 +155,21 @@ class MapOverlayServiceImpl @Inject constructor(
         latestScaleId = ""
     }
 
-    override fun focusAndHideOthers(courseId: String): Unit = updateScope {
+    override fun focusAndHideOthers(course: Course): Unit = updateScope {
         //주위 스팟 숨기기
         overlays.forEach {
             when (it.type) {
                 OverlayType.COURSE_MARKER -> {
                     overlayProvider.updateVisible(
                         StringKey(it.key),
-                        courseMarkerKey(courseId).value == it.key
+                        courseMarkerKey(course.courseId).value == it.key
                     )
                 }
 
                 OverlayType.FULL_PATH -> {
                     overlayProvider.updateVisible(
                         StringKey(it.key),
-                        coursePathKey(courseId).value == it.key
+                        coursePathKey(course.courseId).value == it.key
                     )
                 }
 

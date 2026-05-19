@@ -9,7 +9,6 @@ import com.wheretogo.domain.feature.LocationService
 import com.wheretogo.domain.feature.successMap
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.course.Course
-import com.wheretogo.domain.model.course.CourseDirectionItem
 import com.wheretogo.domain.model.map.CameraMoveTrigger
 import com.wheretogo.domain.model.map.CameraState
 import com.wheretogo.domain.model.map.ContentOperation
@@ -125,7 +124,7 @@ class MapViewModel @Inject constructor(
                 is MapIntent.CameraUpdated -> cameraUpdated(intent.cameraState)
                 is MapIntent.MarkerClick -> markerClick(intent.markerInfo)
                 is MapIntent.MoveCamera -> moveCamera(intent.option)
-                is MapIntent.Focus -> focus(intent.item)
+                is MapIntent.Focus -> focus(intent.course)
                 is MapIntent.RELEASE -> release()
                 is MapIntent.RefreshContent -> refreshContent(intent.option)
                 is MapIntent.RefreshOverlay -> refreshOverlay(intent.option)
@@ -157,13 +156,10 @@ class MapViewModel @Inject constructor(
         mapContentRepository.clear()
     }
 
-    private suspend fun focus(item: CourseDirectionItem){
-        val course = item.course.cameraUpdateByDirection(item.direction)
+    private suspend fun focus(course: Course){
         // 주변 코스 숨기기
-        mapOverlayService.focusAndHideOthers(course.courseId)
-        mapOverlayService.updateCourseMarkerPosition(course.courseId, course.cameraLatLng)
-        mapContentRepository.selectCourse(item)
-
+        mapOverlayService.focusAndHideOthers(course)
+        mapContentRepository.selectCourse(course)
         moveCamera(
             MoveCameraOption(
                 latlng = course.cameraLatLng,
@@ -180,7 +176,7 @@ class MapViewModel @Inject constructor(
     private fun release(){
         // 클러스터 삭제
         mapContentRepository.apply {
-            selectedCourseState.value?.course?.let {
+            selectedCourseState.value?.let {
                 mapOverlayService.removeCheckPointCluster(it.courseId)
             }
             clearCourse()
@@ -332,12 +328,12 @@ class MapViewModel @Inject constructor(
 
 
     private suspend fun leafScaleInCluster(latLng: LatLng){
-        val item = mapContentRepository.selectedCourseState.value
+        val course = mapContentRepository.selectedCourseState.value
         val step = observeSettingsUseCase().firstOrNull()?.getOrNull()?.tutorialStep
             ?: DriveTutorialStep.SKIP
-        if (item != null) {
+        if (course != null) {
             mapOverlayService.scaleToPointLeafInCluster(
-                item.course.courseId,
+                course.courseId,
                 latLng,
             ).onSuccess { checkPointId->
                 driveTutorialUseCase(DriveTutorialStep.MOVE_TO_LEAF, checkPointId)
@@ -491,11 +487,11 @@ class MapViewModel @Inject constructor(
     private fun checkPointLeafClick(markerId: String) {
         viewModelScope.launch(dispatcher) {
             runCatching {
-                val courseItem = mapContentRepository.selectedCourseState.value
+                val course = mapContentRepository.selectedCourseState.value
                     ?: return@runCatching Exception("empty selectedCourseState")
 
                 val checkpoints = withContext(Dispatchers.IO) {
-                    getCheckPointForMarkerUseCase(courseItem.course.courseId).getOrThrow()
+                    getCheckPointForMarkerUseCase(course.courseId).getOrThrow()
                 }
                 mapContentRepository.refreshCheckPointList(checkpoints)
 
