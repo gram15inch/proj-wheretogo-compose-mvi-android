@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -25,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.LineHeightStyle
@@ -34,8 +37,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import com.wheretogo.domain.model.course.Course
+import com.wheretogo.domain.model.course.CourseDirectionItem
+import com.wheretogo.domain.model.course.StartDirection
 import com.wheretogo.domain.model.route.RouteCategory
+import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.animation.highlightRoundedCorner
 import com.wheretogo.presentation.state.ListState
 import com.wheretogo.presentation.theme.Gray250
@@ -93,7 +100,7 @@ fun DriveListMultiPreview() {
 fun DriveListContent(
     modifier: Modifier,
     state: ListState = ListState(),
-    onItemClick: (ListState.ListItemState) -> Unit,
+    onItemClick: (CourseDirectionItem) -> Unit,
     onHeightChange: (Dp) -> Unit = {},
     onBookmarkClick: (ListState.ListItemState) -> Unit = {}
 ) {
@@ -123,27 +130,70 @@ fun DriveListContent(
 fun DriveListItem(
     modifier: Modifier,
     listItem: ListState.ListItemState,
-    onBookmarkClick: (ListState.ListItemState) -> Unit
+    onItemClick: (CourseDirectionItem) -> Unit
 ) {
     AnimatedVisibility(
-        modifier = Modifier
-            .highlightRoundedCorner(listItem.isHighlight, 5.dp, 16.dp)
-            .shadow(
-                elevation = 1.dp,
-                shape = RoundedCornerShape(16.dp),
-                clip = false
-            ),
         visible = true,
         enter = slideInHorizontally(initialOffsetX = { fullWidth -> fullWidth }) + fadeIn(),
         exit = fadeOut() + shrinkHorizontally()
     ) {
         Box(
             modifier = modifier
+                .clip(RoundedCornerShape(16.dp))
                 .fillMaxWidth()
-                .background(White10080)
-                .padding(8.dp)
+                .height(80.dp)
+                .highlightRoundedCorner(listItem.isHighlight, 5.dp, 16.dp)
+                .shadow(
+                    elevation = 1.dp,
+                    shape = RoundedCornerShape(16.dp),
+                    clip = false
+                ).background(White10080)
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            // 방향 구분 버튼
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .zIndex(1f)
+            ) {
+                val isPreview = LocalInspectionMode.current
+                val forward = if(isPreview) " >" else stringResource(R.string.forward) + " >"
+                val reverse = if(isPreview) "< " else "< " + stringResource(R.string.reverse)
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .weight(1f)
+                        .clickable {
+                            onItemClick(
+                                CourseDirectionItem(
+                                    course = listItem.course,
+                                    direction = StartDirection.REVERSE
+                                )
+                            )
+                        },
+                    contentAlignment = Alignment.TopStart
+                ){
+                    DirectionLabel( text = reverse, Modifier.padding(start = 25.dp, top = 7.dp))
+                }
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .weight(1f)
+                        .clickable {
+                            onItemClick(
+                                CourseDirectionItem(
+                                    course = listItem.course
+                                )
+                            )
+                        },
+                    contentAlignment = Alignment.TopEnd
+                ){
+                    DirectionLabel( text = forward, Modifier.padding(end = 25.dp, top = 7.dp))
+                }
+            }
+            // 아이템
+            Column(modifier = Modifier
+                .padding(8.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         modifier = Modifier.weight(1f),
@@ -196,6 +246,17 @@ fun DriveListItem(
             }
         }
     }
+}
+
+@Composable
+fun DirectionLabel(text:String, modifier: Modifier){
+    Text(
+        modifier = modifier,
+        text = text,
+        fontFamily = hancomSansFontFamily,
+        fontSize = 11.5.sp,
+        color = Gray250
+    )
 }
 
 @Composable

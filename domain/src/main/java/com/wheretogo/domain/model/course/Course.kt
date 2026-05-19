@@ -37,4 +37,15 @@ data class Course(
             targetUserName = userName
         )
     }
+
+    fun cameraUpdateByDirection(direction: StartDirection):Course{
+        return when(direction){
+            StartDirection.FORWARD -> copy(
+                cameraLatLng = points.firstOrNull()?: cameraLatLng
+            )
+            StartDirection.REVERSE -> copy(
+                cameraLatLng = points.lastOrNull()?: cameraLatLng
+            )
+        }
+    }
 }

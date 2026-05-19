@@ -5,11 +5,11 @@ import android.accounts.OnAccountsUpdateListener
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.location.Location
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.net.toUri
 import com.skt.Tmap.TMapTapi
 import com.wheretogo.domain.model.address.LatLng
+import com.wheretogo.domain.model.course.StartDirection
 import com.wheretogo.domain.model.util.Navigation
 import com.wheretogo.presentation.AppError
 import com.wheretogo.presentation.AppPermission
@@ -185,15 +185,16 @@ private fun Context.openPlayStore(packageName: String) {
 
 private fun Navigation.createCallRoute(myLatlng: LatLng?): CallRoute {
     val isMyLocationStart = myLatlng != null
+    val waypointByDirection = if(direction == StartDirection.FORWARD) waypoints else waypoints.reversed()
     val callRoute = if (isMyLocationStart) {
-        val start = myLatlng!!
-        val goal = waypoints.last()
-        val mid = waypoints.dropLast(1)
+        val start = myLatlng
+        val goal = waypointByDirection.last()
+        val mid = waypointByDirection.dropLast(1)
         CallRoute(start, mid, goal, true)
     } else {
-        val start = waypoints.first()
-        val goal = waypoints.last()
-        val mid = waypoints.drop(1).dropLast(1)
+        val start = waypointByDirection.first()
+        val goal = waypointByDirection.last()
+        val mid = waypointByDirection.drop(1).dropLast(1)
 
         CallRoute(start, mid, goal, false)
     }
