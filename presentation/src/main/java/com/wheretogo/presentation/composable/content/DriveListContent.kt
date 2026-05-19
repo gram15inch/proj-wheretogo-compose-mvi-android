@@ -27,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.LineHeightStyle
@@ -38,10 +39,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.wheretogo.domain.model.course.Course
-import com.wheretogo.domain.model.route.RouteCategory
-import com.wheretogo.presentation.composable.animation.highlightRoundedCorner
 import com.wheretogo.domain.model.course.CourseDirectionItem
 import com.wheretogo.domain.model.course.StartDirection
+import com.wheretogo.domain.model.route.RouteCategory
+import com.wheretogo.presentation.R
+import com.wheretogo.presentation.composable.animation.highlightRoundedCorner
 import com.wheretogo.presentation.state.ListState
 import com.wheretogo.presentation.theme.Gray250
 import com.wheretogo.presentation.theme.White10080
@@ -149,8 +151,7 @@ fun DriveListItem(
                     elevation = 1.dp,
                     shape = RoundedCornerShape(16.dp),
                     clip = false
-                )
-                .background(White10080)
+                ).background(White10080)
         ) {
             // 방향 구분 버튼
             Row(
@@ -158,6 +159,9 @@ fun DriveListItem(
                     .fillMaxWidth()
                     .zIndex(1f)
             ) {
+                val isPreview = LocalInspectionMode.current
+                val forward = if(isPreview) " >" else stringResource(R.string.forward) + " >"
+                val reverse = if(isPreview) "< " else "< " + stringResource(R.string.reverse)
                 Box(
                     modifier = Modifier
                         .fillMaxHeight()
@@ -169,8 +173,11 @@ fun DriveListItem(
                                     direction = StartDirection.REVERSE
                                 )
                             )
-                        }
-                )
+                        },
+                    contentAlignment = Alignment.TopStart
+                ){
+                    DirectionLabel( text = reverse, Modifier.padding(start = 25.dp, top = 7.dp))
+                }
                 Box(
                     modifier = Modifier
                         .fillMaxHeight()
@@ -181,8 +188,11 @@ fun DriveListItem(
                                     course = listItem.course
                                 )
                             )
-                        }
-                )
+                        },
+                    contentAlignment = Alignment.TopEnd
+                ){
+                    DirectionLabel( text = forward, Modifier.padding(end = 25.dp, top = 7.dp))
+                }
             }
             // 아이템
             Column(modifier = Modifier
@@ -240,6 +250,17 @@ fun DriveListItem(
             }
         }
     }
+}
+
+@Composable
+fun DirectionLabel(text:String, modifier: Modifier){
+    Text(
+        modifier = modifier,
+        text = text,
+        fontFamily = hancomSansFontFamily,
+        fontSize = 11.5.sp,
+        color = Gray250
+    )
 }
 
 @Composable
