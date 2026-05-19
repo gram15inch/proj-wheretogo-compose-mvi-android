@@ -1,5 +1,6 @@
 package com.wheretogo.presentation.composable
 
+import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -79,7 +80,6 @@ import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.intent.MapIntent
 import com.wheretogo.presentation.model.ContentPadding
-import com.wheretogo.domain.model.course.CourseDirectionItem
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.model.TypeEditText
 import com.wheretogo.presentation.state.CheckPointAddState
@@ -119,7 +119,7 @@ fun DriveScreen(
         viewModel.driveEvent.collect {
             when(it){
                 is DriveEvent.MoveCamera ->  mapViewModel.handleIntent(MapIntent.MoveCamera(it.option))
-                is DriveEvent.Focus ->  mapViewModel.handleIntent(MapIntent.Focus(it.item))
+                is DriveEvent.Focus ->  mapViewModel.handleIntent(MapIntent.Focus(it.course))
                 is DriveEvent.Release ->  mapViewModel.handleIntent(MapIntent.RELEASE)
                 is DriveEvent.RefreshContent ->  mapViewModel.handleIntent(MapIntent.RefreshContent(it.option))
                 is DriveEvent.RefreshOverlay ->  mapViewModel.handleIntent(MapIntent.RefreshOverlay(it.option))
@@ -165,7 +165,7 @@ fun DriveScreen(
             onCommentAddClick = { handleIntent(DriveScreenIntent.CommentAddClick(it)) },
             onCommentLikeClick = { handleIntent(DriveScreenIntent.CommentLikeClick(it)) },
             onCommentRemoveClick = { handleIntent(DriveScreenIntent.CommentRemoveClick(it)) },
-            onCommentReportClick = { cm, reason-> handleIntent(DriveScreenIntent.CommentReportClick(cm,reason)) },
+            onCommentReportClick = { cm,reason-> handleIntent(DriveScreenIntent.CommentReportClick(cm,reason)) },
             onCommentEmogiPress = { handleIntent(DriveScreenIntent.CommentEmogiPress(it)) },
             onCommentTypePress = { handleIntent(DriveScreenIntent.CommentTypePress(it)) },
 
@@ -217,7 +217,7 @@ fun DriveContent(
     onSearchBarClose: () -> Unit = {},
 
     //DriveListContent
-    onListItemClick: (CourseDirectionItem) -> Unit = {},
+    onListItemClick: (ListState.ListItemState) -> Unit = {},
 
     //MapPopup
     onPopupImageClick: () -> Unit = {},
@@ -228,7 +228,7 @@ fun DriveContent(
     onCommentAddClick: (String) -> Unit = {},
     onCommentLikeClick: (CommentState.CommentItemState) -> Unit = {},
     onCommentRemoveClick: (Comment) -> Unit = {},
-    onCommentReportClick: (Comment, ReportReason) -> Unit = { a, b->},
+    onCommentReportClick: (Comment, ReportReason) -> Unit = {a,b->},
     onCommentEmogiPress: (String) -> Unit = {},
     onCommentTypePress: (TypeEditText) -> Unit = {},
 

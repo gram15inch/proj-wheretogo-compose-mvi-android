@@ -37,8 +37,6 @@
     <string name="level">난이도</string>
     <string name="duration">소요시간</string>
     <string name="recommend">추천</string>
-    <string name="forward">정방향</string>
-    <string name="reverse">역방향</string>
 
     <string name="unknown">알수없음</string>
 
