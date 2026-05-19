@@ -41,25 +41,32 @@ class TraceList<T : Traceable>(
             indexById[id] = newIndex
             true
         } else {
-            if (list[idx].getFingerPrint() != item.getFingerPrint())
+            val oldItem = list[idx]
+            if (oldItem.getFingerPrint() != item.getFingerPrint()) {
+                if(oldItem is MapOverlay)
+                    oldItem.reflectClear()
                 list[idx] = item
+            }
             false
         }
     }
 
     fun remove(id: String): Boolean {
-        val idx = indexById[id] ?: return false
+        val removeIdx = indexById[id] ?: return false
+        val removeItem = list[removeIdx]
+        if(removeItem is MapOverlay)
+            removeItem.reflectClear()
 
-        val lastIndex = list.lastIndex
-        val lastItem = list[lastIndex]
+        val lastIdx = list.lastIndex
+        val lastItem = list[lastIdx]
         val lastId = keyOf(lastItem)
 
-        if (idx != lastIndex) {
-            list[idx] = lastItem
-            indexById[lastId] = idx
+        if (removeIdx != lastIdx) {
+            list[removeIdx] = lastItem
+            indexById[lastId] = removeIdx
         }
 
-        list.removeAt(lastIndex)
+        list.removeAt(lastIdx)
         indexById.remove(id)
         return true
     }
@@ -73,6 +80,7 @@ class TraceList<T : Traceable>(
     }
 
     fun clear() {
+        list.forEach { if(it is MapOverlay) it.reflectClear() }
         list.clear()
         indexById.clear()
     }
