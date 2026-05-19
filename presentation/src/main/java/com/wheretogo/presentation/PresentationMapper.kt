@@ -57,10 +57,11 @@ fun RouteAttr.toStrRes(): Int {
     }
 }
 
-fun Course.toNavigation(): Navigation {
+fun CourseDirectionItem.toNavigation(): Navigation {
     return Navigation(
-        courseName = courseName,
-        waypoints = waypoints
+        courseName = course.courseName,
+        waypoints = course.waypoints,
+        direction = direction
     )
 }
 

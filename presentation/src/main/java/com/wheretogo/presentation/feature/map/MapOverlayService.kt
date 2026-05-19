@@ -13,6 +13,8 @@ interface MapOverlayService {
     val fingerPrintFlow: StateFlow<Int>
     fun addCourseMarkerAndPath(courseGroup: List<Course>)
 
+    fun updateCourseMarkerPosition(courseId: String, position: LatLng)
+
     fun addOneTimeMarker(markerInfoGroup: List<MarkerInfo>, isForceRefresh: Boolean = false)
 
     fun addCheckPointCluster(
@@ -40,7 +42,7 @@ interface MapOverlayService {
 
     fun removeCheckPointLeaf(courseId: String, checkPointId: String)
 
-    fun focusAndHideOthers(course: Course)
+    fun focusAndHideOthers(courseId: String)
 
     fun showAllOverlays()
 
