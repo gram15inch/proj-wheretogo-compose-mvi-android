@@ -64,7 +64,7 @@ import com.wheretogo.presentation.feature.executeAction
 import com.wheretogo.presentation.feature.executeActionWithUpdateUi
 import com.wheretogo.presentation.feature.guide.toStepState
 import com.wheretogo.presentation.intent.DriveScreenIntent
-import com.wheretogo.presentation.model.CourseListItem
+import com.wheretogo.domain.model.course.CourseDirectionItem
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.model.TypeEditText
 import com.wheretogo.presentation.state.BottomSheetState
@@ -211,14 +211,14 @@ class DriveViewModel @Inject constructor(
                     }
             }
             launch {
-                mapContentRepository.selectedCourseState.drop(1).collect{ cs->
+                mapContentRepository.selectedCourseState.drop(1).collect{ item->
                     _driveScreenState.update {
-                        if (cs == null) {
+                        if (item == null) {
                             it.backToExplorer()
                         } else {
                             it.copy(
                                 floatingButtonState = it.floatingButtonState.copy(
-                                    navigation = cs.toNavigation()
+                                    navigation = item.course.toNavigation()
                                 )
                             )
                         }
@@ -366,11 +366,11 @@ class DriveViewModel @Inject constructor(
 
 
     //목록
-    private suspend fun driveListItemClick(item: CourseListItem) {
+    private suspend fun driveListItemClick(item: CourseDirectionItem) {
         driveTutorialUseCase(DriveTutorialStep.DRIVE_LIST_ITEM_CLICK)
 
         // 코스 포커스
-        _driveEvent.emit(DriveEvent.Focus(item.toCourseByDirection()))
+        _driveEvent.emit(DriveEvent.Focus(item))
 
         _driveScreenState.update {
             it.run {
@@ -673,8 +673,8 @@ class DriveViewModel @Inject constructor(
 
     private suspend fun checkpointAddFloatingButtonClick() {
         runCatching {
-            val course = mapContentRepository.selectedCourseState.value
-            val initLatlng = course?.waypoints?.firstOrNull()?: throw Exception("missing initLatlng")
+            val courseItem = mapContentRepository.selectedCourseState.value
+            val initLatlng = courseItem?.course?.waypoints?.firstOrNull()?: throw Exception("missing initLatlng")
             _driveEvent.addMarker(
                 markerInfo = MarkerInfo(
                     contentId = CHECKPOINT_ADD_MARKER,
@@ -715,8 +715,8 @@ class DriveViewModel @Inject constructor(
                 ).run {
                     when (bottomSheetState.content) {
                         DriveBottomSheetContent.COURSE_INFO -> {
-                            val course= mapContentRepository.selectedCourseState.value
-                            initInfoState(course = course)
+                            val courseItem= mapContentRepository.selectedCourseState.value
+                            initInfoState(course = courseItem?.course)
                         }
                         DriveBottomSheetContent.CHECKPOINT_INFO -> {
                             val checkPoint= mapContentRepository.selectedCheckPointState.value
@@ -885,7 +885,7 @@ class DriveViewModel @Inject constructor(
 
     private suspend fun checkpointLocationSliderChange(percent: Float) {
         runCatching {
-            val points = mapContentRepository.selectedCourseState.value?.points?:emptyList()
+            val points = mapContentRepository.selectedCourseState.value?.course?.points?:emptyList()
             points.getByPercent(percent)
         }.onSuccess { newLatlng ->
             _driveEvent.updateMarker(

@@ -12,6 +12,7 @@ import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.app.Settings
 import com.wheretogo.domain.model.checkpoint.CheckPoint
 import com.wheretogo.domain.model.course.Course
+import com.wheretogo.domain.model.course.CourseDirectionItem
 import com.wheretogo.domain.model.map.CameraMoveTrigger
 import com.wheretogo.domain.model.map.ContentOperation
 import com.wheretogo.domain.model.report.ReportReason
@@ -215,7 +216,7 @@ class BottomSheetTest {
         val latlng1 = LatLng(1.0,1.0)
         val latlng2 = LatLng(2.0,2.0)
         val latlng3 = LatLng(3.0,3.0)
-        val course =Course("CS001", points = listOf(latlng1,latlng2,latlng3))
+        val course = CourseDirectionItem(Course("CS001", points = listOf(latlng1,latlng2,latlng3)))
         val initState = initState.createShowCheckPointAddBottomSheetState(0.1f)
         val viewModel = createViewModel(StandardTestDispatcher(testScheduler), initState)
 

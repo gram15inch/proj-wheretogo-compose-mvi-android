@@ -8,7 +8,7 @@ import com.wheretogo.presentation.AppEvent
 import com.wheretogo.presentation.AppLifecycle
 import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.SheetVisibleMode
-import com.wheretogo.presentation.model.CourseListItem
+import com.wheretogo.domain.model.course.CourseDirectionItem
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.model.TypeEditText
 import com.wheretogo.presentation.state.CommentState.CommentItemState
@@ -24,7 +24,7 @@ sealed class DriveScreenIntent {
     data class SearchSubmit(val submit:String) : DriveScreenIntent()
 
     //목록
-    data class DriveListItemClick(val item: CourseListItem) : DriveScreenIntent()
+    data class DriveListItemClick(val item: CourseDirectionItem) : DriveScreenIntent()
 
     //팝업
     data object DismissPopupComment :DriveScreenIntent()

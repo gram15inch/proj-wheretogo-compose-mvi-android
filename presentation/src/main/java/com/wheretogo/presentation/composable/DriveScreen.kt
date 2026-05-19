@@ -79,7 +79,7 @@ import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.intent.MapIntent
 import com.wheretogo.presentation.model.ContentPadding
-import com.wheretogo.presentation.model.CourseListItem
+import com.wheretogo.domain.model.course.CourseDirectionItem
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.model.TypeEditText
 import com.wheretogo.presentation.state.CheckPointAddState
@@ -119,7 +119,7 @@ fun DriveScreen(
         viewModel.driveEvent.collect {
             when(it){
                 is DriveEvent.MoveCamera ->  mapViewModel.handleIntent(MapIntent.MoveCamera(it.option))
-                is DriveEvent.Focus ->  mapViewModel.handleIntent(MapIntent.Focus(it.course))
+                is DriveEvent.Focus ->  mapViewModel.handleIntent(MapIntent.Focus(it.item))
                 is DriveEvent.Release ->  mapViewModel.handleIntent(MapIntent.RELEASE)
                 is DriveEvent.RefreshContent ->  mapViewModel.handleIntent(MapIntent.RefreshContent(it.option))
                 is DriveEvent.RefreshOverlay ->  mapViewModel.handleIntent(MapIntent.RefreshOverlay(it.option))
@@ -217,7 +217,7 @@ fun DriveContent(
     onSearchBarClose: () -> Unit = {},
 
     //DriveListContent
-    onListItemClick: (CourseListItem) -> Unit = {},
+    onListItemClick: (CourseDirectionItem) -> Unit = {},
 
     //MapPopup
     onPopupImageClick: () -> Unit = {},

@@ -40,8 +40,8 @@ import androidx.compose.ui.zIndex
 import com.wheretogo.domain.model.course.Course
 import com.wheretogo.domain.model.route.RouteCategory
 import com.wheretogo.presentation.composable.animation.highlightRoundedCorner
-import com.wheretogo.presentation.model.CourseListItem
-import com.wheretogo.presentation.model.StartDirection
+import com.wheretogo.domain.model.course.CourseDirectionItem
+import com.wheretogo.domain.model.course.StartDirection
 import com.wheretogo.presentation.state.ListState
 import com.wheretogo.presentation.theme.Gray250
 import com.wheretogo.presentation.theme.White10080
@@ -98,7 +98,7 @@ fun DriveListMultiPreview() {
 fun DriveListContent(
     modifier: Modifier,
     state: ListState = ListState(),
-    onItemClick: (CourseListItem) -> Unit,
+    onItemClick: (CourseDirectionItem) -> Unit,
     onHeightChange: (Dp) -> Unit = {},
     onBookmarkClick: (ListState.ListItemState) -> Unit = {}
 ) {
@@ -132,7 +132,7 @@ fun DriveListContent(
 fun DriveListItem(
     modifier: Modifier,
     listItem: ListState.ListItemState,
-    onItemClick: (CourseListItem) -> Unit
+    onItemClick: (CourseDirectionItem) -> Unit
 ) {
     AnimatedVisibility(
         visible = true,
@@ -164,9 +164,9 @@ fun DriveListItem(
                         .weight(1f)
                         .clickable {
                             onItemClick(
-                                CourseListItem(
-                                    direction = StartDirection.REVERSE,
-                                    course = listItem.course
+                                CourseDirectionItem(
+                                    course = listItem.course,
+                                    direction = StartDirection.REVERSE
                                 )
                             )
                         }
@@ -177,8 +177,7 @@ fun DriveListItem(
                         .weight(1f)
                         .clickable {
                             onItemClick(
-                                CourseListItem(
-                                    direction = StartDirection.FORWARD,
+                                CourseDirectionItem(
                                     course = listItem.course
                                 )
                             )
