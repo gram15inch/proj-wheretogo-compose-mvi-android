@@ -1,6 +1,6 @@
 package com.wheretogo.presentation.intent
 
-import com.wheretogo.domain.model.course.CourseDirectionItem
+import com.wheretogo.domain.model.course.Course
 import com.wheretogo.domain.model.map.CameraState
 import com.wheretogo.domain.model.map.MarkerInfo
 import com.wheretogo.domain.model.map.MoveCameraOption
@@ -15,7 +15,7 @@ sealed class MapIntent {
     data class MoveCamera(val option: MoveCameraOption) : MapIntent()
     data class RefreshContent(val option: RefreshContentOption) : MapIntent()
     data class RefreshOverlay(val option: RefreshOverlayOption) : MapIntent()
-    data class Focus(val item: CourseDirectionItem) : MapIntent()
+    data class Focus(val course: Course) : MapIntent()
     data object RELEASE : MapIntent()
     data object ClearMap : MapIntent()
     data class LifeCycleChange(val lifecycle: AppLifecycle) : MapIntent()

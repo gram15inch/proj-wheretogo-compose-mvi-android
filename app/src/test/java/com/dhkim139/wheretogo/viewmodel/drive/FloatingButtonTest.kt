@@ -9,7 +9,6 @@ import com.wheretogo.domain.model.app.Settings
 import com.wheretogo.domain.model.checkpoint.CheckPoint
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.course.Course
-import com.wheretogo.domain.model.course.CourseDirectionItem
 import com.wheretogo.domain.model.map.CameraMoveTrigger
 import com.wheretogo.domain.repository.MapContentRepository
 import com.wheretogo.domain.usecase.app.DriveTutorialUseCase
@@ -125,7 +124,7 @@ class FloatingButtonTest {
     fun `체크포인트 플로팅 버튼 클릭시 체크포인트 마커 추가 및 바텀시트 표시`() = runTest {
         // Arrange
         val latlng = LatLng(127.0,35.0)
-        val course = CourseDirectionItem(Course("CS001", waypoints = listOf(latlng)))
+        val course = Course("CS001", waypoints = listOf(latlng))
 
         val viewModel =
             createViewModel(StandardTestDispatcher(testScheduler), initState)
@@ -157,7 +156,7 @@ class FloatingButtonTest {
     @Test
     fun `정보(코스) 플로팅 버튼 클릭시 코스 정보 바텀시트 표시`() = runTest {
         // Arrange
-        val course = CourseDirectionItem(Course("CS001", userName = "USER01", isUserCreated = true))
+        val course = Course("CS001", userName = "USER01", isUserCreated = true)
         val infoContent = DriveBottomSheetContent.COURSE_INFO
         val viewModel =
             createViewModel(StandardTestDispatcher(testScheduler), initState)
@@ -178,7 +177,7 @@ class FloatingButtonTest {
                 bottomSheetState.infoState.let {
                     assertThat(it.isRemoveButton).isEqualTo(true)
                     assertThat(it.isReportButton).isEqualTo(true)
-                    assertThat(it.createdBy).isEqualTo(course.course.userName)
+                    assertThat(it.createdBy).isEqualTo(course.userName)
                 }
             }
             (event.awaitItem() as DriveEvent.MoveCamera).let {
