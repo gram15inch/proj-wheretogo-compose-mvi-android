@@ -14,10 +14,12 @@ import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.comment.CommentContent
 import com.wheretogo.domain.model.course.Course
 import com.wheretogo.domain.model.course.CourseContent
+import com.wheretogo.domain.model.course.CourseDirectionItem
+import com.wheretogo.domain.model.course.StartDirection
+import com.wheretogo.domain.model.map.MarkerInfo
 import com.wheretogo.domain.model.route.RouteCategory
 import com.wheretogo.domain.model.util.Navigation
 import com.wheretogo.presentation.model.LeafInfo
-import com.wheretogo.domain.model.map.MarkerInfo
 import com.wheretogo.presentation.model.PathInfo
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.CheckPointAddState
