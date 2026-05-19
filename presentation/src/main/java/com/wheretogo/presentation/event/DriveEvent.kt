@@ -1,7 +1,7 @@
 package com.wheretogo.presentation.event
 
 import com.wheretogo.domain.model.checkpoint.CheckPoint
-import com.wheretogo.domain.model.course.Course
+import com.wheretogo.domain.model.course.CourseDirectionItem
 import com.wheretogo.domain.model.map.CameraMoveTrigger
 import com.wheretogo.domain.model.map.CameraState
 import com.wheretogo.domain.model.map.ContentOperation
@@ -17,7 +17,7 @@ sealed class DriveEvent {
     data class MoveCamera(val option: MoveCameraOption): DriveEvent()
     data class RefreshContent(val option: RefreshContentOption) : DriveEvent()
     data class RefreshOverlay(val option: RefreshOverlayOption) : DriveEvent()
-    data class Focus(val course: Course) : DriveEvent()
+    data class Focus(val item: CourseDirectionItem) : DriveEvent()
     data object Release : DriveEvent()
     data object ClearMap : DriveEvent()
 

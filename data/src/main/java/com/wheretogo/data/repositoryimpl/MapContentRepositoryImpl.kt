@@ -3,6 +3,7 @@ package com.wheretogo.data.repositoryimpl
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.checkpoint.CheckPoint
 import com.wheretogo.domain.model.course.Course
+import com.wheretogo.domain.model.course.CourseDirectionItem
 import com.wheretogo.domain.repository.MapContentRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,12 +17,12 @@ enum class DefaultMapId {
 class MapContentRepositoryImpl @Inject constructor() : MapContentRepository {
     private val _courseList = MutableStateFlow(emptyList<Course>())
     private val _checkpointList = MutableStateFlow(emptyList<CheckPoint>())
-    private val _selectedCourseState = MutableStateFlow<Course?>(null)
+    private val _selectedCourseState = MutableStateFlow<CourseDirectionItem?>(null)
     private val _selectedCheckPointState = MutableStateFlow<CheckPoint?>(null)
 
     override val courseList: StateFlow<List<Course>> = _courseList
     override val checkPointList: StateFlow<List<CheckPoint>> = _checkpointList
-    override val selectedCourseState: StateFlow<Course?> = _selectedCourseState
+    override val selectedCourseState: StateFlow<CourseDirectionItem?> = _selectedCourseState
     override val selectedCheckPointState: StateFlow<CheckPoint?> = _selectedCheckPointState
 
     override fun refreshCourseList(courses: List<Course>) {
@@ -40,8 +41,8 @@ class MapContentRepositoryImpl @Inject constructor() : MapContentRepository {
         _checkpointList.value = emptyList()
     }
 
-    override fun selectCourse(course: Course) {
-        _selectedCourseState.value = course
+    override fun selectCourse(item: CourseDirectionItem) {
+        _selectedCourseState.value = item
     }
 
     override fun selectCheckPoint(checkPoint: CheckPoint) {
@@ -68,7 +69,7 @@ class MapContentRepositoryImpl @Inject constructor() : MapContentRepository {
         return targetId?.let { id ->
             when (id) {
                 DefaultMapId.SELECT_COURSE_ID.name -> {
-                    selectedCourseState.value?.cameraLatLng
+                    selectedCourseState.value?.course?.cameraLatLng
                 }
 
                 DefaultMapId.SELECT_CHECKPOINT_ID.name -> {
@@ -84,7 +85,7 @@ class MapContentRepositoryImpl @Inject constructor() : MapContentRepository {
     override fun getIdWhenSelected(id: String): String? {
         return when (id) {
             DefaultMapId.SELECT_COURSE_ID.name -> {
-                selectedCourseState.value?.courseId ?: id
+                selectedCourseState.value?.course?.courseId ?: id
             }
 
             DefaultMapId.SELECT_CHECKPOINT_ID.name -> {
