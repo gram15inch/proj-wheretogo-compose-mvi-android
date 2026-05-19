@@ -218,7 +218,7 @@ class DriveViewModel @Inject constructor(
                         } else {
                             it.copy(
                                 floatingButtonState = it.floatingButtonState.copy(
-                                    navigation = item.course.toNavigation()
+                                    navigation = item.toNavigation()
                                 )
                             )
                         }

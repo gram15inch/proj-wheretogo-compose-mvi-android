@@ -158,12 +158,15 @@ class MapViewModel @Inject constructor(
     }
 
     private suspend fun focus(item: CourseDirectionItem){
+        val course = item.course.cameraUpdateByDirection(item.direction)
         // 주변 코스 숨기기
-        mapOverlayService.focusAndHideOthers(course)
-        mapContentRepository.selectCourse(course)
+        mapOverlayService.focusAndHideOthers(course.courseId)
+        mapOverlayService.updateCourseMarkerPosition(course.courseId, course.cameraLatLng)
+        mapContentRepository.selectCourse(item)
+
         moveCamera(
             MoveCameraOption(
-                latlng = item.course.cameraLatLng,
+                latlng = course.cameraLatLng,
                 trigger = CameraMoveTrigger.LIST_ITEM,
                 zoom = ZOOM.DISTRICT.level,
                 animation = MoveAnimation.APP_LINEAR
@@ -171,7 +174,7 @@ class MapViewModel @Inject constructor(
         )
 
         // 체크포인트 클러스터 가져오기
-        refreshCheckpointCluster(item.course.courseId)
+        refreshCheckpointCluster(course.courseId)
     }
 
     private fun release(){
