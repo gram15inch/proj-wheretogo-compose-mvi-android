@@ -8,5 +8,5 @@ enum class CameraMoveTrigger {
     BOTTOM_SHEET_UP,
     BOTTOM_SHEET_DOWN,
     RESTART,
-    GUIDE
+    GUIDE // 맵 초기 위치 설정 겸용
 }
