@@ -6,7 +6,6 @@ import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.MarkerType
 import com.wheretogo.domain.ZOOM
 import com.wheretogo.domain.feature.LocationService
-import com.wheretogo.domain.feature.successMap
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.course.Course
 import com.wheretogo.domain.model.course.CourseDirectionItem
@@ -314,17 +313,17 @@ class MapViewModel @Inject constructor(
                     CameraMoveTrigger.RESTART,
                     CameraMoveTrigger.BOTTOM_SHEET_DOWN
                 )
-                if(clearList.contains(latestMoveTrigger)){
-                    latestMoveTrigger = null
-                }
                 when{
                     _isContentUpdate -> {
-                        refreshCourseByCameraState(cameraState)
+                        refreshCourseByCameraState(cameraState, latestMoveTrigger)
                     }
                     _isLeafScale -> {
                         leafScaleInCluster(cameraState.latLng)
                         releaseByZoom(cameraState.zoom)
                     }
+                }
+                if(clearList.contains(latestMoveTrigger)){
+                    latestMoveTrigger = null
                 }
             }
         }
@@ -468,9 +467,11 @@ class MapViewModel @Inject constructor(
         }
     }
 
-    private suspend fun refreshCourseByCameraState(cameraState: CameraState? = null) {
+    private suspend fun refreshCourseByCameraState(cameraState: CameraState? = null, latestMoveTrigger : CameraMoveTrigger? =null) {
         val cameraState = cameraState ?: _state.value.naverMapState.latestCameraState
-        if (!_state.value.isOverlayLoading) {
+        if (!_state.value.isOverlayLoading ||
+            latestMoveTrigger == CameraMoveTrigger.GUIDE // 가이드가 변경한 경우 강제 리프레시
+        ) {
             _state.update { it.copy(isOverlayLoading = true) }
             val courseGroup= withContext(Dispatchers.IO) {
                 getNearByCourseUseCase(
@@ -516,13 +517,6 @@ class MapViewModel @Inject constructor(
             mapOverlayService.removeCourseMarkerAndPath(hideGroup.map { it.courseId })
             mapOverlayService.showAllOverlays()
             showGroup
-        }.successMap { courseGroup ->
-            val (hideGroup, showGroup) = courseGroup.partition { it.isHide }
-            runCatching {
-                mapOverlayService.addCourseMarkerAndPath(showGroup)
-                mapOverlayService.removeCourseMarkerAndPath(hideGroup.map { it.courseId })
-                mapOverlayService.showAllOverlays()
-            }.map { showGroup }
         }.onFailure { handleError(it) }.getOrDefault(emptyList())
     }
 
