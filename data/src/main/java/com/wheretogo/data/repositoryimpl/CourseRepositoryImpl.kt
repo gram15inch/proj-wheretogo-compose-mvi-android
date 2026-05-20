@@ -55,12 +55,11 @@ class CourseRepositoryImpl @Inject constructor(
                 courseRemoteDatasource.getCourseGroupByUpdateAt(old).mapSuccess { remote->
                     remote.map { it.toLocalCourse() }.run {
                         courseLocalDatasource.setCourse(this)
-                        Result.success(this)
                     }
                 }
-            } else {
-                courseLocalDatasource.getCourseGroupByGeoHash(geoHash)
-            }.map { local-> local.map { it.toCourse() }}
+            }
+            courseLocalDatasource.getCourseGroupByGeoHash(geoHash)
+                .map { local-> local.map { it.toCourse() }}
         }.mapDomainError()
     }
 
