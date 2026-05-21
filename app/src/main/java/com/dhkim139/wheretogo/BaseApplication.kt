@@ -4,6 +4,7 @@ import android.app.Application
 import android.os.StrictMode
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import com.dhkim139.wheretogo.migration.AppMigration
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.crashlytics.FirebaseCrashlytics
@@ -28,6 +29,9 @@ class BaseApplication : Application(), Configuration.Provider {
     @Inject
     lateinit var buildConfig: AppBuildConfig
 
+    @Inject
+    lateinit var appMigration: AppMigration
+
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
             .setWorkerFactory(workerFactory)
@@ -40,6 +44,7 @@ class BaseApplication : Application(), Configuration.Provider {
         strictModeInit()
         firebaseInit()
         tMapInit()
+        appInit()
     }
 
     private fun firebaseInit() {
@@ -92,6 +97,12 @@ class BaseApplication : Application(), Configuration.Provider {
                     .penaltyLog()
                     .build()
             )
+        }
+    }
+
+    private fun appInit(){
+        CoroutineScope(Dispatchers.IO).launch {
+            appMigration.run(BuildConfig.VERSION_NAME)
         }
     }
 
