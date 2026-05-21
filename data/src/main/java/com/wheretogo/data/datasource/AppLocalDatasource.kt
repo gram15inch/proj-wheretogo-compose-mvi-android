@@ -10,4 +10,7 @@ interface AppLocalDatasource {
 
     suspend fun getPublicToken(): Result<String>
     suspend fun setPublicToken(token: String): Result<Unit>
+
+    suspend fun setAppVersion(version: String): Result<Unit>
+    suspend fun getAppVersion(): Result<String>
 }

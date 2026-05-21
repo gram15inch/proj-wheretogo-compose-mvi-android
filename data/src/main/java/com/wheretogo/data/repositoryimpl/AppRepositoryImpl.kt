@@ -59,4 +59,13 @@ class AppRepositoryImpl @Inject constructor(
             _msgFlow.emit(msg)
         }
     }
+
+    override suspend fun setAppVersion(version: String): Result<Unit> {
+        return appLocalDatasource.setAppVersion(version)
+    }
+
+    override suspend fun getAppVersion(): Result<String> {
+        return appLocalDatasource.getAppVersion()
+    }
+
 }

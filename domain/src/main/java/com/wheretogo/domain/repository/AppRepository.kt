@@ -20,4 +20,8 @@ interface AppRepository {
     // msg
     val msg: SharedFlow<AppMessage>
     suspend fun sendMsg(msg:AppMessage): Result<Unit>
+
+    // version
+    suspend fun setAppVersion(version: String): Result<Unit>
+    suspend fun getAppVersion(): Result<String>
 }
