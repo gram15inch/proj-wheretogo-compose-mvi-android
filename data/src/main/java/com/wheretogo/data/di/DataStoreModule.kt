@@ -1,6 +1,7 @@
 package com.wheretogo.data.di
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
@@ -39,6 +40,13 @@ object DataStoreModule {
     @Named("contentDataStore")
     fun provideContentDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
         return context.contentDataStore
+    }
+
+    @Provides
+    @Singleton
+    @Named("appPref")
+    fun provideAppPref(@ApplicationContext context: Context): SharedPreferences {
+        return context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
     }
 
 }
