@@ -40,8 +40,7 @@ class RootViewModel @Inject constructor(
         viewModelScope.launch {
             launch {
                 appCheckBySignatureUseCase().onSuccess {
-                    if (it)
-                        handler.handle(RootEvent.APP_CHECK_SUCCESS)
+                    handler.handle(RootEvent.APP_CHECK_SUCCESS)
                 }.onFailure {
                     handleError(it)
                 }

@@ -12,11 +12,12 @@ import com.wheretogo.presentation.AppScreen
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.EventBus
 import com.wheretogo.presentation.model.EventMsg
+import timber.log.Timber
 
 class RootHandlerImpl(val errorHandler: ErrorHandler) : RootHandler {
     override suspend fun handle(event: RootEvent, data:Any?) {
         when (event) {
-            RootEvent.APP_CHECK_SUCCESS -> EventBus.send(AppEvent.SnackBar(EventMsg(R.string.app_check_success)))
+            RootEvent.APP_CHECK_SUCCESS -> Timber.d("app check success")
             RootEvent.ACCOUNT_VALID_EXPIRE -> {
                 EventBus.send(AppEvent.Navigation(null, AppScreen.Home, true))
                 EventBus.send(AppEvent.SignInScreen)
