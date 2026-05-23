@@ -17,6 +17,7 @@ import com.wheretogo.domain.usecase.course.RemoveCourseUseCase
 import com.wheretogo.domain.usecase.report.ReportContentUseCase
 import com.wheretogo.domain.usecase.user.DeleteUserUseCase
 import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
+import com.wheretogo.domain.usecase.user.UserCheckUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
 import com.wheretogo.domain.usecase.user.UserSignUpAndSignInUseCase
 import com.wheretogo.domain.usecase.util.ClearCacheUseCase
@@ -44,6 +45,7 @@ import com.wheretogo.domain.usecaseimpl.course.RemoveCourseUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.report.ReportContentUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.DeleteUserUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.GetUserProfileStreamUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.user.UserCheckUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.UserSignOutUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.UserSignUpAndSignInUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.util.ClearCacheUseCaseImpl
@@ -66,6 +68,10 @@ abstract class UseCaseModule {
 
     @Binds
     abstract fun bindAppCheckBySignatureUseCase(useCaseImpl: AppCheckBySignatureUseCaseImpl): AppCheckBySignatureUseCase
+
+    @Binds
+    abstract fun bindUserCheckUseCase(useCaseImpl: UserCheckUseCaseImpl): UserCheckUseCase
+
 
     @Binds
     abstract fun bindDriveTutorialUseCase(useCaseImpl: DriveTutorialUseCaseImpl): DriveTutorialUseCase

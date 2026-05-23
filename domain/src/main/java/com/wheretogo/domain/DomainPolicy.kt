@@ -123,6 +123,10 @@ enum class AuthType {
     TOKEN, PROFILE
 }
 
+enum class UserStatus {
+    ACTIVE, DISABLED, DELETED, TOKEN_EXPIRED, NOT_LOGGED_IN
+}
+
 enum class RouteAttr {
     TYPE, LEVEL, RELATION;
 

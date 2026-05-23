@@ -8,12 +8,14 @@ import com.wheretogo.domain.handler.RootEvent
 import com.wheretogo.domain.handler.RootHandler
 import com.wheretogo.domain.usecase.app.AppCheckBySignatureUseCase
 import com.wheretogo.domain.usecase.app.ObserveMsgUseCase
+import com.wheretogo.domain.usecase.user.UserCheckUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
 import com.wheretogo.domain.usecase.util.ClearExpireCacheUseCase
 import com.wheretogo.presentation.AppEvent
 import com.wheretogo.presentation.state.RootScreenState
 import com.wheretogo.presentation.toAppError
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -24,6 +26,7 @@ import javax.inject.Inject
 class RootViewModel @Inject constructor(
     private val handler: RootHandler,
     private val appCheckBySignatureUseCase: AppCheckBySignatureUseCase,
+    private val userCheckUseCase: UserCheckUseCase,
     private val clearExpireCacheUseCase: ClearExpireCacheUseCase,
     private val userSignOutUseCase: UserSignOutUseCase,
     private val observeMsgUseCase: ObserveMsgUseCase,
@@ -38,11 +41,16 @@ class RootViewModel @Inject constructor(
     }
     init {
         viewModelScope.launch {
-            launch {
+            launch(Dispatchers.IO) {
                 appCheckBySignatureUseCase().onSuccess {
                     handler.handle(RootEvent.APP_CHECK_SUCCESS)
                 }.onFailure {
                     handleError(it)
+                }
+            }
+            launch(Dispatchers.IO) {
+                userCheckUseCase().onSuccess {
+                    handler.handle(RootEvent.USER_CHECK_SUCCESS, it)
                 }
             }
 

@@ -1,5 +1,6 @@
 package com.wheretogo.domain.repository
 
+import com.wheretogo.domain.UserStatus
 import com.wheretogo.domain.model.auth.SignToken
 import com.wheretogo.domain.model.auth.SyncProfile
 
@@ -8,4 +9,5 @@ interface AuthRepository {
     suspend fun signOut(): Result<Unit>
     suspend fun getMsgToken(): Result<String>
     suspend fun isAdmin(forceRefresh: Boolean = false): Boolean
+    suspend fun getUserStatus(): Result<UserStatus>
 }

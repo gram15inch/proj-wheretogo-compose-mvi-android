@@ -2,6 +2,7 @@ package com.wheretogo.presentation.handler
 
 import androidx.annotation.StringRes
 import com.wheretogo.domain.BanReason
+import com.wheretogo.domain.UserStatus
 import com.wheretogo.domain.formatMillisToDate
 import com.wheretogo.domain.handler.ErrorHandler
 import com.wheretogo.domain.handler.RootEvent
@@ -18,6 +19,16 @@ class RootHandlerImpl(val errorHandler: ErrorHandler) : RootHandler {
     override suspend fun handle(event: RootEvent, data:Any?) {
         when (event) {
             RootEvent.APP_CHECK_SUCCESS -> Timber.d("app check success")
+            RootEvent.USER_CHECK_SUCCESS -> {
+                Timber.d("user check success: $data")
+                when (data){
+                    UserStatus.DISABLED,
+                    UserStatus.DELETED -> {
+                        EventBus.send(AppEvent.SnackBar(EventMsg(R.string.session_logout)))
+                    }
+                    else -> Unit
+                }
+            }
             RootEvent.ACCOUNT_VALID_EXPIRE -> {
                 EventBus.send(AppEvent.Navigation(null, AppScreen.Home, true))
                 EventBus.send(AppEvent.SignInScreen)
