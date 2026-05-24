@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.Flow
 interface UserRepository {
     suspend fun getProfileStream(): Flow<Profile>
 
+    suspend fun getProfile(): Result<Profile>
+
     suspend fun cacheUser(profile: Profile, history: History): Result<Unit>
 
     suspend fun deleteUser(): Result<Unit>
