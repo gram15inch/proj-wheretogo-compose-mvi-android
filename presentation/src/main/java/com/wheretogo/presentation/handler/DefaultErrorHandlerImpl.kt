@@ -4,6 +4,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.wheretogo.domain.handler.ErrorHandler
 import com.wheretogo.presentation.AppError
 import com.wheretogo.presentation.AppEvent
+import com.wheretogo.presentation.AppScreen
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.EventBus
 import com.wheretogo.presentation.model.EventMsg
@@ -32,6 +33,12 @@ class DefaultErrorHandlerImpl : ErrorHandler {
                         )
                     )
                 )
+
+            is AppError.SessionOut -> {
+                EventBus.send(AppEvent.SnackBar(EventMsg(R.string.session_logout)))
+                EventBus.send(AppEvent.Navigation(null, AppScreen.Home, true))
+                EventBus.send(AppEvent.SignInScreen)
+            }
 
             is AppError.Ignore -> {}
 
