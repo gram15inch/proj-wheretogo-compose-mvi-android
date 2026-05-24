@@ -13,6 +13,7 @@ import com.wheretogo.data.toHistory
 import com.wheretogo.data.toHistoryGroupWrapper
 import com.wheretogo.data.toLocalProfile
 import com.wheretogo.data.toProfile
+import com.wheretogo.domain.DomainError
 import com.wheretogo.domain.HistoryType
 import com.wheretogo.domain.model.history.HistoryGroupWrapper
 import com.wheretogo.domain.model.user.History
@@ -31,6 +32,17 @@ class UserRepositoryImpl @Inject constructor(
     override suspend fun getProfileStream(): Flow<Profile> {
         return userLocalDatasource.getProfileFlow().map { it.toProfile() }
     }
+
+    override suspend fun getProfile(): Result<Profile> {
+        return runCatching {
+            val profile = userLocalDatasource.getProfileFlow().first().toProfile()
+            if (profile.uid.isBlank()) {
+                throw DomainError.UserExpired("empty profile")
+            }
+            profile
+        }
+    }
+
 
     override suspend fun deleteUser(): Result<Unit> {
         return runCatching {
@@ -139,7 +151,7 @@ class UserRepositoryImpl @Inject constructor(
         val profile = userLocalDatasource.getProfileFlow().first()
 
         if (profile.uid.isBlank())
-            throw DataError.UserInvalid("")
+            throw DataError.UserNotFound("")
 
         return profile.toProfile()
     }

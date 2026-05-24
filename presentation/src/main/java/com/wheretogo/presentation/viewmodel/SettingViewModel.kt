@@ -2,7 +2,6 @@ package com.wheretogo.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.wheretogo.domain.DomainError
 import com.wheretogo.domain.handler.ErrorHandler
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.usecase.user.DeleteUserUseCase
@@ -76,7 +75,7 @@ class SettingViewModel @Inject constructor(
 
 
     private suspend fun emptyProfileClick() {
-        handleError( DomainError.UserInvalid())
+        handleError(AppError.NeedSignIn())
     }
 
     private fun userDeleteClick() {

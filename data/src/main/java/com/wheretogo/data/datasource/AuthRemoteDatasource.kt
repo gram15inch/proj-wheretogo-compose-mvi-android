@@ -1,5 +1,6 @@
 package com.wheretogo.data.datasource
 
+import com.wheretogo.domain.UserStatus
 import com.wheretogo.domain.model.auth.SignToken
 import com.wheretogo.domain.model.auth.SyncProfile
 
@@ -16,4 +17,6 @@ interface AuthRemoteDatasource {
     suspend fun isAdmin(forceRefresh: Boolean): Result<Boolean>
 
     suspend fun getCurrentUser(): Result<SyncProfile?>
+
+    suspend fun getUserStatus(): Result<UserStatus>
 }

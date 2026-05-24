@@ -18,5 +18,5 @@ enum class LoginEvent {
 }
 
 enum class RootEvent {
-    APP_CHECK_SUCCESS, ACCOUNT_VALID_EXPIRE
+    APP_CHECK_SUCCESS, USER_CHECK_SUCCESS, ACCOUNT_VALID_EXPIRE
 }

@@ -1,12 +1,11 @@
 package com.wheretogo.data.repositoryimpl
 
 import com.wheretogo.data.CachePolicy
-import com.wheretogo.data.DataError
+import com.wheretogo.data.datasource.CommentLocalDatasource
 import com.wheretogo.data.datasource.CommentRemoteDatasource
 import com.wheretogo.data.di.CommentCache
 import com.wheretogo.data.feature.dataErrorCatching
 import com.wheretogo.data.feature.mapDomainError
-import com.wheretogo.data.model.comment.CacheCommentGroupWrapper
 import com.wheretogo.data.model.content.ContentLikeRequest
 import com.wheretogo.data.toComment
 import com.wheretogo.data.toCommentGroup
@@ -19,12 +18,12 @@ import javax.inject.Inject
 
 class CommentRepositoryImpl @Inject constructor(
     private val remoteDatasource: CommentRemoteDatasource,
+    private val localDataSource: CommentLocalDatasource,
     @CommentCache private val cachePolicy: CachePolicy
 ) : CommentRepository {
-    private val _cacheByGroupId = mutableMapOf<String, CacheCommentGroupWrapper>() // 체크포인트 그룹id
 
     override suspend fun getCommentByGroupId(groupId: String): Result<List<Comment>> {
-        val cache = _cacheByGroupId.safeGet(groupId)
+        val cache = localDataSource.safeGet(groupId)
         val isExpire = cachePolicy.isExpired(
             timestamp = cache.updatedAt,
             isEmpty = cache.commentGroup.isEmpty()
@@ -35,23 +34,20 @@ class CommentRepositoryImpl @Inject constructor(
         return remoteDatasource.getCommentByGroupId(groupId)
             .mapCatching {
                 val commentGroup = it.toCommentGroup()
-                _cacheByGroupId.safeReplace(groupId, commentGroup, true)
+                localDataSource.safeReplace(groupId, commentGroup, true)
                 commentGroup
             }.mapDomainError()
     }
 
     override suspend fun appendComment(request: CommentAddRequest): Result<Comment> {
-        if (request.profile.uid.isBlank())
-            return Result.failure(DataError.UserInvalid("잘못된 사용자"))
-
         val newCommentId = "CM${ULID().nextULID()}"
         val newComment = request.toComment(newCommentId)
 
         return remoteDatasource.addComment(newComment.toCreateContent()).mapCatching {
-            val commentGroup = _cacheByGroupId
+            val commentGroup = localDataSource
                 .safeGet(newComment.groupId)
                 .commentGroup + newComment
-            _cacheByGroupId.safeReplace(newComment.groupId, commentGroup)
+            localDataSource.safeReplace(newComment.groupId, commentGroup)
             newComment
         }.mapDomainError()
     }
@@ -62,10 +58,10 @@ class CommentRepositoryImpl @Inject constructor(
     ): Result<Unit> {
 
         return remoteDatasource.removeComment(groupId, commentId).mapCatching {
-            val commentGroup = _cacheByGroupId
+            val commentGroup = localDataSource
                 .safeGet(groupId)
                 .commentGroup.filter { it.commentId != commentId }
-            _cacheByGroupId.safeReplace(groupId, commentGroup)
+            localDataSource.safeReplace(groupId, commentGroup)
         }.mapDomainError()
     }
 
@@ -85,13 +81,13 @@ class CommentRepositoryImpl @Inject constructor(
             }.mapDomainError()
     }
 
-    private fun updateComment(
+    private suspend fun updateComment(
         groupId: String,
         commentId: String,
         newComment: (Comment) -> Comment
     ): Boolean {
 
-        val oldCommentGroup = _cacheByGroupId[groupId]?.commentGroup
+        val oldCommentGroup = localDataSource.get(groupId)?.commentGroup
         val oldComment = oldCommentGroup?.find { it.commentId == commentId }
         if (oldCommentGroup == null || oldComment == null)
             return false
@@ -102,37 +98,12 @@ class CommentRepositoryImpl @Inject constructor(
                 it
         }
 
-        _cacheByGroupId.safeReplace(groupId, newCommentGroup)
+        localDataSource.safeReplace(groupId, newCommentGroup)
         return true
     }
 
-    private fun MutableMap<String, CacheCommentGroupWrapper>.safeGet(groupId: String): CacheCommentGroupWrapper {
-        return getOrPut(groupId) { createWrapper() }
-    }
-
-    private fun MutableMap<String, CacheCommentGroupWrapper>.safeReplace(
-        groupId: String,
-        commentGroup: List<Comment>? = null,
-        isRefresh: Boolean = false
-    ) {
-        val timestamp = if (isRefresh) System.currentTimeMillis() else safeGet(groupId).updatedAt
-        put(
-            groupId, CacheCommentGroupWrapper(
-                commentGroup = commentGroup ?: emptyList(),
-                updatedAt = timestamp
-            )
-        )
-    }
-
-    private fun createWrapper(commentGroup: List<Comment>? = null): CacheCommentGroupWrapper {
-        val timestamp = if (commentGroup != null) System.currentTimeMillis() else 0
-        return CacheCommentGroupWrapper(
-            commentGroup = commentGroup ?: emptyList(),
-            updatedAt = timestamp
-        )
-    }
 
     override suspend fun clearCache(): Result<Unit> {
-        return dataErrorCatching { _cacheByGroupId.clear() }.mapDomainError()
+        return dataErrorCatching { localDataSource.clear() }.mapDomainError()
     }
 }

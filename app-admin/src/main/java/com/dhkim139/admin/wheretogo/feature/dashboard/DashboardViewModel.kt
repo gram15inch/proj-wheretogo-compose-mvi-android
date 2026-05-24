@@ -42,8 +42,8 @@ class DashboardViewModel @Inject constructor(
 
             // 프로필
             launch {
-                val user = userRepository.getProfileStream().first()
-                _uiState.update { it.copy(email = user.private.mail) }
+                val mail = userRepository.getProfile().getOrNull()?.private?.mail ?: ""
+                _uiState.update { it.copy(email = mail) }
             }
 
             // 대시보드

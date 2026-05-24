@@ -66,6 +66,7 @@ enum class SettingInfoType(val url: String) {
 sealed class AppError : Exception() {
     data class ImgEmpty(val msg: String = "") : AppError()
     data class NeedSignIn(val msg: String = "") : AppError()
+    data class SessionOut(val msg: String = "") : AppError()
     data class InvalidState(val msg: String = "") : AppError()
     data class Unavailable(val msg: String = "") : AppError()
     data class NetworkError(val msg: String = "") : AppError()
@@ -262,7 +263,8 @@ fun Throwable.toAppError(): AppError {
     return when (this) {
         is AppError -> this
         is DomainError.NetworkError -> AppError.NetworkError(msg)
-        is DomainError.UserInvalid -> AppError.NeedSignIn(msg)
+        is DomainError.UserExpired -> AppError.NeedSignIn(msg)
+        is DomainError.Unauthorized -> AppError.SessionOut(msg)
         is DomainError.SignInError -> {
             val error = SignErrorReason.fromString(msg)
             when(error){

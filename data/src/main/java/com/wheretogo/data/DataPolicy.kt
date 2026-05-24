@@ -73,7 +73,7 @@ enum class DataSettingAttr {
 
 sealed class DataError: IOException(){
     data class NetworkError(val msg:String = ""): DataError()
-    data class UserInvalid(val msg:String = ""): DataError()
+    data class UserNotFound(val msg:String = ""): DataError()
     data class UserUnavailable(val msg:String = ""): DataError()
     data class AuthInvalid(val msg:String = ""): DataError()
     data class PublicTokenInvalid(val msg:String = ""): DataError()
@@ -148,7 +148,7 @@ fun DataError.toDomainError(): DomainError{
             Timber.tag("data").e(this.stackTraceToString())
             DomainError.NetworkError("Server Error")
         }
-        is DataError.UserInvalid->{ DomainError.UserInvalid(this.msg) }
+        is DataError.UserNotFound->{ DomainError.UserExpired(this.msg) }
         is DataError.Unauthorized->{ DomainError.Unauthorized(this.msg) }
         is DataError.UserUnavailable->{ DomainError.UserUnavailable(this.msg) }
         is DataError.AuthInvalid->{ DomainError.SignInError(this.msg) }

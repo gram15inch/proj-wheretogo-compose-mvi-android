@@ -2,16 +2,24 @@ package com.wheretogo.data.network;
 
 import com.wheretogo.data.DataError
 import com.wheretogo.data.datasource.AuthRemoteDatasource
+import com.wheretogo.data.datasource.CheckPointLocalDatasource
+import com.wheretogo.data.datasource.CommentLocalDatasource
+import com.wheretogo.data.datasource.CourseLocalDatasource
+import com.wheretogo.data.datasource.UserLocalDatasource
+import com.wheretogo.domain.UserStatus
 import jakarta.inject.Inject
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
-import java.nio.Buffer
 
 
 class PrivateInterceptor @Inject constructor(
-    private val auth: AuthRemoteDatasource
+    private val auth: AuthRemoteDatasource,
+    private val user: UserLocalDatasource,
+    private val course: CourseLocalDatasource,
+    private val checkPoint: CheckPointLocalDatasource,
+    private val comment: CommentLocalDatasource,
 ) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val authResponse = chain.proceed(chain.request().authRequest())
@@ -20,9 +28,19 @@ class PrivateInterceptor @Inject constructor(
         authResponse.close()
 
         // 만료시 재시도
-        val refreshed = runBlocking { refreshToken() }
-        if (!refreshed) {
-            throw DataError.UserInvalid("refresh token expire")
+        runBlocking {
+            val refreshed = refreshToken()
+            when (refreshed) {
+                UserStatus.ACTIVE -> Unit
+                UserStatus.NOT_LOGGED_IN -> {
+                    throw DataError.UserNotFound("user not found for refresh")
+                }
+
+                else -> {
+                    cacheClear()
+                    throw DataError.Unauthorized("token expire: $refreshed")
+                }
+            }
         }
 
         return chain.proceed(chain.request().authRequest())
@@ -39,8 +57,16 @@ class PrivateInterceptor @Inject constructor(
         return auth.getApiToken(false).getOrNull()
     }
 
-    private suspend fun refreshToken(): Boolean {
-        return auth.getApiToken(true).isSuccess
+    private suspend fun refreshToken(): UserStatus? {
+        return auth.getUserStatus().getOrNull()
+    }
+
+    private suspend fun cacheClear(){
+        user.clearUser()
+        course.clear()
+        checkPoint.clear()
+        comment.clear()
+        auth.signOutOnFirebase()
     }
 }
 

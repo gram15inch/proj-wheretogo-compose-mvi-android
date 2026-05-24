@@ -969,6 +969,7 @@ class DriveViewModel @Inject constructor(
                 _driveEvent.addLeaf(newCheckPoint)
             },
             onSuccessUi = { it.backToCourseDetail() },
+            onFailure = { handler.handle(it) },
             isSuccessUiUpdateFirst = false
         )
     }
