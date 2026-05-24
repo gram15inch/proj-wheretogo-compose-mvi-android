@@ -1,7 +1,6 @@
 package com.wheretogo.data.repositoryimpl
 
 import com.wheretogo.data.CachePolicy
-import com.wheretogo.data.DataError
 import com.wheretogo.data.datasource.CommentLocalDatasource
 import com.wheretogo.data.datasource.CommentRemoteDatasource
 import com.wheretogo.data.di.CommentCache
@@ -41,9 +40,6 @@ class CommentRepositoryImpl @Inject constructor(
     }
 
     override suspend fun appendComment(request: CommentAddRequest): Result<Comment> {
-        if (request.profile.uid.isBlank())
-            return Result.failure(DataError.UserInvalid("잘못된 사용자"))
-
         val newCommentId = "CM${ULID().nextULID()}"
         val newComment = request.toComment(newCommentId)
 
