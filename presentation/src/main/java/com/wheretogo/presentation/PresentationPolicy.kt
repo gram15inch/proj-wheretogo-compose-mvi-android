@@ -263,7 +263,7 @@ fun Throwable.toAppError(): AppError {
     return when (this) {
         is AppError -> this
         is DomainError.NetworkError -> AppError.NetworkError(msg)
-        is DomainError.UserInvalid -> AppError.NeedSignIn(msg)
+        is DomainError.UserExpired -> AppError.NeedSignIn(msg)
         is DomainError.Unauthorized -> AppError.SessionOut(msg)
         is DomainError.SignInError -> {
             val error = SignErrorReason.fromString(msg)

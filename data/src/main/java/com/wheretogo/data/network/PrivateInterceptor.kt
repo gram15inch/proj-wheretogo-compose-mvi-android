@@ -33,7 +33,7 @@ class PrivateInterceptor @Inject constructor(
             when (refreshed) {
                 UserStatus.ACTIVE -> Unit
                 UserStatus.NOT_LOGGED_IN -> {
-                    throw DataError.UserInvalid("user not found for refresh")
+                    throw DataError.UserNotFound("user not found for refresh")
                 }
 
                 else -> {

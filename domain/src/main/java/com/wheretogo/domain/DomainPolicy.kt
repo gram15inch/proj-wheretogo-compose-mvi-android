@@ -51,8 +51,8 @@ val CommentCooldown = DefaultCoolDownPolicy(1)
 
 sealed class DomainError : Exception() {
     data class NetworkError(val msg: String = "") : DomainError()
-    data class UserInvalid(val msg: String = "") : DomainError()
-    data class Unauthorized(val msg: String = "") : DomainError()
+    data class UserExpired(val msg: String = "") : DomainError() // 상태 없음
+    data class Unauthorized(val msg: String = "") : DomainError() // 상태 이상
     data class UserUnavailable(val msg: String = "") : DomainError()
     data class SignInError(val msg: String = "") : DomainError()
     data class RouteFieldInvalid(

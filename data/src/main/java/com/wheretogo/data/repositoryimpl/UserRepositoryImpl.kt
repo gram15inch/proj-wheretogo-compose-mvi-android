@@ -37,7 +37,7 @@ class UserRepositoryImpl @Inject constructor(
         return runCatching {
             val profile = userLocalDatasource.getProfileFlow().first().toProfile()
             if (profile.uid.isBlank()) {
-                throw DomainError.UserInvalid("empty profile")
+                throw DomainError.UserExpired("empty profile")
             }
             profile
         }
@@ -151,7 +151,7 @@ class UserRepositoryImpl @Inject constructor(
         val profile = userLocalDatasource.getProfileFlow().first()
 
         if (profile.uid.isBlank())
-            throw DataError.UserInvalid("")
+            throw DataError.UserNotFound("")
 
         return profile.toProfile()
     }
