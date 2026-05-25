@@ -76,6 +76,7 @@ class MapViewModel @Inject constructor(
     private var _isLeafScale = false
 
     private var _refreshJob : Job? = null
+    private var latestMoveTrigger : CameraMoveTrigger? = null
 
     private fun overlayScope(scope: suspend ()->Unit){
         cancelOverlay()
@@ -154,6 +155,14 @@ class MapViewModel @Inject constructor(
         )
         mapOverlayService.clear()
         mapContentRepository.clear()
+        initVariables()
+    }
+
+    private fun initVariables(){
+        cancelOverlay()
+        _isContentUpdate = true
+        _isLeafScale = false
+        latestMoveTrigger = null
     }
 
     private suspend fun focus(item: CourseDirectionItem){
@@ -289,8 +298,6 @@ class MapViewModel @Inject constructor(
     }
 
     private fun mapAsync() {}
-
-    var latestMoveTrigger : CameraMoveTrigger? = null
 
     private suspend fun cameraUpdated(cameraState: CameraState) {
         _state.update {
