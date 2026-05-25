@@ -4,7 +4,7 @@ import com.wheretogo.domain.CourseAddValid
 import com.wheretogo.domain.model.course.CourseAddValidContent
 
 interface CourseAddValidUseCase {
-    suspend operator fun invoke(
+    operator fun invoke(
         courseAddValidContent: CourseAddValidContent
     ): Result<List<CourseAddValid>>
 }

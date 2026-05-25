@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -58,14 +59,14 @@ class RootViewModel @Inject constructor(
                 observeMsgUseCase().collect { msg->
                     when(msg.type){
                         FcmMsg.BAN -> {
-                            userSignOutUseCase()
+                            withContext(Dispatchers.IO){ userSignOutUseCase() }
                             handler.handle(RootEvent.ACCOUNT_VALID_EXPIRE, msg.data)
                         }
                     }
                 }
             }
 
-            launch {
+            launch(Dispatchers.IO) {
                 clearExpireCacheUseCase()
             }
         }
