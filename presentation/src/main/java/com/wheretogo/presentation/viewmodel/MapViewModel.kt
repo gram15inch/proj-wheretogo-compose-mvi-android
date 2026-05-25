@@ -527,7 +527,7 @@ class MapViewModel @Inject constructor(
         }.onFailure { handleError(it) }.getOrDefault(emptyList())
     }
 
-    private suspend fun List<Course>.refreshList(cameraState: CameraState): List<Course> {
+    private fun List<Course>.refreshList(cameraState: CameraState): List<Course> {
         return filterListCourseUseCase(
             cameraState.viewport,
             cameraState.zoom,

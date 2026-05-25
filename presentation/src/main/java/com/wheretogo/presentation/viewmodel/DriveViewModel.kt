@@ -278,7 +278,7 @@ class DriveViewModel @Inject constructor(
 
             is AppError.NeedSignIn -> {
                 clearAd()
-                signOutUseCase()
+                viewModelScope.launch(Dispatchers.IO) { signOutUseCase() }
             }
 
             is AppError.UnexpectedException -> {
@@ -404,17 +404,19 @@ class DriveViewModel @Inject constructor(
            val oldItems = _driveScreenState.value.popUpState.slideItems
            val checkPointId = oldItems[index].contentId?:throw Exception("empty $index")
 
-           val (items, comments) = coroutineScope {
-               // 이미지 가져오기
-               val newItems = async {
-                   oldItems.refreshImageUrl(index)
-               }
+           val (items, comments) = withContext(Dispatchers.IO) {
+               coroutineScope {
+                   // 이미지 가져오기
+                   val newItems = async {
+                       oldItems.refreshImageUrl(index)
+                   }
 
-               // 댓글 가져오기
-               val comments= async {
-                   getCommentForCheckPointUseCase(checkPointId).getOrThrow()
+                   // 댓글 가져오기
+                   val comments = async {
+                       getCommentForCheckPointUseCase(checkPointId).getOrThrow()
+                   }
+                   newItems.await() to comments.await()
                }
-               newItems.await() to comments.await()
            }
 
            _driveScreenState.update {
@@ -430,7 +432,7 @@ class DriveViewModel @Inject constructor(
     }
 
     private suspend fun List<SlideItem>.refreshImageUrl(index: Int): List<SlideItem> {
-        return withContext(Dispatchers.IO) {
+        return coroutineScope {
             val isPrePatchIdx = listOf(index - 1, index, index + 1)
             mapIndexed { idx, item ->
                 async {
@@ -1274,7 +1276,9 @@ class DriveViewModel @Inject constructor(
 
     // ======================== 디버그
     private suspend fun debugOverlayClick() {
-        clearCacheUseCase(setOf(AppCache.HISTORY))
+        withContext(Dispatchers.IO){
+            clearCacheUseCase(setOf(AppCache.HISTORY))
+        }
         clearScreen()
         //signOutUseCase()
         handler.handle(DriveMsgEvent.UNKNOWN_ERR)

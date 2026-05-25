@@ -67,7 +67,7 @@ class SettingViewModel @Inject constructor(
             is AppError.NeedSignIn->{
                 _isCoverScreen = true
                 clearAd()
-                signOutUseCase()
+                viewModelScope.launch(Dispatchers.IO) { signOutUseCase() }
             }
             else -> {}
         }
