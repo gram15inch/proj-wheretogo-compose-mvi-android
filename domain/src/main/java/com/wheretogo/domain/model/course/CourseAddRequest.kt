@@ -7,6 +7,8 @@ import com.wheretogo.domain.RouteFieldType
 data class CourseAddRequest(
     val content: CourseContent,
     val keyword: List<String> = emptyList(),
+    val userId: String,
+    val userName:String
 ) {
     fun valid(): CourseAddRequest {
         require(content.courseName.isNotBlank()) { "inValid groupId id" }

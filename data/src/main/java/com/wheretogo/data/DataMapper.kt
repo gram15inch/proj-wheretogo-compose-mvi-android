@@ -252,8 +252,8 @@ fun CommentAddRequest.toComment(commentId: String): Comment {
     return Comment(
         commentId = commentId,
         groupId = groupId,
-        userId = profile.uid,
-        userName = profile.name,
+        userId = userId,
+        userName = userName,
         emoji = content.emoji,
         oneLineReview = content.oneLineReview,
         detailedReview = content.detailedReview,
@@ -326,8 +326,8 @@ fun CourseAddRequest.toCreateContent(
     return CourseCreateContent(
         courseId = courseId,
         courseName = content.courseName,
-        userId = profile.uid,
-        userName = profile.name,
+        userId = userId,
+        userName = userName,
         latitude = content.cameraLatLng.latitude,
         longitude = content.cameraLatLng.longitude,
         geoHash = content.cameraLatLng.toGeoHash(6),

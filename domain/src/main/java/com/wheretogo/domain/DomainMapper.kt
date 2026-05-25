@@ -15,7 +15,6 @@ import com.wheretogo.domain.model.course.CourseContent
 import com.wheretogo.domain.model.history.HistoryIdGroup
 import com.wheretogo.domain.model.report.ReportAddRequest
 import com.wheretogo.domain.model.user.History
-import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.usecase.report.ReportContent
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -23,13 +22,15 @@ import java.util.Locale
 
 
 fun CourseContent.toCourseAddRequest(
-    profile: Profile,
-    keyword: List<String>
+    keyword: List<String>,
+    userId:String,
+    userName:String
 ): CourseAddRequest {
     return CourseAddRequest(
         content = this,
-        profile = profile,
-        keyword = keyword
+        keyword = keyword,
+        userId = userId,
+        userName = userName
     )
 }
 
@@ -52,13 +53,15 @@ fun CheckPointContent.toAddRequest(
 }
 
 fun CommentContent.toAddRequest(
-    profile: Profile,
+    userId:String,
+    userName:String,
     groupId: String? = null,
 ): CommentAddRequest {
     return CommentAddRequest(
         content = this,
         groupId = groupId ?: this.checkPointId,
-        profile = profile
+        userId = userId,
+        userName = userName
     )
 }
 
