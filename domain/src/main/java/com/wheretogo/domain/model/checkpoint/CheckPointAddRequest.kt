@@ -15,4 +15,26 @@ data class CheckPointAddRequest(
         { "inValid imageId: $imageId" }
         return this
     }
+
+    // 디버깅용
+    fun toCheckPointForTest(): CheckPoint{
+        val now = System.currentTimeMillis()
+        return CheckPoint(
+            checkPointId = "CP${now}",
+            courseId = content.groupId,
+            userId = "TestUserId",
+            userName = "TestUser",
+            latLng = content.latLng,
+            captionId = "",
+            caption = "",
+            imageId = imageId,
+            thumbnail = thumbnail,
+            description = "",
+            isUserCreated = true,
+            isHide = false,
+            reportedCount = 0,
+            updateAt = now,
+            createAt = now
+        )
+    }
 }
