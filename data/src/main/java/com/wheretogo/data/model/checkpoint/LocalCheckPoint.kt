@@ -8,6 +8,8 @@ import com.wheretogo.data.CachePolicy
 import com.wheretogo.data.CheckpointPolicy
 import com.wheretogo.data.DATA_NULL
 import com.wheretogo.data.model.map.DataLatLng
+import com.wheretogo.data.toDataLatLng
+import com.wheretogo.domain.model.checkpoint.CheckPointAddRequest
 import timber.log.Timber
 
 @Entity(
@@ -28,7 +30,28 @@ data class LocalCheckPoint(
     val isHide: Boolean = false,
     val updateAt: Long = 0,
     val createAt: Long = 0L
-)
+){
+    companion object{
+        // 디버깅용
+        fun fromRequestForTest(request: CheckPointAddRequest): LocalCheckPoint{
+            val now = System.currentTimeMillis()
+            return LocalCheckPoint(
+                checkPointId = "CP${now}",
+                courseId = request.content.groupId,
+                userId = "TestUserId",
+                userName = "TestUser",
+                latLng = request.content.latLng.toDataLatLng(),
+                captionId = "",
+                caption = "",
+                description = "",
+                isHide = false,
+                reportedCount = 0,
+                updateAt = now,
+                createAt = now
+            )
+        }
+    }
+}
 
 @Entity(tableName = "CheckPointGroupMeta")
 data class CheckPointGroupMeta(

@@ -404,28 +404,31 @@ class DriveViewModel @Inject constructor(
            val oldItems = _driveScreenState.value.popUpState.slideItems
            val checkPointId = oldItems[index].contentId?:throw Exception("empty $index")
 
-           val (items, comments) = withContext(Dispatchers.IO) {
-               coroutineScope {
-                   // 이미지 가져오기
-                   val newItems = async {
-                       oldItems.refreshImageUrl(index)
-                   }
-
-                   // 댓글 가져오기
-                   val comments = async {
+           coroutineScope {
+               // 이미지 가져오기
+                launch {
+                    val newItems= withContext(Dispatchers.IO) {
+                        oldItems.refreshImageUrl(index)
+                    }
+                    _driveScreenState.update {
+                        it.copy(
+                            popUpState = it.popUpState.copy(
+                                slideItems = newItems
+                            )
+                        )
+                    }
+               }
+               // 댓글 가져오기
+               launch {
+                   val comments= withContext(Dispatchers.IO) {
                        getCommentForCheckPointUseCase(checkPointId).getOrThrow()
                    }
-                   newItems.await() to comments.await()
+                   _driveScreenState.update {
+                       it.updateCommentList(comments)
+                   }
                }
            }
 
-           _driveScreenState.update {
-               it.copy(
-                   popUpState = it.popUpState.copy(
-                       slideItems = items
-                   )
-               ).updateCommentList(comments)
-           }
        }.onFailure {
            handleError(it)
        }

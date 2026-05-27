@@ -75,50 +75,14 @@ class MapViewModel @Inject constructor(
     private var _isContentUpdate = true
     private var _isLeafScale = false
 
-    private var _refreshJob : Job? = null
     private var latestMoveTrigger : CameraMoveTrigger? = null
 
-    private fun overlayScope(scope: suspend ()->Unit){
-        cancelOverlay()
-        _refreshJob = viewModelScope.launch {
-            scope()
-        }
-    }
+    private val _intentJobs = mutableMapOf<MapIntent,Job>()
 
-    private fun cancelOverlay(){
-        _refreshJob?.cancel()
-    }
-
-    init {
-        observe()
-    }
-
-    private fun observe(){
-        viewModelScope.launch(dispatcher){
-            launch {
-                mapContentRepository.selectedCourseState.collect {
-                    if(it == null) {
-                        _isContentUpdate = true
-                        _isLeafScale = false
-                        cancelOverlay()
-                    }
-                }
-            }
-            launch {
-                mapContentRepository.selectedCheckPointState.collect {
-                    if(it == null &&!_isContentUpdate) {
-                        _isLeafScale = true
-                    }else{
-                        _isLeafScale = false
-                    }
-                }
-            }
-        }
-
-    }
+    init { observe() }
 
     fun handleIntent(intent: MapIntent) {
-        viewModelScope.launch(dispatcher) {
+        _intentJobs[intent] = viewModelScope.launch(dispatcher) {
             when (intent) {
                 //지도
                 is MapIntent.MapAsync -> mapAsync()
@@ -134,35 +98,73 @@ class MapViewModel @Inject constructor(
             }
         }
     }
-    private suspend fun lifecycleChange(event: AppLifecycle) {
-        when (event) {
-            AppLifecycle.onLaunch -> {
-                val latest = _state.value.naverMapState.latestCameraState
-                if(latest.latLng!= LatLng())
-                    moveToTaget(
-                        latLng = latest.latLng,
-                        zoom = latest.zoom,
-                        trigger = CameraMoveTrigger.RESTART,
-                        animation = MoveAnimation.APP_JUMP
-                    )
+
+    //=========================================
+    // 인텐트
+    //=========================================
+
+    private fun mapAsync() {}
+
+    private suspend fun cameraUpdated(cameraState: CameraState) {
+        _state.update {
+            it.copy(
+                naverMapState = it.naverMapState.copy(
+                    latestCameraState = cameraState
+                )
+            )
+        }
+        when (latestMoveTrigger) {
+            CameraMoveTrigger.LIST_ITEM -> {
+                _isContentUpdate = false
+                _isLeafScale = true
+                latestMoveTrigger = null
             }
+            CameraMoveTrigger.BOTTOM_SHEET_UP->{ }
+            else -> {
+                val clearList = listOf(
+                    CameraMoveTrigger.GUIDE,
+                    CameraMoveTrigger.RESTART,
+                    CameraMoveTrigger.BOTTOM_SHEET_DOWN
+                )
+                when{
+                    _isContentUpdate -> {
+                        refreshCourseByCameraState(cameraState, latestMoveTrigger)
+                    }
+                    _isLeafScale -> {
+                        leafScaleInCluster(cameraState.latLng)
+                        releaseByZoom(cameraState.zoom)
+                    }
+                }
+                if(clearList.contains(latestMoveTrigger)){
+                    latestMoveTrigger = null
+                }
+            }
+        }
+    }
+
+    private suspend fun markerClick(markerInfo: MarkerInfo) {
+        when (markerInfo.type) {
+            MarkerType.COURSE -> courseMarkerClick(markerInfo)
+            MarkerType.CHECKPOINT -> { /* 체크포인트 클릭은 클러스터 생성시 전달 */ }
             else -> {}
         }
     }
-    private fun clearMap() {
-        _state.value = MapState(
-            naverMapState = _state.value.naverMapState
-        )
-        mapOverlayService.clear()
-        mapContentRepository.clear()
-        initVariables()
-    }
 
-    private fun initVariables(){
-        cancelOverlay()
-        _isContentUpdate = true
-        _isLeafScale = false
-        latestMoveTrigger = null
+    private suspend fun moveCamera(option: MoveCameraOption) {
+        val latestCamera = _state.value.naverMapState.latestCameraState
+        if(option.isMyLocation){
+            moveToMyLocation(option.zoom?:latestCamera.zoom, option.trigger, option.animation)
+        } else {
+            val initLatlng = mapContentRepository.getLatLngWhenSelected(option.targetId)?:option.latlng
+            val initZoom = option.zoom?:latestCamera.zoom
+
+            val (finalLatlng, finalZoom) = when {
+                initLatlng == null->  null to initZoom
+                option.trigger == CameraMoveTrigger.LIST_ITEM -> calculateListItemCameraPosition(latestCamera, initLatlng, initZoom)
+                else -> initLatlng to initZoom
+            }
+            moveToTaget(finalLatlng, finalZoom,option.trigger, option.animation)
+        }
     }
 
     private suspend fun focus(item: CourseDirectionItem){
@@ -198,6 +200,17 @@ class MapViewModel @Inject constructor(
 
         // 오버레이 전부 표시
         mapOverlayService.showAllOverlays()
+    }
+
+    private suspend fun refreshContent(option: RefreshContentOption){
+        runCatching {
+            when(option.operation){
+                ContentOperation.REFRESH_COURSES -> refreshCourseByCameraState(option.cameraState)
+                ContentOperation.REFRESH_CLUSTER -> refreshCheckpointCluster(option.id)
+                ContentOperation.DELETE_COURSE -> deleteCourse(option.id)
+                ContentOperation.DELETE_CHECKPOINT -> deleteCheckPoint(option.id,option.groupId)
+            }
+        }
     }
 
     private fun refreshOverlay(option: RefreshOverlayOption) {
@@ -251,24 +264,146 @@ class MapViewModel @Inject constructor(
         }
     }
 
+    private fun clearMap() {
+        cancelIntent()
+        _state.value = MapState(
+            naverMapState = _state.value.naverMapState
+        )
+        mapOverlayService.clear()
+        mapContentRepository.clear()
+        initVariables()
+    }
+
+    private suspend fun lifecycleChange(event: AppLifecycle) {
+        when (event) {
+            AppLifecycle.onLaunch -> {
+                val latest = _state.value.naverMapState.latestCameraState
+                if(latest.latLng!= LatLng())
+                    moveToTaget(
+                        latLng = latest.latLng,
+                        zoom = latest.zoom,
+                        trigger = CameraMoveTrigger.RESTART,
+                        animation = MoveAnimation.APP_JUMP
+                    )
+            }
+            else -> {}
+        }
+    }
+
+    //=========================================
+    // 공통
+    //=========================================
+
+    private fun observe(){
+        viewModelScope.launch(dispatcher){
+            launch {
+                mapContentRepository.selectedCourseState.collect {
+                    if(it == null) {
+                        _isContentUpdate = true
+                        _isLeafScale = false
+                        cancelIntent()
+                        if(_state.value.isOverlayLoading)
+                            _state.update { it.copy(isOverlayLoading = false) }
+                    }
+                }
+            }
+            launch {
+                mapContentRepository.selectedCheckPointState.collect {
+                    if(it == null) {
+                        if(!_isContentUpdate)
+                            _isLeafScale = true
+                        cancelIntent()
+                    }else{
+                        _isLeafScale = false
+                    }
+                }
+            }
+        }
+
+    }
+
+    private fun handleError(e: Throwable) {
+
+    }
+
+    //=========================================
+    // 인텐트 헬퍼
+    //=========================================
+
+    private fun initVariables(){
+        _isContentUpdate = true
+        _isLeafScale = false
+        latestMoveTrigger = null
+    }
+
+    private fun cancelIntent(intents: List<MapIntent> = emptyList()) {
+        if (intents.isEmpty()) {
+            _intentJobs.forEach {
+                it.value.cancel()
+            }
+        } else {
+            intents.forEach {
+                _intentJobs[it]?.cancel()
+            }
+        }
+    }
+
+    private suspend fun courseMarkerClick(markerInfo: MarkerInfo) {
+        state.value.let {
+            val zoom = // 목록이 보일때 까지 확대
+                maxOf(it. naverMapState.latestCameraState.zoom, ZOOM.DISTRICT.level)
+
+            val latlng = markerInfo.position
+            if (latlng == null)
+                return
+            moveToTaget(
+                latLng = latlng,
+                zoom = zoom,
+                trigger = CameraMoveTrigger.MARKER,
+                animation = MoveAnimation.APP_EASING
+            )
+        }
+
+    }
+
+    private suspend fun refreshCourseByCameraState(cameraState: CameraState? = null, latestMoveTrigger : CameraMoveTrigger? =null) {
+        val cameraState = cameraState ?: _state.value.naverMapState.latestCameraState
+        if (!_state.value.isOverlayLoading ||
+            latestMoveTrigger == CameraMoveTrigger.GUIDE // 가이드가 변경한 경우 강제 리프레시
+        ) {
+            _state.update { it.copy(isOverlayLoading = true) }
+            val courseGroup= withContext(Dispatchers.IO) {
+                getNearByCourseUseCase(
+                    cameraState.latLng,
+                    cameraState.zoom,
+                    cameraState.viewport
+                )
+            }.getOrDefault(emptyList())
+            if(mapContentRepository.selectedCourseState.value == null) {
+                courseGroup
+                    .refreshCourse()
+                    .refreshList(cameraState)
+            }
+            _state.update { it.copy(isOverlayLoading = false) }
+        }
+    }
+
     private suspend fun refreshCheckpointCluster(courseId: String?) {
         val courseIdNotNull = courseId?.let { mapContentRepository.getIdWhenSelected(courseId) }?:courseId
         check(!courseIdNotNull.isNullOrEmpty()){ "empty courseId $courseIdNotNull"}
         _state.update { it.copy(isOverlayLoading = true) }
         withContext(Dispatchers.IO) { getCheckPointForMarkerUseCase(courseIdNotNull) }
             .onSuccess { checkPointGroup ->
-                overlayScope {
-                    val (hideGroup, showGroup) = checkPointGroup.partition { it.isHide }
-                    mapOverlayService.removeCheckPointCluster(courseIdNotNull)
-                    mapOverlayService.addCheckPointCluster(
-                        courseId = courseIdNotNull,
-                        checkPointGroup = showGroup,
-                        onLeafRendered = {},
-                        onLeafClick = ::checkPointLeafClick
-                    )
-                    hideGroup.forEach {
-                        mapOverlayService.removeCheckPointLeaf(it.courseId, it.checkPointId)
-                    }
+                val (hideGroup, showGroup) = checkPointGroup.partition { it.isHide }
+                mapOverlayService.removeCheckPointCluster(courseIdNotNull)
+                mapOverlayService.addCheckPointCluster(
+                    courseId = courseIdNotNull,
+                    checkPointGroup = showGroup,
+                    onLeafRendered = {},
+                    onLeafClick = ::checkPointLeafClick
+                )
+                hideGroup.forEach {
+                    mapOverlayService.removeCheckPointLeaf(it.courseId, it.checkPointId)
                 }
             }.onFailure {
                 handleError(it)
@@ -293,50 +428,6 @@ class MapViewModel @Inject constructor(
         mapContentRepository.clearCheckPoint()
     }
 
-    private fun handleError(e: Throwable) {
-
-    }
-
-    private fun mapAsync() {}
-
-    private suspend fun cameraUpdated(cameraState: CameraState) {
-        _state.update {
-            it.copy(
-                naverMapState = it.naverMapState.copy(
-                    latestCameraState = cameraState
-                )
-            )
-        }
-        when (latestMoveTrigger) {
-            CameraMoveTrigger.LIST_ITEM -> {
-                _isContentUpdate = false
-                _isLeafScale = true
-                latestMoveTrigger = null
-            }
-            CameraMoveTrigger.BOTTOM_SHEET_UP->{ }
-            else -> {
-                val clearList = listOf(
-                    CameraMoveTrigger.GUIDE,
-                    CameraMoveTrigger.RESTART,
-                    CameraMoveTrigger.BOTTOM_SHEET_DOWN
-                )
-                when{
-                    _isContentUpdate -> {
-                        refreshCourseByCameraState(cameraState, latestMoveTrigger)
-                    }
-                    _isLeafScale -> {
-                        leafScaleInCluster(cameraState.latLng)
-                        releaseByZoom(cameraState.zoom)
-                    }
-                }
-                if(clearList.contains(latestMoveTrigger)){
-                    latestMoveTrigger = null
-                }
-            }
-        }
-    }
-
-
     private suspend fun leafScaleInCluster(latLng: LatLng){
         val item = mapContentRepository.selectedCourseState.value
         val step = observeSettingsUseCase().firstOrNull()?.getOrNull()?.tutorialStep
@@ -354,50 +445,6 @@ class MapViewModel @Inject constructor(
     private fun releaseByZoom(zoom: Double){
         if (ZOOM.CITY.areaOut(zoom)) {
             release()
-        }
-    }
-
-    private suspend fun markerClick(markerInfo: MarkerInfo) {
-        when (markerInfo.type) {
-            MarkerType.COURSE -> courseMarkerClick(markerInfo)
-            MarkerType.CHECKPOINT -> { /* 체크포인트 클릭은 클러스터 생성시 전달 */ }
-            else -> {}
-        }
-
-    }
-
-    private suspend fun courseMarkerClick(markerInfo: MarkerInfo) {
-        state.value.let {
-            val zoom = // 목록이 보일때 까지 확대
-                maxOf(it. naverMapState.latestCameraState.zoom, ZOOM.DISTRICT.level)
-
-            val latlng = markerInfo.position
-            if (latlng == null)
-                return
-            moveToTaget(
-                latLng = latlng,
-                zoom = zoom,
-                trigger = CameraMoveTrigger.MARKER,
-                animation = MoveAnimation.APP_EASING
-            )
-        }
-
-    }
-
-    private suspend fun moveCamera(option: MoveCameraOption) {
-        val latestCamera = _state.value.naverMapState.latestCameraState
-        if(option.isMyLocation){
-             moveToMyLocation(option.zoom?:latestCamera.zoom, option.trigger, option.animation)
-        } else {
-            val initLatlng = mapContentRepository.getLatLngWhenSelected(option.targetId)?:option.latlng
-            val initZoom = option.zoom?:latestCamera.zoom
-
-            val (finalLatlng, finalZoom) = when {
-                initLatlng == null->  null to initZoom
-                option.trigger == CameraMoveTrigger.LIST_ITEM -> calculateListItemCameraPosition(latestCamera, initLatlng, initZoom)
-                else -> initLatlng to initZoom
-            }
-            moveToTaget(finalLatlng, finalZoom,option.trigger, option.animation)
         }
     }
 
@@ -422,25 +469,6 @@ class MapViewModel @Inject constructor(
         }
     }
 
-    private suspend fun moveToMyLocation(
-        zoom: Double,
-        trigger: CameraMoveTrigger = CameraMoveTrigger.DEFAULT,
-        animation: MoveAnimation = MoveAnimation.APP_LINEAR
-    ){
-        latestMoveTrigger = trigger
-        _event.emit(
-            MapEvent.MoveCamera(
-                CameraOption(
-                    latLng = LatLng(),
-                    zoom = zoom,
-                    updateSource = trigger,
-                    moveAnimation = animation,
-                    isMyLocation = true
-                )
-            )
-        )
-    }
-
     private suspend fun moveToTaget(
         latLng: LatLng? = null,
         zoom: Double,
@@ -463,37 +491,23 @@ class MapViewModel @Inject constructor(
         }
     }
 
-    private suspend fun refreshContent(option: RefreshContentOption){
-        runCatching {
-            when(option.operation){
-                ContentOperation.REFRESH_COURSES -> refreshCourseByCameraState(option.cameraState)
-                ContentOperation.REFRESH_CLUSTER -> refreshCheckpointCluster(option.id)
-                ContentOperation.DELETE_COURSE -> deleteCourse(option.id)
-                ContentOperation.DELETE_CHECKPOINT -> deleteCheckPoint(option.id,option.groupId)
-            }
-        }
-    }
-
-    private suspend fun refreshCourseByCameraState(cameraState: CameraState? = null, latestMoveTrigger : CameraMoveTrigger? =null) {
-        val cameraState = cameraState ?: _state.value.naverMapState.latestCameraState
-        if (!_state.value.isOverlayLoading ||
-            latestMoveTrigger == CameraMoveTrigger.GUIDE // 가이드가 변경한 경우 강제 리프레시
-        ) {
-            _state.update { it.copy(isOverlayLoading = true) }
-            val courseGroup= withContext(Dispatchers.IO) {
-                getNearByCourseUseCase(
-                    cameraState.latLng,
-                    cameraState.zoom,
-                    cameraState.viewport
+    private suspend fun moveToMyLocation(
+        zoom: Double,
+        trigger: CameraMoveTrigger = CameraMoveTrigger.DEFAULT,
+        animation: MoveAnimation = MoveAnimation.APP_LINEAR
+    ){
+        latestMoveTrigger = trigger
+        _event.emit(
+            MapEvent.MoveCamera(
+                CameraOption(
+                    latLng = LatLng(),
+                    zoom = zoom,
+                    updateSource = trigger,
+                    moveAnimation = animation,
+                    isMyLocation = true
                 )
-            }.getOrDefault(emptyList())
-            overlayScope {
-                courseGroup
-                    .refreshCourse()
-                    .refreshList(cameraState)
-            }
-           _state.update { it.copy(isOverlayLoading = false) }
-        }
+            )
+        )
     }
 
     private fun checkPointLeafClick(markerId: String) {
@@ -536,4 +550,5 @@ class MapViewModel @Inject constructor(
             mapContentRepository.refreshCourseList(courseGroup)
         }.onFailure { handleError(it) }.getOrDefault(emptyList())
     }
+
 }
