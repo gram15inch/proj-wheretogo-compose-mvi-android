@@ -75,50 +75,14 @@ class MapViewModel @Inject constructor(
     private var _isContentUpdate = true
     private var _isLeafScale = false
 
-    private var _refreshJob : Job? = null
     private var latestMoveTrigger : CameraMoveTrigger? = null
 
-    private fun overlayScope(scope: suspend ()->Unit){
-        cancelOverlay()
-        _refreshJob = viewModelScope.launch {
-            scope()
-        }
-    }
+    private val _intentJobs = mutableMapOf<MapIntent,Job>()
 
-    private fun cancelOverlay(){
-        _refreshJob?.cancel()
-    }
-
-    init {
-        observe()
-    }
-
-    private fun observe(){
-        viewModelScope.launch(dispatcher){
-            launch {
-                mapContentRepository.selectedCourseState.collect {
-                    if(it == null) {
-                        _isContentUpdate = true
-                        _isLeafScale = false
-                        cancelOverlay()
-                    }
-                }
-            }
-            launch {
-                mapContentRepository.selectedCheckPointState.collect {
-                    if(it == null &&!_isContentUpdate) {
-                        _isLeafScale = true
-                    }else{
-                        _isLeafScale = false
-                    }
-                }
-            }
-        }
-
-    }
+    init { observe() }
 
     fun handleIntent(intent: MapIntent) {
-        viewModelScope.launch(dispatcher) {
+        _intentJobs[intent] = viewModelScope.launch(dispatcher) {
             when (intent) {
                 //지도
                 is MapIntent.MapAsync -> mapAsync()
@@ -134,6 +98,7 @@ class MapViewModel @Inject constructor(
             }
         }
     }
+
     private suspend fun lifecycleChange(event: AppLifecycle) {
         when (event) {
             AppLifecycle.onLaunch -> {
@@ -149,7 +114,37 @@ class MapViewModel @Inject constructor(
             else -> {}
         }
     }
+
+    private fun observe(){
+        viewModelScope.launch(dispatcher){
+            launch {
+                mapContentRepository.selectedCourseState.collect {
+                    if(it == null) {
+                        _isContentUpdate = true
+                        _isLeafScale = false
+                        cancelIntent()
+                        if(_state.value.isOverlayLoading)
+                            _state.update { it.copy(isOverlayLoading = false) }
+                    }
+                }
+            }
+            launch {
+                mapContentRepository.selectedCheckPointState.collect {
+                    if(it == null) {
+                        if(!_isContentUpdate)
+                            _isLeafScale = true
+                        cancelIntent()
+                    }else{
+                        _isLeafScale = false
+                    }
+                }
+            }
+        }
+
+    }
+
     private fun clearMap() {
+        cancelIntent()
         _state.value = MapState(
             naverMapState = _state.value.naverMapState
         )
@@ -159,10 +154,21 @@ class MapViewModel @Inject constructor(
     }
 
     private fun initVariables(){
-        cancelOverlay()
         _isContentUpdate = true
         _isLeafScale = false
         latestMoveTrigger = null
+    }
+
+    private fun cancelIntent(intents: List<MapIntent> = emptyList()) {
+        if (intents.isEmpty()) {
+            _intentJobs.forEach {
+                it.value.cancel()
+            }
+        } else {
+            intents.forEach {
+                _intentJobs[it]?.cancel()
+            }
+        }
     }
 
     private suspend fun focus(item: CourseDirectionItem){
@@ -251,24 +257,24 @@ class MapViewModel @Inject constructor(
         }
     }
 
+
+
     private suspend fun refreshCheckpointCluster(courseId: String?) {
         val courseIdNotNull = courseId?.let { mapContentRepository.getIdWhenSelected(courseId) }?:courseId
         check(!courseIdNotNull.isNullOrEmpty()){ "empty courseId $courseIdNotNull"}
         _state.update { it.copy(isOverlayLoading = true) }
         withContext(Dispatchers.IO) { getCheckPointForMarkerUseCase(courseIdNotNull) }
             .onSuccess { checkPointGroup ->
-                overlayScope {
-                    val (hideGroup, showGroup) = checkPointGroup.partition { it.isHide }
-                    mapOverlayService.removeCheckPointCluster(courseIdNotNull)
-                    mapOverlayService.addCheckPointCluster(
-                        courseId = courseIdNotNull,
-                        checkPointGroup = showGroup,
-                        onLeafRendered = {},
-                        onLeafClick = ::checkPointLeafClick
-                    )
-                    hideGroup.forEach {
-                        mapOverlayService.removeCheckPointLeaf(it.courseId, it.checkPointId)
-                    }
+                val (hideGroup, showGroup) = checkPointGroup.partition { it.isHide }
+                mapOverlayService.removeCheckPointCluster(courseIdNotNull)
+                mapOverlayService.addCheckPointCluster(
+                    courseId = courseIdNotNull,
+                    checkPointGroup = showGroup,
+                    onLeafRendered = {},
+                    onLeafClick = ::checkPointLeafClick
+                )
+                hideGroup.forEach {
+                    mapOverlayService.removeCheckPointLeaf(it.courseId, it.checkPointId)
                 }
             }.onFailure {
                 handleError(it)
@@ -487,7 +493,7 @@ class MapViewModel @Inject constructor(
                     cameraState.viewport
                 )
             }.getOrDefault(emptyList())
-            overlayScope {
+            if(mapContentRepository.selectedCourseState.value == null) {
                 courseGroup
                     .refreshCourse()
                     .refreshList(cameraState)
