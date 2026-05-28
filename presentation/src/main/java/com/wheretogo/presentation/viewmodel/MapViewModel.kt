@@ -117,9 +117,10 @@ class MapViewModel @Inject constructor(
             CameraMoveTrigger.LIST_ITEM -> {
                 _isContentUpdate = false
                 _isLeafScale = true
-                latestMoveTrigger = null
+                latestMoveTrigger = CameraMoveTrigger.DEFAULT
             }
             CameraMoveTrigger.BOTTOM_SHEET_UP->{ }
+            null -> {}
             else -> {
                 val clearList = listOf(
                     CameraMoveTrigger.GUIDE,
@@ -136,7 +137,7 @@ class MapViewModel @Inject constructor(
                     }
                 }
                 if(clearList.contains(latestMoveTrigger)){
-                    latestMoveTrigger = null
+                    latestMoveTrigger = CameraMoveTrigger.DEFAULT
                 }
             }
         }
@@ -333,7 +334,7 @@ class MapViewModel @Inject constructor(
     private fun initVariables(){
         _isContentUpdate = true
         _isLeafScale = false
-        latestMoveTrigger = null
+        latestMoveTrigger = CameraMoveTrigger.DEFAULT
     }
 
     private fun cancelIntent(intents: List<MapIntent> = emptyList()) {
@@ -379,11 +380,10 @@ class MapViewModel @Inject constructor(
                     cameraState.viewport
                 )
             }.getOrDefault(emptyList())
-            if(mapContentRepository.selectedCourseState.value == null) {
-                courseGroup
-                    .refreshCourse()
-                    .refreshList(cameraState)
-            }
+            courseGroup
+                .refreshCourse()
+                .refreshList(cameraState)
+
             _state.update { it.copy(isOverlayLoading = false) }
         }
     }
