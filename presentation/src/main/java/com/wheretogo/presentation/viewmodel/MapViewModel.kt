@@ -106,26 +106,30 @@ class MapViewModel @Inject constructor(
     private fun mapAsync() {}
 
     private suspend fun cameraUpdated(cameraState: CameraState) {
-        _state.update {
-            it.copy(
-                naverMapState = it.naverMapState.copy(
-                    latestCameraState = cameraState
-                )
-            )
+        val trigger= latestMoveTrigger
+
+        when(trigger){
+            null, CameraMoveTrigger.RESTART ->{}
+            else -> {
+                _state.update {
+                    it.copy(
+                        naverMapState = it.naverMapState.copy(
+                            latestCameraState = cameraState
+                        )
+                    )
+                }
+            }
         }
-        when (latestMoveTrigger) {
+
+        when (trigger) {
             CameraMoveTrigger.LIST_ITEM -> {
                 _isContentUpdate = false
                 _isLeafScale = true
-                latestMoveTrigger = null
             }
-            CameraMoveTrigger.BOTTOM_SHEET_UP->{ }
+            CameraMoveTrigger.BOTTOM_SHEET_UP,
+            CameraMoveTrigger.RESTART,
+            null -> {}
             else -> {
-                val clearList = listOf(
-                    CameraMoveTrigger.GUIDE,
-                    CameraMoveTrigger.RESTART,
-                    CameraMoveTrigger.BOTTOM_SHEET_DOWN
-                )
                 when{
                     _isContentUpdate -> {
                         refreshCourseByCameraState(cameraState, latestMoveTrigger)
@@ -135,10 +139,17 @@ class MapViewModel @Inject constructor(
                         releaseByZoom(cameraState.zoom)
                     }
                 }
-                if(clearList.contains(latestMoveTrigger)){
-                    latestMoveTrigger = null
-                }
             }
+        }
+
+        when(trigger){
+            CameraMoveTrigger.LIST_ITEM,
+            CameraMoveTrigger.RESTART,
+            CameraMoveTrigger.GUIDE,
+            CameraMoveTrigger.BOTTOM_SHEET_DOWN->{
+                latestMoveTrigger = CameraMoveTrigger.DEFAULT
+            }
+            else ->  {}
         }
     }
 
@@ -333,7 +344,7 @@ class MapViewModel @Inject constructor(
     private fun initVariables(){
         _isContentUpdate = true
         _isLeafScale = false
-        latestMoveTrigger = null
+        latestMoveTrigger = CameraMoveTrigger.DEFAULT
     }
 
     private fun cancelIntent(intents: List<MapIntent> = emptyList()) {
@@ -379,11 +390,11 @@ class MapViewModel @Inject constructor(
                     cameraState.viewport
                 )
             }.getOrDefault(emptyList())
-            if(mapContentRepository.selectedCourseState.value == null) {
-                courseGroup
-                    .refreshCourse()
-                    .refreshList(cameraState)
-            }
+            println("tst_ ${cameraState.latLng} ${cameraState.zoom} $latestMoveTrigger")
+            courseGroup
+                .refreshCourse()
+                .refreshList(cameraState)
+
             _state.update { it.copy(isOverlayLoading = false) }
         }
     }

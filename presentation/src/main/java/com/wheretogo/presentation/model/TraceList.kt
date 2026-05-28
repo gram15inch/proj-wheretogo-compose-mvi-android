@@ -42,12 +42,23 @@ class TraceList<T : Traceable>(
             true
         } else {
             val oldItem = list[idx]
-            if (oldItem.getFingerPrint() != item.getFingerPrint()) {
+            val old = oldItem.getFingerPrint()
+            val new = item.getFingerPrint()
+            if (old != new) {
                 if(oldItem is MapOverlay)
                     oldItem.reflectClear()
                 list[idx] = item
             }
             false
+        }
+    }
+
+    fun update(item: T) {
+        val id = keyOf(item)
+        val idx = indexById[id]
+        return if (idx == null) {
+        } else {
+            list[idx] = item
         }
     }
 
