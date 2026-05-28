@@ -55,7 +55,7 @@ class NaverMapOverlayProvider @Inject constructor(
     fun updateVisible(key: StringKey, isVisible: Boolean): Boolean {
         val overlay = _overlays.getOrNull(key.value)
         return if (overlay != null) {
-            overlay.replaceVisible(isVisible)
+            _overlays.update(overlay.replaceVisible(isVisible))
             true
         } else {
             false
@@ -65,7 +65,7 @@ class NaverMapOverlayProvider @Inject constructor(
     fun updateMarkerCaption(key: StringKey, caption: String): Boolean {
         val marker = _overlays.getOrNull(key.value)
         return if (marker != null && marker is AppMarker) {
-            _overlays.addOrReplace(marker.replaceCation(caption))
+            _overlays.update(marker.replaceCation(caption))
             true
         } else {
             false
@@ -75,7 +75,7 @@ class NaverMapOverlayProvider @Inject constructor(
     fun updateMarkerPosition(key: StringKey, latLng: LatLng): Boolean {
         val marker = _overlays.getOrNull(key.value)
         return if (marker != null && marker is AppMarker) {
-            _overlays.addOrReplace(marker.replacePosition(latLng))
+            _overlays.update(marker.replacePosition(latLng))
             true
         } else {
             false
