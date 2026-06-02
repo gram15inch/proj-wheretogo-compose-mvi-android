@@ -83,7 +83,7 @@ class BottomSheetTest {
             handler = driveHandler,
             observeSettingsUseCase = observeSettingsUseCase,
             getCommentForCheckPointUseCase = mockk(),
-            getImageForPopupUseCase = mockk(),
+            getImageUseCase = mockk(),
             addCheckpointToCourseUseCase = addCheckpointToCourseUseCase,
             addCommentToCheckPointUseCase = mockk(),
             removeCourseUseCase = removeCourseUseCase,
@@ -350,7 +350,7 @@ class BottomSheetTest {
             // Assert: 로딩 표시
             state.awaitItem().run {
                 bottomSheetState.checkPointAddState.let {
-                    assertThat(it.isLoading).isEqualTo(true)
+                    assertThat(it.isButtonLoading).isEqualTo(true)
                 }
             }
             // Assert: 체크포인트 마커 추가

@@ -15,7 +15,7 @@ import com.wheretogo.domain.usecase.comment.RemoveCommentToCheckPointUseCase
 import com.wheretogo.domain.repository.DefaultMapId
 import com.wheretogo.domain.usecase.app.DriveTutorialUseCase
 import com.wheretogo.domain.usecase.report.ReportContentUseCase
-import com.wheretogo.domain.usecase.util.GetImageForPopupUseCase
+import com.wheretogo.domain.usecase.util.GetImageUseCase
 import com.wheretogo.domain.usecase.util.UpdateLikeUseCase
 import com.wheretogo.presentation.CommentType
 import com.wheretogo.presentation.DriveFloatingVisibleMode
@@ -45,7 +45,7 @@ class PopUpTest {
 
     private val initState = DriveScreenState(isObserveSetting = false)
     private val observeSettingsUseCase = mockk<ObserveSettingsUseCase>()
-    private val getImageForPopupUseCase = mockk<GetImageForPopupUseCase>()
+    private val getImageUseCase = mockk<GetImageUseCase>()
     private val getCommentForCheckPointUseCase = mockk<GetCommentForCheckPointUseCase>()
     private val removeCommentToCheckPointUseCase = mockk<RemoveCommentToCheckPointUseCase>()
     private val reportContentUseCase = mockk<ReportContentUseCase>()
@@ -67,7 +67,7 @@ class PopUpTest {
             handler = mockk(),
             observeSettingsUseCase = observeSettingsUseCase,
             getCommentForCheckPointUseCase = getCommentForCheckPointUseCase,
-            getImageForPopupUseCase = getImageForPopupUseCase,
+            getImageUseCase = getImageUseCase,
             addCheckpointToCourseUseCase = mockk(),
             addCommentToCheckPointUseCase = mockk(),
             removeCourseUseCase = mockk(),
@@ -130,7 +130,7 @@ class PopUpTest {
         val viewModel =
             createViewModel(StandardTestDispatcher(testScheduler), showPopupImageAndCommentState)
 
-        coEvery { getImageForPopupUseCase(slideItem1.imageId!!) } returns item1Url
+        coEvery { getImageUseCase(slideItem1.imageId!!) } returns item1Url
         coEvery { getCommentForCheckPointUseCase(slideItem1.contentId!!) } returns Result.success(emptyList())
 
         assertFlows(viewModel.driveScreenState, viewModel.driveEvent) {

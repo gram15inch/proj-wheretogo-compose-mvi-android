@@ -1,5 +1,5 @@
 package com.wheretogo.domain.usecase.util
 
-interface GetImageForPopupUseCase {
+interface GetImageUseCase {
     suspend operator fun invoke(imageId: String): String?
 }

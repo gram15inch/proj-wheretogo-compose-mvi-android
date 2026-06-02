@@ -71,7 +71,7 @@ class FloatingButtonTest {
             handler = mockk(),
             observeSettingsUseCase = observeSettingsUseCase,
             getCommentForCheckPointUseCase = getCommentForCheckPointUseCase,
-            getImageForPopupUseCase = mockk(),
+            getImageUseCase = mockk(),
             addCheckpointToCourseUseCase = mockk(),
             addCommentToCheckPointUseCase = mockk(),
             removeCourseUseCase = mockk(),

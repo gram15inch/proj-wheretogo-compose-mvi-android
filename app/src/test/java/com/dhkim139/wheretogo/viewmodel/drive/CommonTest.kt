@@ -6,8 +6,6 @@ import com.google.common.truth.Truth.assertThat
 import com.wheretogo.data.repositoryimpl.MapContentRepositoryImpl
 import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.model.app.Settings
-import com.wheretogo.domain.model.course.Course
-import com.wheretogo.domain.repository.MapContentRepository
 import com.wheretogo.domain.usecase.app.DriveTutorialUseCase
 import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
 import com.wheretogo.presentation.AppEvent
@@ -24,7 +22,6 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -59,7 +56,7 @@ class CommonTest {
             handler = mockk(),
             observeSettingsUseCase = observeSettingsUseCase,
             getCommentForCheckPointUseCase = mockk(),
-            getImageForPopupUseCase = mockk(),
+            getImageUseCase = mockk(),
             addCheckpointToCourseUseCase = mockk(),
             addCommentToCheckPointUseCase = mockk(),
             removeCourseUseCase = mockk(),
