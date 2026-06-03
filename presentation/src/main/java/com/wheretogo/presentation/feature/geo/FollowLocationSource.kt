@@ -3,14 +3,19 @@ package com.wheretogo.presentation.feature.geo
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.location.Location
+import com.google.android.gms.location.LocationServices
 import com.naver.maps.map.LocationSource
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.util.FusedLocationSource
-import com.wheretogo.presentation.feature.getLocationWithPermission
+import com.wheretogo.presentation.AppPermission
+import com.wheretogo.presentation.feature.requestPermission
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withTimeout
 import java.lang.ref.WeakReference
 
 class FollowLocationSource(val context: Context, val modeCheck: () -> LocationTrackingMode) :
@@ -40,5 +45,15 @@ class FollowLocationSource(val context: Context, val modeCheck: () -> LocationTr
     override fun deactivate() {
         job?.cancel()
         job = null
+    }
+
+    @SuppressLint("MissingPermission")
+    private suspend fun getLocationWithPermission(context: Context): Location? {
+        if (!requestPermission(context, AppPermission.LOCATION))
+            return null
+        return withTimeout(10000){
+            LocationServices.getFusedLocationProviderClient(context).lastLocation.await()
+        }
+
     }
 }
