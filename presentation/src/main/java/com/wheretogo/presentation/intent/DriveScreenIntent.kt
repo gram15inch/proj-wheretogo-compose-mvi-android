@@ -4,11 +4,11 @@ import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.report.ReportReason
 import com.wheretogo.domain.model.util.ImageInfo
-import com.wheretogo.presentation.AppEvent
 import com.wheretogo.presentation.AppLifecycle
 import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.SheetVisibleMode
 import com.wheretogo.domain.model.course.CourseDirectionItem
+import com.wheretogo.presentation.feature.EventResult
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.model.TypeEditText
 import com.wheretogo.presentation.state.CommentState.CommentItemState
@@ -59,7 +59,7 @@ sealed class DriveScreenIntent {
 
     // 공통
     data class LifecycleChange(val event: AppLifecycle) : DriveScreenIntent()
-    data class EventReceive(val event: AppEvent, val result: Boolean) : DriveScreenIntent()
+    data class EventReceive(val result: EventResult) : DriveScreenIntent()
     data object BlurClick : DriveScreenIntent()
 
     // 디버그

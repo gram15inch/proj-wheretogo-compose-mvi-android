@@ -65,6 +65,7 @@ import com.wheretogo.presentation.feature.executeActionWithUpdateUi
 import com.wheretogo.presentation.feature.guide.toStepState
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.domain.model.course.CourseDirectionItem
+import com.wheretogo.presentation.feature.EventResult
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.model.TypeEditText
 import com.wheretogo.presentation.state.BottomSheetState
@@ -169,7 +170,7 @@ class DriveViewModel @Inject constructor(
 
                 //공통
                 is DriveScreenIntent.LifecycleChange -> lifecycleChange(intent.event)
-                is DriveScreenIntent.EventReceive -> eventReceive(intent.event, intent.result)
+                is DriveScreenIntent.EventReceive -> eventReceive(intent.result)
                 is DriveScreenIntent.BlurClick -> blurClick()
 
                 //가이드
@@ -1118,10 +1119,10 @@ class DriveViewModel @Inject constructor(
         }
     }
 
-    private suspend fun eventReceive(event: AppEvent, result: Boolean) {
-        when (event) {
+    private suspend fun eventReceive(result: EventResult) {
+        when (result.event) {
             AppEvent.SignInScreen -> {
-                if (result) {
+                if (result.isSuccess) {
                     clearScreen()
                 }
             }

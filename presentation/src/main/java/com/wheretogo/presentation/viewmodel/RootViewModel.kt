@@ -12,6 +12,7 @@ import com.wheretogo.domain.usecase.user.UserCheckUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
 import com.wheretogo.domain.usecase.util.ClearExpireCacheUseCase
 import com.wheretogo.presentation.AppEvent
+import com.wheretogo.presentation.feature.EventResult
 import com.wheretogo.presentation.state.RootScreenState
 import com.wheretogo.presentation.toAppError
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -86,8 +87,8 @@ class RootViewModel @Inject constructor(
         }
     }
 
-    fun eventReceive(event: AppEvent, result: Boolean){
-        when(event){
+    fun eventReceive(result: EventResult){
+        when(result.event){
             else -> {}
         }
     }

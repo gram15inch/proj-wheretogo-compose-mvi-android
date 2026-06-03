@@ -108,7 +108,7 @@ fun DriveScreen(
     )
 
     AppEventReceiveEffect(
-        onReceive = {event, bool ->  viewModel.handleIntent(DriveScreenIntent.EventReceive(event,bool)) }
+        onReceive = {viewModel.handleIntent(DriveScreenIntent.EventReceive(it)) }
     )
 
     BackHandler {

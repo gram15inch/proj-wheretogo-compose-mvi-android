@@ -16,8 +16,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 
+data class EventResult(
+    val event: AppEvent,
+    val isSuccess: Boolean,
+    val data: Any? = null
+)
+
 object EventBus {
-    private val _receiveFlow = MutableSharedFlow<Pair<AppEvent, Boolean>>()
+    private val _receiveFlow = MutableSharedFlow<EventResult>()
     val receiveFlow = _receiveFlow.asSharedFlow()
     private val _sendFlow = MutableSharedFlow<AppEvent>()
     val sendFlow = _sendFlow.asSharedFlow()
@@ -33,11 +39,11 @@ object EventBus {
             is AppEvent.Permission ->{
                  withTimeoutOrNull(10 * 1000L) {
                     val result = receiveFlow
-                        .filter { it.first == event }
+                        .filter { it.event == event }
                         .first()
-                    return@withTimeoutOrNull result.second
+                    return@withTimeoutOrNull result.isSuccess
                 } ?: run {
-                     _receiveFlow.emit(Pair(event, false))
+                     _receiveFlow.emit(EventResult(event,false))
                      false
                  }
             }
@@ -46,7 +52,11 @@ object EventBus {
     }
 
     suspend fun result(event: AppEvent, bool: Boolean) {
-        _receiveFlow.emit(Pair(event, bool))
+        _receiveFlow.emit(EventResult(event, bool))
+    }
+
+    suspend fun resultPermission(event: AppEvent, result:Any) {
+        _receiveFlow.emit(EventResult(event, result!=false, result))
     }
 }
 

@@ -97,9 +97,9 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
             }
         }
 
-        AppEventReceiveEffect {event, result ->
-            viewModel.eventReceive(event, result)
-            when(event){
+        AppEventReceiveEffect {
+            viewModel.eventReceive(it)
+            when(it.event){
                 is AppEvent.SignInScreen ->{
                     viewModel.setSignInScreenVisible(false)
                 }
