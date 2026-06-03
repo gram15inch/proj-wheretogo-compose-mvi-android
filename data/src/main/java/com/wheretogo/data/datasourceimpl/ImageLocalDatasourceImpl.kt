@@ -14,12 +14,15 @@ import com.wheretogo.domain.feature.fit
 import com.wheretogo.domain.feature.rotate
 import com.wheretogo.domain.feature.scale
 import com.wheretogo.domain.feature.scaleCrop
+import com.wheretogo.domain.usecase.util.ExifData
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Locale
 import javax.inject.Inject
 
 class ImageLocalDatasourceImpl @Inject constructor(
@@ -134,6 +137,55 @@ class ImageLocalDatasourceImpl @Inject constructor(
                     }
                 }.awaitAll()
             }
+        }
+    }
+
+    override suspend fun getExif(imageUriString: String): Result<ExifData> {
+        return runCatching {
+            context.contentResolver.openInputStream(imageUriString.toUri())?.use { stream ->
+                val exif = ExifInterface(stream)
+
+                val latlng = exif.latLong
+                val hasLatLong = latlng != null
+                val altitude = if (exif.hasAttribute(ExifInterface.TAG_GPS_ALTITUDE)) {
+                    exif.getAltitude(0.0)
+                } else null
+
+                val dateTimeStr = exif.getAttribute(ExifInterface.TAG_DATETIME_ORIGINAL)
+                    ?: exif.getAttribute(ExifInterface.TAG_DATETIME)
+                val timestamp = dateTimeStr?.let { parseExifDateTime(it) }
+
+                ExifData(
+                    latitude = if (hasLatLong) latlng[0] else null,
+                    longitude = if (hasLatLong) latlng[1] else null,
+                    altitude = altitude,
+                    dateTimeOriginal = dateTimeStr,
+                    timestampMillis = timestamp,
+                    make = exif.getAttribute(ExifInterface.TAG_MAKE),
+                    model = exif.getAttribute(ExifInterface.TAG_MODEL),
+                    orientation = exif.getAttributeInt(
+                        ExifInterface.TAG_ORIENTATION,
+                        ExifInterface.ORIENTATION_NORMAL
+                    ),
+                    imageWidth = exif.getAttributeInt(ExifInterface.TAG_IMAGE_WIDTH, 0)
+                        .takeIf { it > 0 },
+                    imageHeight = exif.getAttributeInt(ExifInterface.TAG_IMAGE_LENGTH, 0)
+                        .takeIf { it > 0 },
+                    fNumber = exif.getAttribute(ExifInterface.TAG_F_NUMBER),
+                    exposureTime = exif.getAttribute(ExifInterface.TAG_EXPOSURE_TIME),
+                    iso = exif.getAttribute(ExifInterface.TAG_PHOTOGRAPHIC_SENSITIVITY),
+                    focalLength = exif.getAttribute(ExifInterface.TAG_FOCAL_LENGTH)
+                )
+            }!!
+        }
+    }
+
+    private fun parseExifDateTime(dateTime: String): Long? {
+        return try {
+            val format = SimpleDateFormat("yyyy:MM:dd HH:mm:ss", Locale.KOREA)
+            format.parse(dateTime)?.time
+        } catch (e: Exception) {
+            null
         }
     }
 

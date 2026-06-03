@@ -11,6 +11,7 @@ import com.wheretogo.domain.ImageSize
 import com.wheretogo.domain.feature.flatMap
 import com.wheretogo.domain.model.util.ImageUris
 import com.wheretogo.domain.repository.ImageRepository
+import com.wheretogo.domain.usecase.util.ExifData
 import de.huxhorn.sulky.ulid.ULID
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -69,6 +70,10 @@ class ImageRepositoryImpl @Inject constructor(
                 }
             }.awaitAll().flatMap()
         }.mapCatching { Unit }.mapDataError().mapDomainError()
+    }
+
+    override suspend fun getExif(imageUriString: String): Result<ExifData> {
+        return imageLocalDatasource.getExif(imageUriString)
     }
 
     private suspend fun uploadAndSaveImage(imageId: String, size: ImageSize, bytes: ByteArray): Pair<ImageSize, String> {
