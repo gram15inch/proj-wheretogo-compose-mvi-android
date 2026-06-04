@@ -1,5 +1,6 @@
 package com.wheretogo.presentation.feature
 
+import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -16,38 +17,57 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 suspend fun requestPermission(context: Context, permission: AppPermission): Boolean {
-    val checkPermission = ContextCompat.checkSelfPermission(context, permission.name)
-    val isDenied = checkPermission == PackageManager.PERMISSION_DENIED
+    val isDenied = checkFalseOrData(context, permission) == false
 
     if (isDenied) {
         val isRejected = withContext(Dispatchers.IO) {
             !EventBus.sendWithResult(AppEvent.Permission(permission))
         }
-
         if (isRejected) {
             val isNeedGuide = !ActivityCompat.shouldShowRequestPermissionRationale(
                 context as Activity,
-                permission.name
+                permission.names.firstOrNull()?:return false
             )
 
             if (isNeedGuide) {
-                val intentUri = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                    data = Uri.fromParts("package", context.packageName, null)
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                }.toUri(Intent.URI_INTENT_SCHEME)
+                when(permission){
+                    else -> {
+                        val intentUri = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                            data = Uri.fromParts("package", context.packageName, null)
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }.toUri(Intent.URI_INTENT_SCHEME)
 
-                EventBus.send(
-                    AppEvent.SnackBar(
-                        EventMsg(
-                            strRes = R.string.grant_location_permission,
-                            labelRes = R.string.setting_open,
-                            uri = intentUri
+                        EventBus.send(
+                            AppEvent.SnackBar(
+                                EventMsg(
+                                    strRes = R.string.grant_location_permission,
+                                    labelRes = R.string.setting_open,
+                                    uri = intentUri
+                                )
+                            )
                         )
-                    )
-                )
+                    }
+                }
+
             }
             return false
         }
     }
     return true
+}
+
+fun checkFalseOrData(context: Context, appPermission: AppPermission): Any {
+    if(appPermission.names.isEmpty())
+        return true
+    val granted = { p: String ->
+        ContextCompat.checkSelfPermission(context, p) == PackageManager.PERMISSION_GRANTED
+    }
+    return when (appPermission) {
+        else -> {
+            appPermission.names.forEach {
+                if(!granted(it)) return false
+            }
+            true
+        }
+    }
 }

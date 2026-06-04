@@ -14,6 +14,7 @@ import com.wheretogo.presentation.AppEvent
 import com.wheretogo.presentation.AppLifecycle
 import com.wheretogo.presentation.DriveVisibleMode
 import com.wheretogo.presentation.event.DriveEvent
+import com.wheretogo.presentation.feature.EventResult
 import com.wheretogo.presentation.feature.ads.AdService
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.model.AdItem
@@ -86,7 +87,7 @@ class CommonTest {
             assertThat(state.awaitItem().stateMode).isEqualTo(DriveVisibleMode.SearchBarExpand)
 
             // Act: 앱 이벤트(로그인 성공)수신
-            viewModel.handleIntent(DriveScreenIntent.EventReceive(AppEvent.SignInScreen, true))
+            viewModel.handleIntent(DriveScreenIntent.EventReceive(EventResult(AppEvent.SignInScreen, true)))
 
             // Assert: 화면 정리
             assert(event.awaitItem() is DriveEvent.ClearMap)

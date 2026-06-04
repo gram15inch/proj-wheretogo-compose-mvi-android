@@ -1,6 +1,7 @@
 package com.wheretogo.presentation
 
-import android.Manifest
+import android.Manifest.permission.ACCESS_FINE_LOCATION
+import android.os.Build
 import androidx.annotation.StringRes
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.GetCredentialCustomException
@@ -9,17 +10,17 @@ import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.app.LegalNoticeActivity
 import com.naver.maps.map.app.OpenSourceLicenseActivity
-import com.wheretogo.domain.SignErrorReason
 import com.wheretogo.domain.DomainError
 import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.MarkerType
 import com.wheretogo.domain.PathType
 import com.wheretogo.domain.RouteAttrItem
+import com.wheretogo.domain.SignErrorReason
 import com.wheretogo.domain.WarningReason
 import com.wheretogo.domain.ZOOM
+import com.wheretogo.domain.model.map.CameraState
 import com.wheretogo.domain.model.util.Viewport
 import com.wheretogo.presentation.model.EventMsg
-import com.wheretogo.domain.model.map.CameraState
 import timber.log.Timber
 import javax.inject.Qualifier
 
@@ -101,14 +102,25 @@ enum class AdMinSize(val widthDp: Int, val heightDp: Int) {
     Card(300, 600)
 }
 
-sealed class AppPermission(val name: String) {
-    data object LOCATION : AppPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-    data object Unknown : AppPermission("Unknown")
+sealed class AppPermission(val names: List<String>) {
+    data object LOCATION : AppPermission(run {
+        val mutable = mutableListOf<String>()
+        val api = Build.VERSION.SDK_INT
+        if(api >= 1) mutable.add(ACCESS_FINE_LOCATION)
+        mutable.toList()
+    })
+
+    data object UNKNOWN : AppPermission(listOf("UNKNOWN"))
+
+    fun isEqual(other: Set<String>): Boolean {
+        return names.toSet().hashCode() == other.toSet().hashCode()
+    }
+
     companion object {
-        fun parse(permission: String): AppPermission {
-            return when (permission) {
-                LOCATION.name -> LOCATION
-                else -> Unknown
+        fun valueOf(names: Set<String>): AppPermission {
+            return when {
+                LOCATION.isEqual(names) -> LOCATION
+                else -> UNKNOWN
             }
         }
     }
