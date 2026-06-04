@@ -1,6 +1,5 @@
 package com.wheretogo.presentation.composable
 
-import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.slideInHorizontally
@@ -21,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.zIndex
-import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -35,6 +33,7 @@ import com.wheretogo.presentation.composable.content.SlideAnimation
 import com.wheretogo.presentation.composable.effect.AppEventReceiveEffect
 import com.wheretogo.presentation.composable.effect.AppEventSendEffect
 import com.wheretogo.presentation.feature.EventBus
+import com.wheretogo.presentation.feature.checkFalseOrData
 import com.wheretogo.presentation.feature.openUri
 import com.wheretogo.presentation.feature.show
 import com.wheretogo.presentation.theme.WhereTogoTheme
@@ -53,10 +52,9 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
             ActivityResultContracts.RequestMultiplePermissions()
         ) { permissions ->
             coroutine.launch {
-                permissions.forEach { (permission, bool) ->
-                    val result = AppPermission.parse(permission)
-                    EventBus.result(AppEvent.Permission(result), bool)
-                }
+                val permission = AppPermission.valueOf(permissions.keys.toSet())
+                val result = checkFalseOrData(context, permission)
+                EventBus.resultPermission(AppEvent.Permission(permission), result)
             }
         }
 
@@ -82,13 +80,9 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                     }
 
                     is AppEvent.Permission -> {
-                        val isDenied = ContextCompat
-                            .checkSelfPermission(
-                                context,
-                                it.permission.name
-                            ) == PackageManager.PERMISSION_DENIED
+                        val isDenied = checkFalseOrData(context,it.permission) == false
                         if (isDenied)
-                            multiplePermissionsLauncher.launch(arrayOf(it.permission.name))
+                            multiplePermissionsLauncher.launch(it.permission.names.toTypedArray())
                     }
                     is AppEvent.SignInScreen -> {
                         viewModel.setSignInScreenVisible(true)
@@ -97,9 +91,9 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
             }
         }
 
-        AppEventReceiveEffect {event, result ->
-            viewModel.eventReceive(event, result)
-            when(event){
+        AppEventReceiveEffect {
+            viewModel.eventReceive(it)
+            when(it.event){
                 is AppEvent.SignInScreen ->{
                     viewModel.setSignInScreenVisible(false)
                 }

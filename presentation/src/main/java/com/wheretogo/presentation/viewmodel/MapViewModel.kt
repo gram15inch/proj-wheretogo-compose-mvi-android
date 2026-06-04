@@ -390,7 +390,6 @@ class MapViewModel @Inject constructor(
                     cameraState.viewport
                 )
             }.getOrDefault(emptyList())
-            println("tst_ ${cameraState.latLng} ${cameraState.zoom} $latestMoveTrigger")
             courseGroup
                 .refreshCourse()
                 .refreshList(cameraState)

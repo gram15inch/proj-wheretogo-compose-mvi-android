@@ -99,7 +99,7 @@ fun SettingScreen(navController: NavController, viewModel: SettingViewModel = hi
     )
 
     AppEventReceiveEffect(
-        onReceive = { event, result -> viewModel.handleIntent(SettingIntent.EventReceive(event, result)) }
+        onReceive = { viewModel.handleIntent(SettingIntent.EventReceive(it)) }
     )
 }
 

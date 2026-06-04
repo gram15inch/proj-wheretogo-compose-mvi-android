@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import com.wheretogo.presentation.AppEvent
 import com.wheretogo.presentation.feature.EventBus
+import com.wheretogo.presentation.feature.EventResult
 
 @Composable
 fun AppEventSendEffect(onSend: (AppEvent)-> Unit){
@@ -15,10 +16,10 @@ fun AppEventSendEffect(onSend: (AppEvent)-> Unit){
 }
 
 @Composable
-fun AppEventReceiveEffect(onReceive: (AppEvent, Boolean)-> Unit){
+fun AppEventReceiveEffect(onReceive: (EventResult)-> Unit){
     LaunchedEffect(Unit) {
-        EventBus.receiveFlow.collect {(event,bool)->
-            onReceive(event, bool)
+        EventBus.receiveFlow.collect {
+            onReceive(it)
         }
     }
 }

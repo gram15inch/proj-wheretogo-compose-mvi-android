@@ -12,6 +12,7 @@ import com.wheretogo.presentation.AppEvent
 import com.wheretogo.presentation.AppLifecycle
 import com.wheretogo.presentation.MainDispatcher
 import com.wheretogo.presentation.SettingInfoType
+import com.wheretogo.presentation.feature.EventResult
 import com.wheretogo.presentation.feature.ads.AdService
 import com.wheretogo.presentation.intent.SettingIntent
 import com.wheretogo.presentation.state.SettingScreenState
@@ -57,7 +58,7 @@ class SettingViewModel @Inject constructor(
 
                 //공통
                 is SettingIntent.LifecycleChange -> lifecycleChange(intent.event)
-                is SettingIntent.EventReceive -> eventReceive(intent.event, intent.result)
+                is SettingIntent.EventReceive -> eventReceive(intent.result)
             }
         }
     }
@@ -143,8 +144,8 @@ class SettingViewModel @Inject constructor(
         }
     }
 
-    private fun eventReceive(event: AppEvent, result: Boolean) {
-        when (event) {
+    private fun eventReceive(result: EventResult) {
+        when (result.event) {
             AppEvent.SignInScreen -> {
                 _isCoverScreen = false
                 viewModelScope.launch(Dispatchers.IO){ loadAd() }
