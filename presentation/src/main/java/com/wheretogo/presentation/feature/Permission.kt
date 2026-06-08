@@ -17,44 +17,55 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 suspend fun requestPermission(context: Context, permission: AppPermission): Boolean {
-    val isDenied = checkFalseOrData(context, permission) == false
+    val check = checkFalseOrData(context, permission)
+    val isRetry = when (check) {
+        MediaAccess.PARTIAL -> true
+        false -> true
+        else -> false
+    }
 
-    if (isDenied) {
-        val isRejected = withContext(Dispatchers.IO) {
+    var isDenied = check == false
+
+    if(isRetry){
+        isDenied = withContext(Dispatchers.IO) {
             !EventBus.sendWithResult(AppEvent.Permission(permission))
         }
-        if (isRejected) {
-            val isNeedGuide = !ActivityCompat.shouldShowRequestPermissionRationale(
-                context as Activity,
-                permission.names.firstOrNull()?:return false
-            )
+    }
 
-            if (isNeedGuide) {
-                when(permission){
-                    else -> {
-                        val intentUri = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                            data = Uri.fromParts("package", context.packageName, null)
-                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        }.toUri(Intent.URI_INTENT_SCHEME)
+    if (isDenied) {
+        val isNeedGuide = !ActivityCompat.shouldShowRequestPermissionRationale(
+            context as Activity,
+            permission.names.firstOrNull()?:return false
+        )
 
-                        EventBus.send(
-                            AppEvent.SnackBar(
-                                EventMsg(
-                                    strRes = R.string.grant_location_permission,
-                                    labelRes = R.string.setting_open,
-                                    uri = intentUri
-                                )
-                            )
-                        )
-                    }
-                }
-
+        if (isNeedGuide) {
+            val strRes= when(permission){
+                AppPermission.LOCATION -> R.string.grant_location_permission
+                AppPermission.MEDIA -> R.string.grant_picture_permission
+                else -> R.string.grant_permission
             }
-            return false
+
+            val intentUri = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.fromParts("package", context.packageName, null)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }.toUri(Intent.URI_INTENT_SCHEME)
+
+            EventBus.send(
+                AppEvent.SnackBar(
+                    EventMsg(
+                        strRes = strRes,
+                        labelRes = R.string.setting_open,
+                        uri = intentUri
+                    )
+                )
+            )
         }
+        return false
     }
     return true
 }
+
+enum class MediaAccess { FULL, PARTIAL }
 
 fun checkFalseOrData(context: Context, appPermission: AppPermission): Any {
     if(appPermission.names.isEmpty())
@@ -63,6 +74,15 @@ fun checkFalseOrData(context: Context, appPermission: AppPermission): Any {
         ContextCompat.checkSelfPermission(context, p) == PackageManager.PERMISSION_GRANTED
     }
     return when (appPermission) {
+        AppPermission.MEDIA -> {
+            when {
+                granted(Manifest.permission.READ_MEDIA_IMAGES) -> MediaAccess.FULL
+                granted(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED) -> MediaAccess.PARTIAL
+                granted(Manifest.permission.READ_EXTERNAL_STORAGE) -> MediaAccess.FULL
+                else -> false
+            }
+        }
+
         else -> {
             appPermission.names.forEach {
                 if(!granted(it)) return false
