@@ -137,6 +137,7 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                 val home = AppScreen.Home.toString()
                 val drive = AppScreen.Drive.toString()
                 val courseAdd = AppScreen.CourseAdd.toString()
+                val gallery = AppScreen.Gallery.toString()
                 val setting = AppScreen.Setting.toString()
 
                 NavHost(navController = navController, startDestination = home) {
@@ -155,6 +156,12 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                     ) {
                          CourseAddScreen()
                      }
+                    composable(gallery,
+                        enterTransition = { slideInHorizontally(initialOffsetX = { it }) },
+                        exitTransition = { slideOutHorizontally(targetOffsetX = { it }) }
+                    ) {
+                        GalleryScreen()
+                    }
                     composable(setting,
                         enterTransition = { slideInHorizontally(initialOffsetX = { it }) },
                         exitTransition = { slideOutHorizontally(targetOffsetX = { it }) }

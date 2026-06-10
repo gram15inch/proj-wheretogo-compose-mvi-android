@@ -27,6 +27,14 @@ class HomeHandlerImpl() : HomeHandler {
                 )
             )
 
+            HomeEvent.GALLERY_NAVIGATE -> EventBus.send(
+                AppEvent.Navigation(
+                    AppScreen.Home,
+                    AppScreen.Gallery,
+                    false
+                )
+            )
+
             HomeEvent.GUIDE_START -> EventBus.send(AppEvent.SnackBar(EventMsg(R.string.tutorial_start)))
             HomeEvent.GUIDE_STOP -> EventBus.send(AppEvent.SnackBar(EventMsg(R.string.tutorial_stop)))
         }

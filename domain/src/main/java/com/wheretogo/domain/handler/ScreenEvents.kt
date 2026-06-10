@@ -6,7 +6,7 @@ enum class DriveMsgEvent {
 }
 
 enum class HomeEvent {
-    DRIVE_NAVIGATE, COURSE_ADD_NAVIGATE, GUIDE_START, GUIDE_STOP
+    DRIVE_NAVIGATE, COURSE_ADD_NAVIGATE, GALLERY_NAVIGATE, GUIDE_START, GUIDE_STOP
 }
 
 enum class CourseAddEvent {

@@ -129,7 +129,7 @@ fun Body(homeBodyBtnHighlight: HomeBodyBtnHighlight, onClick: (HomeBodyBtn) -> U
     val isActive = homeBodyBtnHighlight == HomeBodyBtnHighlight.NONE
     Column(verticalArrangement = Arrangement.spacedBy(gridGap)) {
         GridButton(
-            3, 2,
+            row = 3,
             isHighlight = homeBodyBtnHighlight == HomeBodyBtnHighlight.DRIVE,
             isActive = isActive,
             click = { onClick(HomeBodyBtn.DRIVE) }
@@ -142,22 +142,41 @@ fun Body(homeBodyBtnHighlight: HomeBodyBtnHighlight, onClick: (HomeBodyBtn) -> U
             )
         }
 
-        GridButton(
-            3, 2,
-            isHighlight = homeBodyBtnHighlight == HomeBodyBtnHighlight.COURSE_ADD,
-            isActive = isActive,
-            click = { onClick(HomeBodyBtn.COURSE_ADD) }
-        ) {
-            ContentTextImage(
-                stringResource(R.string.course_add_main),
-                stringResource(R.string.course_add_sub),
-                0.dp,
-                null
-            )
+
+        Row(horizontalArrangement = Arrangement.spacedBy(gridGap)){
+            GridButton(
+                modifier = Modifier.weight(1f),
+                row = 3,
+                isHighlight = homeBodyBtnHighlight == HomeBodyBtnHighlight.COURSE_ADD,
+                isActive = isActive,
+                click = { onClick(HomeBodyBtn.COURSE_ADD) }
+            ) {
+                ContentTextImage(
+                    stringResource(R.string.course_add_main),
+                    stringResource(R.string.course_add_sub),
+                    0.dp,
+                    null
+                )
+            }
+            GridButton(
+                modifier = Modifier.weight(1f),
+                row = 3,
+                isHighlight = homeBodyBtnHighlight == HomeBodyBtnHighlight.COURSE_ADD,
+                isActive = isActive,
+                click = { onClick(HomeBodyBtn.GALLERY) }
+            ) {
+                ContentTextImage(
+                    stringResource(R.string.gallery_main),
+                    stringResource(R.string.gallery_sub),
+                    0.dp,
+                    null
+                )
+            }
+
         }
 
         GridButton(
-            2, 2,
+            row = 2,
             isHighlight = homeBodyBtnHighlight == HomeBodyBtnHighlight.GUIDE,
             isActive = isActive,
             click = {
@@ -170,7 +189,7 @@ fun Body(homeBodyBtnHighlight: HomeBodyBtnHighlight, onClick: (HomeBodyBtn) -> U
             )
         }
         GridButton(
-            5, 2,
+            row = 5,
             isHighlight = homeBodyBtnHighlight == HomeBodyBtnHighlight.CREATER_REQUEST,
             isActive = isActive,
             click = {
@@ -200,7 +219,7 @@ data class BodyContent(
 @Composable
 fun GridButton(
     row: Int,
-    col: Int,
+    modifier: Modifier = Modifier,
     isHighlight: Boolean = false,
     isActive: Boolean = true,
     click: () -> Unit,
@@ -208,7 +227,7 @@ fun GridButton(
 ) {
     val isConsume = !isActive && !isHighlight
     Surface(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(row * 40.dp)
             .clip(shape = RoundedCornerShape(10.dp))
@@ -218,7 +237,7 @@ fun GridButton(
         color = Palette.White,
     ) {
         content()
-        if(isConsume)
+        if (isConsume)
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -331,9 +350,8 @@ fun BodyPreview() {
 fun GridButtonPreview() {
     Surface(modifier = Modifier.width(400.dp)) {
         GridButton(
-            2,
-            2,
-            false,
+            row = 2,
+            isHighlight = false,
             isActive = true,
             content = { ContentTextImage("메인", "서브", 0.dp, R.raw.lt_togeter) },
             click = {})
@@ -344,7 +362,9 @@ fun GridButtonPreview() {
 @Composable
 fun GrindBannerPreview() {
     Surface(modifier = Modifier.width(400.dp)) {
-        GridButton(4, 2, content = {
+        GridButton(
+            row = 4,
+            content = {
             ContentBanner(
                 stringResource(R.string.banner_main),
                 stringResource(R.string.banner_sub)

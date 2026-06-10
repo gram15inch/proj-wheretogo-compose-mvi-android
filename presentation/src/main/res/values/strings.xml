@@ -15,6 +15,8 @@
     <string name="ranking_sub">지금 떠오르는 코스는?</string>
     <string name="course_add_main">코스등록</string>
     <string name="course_add_sub">나만의 코스를 공유해요</string>
+    <string name="gallery_main">스팟 갤러리</string>
+    <string name="gallery_sub">순간을 기록해요</string>
     <string name="bookmark_main">즐겨찾기</string>
     <string name="bookmark_sub">나의 추억들</string>
     <string name="sports_main">스포츠</string>

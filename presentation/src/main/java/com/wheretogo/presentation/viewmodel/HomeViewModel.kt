@@ -57,6 +57,10 @@ class HomeViewModel @Inject constructor(
                 handler.handle(HomeEvent.COURSE_ADD_NAVIGATE)
             }
 
+            HomeBodyBtn.GALLERY -> {
+                handler.handle(HomeEvent.GALLERY_NAVIGATE)
+            }
+
             HomeBodyBtn.GUIDE -> {
                 if (_uiState.value.guideState.tutorialStep == DriveTutorialStep.SKIP) {
                     handler.handle(HomeEvent.GUIDE_START)
