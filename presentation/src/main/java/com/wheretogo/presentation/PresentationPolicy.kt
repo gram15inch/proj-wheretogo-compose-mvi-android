@@ -1,7 +1,6 @@
 package com.wheretogo.presentation
 
 import android.Manifest.permission.ACCESS_FINE_LOCATION
-import android.Manifest.permission.ACCESS_MEDIA_LOCATION
 import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.Manifest.permission.READ_MEDIA_IMAGES
 import android.Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED
@@ -108,11 +107,7 @@ enum class AdMinSize(val widthDp: Int, val heightDp: Int) {
 
 
 sealed class AppPermission(val names: List<String>) {
-    data object LOCATION : AppPermission(buildList {
-        val api = Build.VERSION.SDK_INT
-        if (api >= 1) add(ACCESS_FINE_LOCATION)
-    })
-
+    data object LOCATION : AppPermission(listOf(ACCESS_FINE_LOCATION))
     data object MEDIA : AppPermission(
         buildList {
             val api = Build.VERSION.SDK_INT

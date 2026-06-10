@@ -25,6 +25,7 @@ import com.wheretogo.domain.usecase.util.ClearExpireCacheUseCase
 import com.wheretogo.domain.usecase.util.CourseAddValidUseCase
 import com.wheretogo.domain.usecase.util.CreateRouteUseCase
 import com.wheretogo.domain.usecase.util.GetImageUseCase
+import com.wheretogo.domain.usecase.util.GetImagesPageUseCase
 import com.wheretogo.domain.usecase.util.GetLatLngFromAddressUseCase
 import com.wheretogo.domain.usecase.util.SearchKeywordUseCase
 import com.wheretogo.domain.usecase.util.UpdateLikeUseCase
@@ -53,6 +54,7 @@ import com.wheretogo.domain.usecaseimpl.util.ClearExpireCacheUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.util.CourseAddValidUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.util.CreateRouteUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.util.GetImageUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.util.GetImagesPageUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.util.GetLatLngFromAddressUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.util.SearchKeywordUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.util.UpdateLikeUseCaseImpl
@@ -151,6 +153,9 @@ abstract class UseCaseModule {
 
     @Binds
     abstract fun bindClearExpireCacheUseCase(useCaseImpl: ClearExpireCacheUseCaseImpl): ClearExpireCacheUseCase
+
+    @Binds
+    abstract fun bindGetImagesPageUseCase(useCaseImpl: GetImagesPageUseCaseImpl): GetImagesPageUseCase
 
 }
 

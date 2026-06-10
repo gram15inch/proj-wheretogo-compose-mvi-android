@@ -39,30 +39,34 @@ suspend fun requestPermission(context: Context, permission: AppPermission): Bool
         )
 
         if (isNeedGuide) {
-            val strRes= when(permission){
-                AppPermission.LOCATION -> R.string.grant_location_permission
-                AppPermission.MEDIA -> R.string.grant_picture_permission
-                else -> R.string.grant_permission
-            }
-
-            val intentUri = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                data = Uri.fromParts("package", context.packageName, null)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }.toUri(Intent.URI_INTENT_SCHEME)
-
-            EventBus.send(
-                AppEvent.SnackBar(
-                    EventMsg(
-                        strRes = strRes,
-                        labelRes = R.string.setting_open,
-                        uri = intentUri
-                    )
-                )
-            )
+            openSetting(context,permission)
         }
         return false
     }
     return true
+}
+
+suspend fun openSetting(context: Context, permission: AppPermission){
+    val strRes= when(permission){
+        AppPermission.LOCATION -> R.string.grant_location_permission
+        AppPermission.MEDIA -> R.string.grant_picture_permission
+        else -> R.string.grant_permission
+    }
+
+    val intentUri = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+        data = Uri.fromParts("package", context.packageName, null)
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }.toUri(Intent.URI_INTENT_SCHEME)
+
+    EventBus.send(
+        AppEvent.SnackBar(
+            EventMsg(
+                strRes = strRes,
+                labelRes = R.string.setting_open,
+                uri = intentUri
+            )
+        )
+    )
 }
 
 enum class MediaAccess { FULL, PARTIAL }

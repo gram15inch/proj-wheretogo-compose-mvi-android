@@ -16,6 +16,8 @@ room = "2.6.1"
 truth = "1.4.2"
 work = "2.9.1"
 androidx-test = "1.6.1"
+paging-common = "3.5.0"
+paging-compose = "3.5.0"
 
 # DI
 androidx-hilt = "1.2.0"
@@ -192,6 +194,8 @@ junit5-android-test-runner = { module = "de.mannodermaus.junit5:android-test-run
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines-test" }
 cash-turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 google-truth = { module = "com.google.truth:truth", version.ref = "truth" }
+androidx-paging-common = { group = "androidx.paging", name = "paging-common", version.ref = "paging-common" }
+androidx-paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging-compose" }
 
 
 [bundles]

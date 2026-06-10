@@ -190,4 +190,16 @@
     <string name="cool_down_error">🏝️더 좋은 여행 정보를 위해 잠깐만 기다려 주세요.\n %s분 뒤에 다시 등록할 수 있어요.</string>
 
     <string name="blank" />
+
+    // 사진 권한
+    <string name="show_photo_select">선택한 사진 표시중</string>
+    <string name="show_photo_select_desc">새로운 사진을 추가하려면 버튼을 클릭하세요.</string>
+    <string name="need_photo_permission">사진을 불러오려면 접근 권한이 필요합니다</string>
+    <string name="need_all_photo_permission">전체 사진을 보려면 설정에서 접근 권한을 허용하세요.</string>
+    <string name="need_permission">권한 요청</string>
+    <string name="more_add">더 추가</string>
+    <string name="photo_select">사진 선택</string>
+    <string name="selected_count">선택 완료 (%1$d개)</string>
+    <string name="button_selected">선택됨</string>
+    <string name="button_setting">설정</string>
 </resources>

@@ -1,6 +1,7 @@
 package com.wheretogo.data.datasource
 
 import com.wheretogo.domain.ImageSize
+import com.wheretogo.domain.model.util.MediaImage
 import com.wheretogo.domain.usecase.util.ExifData
 import java.io.File
 
@@ -21,5 +22,7 @@ interface ImageLocalDatasource {
         compressionQuality: Int = 80
     ): Result<List<Pair<ImageSize, ByteArray>>>
 
-    suspend fun getExif(imageUriString:String): Result<ExifData>
+    suspend fun getExif(imageUriString: String): Result<ExifData>
+
+    suspend fun getMediaImages(offset: Int, limit: Int): Result<List<MediaImage>>
 }

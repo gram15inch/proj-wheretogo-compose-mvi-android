@@ -1,10 +1,17 @@
 package com.wheretogo.data.datasourceimpl
 
+import android.content.ContentResolver
+import android.content.ContentUris
 import android.content.Context
+import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
 import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
+import androidx.core.os.bundleOf
 import androidx.exifinterface.media.ExifInterface
 import com.wheretogo.data.ImageFormat
 import com.wheretogo.data.datasource.ImageLocalDatasource
@@ -14,6 +21,7 @@ import com.wheretogo.domain.feature.fit
 import com.wheretogo.domain.feature.rotate
 import com.wheretogo.domain.feature.scale
 import com.wheretogo.domain.feature.scaleCrop
+import com.wheretogo.domain.model.util.MediaImage
 import com.wheretogo.domain.usecase.util.ExifData
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.async
@@ -31,6 +39,8 @@ class ImageLocalDatasourceImpl @Inject constructor(
     private val imageConfig: ImageConfig
 ) : ImageLocalDatasource {
     private val ext = imageConfig.format.ext
+    private val mediaUri: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+
     override suspend fun getImage(imageId: String, size: ImageSize): File {
         val localFile =
             File(
@@ -177,6 +187,41 @@ class ImageLocalDatasourceImpl @Inject constructor(
                     focalLength = exif.getAttribute(ExifInterface.TAG_FOCAL_LENGTH)
                 )
             }!!
+        }
+    }
+
+    override suspend fun getMediaImages(offset: Int, limit: Int): Result<List<MediaImage>> {
+        return runCatching {
+            queryImages(offset, limit)?.use { cursor ->
+                cursor.toMediaImages()
+            } ?: emptyList()
+        }
+    }
+
+    private fun queryImages(offset: Int, limit: Int): Cursor? {
+        val projection = arrayOf(MediaStore.Images.Media._ID)
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val args = bundleOf(
+                ContentResolver.QUERY_ARG_SORT_COLUMNS to arrayOf(MediaStore.Images.Media.DATE_ADDED),
+                ContentResolver.QUERY_ARG_SORT_DIRECTION to ContentResolver.QUERY_SORT_DIRECTION_DESCENDING,
+                ContentResolver.QUERY_ARG_LIMIT to limit,
+                ContentResolver.QUERY_ARG_OFFSET to offset,
+            )
+            context.contentResolver.query(mediaUri, projection, args, null)
+        } else {
+            val sortOrder = "${MediaStore.Images.Media.DATE_ADDED} DESC LIMIT $limit OFFSET $offset"
+            context.contentResolver.query(mediaUri, projection, null, null, sortOrder)
+        }
+    }
+
+    private fun Cursor.toMediaImages(): List<MediaImage> {
+        val idCol = getColumnIndexOrThrow(MediaStore.Images.Media._ID)
+        return buildList(count) {
+            while (moveToNext()) {
+                val id = getLong(idCol)
+                val uri = ContentUris.withAppendedId(mediaUri, id).toString()
+                add(MediaImage(id, uri))
+            }
         }
     }
 
