@@ -80,9 +80,7 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                     }
 
                     is AppEvent.Permission -> {
-                        val isDenied = checkFalseOrData(context,it.permission) == false
-                        if (isDenied)
-                            multiplePermissionsLauncher.launch(it.permission.names.toTypedArray())
+                        multiplePermissionsLauncher.launch(it.permission.names.toTypedArray())
                     }
                     is AppEvent.SignInScreen -> {
                         viewModel.setSignInScreenVisible(true)

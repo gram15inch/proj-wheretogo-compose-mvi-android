@@ -34,7 +34,7 @@ import com.wheretogo.domain.usecase.course.RemoveCourseUseCase
 import com.wheretogo.domain.usecase.report.ReportContentUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
 import com.wheretogo.domain.usecase.util.ClearCacheUseCase
-import com.wheretogo.domain.usecase.util.GetImageForPopupUseCase
+import com.wheretogo.domain.usecase.util.GetImageUseCase
 import com.wheretogo.domain.usecase.util.SearchKeywordUseCase
 import com.wheretogo.domain.usecase.util.UpdateLikeUseCase
 import com.wheretogo.presentation.AppError
@@ -107,7 +107,7 @@ class DriveViewModel @Inject constructor(
     private val handler: DriveHandler,
     private val observeSettingsUseCase: ObserveSettingsUseCase,
     private val getCommentForCheckPointUseCase: GetCommentForCheckPointUseCase,
-    private val getImageForPopupUseCase: GetImageForPopupUseCase,
+    private val getImageUseCase: GetImageUseCase,
     private val addCheckpointToCourseUseCase: AddCheckpointToCourseUseCase,
     private val addCommentToCheckPointUseCase: AddCommentToCheckPointUseCase,
     private val removeCourseUseCase: RemoveCourseUseCase,
@@ -443,7 +443,7 @@ class DriveViewModel @Inject constructor(
                     if (!isPrePatchIdx.contains(idx)) return@async item
                     val imageId = item.imageId
                     if (imageId.isNullOrBlank() || !item.url.isNullOrBlank()) return@async item
-                    val url = getImageForPopupUseCase(imageId)
+                    val url = getImageUseCase(imageId)
                     item.copy(url = url)
                 }
             }

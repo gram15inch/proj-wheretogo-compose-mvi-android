@@ -1,6 +1,9 @@
 package com.wheretogo.presentation
 
 import android.Manifest.permission.ACCESS_FINE_LOCATION
+import android.Manifest.permission.READ_EXTERNAL_STORAGE
+import android.Manifest.permission.READ_MEDIA_IMAGES
+import android.Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED
 import android.os.Build
 import androidx.annotation.StringRes
 import androidx.credentials.exceptions.GetCredentialCancellationException
@@ -102,13 +105,17 @@ enum class AdMinSize(val widthDp: Int, val heightDp: Int) {
     Card(300, 600)
 }
 
+
 sealed class AppPermission(val names: List<String>) {
-    data object LOCATION : AppPermission(run {
-        val mutable = mutableListOf<String>()
-        val api = Build.VERSION.SDK_INT
-        if(api >= 1) mutable.add(ACCESS_FINE_LOCATION)
-        mutable.toList()
-    })
+    data object LOCATION : AppPermission(listOf(ACCESS_FINE_LOCATION))
+    data object MEDIA : AppPermission(
+        buildList {
+            val api = Build.VERSION.SDK_INT
+            if (api >= 34) add(READ_MEDIA_VISUAL_USER_SELECTED)
+            if (api >= 33) add(READ_MEDIA_IMAGES)
+            if (api >= 16 && api < 33) add(READ_EXTERNAL_STORAGE)
+        }
+    )
 
     data object UNKNOWN : AppPermission(listOf("UNKNOWN"))
 
@@ -120,6 +127,7 @@ sealed class AppPermission(val names: List<String>) {
         fun valueOf(names: Set<String>): AppPermission {
             return when {
                 LOCATION.isEqual(names) -> LOCATION
+                MEDIA.isEqual(names) -> MEDIA
                 else -> UNKNOWN
             }
         }

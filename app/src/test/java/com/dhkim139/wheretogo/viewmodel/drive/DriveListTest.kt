@@ -53,7 +53,7 @@ class DriveListTest {
             handler = mockk(),
             observeSettingsUseCase = observeSettingsUseCase,
             getCommentForCheckPointUseCase = mockk(),
-            getImageForPopupUseCase = mockk(),
+            getImageUseCase = mockk(),
             addCheckpointToCourseUseCase = mockk(),
             addCommentToCheckPointUseCase = mockk(),
             removeCourseUseCase = mockk(),

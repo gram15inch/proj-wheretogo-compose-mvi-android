@@ -9,12 +9,14 @@ val Pink80 = Color(0xFFEFB8C8)
 val Teal200 = Color(0xFF03DAC5)
 val Teal700 = Color(0xFF018786)
 
+val Blue30 = Color(0xFFD4E3FF)
 val Blue50 = Color(0xFFBAD2FA)
 val Blue100 = Color(0xFFA4C8FF)
 val Blue200 = Color(0xFF6895C2)
 val Blue300 = Color(0xFF0065BD)
 val Blue400 = Color(0xFF0046A7)
 val Blue500 = Color(0xFF182A56)
+val Blue600 = Color(0xFF214876)
 
 val PrimeBlue = Color(0xFF509BDC)
 
