@@ -70,7 +70,6 @@ class MediaPickerViewModel  @Inject constructor(
         _uiState.update { it.copy(access = access) }
         if(access != null)
             viewModelScope.launch {
-                println("tst_ $access")
                 _uiEvent.emit(MediaPickerUiEvent.RefreshPage)
             }
     }

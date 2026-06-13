@@ -25,6 +25,10 @@ import com.wheretogo.domain.feature.scale
 import com.wheretogo.domain.feature.scaleCrop
 import com.wheretogo.domain.model.util.ExifData
 import com.wheretogo.domain.model.util.FilePreview
+import com.wheretogo.domain.feature.rotateByExif
+import com.wheretogo.domain.feature.scaleCropToFill
+import com.wheretogo.domain.feature.scaleToFitInside
+import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.util.MediaImage
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.async
@@ -109,46 +113,39 @@ class ImageLocalDatasourceImpl @Inject constructor(
     override suspend fun openAndResizeImage(
         sourceUriString: String,
         sizeGroup: List<ImageSize>,
-        compressionQuality: Int
-    ): Result<List<Pair<ImageSize, ByteArray>>> {
+        compressionQuality: Int,
+    ): Result<List<Pair<ImageSize, ByteArray>>> = runCatching {
+        val uri = sourceUriString.toUri()
 
-        return runCatching {
-            val originalBitmap =
-                context.contentResolver.openInputStream(sourceUriString.toUri())
-                    ?.use { inputStream ->
-                        BitmapFactory.decodeStream(inputStream)
-                    }!!
+        val originalBitmap = context.contentResolver.openInputStream(uri)?.use { input ->
+            BitmapFactory.decodeStream(input)
+        } ?: error("이미지 로드 실패: $sourceUriString")
 
-            val exif =
-                context.contentResolver.openInputStream(sourceUriString.toUri())
-                    ?.use { inputStream ->
-                        ExifInterface(inputStream)
-                    }!!
+        val exif = context.contentResolver.openInputStream(uri)?.use { input ->
+            ExifInterface(input)
+        } ?: error("exif 로드 실패: $sourceUriString")
 
-            coroutineScope {
-                sizeGroup.map { size ->
-                    async {
-                        val newBitmap = originalBitmap
-                            .rotate(exif)
-                            .scale(size)
-                            .run {
-                                when (size) {
-                                    ImageSize.SMALL -> scaleCrop()
-                                    ImageSize.NORMAL -> fit(ImageSize.NORMAL)
-                                }
-                            }
+        val rotated = originalBitmap.rotateByExif(exif)
 
-                        size to ByteArrayOutputStream().use { stream ->
-                            newBitmap.compress(
-                                imageConfig.format.toCompressFormat(),
-                                compressionQuality,
-                                stream
-                            )
-                            stream.toByteArray()
-                        }
+        coroutineScope {
+            sizeGroup.map { size ->
+                async {
+                    val target = when (size) {
+                        ImageSize.SMALL -> rotated.scaleCropToFill(size)     // 꽉 채워 크롭
+                        ImageSize.NORMAL -> rotated.scaleToFitInside(size)   // 비율 유지 축소
                     }
-                }.awaitAll()
-            }
+
+                    val bytes = ByteArrayOutputStream().use { stream ->
+                        target.compress(
+                            imageConfig.format.toCompressFormat(),
+                            compressionQuality,
+                            stream,
+                        )
+                        stream.toByteArray()
+                    }
+                    size to bytes
+                }
+            }.awaitAll()
         }
     }
 
