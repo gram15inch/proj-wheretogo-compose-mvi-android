@@ -9,34 +9,36 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import android.provider.OpenableColumns
 import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.exifinterface.media.ExifInterface
 import com.wheretogo.data.ImageFormat
 import com.wheretogo.data.datasource.ImageLocalDatasource
+import com.wheretogo.data.feature.PhotoExifReader
 import com.wheretogo.data.model.confg.ImageConfig
 import com.wheretogo.domain.ImageSize
 import com.wheretogo.domain.feature.fit
 import com.wheretogo.domain.feature.rotate
 import com.wheretogo.domain.feature.scale
 import com.wheretogo.domain.feature.scaleCrop
+import com.wheretogo.domain.model.util.ExifData
+import com.wheretogo.domain.model.util.FilePreview
 import com.wheretogo.domain.model.util.MediaImage
-import com.wheretogo.domain.usecase.util.ExifData
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Locale
 import javax.inject.Inject
 
 class ImageLocalDatasourceImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     private val imageFile: File,
-    private val imageConfig: ImageConfig
+    private val imageConfig: ImageConfig,
+    private val exifReader: PhotoExifReader
 ) : ImageLocalDatasource {
     private val ext = imageConfig.format.ext
     private val mediaUri: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
@@ -153,40 +155,24 @@ class ImageLocalDatasourceImpl @Inject constructor(
     override suspend fun getExif(imageUriString: String): Result<ExifData> {
         return runCatching {
             context.contentResolver.openInputStream(imageUriString.toUri())?.use { stream ->
-                val exif = ExifInterface(stream)
+                exifReader.read(stream)
+            } ?: error("openInputStream returned null for uri: $imageUriString")
+        }
+    }
 
-                val latlng = exif.latLong
-                val hasLatLong = latlng != null
-                val altitude = if (exif.hasAttribute(ExifInterface.TAG_GPS_ALTITUDE)) {
-                    exif.getAltitude(0.0)
-                } else null
-
-                val dateTimeStr = exif.getAttribute(ExifInterface.TAG_DATETIME_ORIGINAL)
-                    ?: exif.getAttribute(ExifInterface.TAG_DATETIME)
-                val timestamp = dateTimeStr?.let { parseExifDateTime(it) }
-
-                ExifData(
-                    latitude = if (hasLatLong) latlng[0] else null,
-                    longitude = if (hasLatLong) latlng[1] else null,
-                    altitude = altitude,
-                    dateTimeOriginal = dateTimeStr,
-                    timestampMillis = timestamp,
-                    make = exif.getAttribute(ExifInterface.TAG_MAKE),
-                    model = exif.getAttribute(ExifInterface.TAG_MODEL),
-                    orientation = exif.getAttributeInt(
-                        ExifInterface.TAG_ORIENTATION,
-                        ExifInterface.ORIENTATION_NORMAL
-                    ),
-                    imageWidth = exif.getAttributeInt(ExifInterface.TAG_IMAGE_WIDTH, 0)
-                        .takeIf { it > 0 },
-                    imageHeight = exif.getAttributeInt(ExifInterface.TAG_IMAGE_LENGTH, 0)
-                        .takeIf { it > 0 },
-                    fNumber = exif.getAttribute(ExifInterface.TAG_F_NUMBER),
-                    exposureTime = exif.getAttribute(ExifInterface.TAG_EXPOSURE_TIME),
-                    iso = exif.getAttribute(ExifInterface.TAG_PHOTOGRAPHIC_SENSITIVITY),
-                    focalLength = exif.getAttribute(ExifInterface.TAG_FOCAL_LENGTH)
-                )
-            }!!
+    override suspend fun getPreview(imageUriString: String): Result<FilePreview> {
+        return runCatching {
+            val uri = imageUriString.toUri()
+            var fileName: String? = null
+            var fileSize: Long? = null
+            val cursor: Cursor? = context.contentResolver.query(uri, null, null, null, null)
+            cursor?.use {
+                if (it.moveToFirst()) {
+                    fileName = it.getString(it.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
+                    fileSize = it.getLong(it.getColumnIndexOrThrow(OpenableColumns.SIZE))
+                }
+            }
+            FilePreview(fileName, fileSize)
         }
     }
 
@@ -222,15 +208,6 @@ class ImageLocalDatasourceImpl @Inject constructor(
                 val uri = ContentUris.withAppendedId(mediaUri, id).toString()
                 add(MediaImage(id, uri))
             }
-        }
-    }
-
-    private fun parseExifDateTime(dateTime: String): Long? {
-        return try {
-            val format = SimpleDateFormat("yyyy:MM:dd HH:mm:ss", Locale.KOREA)
-            format.parse(dateTime)?.time
-        } catch (e: Exception) {
-            null
         }
     }
 

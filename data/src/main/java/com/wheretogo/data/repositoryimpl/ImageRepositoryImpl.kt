@@ -12,7 +12,8 @@ import com.wheretogo.domain.feature.flatMap
 import com.wheretogo.domain.model.util.ImageUris
 import com.wheretogo.domain.model.util.MediaImage
 import com.wheretogo.domain.repository.ImageRepository
-import com.wheretogo.domain.usecase.util.ExifData
+import com.wheretogo.domain.model.util.ExifData
+import com.wheretogo.domain.model.util.FilePreview
 import de.huxhorn.sulky.ulid.ULID
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -75,6 +76,10 @@ class ImageRepositoryImpl @Inject constructor(
 
     override suspend fun getExif(imageUriString: String): Result<ExifData> {
         return imageLocalDatasource.getExif(imageUriString)
+    }
+
+    override suspend fun getPreview(imageUriString: String): Result<FilePreview> {
+        return imageLocalDatasource.getPreview(imageUriString)
     }
 
     override suspend fun getMediaImages(

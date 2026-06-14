@@ -235,7 +235,7 @@ fun DriveContent(
     //CheckPointAddContent
     onCheckPointAddSubmitClick: () -> Unit = {},
     onSliderChange: (Float) -> Unit = {},
-    onImageChange: (ImageInfo) -> Unit = {},
+    onImageChange: (String?) -> Unit = {},
 
     //InfoContent
     onInfoReportClick: (ReportReason) -> Unit = {},

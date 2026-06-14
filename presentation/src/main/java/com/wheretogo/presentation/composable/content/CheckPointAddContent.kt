@@ -59,7 +59,7 @@ fun CheckPointAddContent(
     focusRequester: FocusRequester,
     onSubmitClick: () -> Unit,
     onSliderChange: (Float) -> Unit,
-    onImageChange: (ImageInfo) -> Unit
+    onImageChange: (String?) -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val scrollState = rememberScrollState()
@@ -84,18 +84,7 @@ fun CheckPointAddContent(
         val launcher = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.GetContent()
         ) { uri: Uri? ->
-            if (uri != null && uri.path != null) {
-                getFileInfoFromUri(contentResolver, uri)
-                    .onSuccess { fileInfo ->
-                        onImageChange(
-                            ImageInfo(
-                                uriString = uri.toString(),
-                                fileName = fileInfo.first ?: "",
-                                byte = fileInfo.second ?: 0
-                            )
-                        )
-                    }
-            }
+            onImageChange(uri?.toString())
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {

@@ -163,7 +163,7 @@ class DriveViewModel @Inject constructor(
                 is DriveScreenIntent.BottomSheetChange -> bottomSheetChange(intent.state)
                 is DriveScreenIntent.CheckpointLocationSliderChange -> checkpointLocationSliderChange(intent.percent)
                 is DriveScreenIntent.CheckpointDescriptionEnterClick -> checkpointDescriptionEnterClick(intent.text)
-                is DriveScreenIntent.CheckpointImageChange -> checkpointImageChange(intent.imageInfo)
+                is DriveScreenIntent.CheckpointImageChange -> checkpointImageChange(intent.uriString)
                 is DriveScreenIntent.CheckpointSubmitClick -> checkpointSubmitClick()
                 is DriveScreenIntent.InfoReportClick -> infoReportClick(intent.reason)
                 is DriveScreenIntent.InfoRemoveClick -> infoRemoveClick()
@@ -942,10 +942,15 @@ class DriveViewModel @Inject constructor(
         }
     }
 
-    private fun checkpointImageChange(imageInfo: ImageInfo) {
+    private suspend fun checkpointImageChange(uriString: String?) {
+        val imageInfo = if (uriString == null) null else {
+            val preview = withContext(Dispatchers.IO) {
+                getImageUseCase.getPreview(uriString)
+            }.getOrNull()
+            ImageInfo(uriString, preview?.name ?: "unknown", preview?.size ?: 0)
+        }
         _driveScreenState.update {
             val newCheckPointAddState = it.bottomSheetState.checkPointAddState.copy(
-                imgUriString = imageInfo.uriString,
                 imgInfo = imageInfo
             )
             val isValidateAddCheckPoint = newCheckPointAddState
@@ -1056,7 +1061,7 @@ class DriveViewModel @Inject constructor(
 
     private fun CheckPointAddState.isValidateAddCheckPoint(): Result<Unit> {
         return runCatching {
-            require(this.imgUriString.isNotBlank()) { AppError.ImgEmpty() }
+            require(imgInfo!= null && imgInfo.isValid()) { AppError.ImgEmpty() }
             require(this.description.isNotEmpty()) { AppError.DescriptionEmpty() }
         }
     }
