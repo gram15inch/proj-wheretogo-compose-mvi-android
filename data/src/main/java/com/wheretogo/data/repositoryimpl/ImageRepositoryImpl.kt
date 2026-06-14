@@ -12,7 +12,7 @@ import com.wheretogo.domain.feature.flatMap
 import com.wheretogo.domain.model.util.ImageUris
 import com.wheretogo.domain.model.util.MediaImage
 import com.wheretogo.domain.repository.ImageRepository
-import com.wheretogo.domain.usecase.util.ExifData
+import com.wheretogo.domain.model.util.ExifData
 import de.huxhorn.sulky.ulid.ULID
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll

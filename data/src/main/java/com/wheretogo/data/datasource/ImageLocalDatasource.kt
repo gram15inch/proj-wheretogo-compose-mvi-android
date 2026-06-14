@@ -2,7 +2,7 @@ package com.wheretogo.data.datasource
 
 import com.wheretogo.domain.ImageSize
 import com.wheretogo.domain.model.util.MediaImage
-import com.wheretogo.domain.usecase.util.ExifData
+import com.wheretogo.domain.model.util.ExifData
 import java.io.File
 
 

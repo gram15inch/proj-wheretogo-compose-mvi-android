@@ -3,7 +3,7 @@ package com.wheretogo.domain.repository
 import com.wheretogo.domain.ImageSize
 import com.wheretogo.domain.model.util.ImageUris
 import com.wheretogo.domain.model.util.MediaImage
-import com.wheretogo.domain.usecase.util.ExifData
+import com.wheretogo.domain.model.util.ExifData
 
 interface ImageRepository {
     suspend fun getImage(imageId: String, size: ImageSize): Result<String>
