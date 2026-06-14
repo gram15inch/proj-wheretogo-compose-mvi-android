@@ -9,6 +9,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import android.provider.OpenableColumns
 import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
@@ -23,6 +24,7 @@ import com.wheretogo.domain.feature.rotate
 import com.wheretogo.domain.feature.scale
 import com.wheretogo.domain.feature.scaleCrop
 import com.wheretogo.domain.model.util.ExifData
+import com.wheretogo.domain.model.util.FilePreview
 import com.wheretogo.domain.model.util.MediaImage
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.async
@@ -155,6 +157,22 @@ class ImageLocalDatasourceImpl @Inject constructor(
             context.contentResolver.openInputStream(imageUriString.toUri())?.use { stream ->
                 exifReader.read(stream)
             } ?: error("openInputStream returned null for uri: $imageUriString")
+        }
+    }
+
+    override suspend fun getPreview(imageUriString: String): Result<FilePreview> {
+        return runCatching {
+            val uri = imageUriString.toUri()
+            var fileName: String? = null
+            var fileSize: Long? = null
+            val cursor: Cursor? = context.contentResolver.query(uri, null, null, null, null)
+            cursor?.use {
+                if (it.moveToFirst()) {
+                    fileName = it.getString(it.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
+                    fileSize = it.getLong(it.getColumnIndexOrThrow(OpenableColumns.SIZE))
+                }
+            }
+            FilePreview(fileName, fileSize)
         }
     }
 

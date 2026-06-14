@@ -52,7 +52,7 @@ sealed class DriveScreenIntent {
     data class BottomSheetChange(val state:SheetVisibleMode) : DriveScreenIntent()
     data class CheckpointLocationSliderChange(val percent: Float) : DriveScreenIntent()
     data class CheckpointDescriptionEnterClick(val text : String) : DriveScreenIntent()
-    data class CheckpointImageChange(val imageInfo: ImageInfo) : DriveScreenIntent()
+    data class CheckpointImageChange(val uriString: String?) : DriveScreenIntent()
     data object CheckpointSubmitClick : DriveScreenIntent()
     data class InfoReportClick(val reason: ReportReason) : DriveScreenIntent()
     data object InfoRemoveClick : DriveScreenIntent()

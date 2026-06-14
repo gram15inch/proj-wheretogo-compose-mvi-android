@@ -92,7 +92,7 @@ fun CheckPointAddState.toContent(courseId:String): CheckPointContent {
     return CheckPointContent(
         groupId = courseId,
         latLng = latLng,
-        imgUriString = imgUriString,
+        imgUriString = imgInfo?.uriString!!,
         description = description
     )
 }
