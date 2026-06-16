@@ -43,8 +43,7 @@ class ImageRepositoryImpl @Inject constructor(
     }
 
     override suspend fun setImage(imgUriString: String): Result<ImageUris> {
-        val imageId = "IM${ULID().nextULID()}"
-
+        val imageId = generateId()
         return runCatching {
             val resizedImages =
                 imageLocalDatasource.openAndResizeImage(imgUriString, ImageSize.entries)
