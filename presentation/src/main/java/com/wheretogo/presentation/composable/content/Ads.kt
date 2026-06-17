@@ -27,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
@@ -56,14 +55,7 @@ import com.wheretogo.presentation.composable.effect.CardAdEffect
 import com.wheretogo.presentation.composable.effect.RowAdEffect
 import com.wheretogo.presentation.feature.FontMaxScale
 import com.wheretogo.presentation.model.AdItem
-import com.wheretogo.presentation.theme.Blue100
-import com.wheretogo.presentation.theme.Blue50
-import com.wheretogo.presentation.theme.Blue500
-import com.wheretogo.presentation.theme.Gray280
-import com.wheretogo.presentation.theme.Gray300
-import com.wheretogo.presentation.theme.Green100
-import com.wheretogo.presentation.theme.Green50
-import com.wheretogo.presentation.theme.White50
+import com.wheretogo.presentation.theme.Palette
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 import com.wheretogo.presentation.theme.interBoldFontFamily
 import com.wheretogo.presentation.theme.interFontFamily
@@ -154,10 +146,10 @@ fun CardAd(
         modifier = modifier,
         shape = RoundedCornerShape(8.dp),
         colors = CardColors(
-            containerColor = White50,
-            contentColor = Color.Black,
-            disabledContainerColor = Color.Black,
-            disabledContentColor = Color.Black,
+            containerColor = Palette.White50,
+            contentColor = Palette.Black,
+            disabledContainerColor = Palette.Black,
+            disabledContentColor = Palette.Black,
         ),
         elevation = CardDefaults.cardElevation(elevation)
     ) {
@@ -240,10 +232,10 @@ fun RowAd(modifier: Modifier = Modifier, elevation: Dp = 8.dp, nativeAd: NativeA
             .fillMaxWidth(),
         shape = RoundedCornerShape(4.dp),
         colors = CardColors(
-            containerColor = White50,
-            contentColor = Color.Black,
-            disabledContainerColor = Color.Black,
-            disabledContentColor = Color.Black,
+            containerColor = Palette.White50,
+            contentColor = Palette.Black,
+            disabledContainerColor = Palette.Black,
+            disabledContentColor = Palette.Black,
         ),
         elevation = CardDefaults.cardElevation(elevation)
     ) {
@@ -304,7 +296,7 @@ fun AdChoice(modifier: Modifier = Modifier) {
             .clip(RoundedCornerShape(4.dp))
             .background(
                 brush = Brush.horizontalGradient(
-                    colors = listOf(Blue100, Green100)
+                    colors = listOf(Palette.Blue50, Palette.Green100)
                 )
             )
     )
@@ -316,7 +308,7 @@ fun AdAdvertiser(modifier: Modifier = Modifier, text: String?) {
         FontMaxScale(maxScale = AD_MAX_FONT_SCALE) {
             Text(
                 text = text ?: "", fontSize = 10.sp,
-                color = Gray280, fontFamily = interFontFamily,
+                color = Palette.Gray280, fontFamily = interFontFamily,
                 style = TextStyle(fontSize = 10.sp, lineHeight = 10.sp)
             )
 
@@ -332,7 +324,7 @@ fun AdCta(modifier: Modifier, text: String?) {
                 .shadow(1.dp, shape = RoundedCornerShape(8.dp))
                 .background(
                     brush = Brush.horizontalGradient(
-                        colors = listOf(Blue50, Green50)
+                        colors = listOf(Palette.Blue50, Palette.Green50)
                     )
                 )
                 .heightIn(min = 48.dp),
@@ -342,7 +334,7 @@ fun AdCta(modifier: Modifier, text: String?) {
                 Text(
                     text = text ?: "자세히 보기",
                     textAlign = TextAlign.Center,
-                    color = White50,
+                    color = Palette.White50,
                     fontSize = 16.sp,
                     fontFamily = interBoldFontFamily
                 )
@@ -360,7 +352,7 @@ fun AdBody(modifier: Modifier = Modifier, maxLine: Int = 3, text: String?) {
                     Text(
                         modifier = Modifier,
                         text = text,
-                        color = Gray300,
+                        color = Palette.Gray300,
                         fontFamily = hancomSansFontFamily,
                         maxLines = maxLine,
                         overflow = TextOverflow.Ellipsis,
@@ -384,7 +376,7 @@ fun AdHeadLine(
                 Text(
                     text = text,
                     fontSize = 17.sp,
-                    color = Blue500, fontFamily = interBoldFontFamily,
+                    color = Palette.Blue500, fontFamily = interBoldFontFamily,
                     onTextLayout = textLayout
                 )
             }
@@ -413,7 +405,7 @@ fun AdMark(modifier: Modifier = Modifier) {
                 .clip(RoundedCornerShape(4.dp))
                 .background(
                     brush = Brush.horizontalGradient(
-                        colors = listOf(Blue100, Green100)
+                        colors = listOf(Palette.Blue50, Palette.Green100)
                     )
                 )
                 .padding(horizontal = 2.5.dp, vertical = 1.5.dp)
@@ -421,7 +413,7 @@ fun AdMark(modifier: Modifier = Modifier) {
             FontMaxScale {
                 Text(
                     text = "Ad",
-                    color = Color.White,
+                    color = Palette.White,
                     fontFamily = interFontFamily,
                     fontSize = 12.sp,
                     lineHeight = 12.sp

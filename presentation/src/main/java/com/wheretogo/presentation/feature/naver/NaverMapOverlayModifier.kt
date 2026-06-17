@@ -5,10 +5,10 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.BitmapShader
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Shader
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.scale
 import com.naver.maps.map.clustering.ClusterMarkerInfo
@@ -22,6 +22,7 @@ import com.naver.maps.map.overlay.OverlayImage
 import com.naver.maps.map.overlay.PathOverlay
 import com.naver.maps.map.util.MarkerIcons
 import com.wheretogo.domain.MarkerType
+import com.wheretogo.domain.model.map.MarkerInfo
 import com.wheretogo.presentation.CHECKPOINT_ADD_MARKER
 import com.wheretogo.presentation.MarkerZIndex
 import com.wheretogo.presentation.OverlayType
@@ -31,8 +32,8 @@ import com.wheretogo.presentation.model.AppLeaf
 import com.wheretogo.presentation.model.ClusterHolder
 import com.wheretogo.presentation.model.ClusterInfo
 import com.wheretogo.presentation.model.LeafInfo
-import com.wheretogo.domain.model.map.MarkerInfo
 import com.wheretogo.presentation.model.PathInfo
+import com.wheretogo.presentation.theme.Palette
 import com.wheretogo.presentation.toNaver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -247,8 +248,8 @@ class NaverMapOverlayModifier @Inject constructor(
                 .roundedRectWithShadow(
                     30f,
                     8f,
-                    Color.BLACK,
-                    Color.WHITE
+                    Palette.Black.toArgb(),
+                    Palette.White.toArgb()
                 )
         )
         return overlayImage

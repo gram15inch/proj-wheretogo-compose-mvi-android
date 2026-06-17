@@ -42,7 +42,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -62,11 +61,10 @@ import com.wheretogo.presentation.feature.checkFalseOrData
 import com.wheretogo.presentation.feature.openSetting
 import com.wheretogo.presentation.feature.requestPermission
 import com.wheretogo.presentation.model.PickerImage
+import com.wheretogo.presentation.theme.Palette
+import com.wheretogo.presentation.theme.WhereTogoTheme
 import com.wheretogo.presentation.viewmodel.MediaPickerUiEvent
 import com.wheretogo.presentation.viewmodel.MediaPickerViewModel
-import com.wheretogo.presentation.theme.Gray50
-import com.wheretogo.presentation.theme.WhereTogoTheme
-import com.wheretogo.presentation.theme.White100
 import kotlinx.coroutines.launch
 
 @Composable
@@ -213,7 +211,7 @@ private fun GalleryView(
         },
     ) { padding ->
         Column(Modifier.padding(padding).background(
-            color = White100
+            color = Palette.White100
         )) {
             when (access) {
                 MediaAccess.PARTIAL -> {
@@ -256,7 +254,7 @@ private fun GalleryView(
 @Composable
 private fun AllowAllBanner(onOpenSettings: () -> Unit) {
     Surface(
-        color = Gray50,
+        color = Palette.Gray50,
         modifier = Modifier.fillMaxWidth(),
     ) {
         Row(
@@ -341,7 +339,7 @@ private fun PhotoCell(
             Box(
                 Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.25f)),
+                    .background(Palette.Black.copy(alpha = 0.25f)),
             )
             Surface(
                 shape = RoundedCornerShape(50),
@@ -354,7 +352,7 @@ private fun PhotoCell(
                 Icon(
                     Icons.Default.Check,
                     contentDescription = stringResource(R.string.button_selected),
-                    tint = Color.White,
+                    tint = Palette.White,
                     modifier = Modifier.padding(2.dp),
                 )
             }

@@ -29,7 +29,7 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.valentinilk.shimmer.shimmer
-import com.wheretogo.presentation.theme.White50
+import com.wheretogo.presentation.theme.Palette
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -88,7 +88,7 @@ fun RowAdPlaceholder(modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
-            .background(White50)
+            .background(Palette.White50)
             .shimmer()
             .fillMaxWidth()
             .height(120.dp)
@@ -123,7 +123,7 @@ fun CardAdPlaceholder() {
     Column(
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
-            .background(White50)
+            .background(Palette.White50)
             .shimmer()
             .widthIn(max = 500.dp)
             .height(330.dp)

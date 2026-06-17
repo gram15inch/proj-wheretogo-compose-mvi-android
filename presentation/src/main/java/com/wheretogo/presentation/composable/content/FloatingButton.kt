@@ -59,8 +59,7 @@ import com.wheretogo.presentation.composable.animation.highlightCircle
 import com.wheretogo.presentation.feature.FontMaxScale
 import com.wheretogo.presentation.feature.callMap
 import com.wheretogo.presentation.state.FloatingButtonState
-import com.wheretogo.presentation.theme.Gray100
-import com.wheretogo.presentation.theme.White85
+import com.wheretogo.presentation.theme.Palette
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 import com.wheretogo.presentation.toNavigation
 import kotlinx.coroutines.delay
@@ -267,7 +266,7 @@ fun CircleButton(
     isHighLight: Boolean = false,
     isActive: Boolean = true,
     @DrawableRes icon: Int,
-    color: Color = White85,
+    color: Color = Palette.White100.copy(alpha = 0.85f),
     onClick: () -> Unit
 ) {
     Button(
@@ -476,7 +475,7 @@ fun Backplate(
         modifier = Modifier
             .clip(RoundedCornerShape(40.dp))
             .height(backPlateHeight)
-            .background(Color.White)
+            .background(Palette.White)
             .padding(end = buttonEndPadding)
     ) {
         Row {
@@ -510,7 +509,7 @@ fun Backplate(
 @Composable
 fun FloatingLandscapeButtonPreview() {
     FloatingButtons(
-        modifier = Modifier.background(Gray100),
+        modifier = Modifier.background(Palette.Gray100),
         state = FloatingButtonState(
             adItemGroup = emptyList(),
             navigation = CourseDirectionItem(Course()).toNavigation(),

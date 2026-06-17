@@ -61,8 +61,7 @@ import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.toDisplayName
 import com.wheretogo.presentation.state.CommentState
 import com.wheretogo.presentation.state.CommentState.CommentItemState
-import com.wheretogo.presentation.theme.Gray250
-import com.wheretogo.presentation.theme.Gray8090
+import com.wheretogo.presentation.theme.Palette
 import com.wheretogo.presentation.theme.hancomMalangFontFamily
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 
@@ -215,7 +214,7 @@ fun CommentListItem(
                                 )
                             ),
                             fontFamily = hancomSansFontFamily,
-                            color = Gray250
+                            color = Palette.Gray250
                         )
                     else
                         Text(
@@ -376,13 +375,13 @@ fun CommentSetting(
                 interactionSource = remember { MutableInteractionSource() },
                 onClick = { onBackgroundClick() }
             )
-            .background(Gray8090),
+            .background(Palette.Gray100.copy(alpha = 0.56f)),
         contentAlignment = Alignment.Center
     ) {
         Column(
             modifier = Modifier
                 .wrapContentSize()
-                .background(Color.White),
+                .background(Palette.White),
         ) {
             // 삭제 or 신고 버튼
             Box(

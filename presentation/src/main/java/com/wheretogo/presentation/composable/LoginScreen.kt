@@ -25,7 +25,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -39,8 +38,7 @@ import com.wheretogo.presentation.composable.content.DelayLottieAnimation
 import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.feature.googleAuthOnDevice
 import com.wheretogo.presentation.state.LoginScreenState
-import com.wheretogo.presentation.theme.Gray280
-import com.wheretogo.presentation.theme.Gray250
+import com.wheretogo.presentation.theme.Palette
 import com.wheretogo.presentation.theme.interFontFamily
 import com.wheretogo.presentation.viewmodel.LoginViewModel
 import kotlinx.coroutines.launch
@@ -76,7 +74,7 @@ fun LoginContent(
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
     Box(
         modifier = Modifier
-            .background(Color.White)
+            .background(Palette.White)
             .consumptionEvent(true)
             .systemBarsPadding()
             .fillMaxSize(),
@@ -125,7 +123,7 @@ fun LoginContent(
                     },
                 text = stringResource(R.string.explore_without_login),
                 fontFamily = interFontFamily,
-                color = Gray280
+                color = Palette.Gray280
             )
     }
 }
@@ -154,7 +152,7 @@ fun GoogleLoginButton(isLoading: Boolean, onClick: () -> Unit) {
                     .width(250.dp)
                     .border(
                         width = 1.2.dp,
-                        color = Gray250,
+                        color = Palette.Gray250,
                         shape = RoundedCornerShape(4.dp)
                     ), contentAlignment = Alignment.Center
             ) {

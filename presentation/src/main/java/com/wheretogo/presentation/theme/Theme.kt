@@ -13,12 +13,12 @@ import androidx.core.view.WindowCompat
 
 
 private val LightColorScheme = lightColorScheme(
-    primary = Blue300,
-    secondary = Blue100,
-    tertiary = Pink80,
-    secondaryContainer = Blue30,
-    onSecondaryContainer = Blue600,
-    surface = White50
+    primary = Palette.Blue300,
+    secondary = Palette.Blue50,
+    tertiary = Palette.Pink80,
+    secondaryContainer = Palette.Blue30,
+    onSecondaryContainer = Palette.Blue600,
+    surface = Palette.White50
 )
 
 @Composable
@@ -36,7 +36,7 @@ fun WhereTogoTheme(
             val window = (view.context as Activity).window
             WindowCompat.setDecorFitsSystemWindows(window, false)
             window.statusBarColor = Color.Transparent.toArgb()
-            window.navigationBarColor = White10050.toArgb()
+            window.navigationBarColor = Palette.White100.copy(0.5f).toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
             WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = true
         }

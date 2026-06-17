@@ -28,7 +28,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -53,13 +52,7 @@ import com.wheretogo.presentation.composable.effect.LifecycleDisposer
 import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.feature.openWeb
 import com.wheretogo.presentation.intent.HomeIntent
-import com.wheretogo.presentation.theme.Black100
-import com.wheretogo.presentation.theme.Blue200
-import com.wheretogo.presentation.theme.Gray100
-import com.wheretogo.presentation.theme.Gray200
-import com.wheretogo.presentation.theme.Gray300
-import com.wheretogo.presentation.theme.Gray5060
-import com.wheretogo.presentation.theme.White100
+import com.wheretogo.presentation.theme.Palette
 import com.wheretogo.presentation.theme.hancomMalangFontFamily
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 import com.wheretogo.presentation.theme.meslolgsFontFamily
@@ -84,7 +77,7 @@ fun HomeScreen(
             .fillMaxWidth()
             .fillMaxHeight()
             .padding(outPadding)
-            .background(White100)
+            .background(Palette.White100)
             .verticalScroll(scrollState),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -114,7 +107,7 @@ fun TopBar(onSettingClick: () -> Unit) {
             text = stringResource(R.string.where_to_go),
             fontSize = 24.sp,
             fontFamily = hancomMalangFontFamily,
-            color = Gray100
+            color = Palette.Gray100
         )
         Image(
             painter = painterResource(id = R.drawable.ic_menu_burger), // 이미지 리소스
@@ -222,14 +215,14 @@ fun GridButton(
             .highlightRoundedCorner(isHighlight, 6.dp, 10.dp)
             .clickable { click.invoke() }
             .consumptionEvent(isConsume),
-        color = Color.White,
+        color = Palette.White,
     ) {
         content()
         if(isConsume)
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Gray5060)
+                    .background(Palette.Gray50.copy(alpha = 0.4f))
             )
     }
 }
@@ -244,8 +237,8 @@ fun ContentTextImage(title: String, subTitle: String, size: Dp, rawRes: Int?) {
                 .fillMaxSize()
                 .padding(15.dp)
         ) {
-            Text(title, color = Gray300, fontSize = 18.sp, fontFamily = meslolgsFontFamily)
-            Text(subTitle, color = Gray200, fontSize = 15.sp, fontFamily = hancomSansFontFamily)
+            Text(title, color = Palette.Gray300, fontSize = 18.sp, fontFamily = meslolgsFontFamily)
+            Text(subTitle, color = Palette.Gray200, fontSize = 15.sp, fontFamily = hancomSansFontFamily)
         }
         if (rawRes != null) {
             val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(rawRes))
@@ -271,31 +264,31 @@ fun ContentTextImage(title: String, subTitle: String, size: Dp, rawRes: Int?) {
 fun ContentBanner(bannerMain: String, bannerSub: String) {
     Box(
         modifier = Modifier
-            .background(Blue200)
+            .background(Palette.Blue200)
             .padding(15.dp)
     ) {
 
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(
                 text = bannerSub,
-                color = Color.White,
+                color = Palette.White,
                 fontSize = 16.sp,
                 fontFamily = hancomSansFontFamily
             )
             Text(
                 text = bannerMain,
                 style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 38.sp),
-                color = Color.White, fontSize = 34.sp, fontFamily = hancomSansFontFamily
+                color = Palette.White, fontSize = 34.sp, fontFamily = hancomSansFontFamily
             )
         }
 
         Text(
             modifier = Modifier
-                .background(color = Black100, shape = RoundedCornerShape(10.dp))
+                .background(color = Palette.Black100.copy(0.5f), shape = RoundedCornerShape(10.dp))
                 .padding(horizontal = 7.dp)
                 .align(Alignment.BottomEnd),
             text = "1/1",
-            color = Color.White,
+            color = Palette.White,
             fontSize = 13.sp,
             fontFamily = meslolgsFontFamily
         )
@@ -314,13 +307,13 @@ fun BottomBar() {
             text = stringResource(R.string.contact_banner),
             fontSize = 15.sp,
             fontFamily = hancomSansFontFamily,
-            color = Gray200
+            color = Palette.Gray200
         )
         Text(
             text = stringResource(R.string.dev_gmail),
             fontSize = 15.sp,
             fontFamily = hancomSansFontFamily,
-            color = Gray200
+            color = Palette.Gray200
         )
     }
 }

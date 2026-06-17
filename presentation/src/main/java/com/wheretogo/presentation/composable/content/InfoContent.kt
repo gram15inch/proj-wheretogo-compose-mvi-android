@@ -42,6 +42,7 @@ import com.wheretogo.domain.model.report.ReportReason
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.toDisplayName
 import com.wheretogo.presentation.state.InfoState
+import com.wheretogo.presentation.theme.Palette
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 
 
@@ -152,7 +153,7 @@ private fun CircleBorderButton(icon: Int, onClick: () -> Unit) {
         modifier = Modifier
             .size(50.dp)
             .clip(CircleShape)
-            .border(width = 1.dp, shape = CircleShape, color = Color.Black)
+            .border(width = 1.dp, shape = CircleShape, color = Palette.Black)
             .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {

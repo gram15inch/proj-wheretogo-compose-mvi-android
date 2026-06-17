@@ -56,10 +56,7 @@ import com.wheretogo.presentation.intent.SettingIntent
 import com.wheretogo.presentation.model.AdItem
 import com.wheretogo.presentation.parseLogoImgRes
 import com.wheretogo.presentation.state.SettingScreenState
-import com.wheretogo.presentation.theme.Gray280
-import com.wheretogo.presentation.theme.Gray6080
-import com.wheretogo.presentation.theme.PrimeBlue
-import com.wheretogo.presentation.theme.White50
+import com.wheretogo.presentation.theme.Palette
 import com.wheretogo.presentation.theme.hancomMalangFontFamily
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 import com.wheretogo.presentation.viewmodel.SettingViewModel
@@ -74,7 +71,7 @@ fun SettingScreen(navController: NavController, viewModel: SettingViewModel = hi
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(White50)
+                .background(Palette.White50)
                 .padding(systemBar)
         )
         {
@@ -249,7 +246,7 @@ fun ProfileSection(
                     .border(
                         width = 1.3.dp,
                         shape = RoundedCornerShape(16.dp),
-                        color = Gray6080
+                        color = Palette.Gray100.copy(alpha = 0.5f)
                     )
                     .clickable {
                         onEmptyProfileClick()
@@ -293,7 +290,7 @@ fun InfoSection(
             Text(
                 text = stringResource(R.string.info),
                 fontFamily = hancomSansFontFamily,
-                color = Gray280
+                color = Palette.Gray280
             )
         }
         Box(
@@ -410,7 +407,7 @@ fun SectionDivider(modifier: Modifier = Modifier) {
     HorizontalDivider(
         modifier = modifier.fillMaxWidth(),
         thickness = 2.dp,
-        color = Gray6080
+        color = Palette.Gray100.copy(alpha = 0.5f)
     )
 }
 
@@ -436,14 +433,14 @@ fun SettingDialog(
             } else
                 Text(stringResource(R.string.user_delete_confirm))
         },
-        containerColor = Color.White,
+        containerColor = Palette.White,
         confirmButton = {
             if (!isLoading)
                 TextButton(onClick = {
                     onDialogAnswer(false)
                 }) {
                     Text(
-                        color = PrimeBlue,
+                        color = Palette.PrimeBlue,
                         text = stringResource(R.string.turn_around)
                     )
                 }

@@ -32,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -44,6 +45,7 @@ import androidx.navigation.NavController
 import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.ZOOM
 import com.wheretogo.domain.model.comment.Comment
+import com.wheretogo.domain.model.course.CourseDirectionItem
 import com.wheretogo.domain.model.dummy.getCourseDummy
 import com.wheretogo.domain.model.report.ReportReason
 import com.wheretogo.domain.model.util.ImageInfo
@@ -79,7 +81,6 @@ import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.intent.MapIntent
 import com.wheretogo.presentation.model.ContentPadding
-import com.wheretogo.domain.model.course.CourseDirectionItem
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.model.TypeEditText
 import com.wheretogo.presentation.state.CheckPointAddState
@@ -90,8 +91,7 @@ import com.wheretogo.presentation.state.FloatingButtonState
 import com.wheretogo.presentation.state.GuideState
 import com.wheretogo.presentation.state.InfoState
 import com.wheretogo.presentation.state.ListState
-import com.wheretogo.presentation.theme.Gray5060
-import com.wheretogo.presentation.theme.Gray6080
+import com.wheretogo.presentation.theme.Palette
 import com.wheretogo.presentation.viewmodel.DriveViewModel
 import com.wheretogo.presentation.viewmodel.MapViewModel
 
@@ -396,7 +396,8 @@ fun DriveContent(
                                 .consumptionEvent(isBlock)
                                 .run{
                                     if(isCover)
-                                        background(Gray5060)
+                                        alpha(0.4f)
+                                        .background(Palette.Gray50)
                                     else this
                                 }
                         )
@@ -543,7 +544,8 @@ fun BlurEffect(modifier: Modifier = Modifier, onClick: () -> Unit) {
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(color = Gray6080)
+            .alpha(0.5f)
+            .background(Palette.Gray100)
             .clickable(
                 indication = null,
                 interactionSource = interactionSource
