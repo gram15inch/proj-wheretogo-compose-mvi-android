@@ -46,7 +46,7 @@ import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.animation.highlightRoundedCorner
 import com.wheretogo.presentation.state.ListState
 import com.wheretogo.presentation.theme.Gray250
-import com.wheretogo.presentation.theme.White10080
+import com.wheretogo.presentation.theme.White100
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 import com.wheretogo.presentation.toStrRes
 
@@ -147,7 +147,7 @@ fun DriveListItem(
                     elevation = 1.dp,
                     shape = RoundedCornerShape(16.dp),
                     clip = false
-                ).background(White10080)
+                ).background(White100.copy(alpha = 0.95f))
         ) {
             // 방향 구분 버튼
             Row(

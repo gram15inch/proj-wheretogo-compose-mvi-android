@@ -36,7 +36,7 @@ fun WhereTogoTheme(
             val window = (view.context as Activity).window
             WindowCompat.setDecorFitsSystemWindows(window, false)
             window.statusBarColor = Color.Transparent.toArgb()
-            window.navigationBarColor = White10050.toArgb()
+            window.navigationBarColor = White100.copy(0.5f).toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
             WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = true
         }

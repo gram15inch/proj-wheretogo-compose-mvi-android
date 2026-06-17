@@ -32,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -90,8 +91,9 @@ import com.wheretogo.presentation.state.FloatingButtonState
 import com.wheretogo.presentation.state.GuideState
 import com.wheretogo.presentation.state.InfoState
 import com.wheretogo.presentation.state.ListState
-import com.wheretogo.presentation.theme.Gray5060
-import com.wheretogo.presentation.theme.Gray6080
+import com.wheretogo.presentation.theme.Gray100
+import com.wheretogo.presentation.theme.Gray50
+
 import com.wheretogo.presentation.viewmodel.DriveViewModel
 import com.wheretogo.presentation.viewmodel.MapViewModel
 
@@ -396,7 +398,8 @@ fun DriveContent(
                                 .consumptionEvent(isBlock)
                                 .run{
                                     if(isCover)
-                                        background(Gray5060)
+                                        alpha(0.4f)
+                                        .background(Gray50)
                                     else this
                                 }
                         )
@@ -543,7 +546,8 @@ fun BlurEffect(modifier: Modifier = Modifier, onClick: () -> Unit) {
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(color = Gray6080)
+            .alpha(0.5f)
+            .background(Gray100)
             .clickable(
                 indication = null,
                 interactionSource = interactionSource

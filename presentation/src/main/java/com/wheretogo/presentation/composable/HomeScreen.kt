@@ -27,6 +27,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -58,7 +59,7 @@ import com.wheretogo.presentation.theme.Blue200
 import com.wheretogo.presentation.theme.Gray100
 import com.wheretogo.presentation.theme.Gray200
 import com.wheretogo.presentation.theme.Gray300
-import com.wheretogo.presentation.theme.Gray5060
+import com.wheretogo.presentation.theme.Gray50
 import com.wheretogo.presentation.theme.White100
 import com.wheretogo.presentation.theme.hancomMalangFontFamily
 import com.wheretogo.presentation.theme.hancomSansFontFamily
@@ -229,7 +230,7 @@ fun GridButton(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Gray5060)
+                    .background(Gray50.copy(alpha = 0.4f))
             )
     }
 }
@@ -291,7 +292,7 @@ fun ContentBanner(bannerMain: String, bannerSub: String) {
 
         Text(
             modifier = Modifier
-                .background(color = Black100, shape = RoundedCornerShape(10.dp))
+                .background(color = Black100.copy(0.5f), shape = RoundedCornerShape(10.dp))
                 .padding(horizontal = 7.dp)
                 .align(Alignment.BottomEnd),
             text = "1/1",

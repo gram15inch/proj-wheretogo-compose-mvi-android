@@ -46,7 +46,7 @@ import com.wheretogo.presentation.feature.getFileInfoFromUri
 import com.wheretogo.presentation.state.BottomSheetState
 import com.wheretogo.presentation.state.CheckPointAddState
 import com.wheretogo.presentation.state.InfoState
-import com.wheretogo.presentation.theme.Gray5060
+import com.wheretogo.presentation.theme.Gray50
 import com.wheretogo.presentation.theme.PrimeBlue
 import com.wheretogo.presentation.theme.WhereTogoTheme
 import com.wheretogo.presentation.theme.White
@@ -133,7 +133,7 @@ fun CheckPointAddContent(
 
         // 제출 버튼
         val btnBackground by animateColorAsState(
-            targetValue = if (state.isSubmitActive) PrimeBlue else Gray5060,
+            targetValue = if (state.isSubmitActive) PrimeBlue else Gray50.copy(alpha = 0.4f),
             label = "btnBg"
         )
         val btnTextColor by animateColorAsState(

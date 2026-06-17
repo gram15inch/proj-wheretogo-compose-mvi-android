@@ -60,7 +60,7 @@ import com.wheretogo.presentation.feature.FontMaxScale
 import com.wheretogo.presentation.feature.callMap
 import com.wheretogo.presentation.state.FloatingButtonState
 import com.wheretogo.presentation.theme.Gray100
-import com.wheretogo.presentation.theme.White85
+import com.wheretogo.presentation.theme.White100
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 import com.wheretogo.presentation.toNavigation
 import kotlinx.coroutines.delay
@@ -267,7 +267,7 @@ fun CircleButton(
     isHighLight: Boolean = false,
     isActive: Boolean = true,
     @DrawableRes icon: Int,
-    color: Color = White85,
+    color: Color = White100.copy(alpha = 0.85f),
     onClick: () -> Unit
 ) {
     Button(

@@ -90,13 +90,13 @@ import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.BottomSheetState
 import com.wheretogo.presentation.state.CourseAddScreenState
 import com.wheretogo.presentation.theme.Black
+import com.wheretogo.presentation.theme.Gray100
 import com.wheretogo.presentation.theme.Gray150
 import com.wheretogo.presentation.theme.Gray280
 import com.wheretogo.presentation.theme.Gray50
-import com.wheretogo.presentation.theme.Gray6080
 import com.wheretogo.presentation.theme.PrimeBlue
 import com.wheretogo.presentation.theme.White
-import com.wheretogo.presentation.theme.White85
+import com.wheretogo.presentation.theme.White100
 import com.wheretogo.presentation.theme.interBoldFontFamily
 import com.wheretogo.presentation.theme.interFontFamily
 import com.wheretogo.presentation.toStrRes
@@ -333,7 +333,7 @@ fun FloatingButtonGroup(
                 modifier = Modifier
                     .size(50.dp)
                     .clip(CircleShape)
-                    .background(White85)
+                    .background(White100.copy(alpha = 0.85f))
                     .clickable {
                         onMarkerMoveClick()
                     }, contentAlignment = Alignment.Center
@@ -344,7 +344,7 @@ fun FloatingButtonGroup(
                 modifier = Modifier
                     .size(50.dp)
                     .clip(CircleShape)
-                    .background(White85)
+                    .background(White100.copy(alpha = 0.85f))
                     .clickable {
                         onMarkerRemoveClick()
                     }, contentAlignment = Alignment.Center
@@ -430,7 +430,7 @@ fun CommendButton(
                 .fillMaxSize()
                 .clip(RoundedCornerShape(16.dp))
                 .border(
-                    color = Gray6080, shape = RoundedCornerShape(16.dp), width = 1.dp
+                    color = Gray100.copy(alpha = 0.5f), shape = RoundedCornerShape(16.dp), width = 1.dp
                 )
                 .background(backColor)
                 .intervalTab(1000L) {
@@ -550,7 +550,7 @@ fun RouteDetailItem(
         modifier = Modifier
             .clip(RoundedCornerShape(16.dp))
             .background(
-                if (isClick) PrimeBlue else Gray6080
+                if (isClick) PrimeBlue else Gray100.copy(alpha = 0.5f)
             )
             .clickable {
                 onRouteDetailItemClick(item)

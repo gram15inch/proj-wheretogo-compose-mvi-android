@@ -24,6 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Rect
@@ -45,7 +46,6 @@ import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.animation.highlightRoundedCorner
 import com.wheretogo.presentation.state.GuideState
 import com.wheretogo.presentation.theme.Gray50
-import com.wheretogo.presentation.theme.Gray5050
 import com.wheretogo.presentation.theme.hancomMalangFontFamily
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 import com.wheretogo.presentation.toStrRes
@@ -104,7 +104,7 @@ fun GuidePopup(
                         .zIndex(1f)
                         .align(Alignment.TopEnd)
                         .clip(CircleShape)
-                        .background(Gray5050)
+                        .background(Gray50)
                         .size(25.dp)
                         .padding(5.dp),
                     painter = painterResource(R.drawable.ic_close),

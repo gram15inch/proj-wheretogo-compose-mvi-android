@@ -78,8 +78,9 @@ import com.wheretogo.presentation.state.CommentState
 import com.wheretogo.presentation.state.CommentState.CommentAddState
 import com.wheretogo.presentation.state.CommentState.CommentItemState
 import com.wheretogo.presentation.state.PopUpState
-import com.wheretogo.presentation.theme.Gray5050
-import com.wheretogo.presentation.theme.Gray6080
+import com.wheretogo.presentation.theme.Gray100
+import com.wheretogo.presentation.theme.Gray50
+
 import com.wheretogo.presentation.theme.Green50
 import com.wheretogo.presentation.theme.Purple200
 import com.wheretogo.presentation.theme.Teal200
@@ -198,7 +199,7 @@ fun CommentDragSheet(
             onSheetStateChange = onSheetStateChange,
             onSheetHeightChange = {},
             isSpaceVisibleWhenClose = false,
-            dragHandleColor = if(state.isDragGuide) Gray6080 else null
+            dragHandleColor = if(state.isDragGuide) Gray100.copy(alpha = 0.5f) else null
         ) {
             Box{
                 if(state.isDragGuide){
@@ -208,7 +209,7 @@ fun CommentDragSheet(
                             .zIndex(999f)
                             .background(
                                 brush = Brush.verticalGradient(
-                                    colors = listOf(Gray6080, Gray5050)
+                                    colors = listOf(Gray100.copy(alpha = 0.5f), Gray50.copy(alpha = 0.3f))
                                 )
                             ),
                     ) {

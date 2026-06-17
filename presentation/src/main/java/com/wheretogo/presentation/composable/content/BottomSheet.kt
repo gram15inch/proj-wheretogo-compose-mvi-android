@@ -28,7 +28,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.wheretogo.presentation.SheetVisibleMode
-import com.wheretogo.presentation.theme.Gray6080
+import com.wheretogo.presentation.theme.Gray100
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -157,7 +158,7 @@ fun DragHandle(modifier: Modifier = Modifier) {
                 .clip(RoundedCornerShape(16.dp))
                 .width(40.dp)
                 .height(5.dp)
-                .background(Gray6080)
+                .background(Gray100.copy(alpha = 0.5f))
         )
     }
 }

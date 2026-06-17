@@ -61,8 +61,8 @@ import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.toDisplayName
 import com.wheretogo.presentation.state.CommentState
 import com.wheretogo.presentation.state.CommentState.CommentItemState
+import com.wheretogo.presentation.theme.Gray100
 import com.wheretogo.presentation.theme.Gray250
-import com.wheretogo.presentation.theme.Gray8090
 import com.wheretogo.presentation.theme.hancomMalangFontFamily
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 
@@ -376,7 +376,7 @@ fun CommentSetting(
                 interactionSource = remember { MutableInteractionSource() },
                 onClick = { onBackgroundClick() }
             )
-            .background(Gray8090),
+            .background(Gray100.copy(alpha = 0.56f)),
         contentAlignment = Alignment.Center
     ) {
         Column(
