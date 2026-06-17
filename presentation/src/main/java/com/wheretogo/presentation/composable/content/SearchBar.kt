@@ -39,7 +39,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalInspectionMode
@@ -59,10 +58,7 @@ import com.wheretogo.presentation.composable.animation.highlightRoundedCorner
 import com.wheretogo.presentation.feature.intervalTab
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.SearchBarState
-import com.wheretogo.presentation.theme.Gray150
-import com.wheretogo.presentation.theme.Gray320
-import com.wheretogo.presentation.theme.PrimeBlue
-import com.wheretogo.presentation.theme.White
+import com.wheretogo.presentation.theme.Palette
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -129,7 +125,7 @@ fun SearchBar(
                 .clip(RoundedCornerShape(16.dp))
                 .shadow(elevation = 1.5.dp, shape = RoundedCornerShape(16.dp), clip = false)
                 .height(40.dp)
-                .background(Color.White)
+                .background(Palette.White)
                 .highlightRoundedCorner(
                     isVisible = state.isHighlight,
                     width = 6.dp,
@@ -275,7 +271,7 @@ fun FocusTextField(
     textStyle: TextStyle = TextStyle(
         fontSize = 15.sp,
         fontFamily = hancomSansFontFamily,
-        color = Gray320
+        color = Palette.Gray320
     ),
     readOnly: Boolean = false,
     focusRequester: FocusRequester,
@@ -375,8 +371,8 @@ fun BarDropList(
 
 @Composable
 fun BarListItem(searchBarItem: SearchBarItem, onSearchBarItemClick: (SearchBarItem) -> Unit) {
-    val textColor = if (searchBarItem.isCourse) White else Gray320
-    val backgroundColor = if (searchBarItem.isCourse) PrimeBlue else White
+    val textColor = if (searchBarItem.isCourse) Palette.White else Palette.Gray320
+    val backgroundColor = if (searchBarItem.isCourse) Palette.PrimeBlue else Palette.White
     val textStyle = TextStyle(
         fontFamily = hancomSansFontFamily,
         color = textColor
@@ -410,7 +406,7 @@ fun BarClearItem(onSearchBarItemClick: (SearchBarItem) -> Unit) {
             .clickable {
                 onSearchBarItemClick(SearchBarItem(CLEAR_ADDRESS, ""))
             }
-            .background(Gray150)
+            .background(Palette.Gray150)
     ) {
         Image(
             modifier = Modifier

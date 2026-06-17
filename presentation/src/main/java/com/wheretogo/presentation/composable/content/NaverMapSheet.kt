@@ -45,7 +45,7 @@ import com.wheretogo.presentation.model.CameraOption
 import com.wheretogo.presentation.model.ContentPadding
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.state.NaverMapState
-import com.wheretogo.presentation.theme.Green50
+import com.wheretogo.presentation.theme.Palette
 import com.wheretogo.presentation.toCameraState
 import com.wheretogo.presentation.toDomainLatLng
 import com.wheretogo.presentation.toNaver
@@ -55,7 +55,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
-@Composable
+ @Composable
 fun NaverMapSheet(
     modifier: Modifier = Modifier,
     state: NaverMapState,
@@ -109,7 +109,7 @@ fun NaverMapSheet(
         Box(
             modifier
                 .fillMaxSize()
-                .background(Green50)
+                .background(Palette.Green50)
         )
     } else {
         // 초기 설정

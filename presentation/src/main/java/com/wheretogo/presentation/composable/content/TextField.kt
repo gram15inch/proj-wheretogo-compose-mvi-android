@@ -43,9 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.topShadow
-import com.wheretogo.presentation.theme.Gray150
-import com.wheretogo.presentation.theme.PrimeBlue
-import timber.log.Timber
+import com.wheretogo.presentation.theme.Palette
 
 
 @Composable
@@ -107,7 +105,7 @@ fun CommentTextField(
                         } else
                             isDone = false
                     },
-                    cursorBrush = SolidColor(Color.Black),
+                    cursorBrush = SolidColor(Palette.Black),
                     maxLines = Int.MAX_VALUE,
                     textStyle = TextStyle(
                         fontSize = 11.sp
@@ -156,7 +154,7 @@ fun DescriptionTextField(
                 }
                 .topShadow()
                 .fillMaxWidth()
-                .background(Color.White)
+                .background(Palette.White)
                 .padding(top = 5.dp, bottom = 5.dp, start = 5.dp, end = 5.dp)
         ) {
             Box(
@@ -166,7 +164,7 @@ fun DescriptionTextField(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(16.dp))
-                        .background(Gray150)
+                        .background(Palette.Gray150)
                         .padding(10.dp)
                 ) {
                     BasicTextField(
@@ -203,7 +201,7 @@ fun EnterButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
-            .background(PrimeBlue)
+            .background(Palette.PrimeBlue)
             .clickable { onClick() }
             .padding(vertical = 3.dp, horizontal = 15.dp),
         contentAlignment = Alignment.Center

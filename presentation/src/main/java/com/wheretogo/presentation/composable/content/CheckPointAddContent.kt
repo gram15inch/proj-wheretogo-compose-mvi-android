@@ -42,14 +42,11 @@ import androidx.compose.ui.unit.sp
 import com.wheretogo.domain.model.util.ImageInfo
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.formatFileSizeToMB
-import com.wheretogo.presentation.feature.getFileInfoFromUri
 import com.wheretogo.presentation.state.BottomSheetState
 import com.wheretogo.presentation.state.CheckPointAddState
 import com.wheretogo.presentation.state.InfoState
-import com.wheretogo.presentation.theme.Gray50
-import com.wheretogo.presentation.theme.PrimeBlue
+import com.wheretogo.presentation.theme.Palette
 import com.wheretogo.presentation.theme.WhereTogoTheme
-import com.wheretogo.presentation.theme.White
 import com.wheretogo.presentation.theme.interBoldFontFamily
 import com.wheretogo.presentation.theme.interFontFamily
 
@@ -133,11 +130,11 @@ fun CheckPointAddContent(
 
         // 제출 버튼
         val btnBackground by animateColorAsState(
-            targetValue = if (state.isSubmitActive) PrimeBlue else Gray50.copy(alpha = 0.4f),
+            targetValue = if (state.isSubmitActive) Palette.PrimeBlue else Palette.Gray50.copy(alpha = 0.4f),
             label = "btnBg"
         )
         val btnTextColor by animateColorAsState(
-            targetValue = if (state.isSubmitActive) White else MaterialTheme.colorScheme.onSurfaceVariant,
+            targetValue = if (state.isSubmitActive) Palette.White else MaterialTheme.colorScheme.onSurfaceVariant,
             label = "btnText"
         )
 

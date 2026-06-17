@@ -24,20 +24,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Outline
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -45,7 +36,7 @@ import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.animation.highlightRoundedCorner
 import com.wheretogo.presentation.state.GuideState
-import com.wheretogo.presentation.theme.Gray50
+import com.wheretogo.presentation.theme.Palette
 import com.wheretogo.presentation.theme.hancomMalangFontFamily
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 import com.wheretogo.presentation.toStrRes
@@ -90,7 +81,7 @@ fun GuidePopup(
                 .sizeIn(maxWidth = 220.dp)
                 .highlightRoundedCorner(state.isHighlight, width = 4.dp, 14.dp)
                 .shadow(elevation = 5.dp, shape = RoundedCornerShape(14.dp))
-                .background(Gray50)
+                .background(Palette.Gray50)
                 .run {
                     if (step == DriveTutorialStep.DRIVE_GUIDE_DONE)
                         clickable { onClick(step) }
@@ -104,7 +95,7 @@ fun GuidePopup(
                         .zIndex(1f)
                         .align(Alignment.TopEnd)
                         .clip(CircleShape)
-                        .background(Gray50)
+                        .background(Palette.Gray50)
                         .size(25.dp)
                         .padding(5.dp),
                     painter = painterResource(R.drawable.ic_close),

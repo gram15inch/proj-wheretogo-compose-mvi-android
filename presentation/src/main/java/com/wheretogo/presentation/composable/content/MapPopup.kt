@@ -78,13 +78,7 @@ import com.wheretogo.presentation.state.CommentState
 import com.wheretogo.presentation.state.CommentState.CommentAddState
 import com.wheretogo.presentation.state.CommentState.CommentItemState
 import com.wheretogo.presentation.state.PopUpState
-import com.wheretogo.presentation.theme.Gray100
-import com.wheretogo.presentation.theme.Gray50
-
-import com.wheretogo.presentation.theme.Green50
-import com.wheretogo.presentation.theme.Purple200
-import com.wheretogo.presentation.theme.Teal200
-import com.wheretogo.presentation.theme.White
+import com.wheretogo.presentation.theme.Palette
 import com.wheretogo.presentation.theme.hancomMalangFontFamily
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -199,7 +193,7 @@ fun CommentDragSheet(
             onSheetStateChange = onSheetStateChange,
             onSheetHeightChange = {},
             isSpaceVisibleWhenClose = false,
-            dragHandleColor = if(state.isDragGuide) Gray100.copy(alpha = 0.5f) else null
+            dragHandleColor = if(state.isDragGuide) Palette.Gray100.copy(alpha = 0.5f) else null
         ) {
             Box{
                 if(state.isDragGuide){
@@ -209,7 +203,7 @@ fun CommentDragSheet(
                             .zIndex(999f)
                             .background(
                                 brush = Brush.verticalGradient(
-                                    colors = listOf(Gray100.copy(alpha = 0.5f), Gray50.copy(alpha = 0.3f))
+                                    colors = listOf(Palette.Gray100.copy(alpha = 0.5f), Palette.Gray50.copy(alpha = 0.3f))
                                 )
                             ),
                     ) {
@@ -229,7 +223,7 @@ fun CommentDragSheet(
                         .height(500.dp)
                         .consumptionEvent(true)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(White),
+                        .background(Palette.White),
                     commentState = state,
                     onCommentListItemClick = onCommentListItemClick,
                     onCommentListItemLongClick = onCommentListItemLongClick,
@@ -302,7 +296,7 @@ fun CommentImeStickyBox(
         Column(
             modifier = Modifier
                 .topShadow()
-                .background(Color.White)
+                .background(Palette.White)
         ) {
             // 리뷰버튼
             ReviewButtonGroup(
@@ -373,13 +367,13 @@ fun ReviewButtonGroup(
         ReviewButton(
             type = CommentType.ONE,
             selectedType = selectedType,
-            color = Teal200,
+            color = Palette.Teal200,
             onReviewButtonClick = onReviewButtonClick
         )
         ReviewButton(
             type = CommentType.DETAIL,
             selectedType = selectedType,
-            color = Purple200,
+            color = Palette.Purple200,
             onReviewButtonClick = onReviewButtonClick
         )
     }
@@ -425,7 +419,7 @@ fun ReviewButton(
     ) {
         Text(
             modifier = Modifier.padding(top = 1.dp, bottom = 3.dp, start = 7.dp, end = 7.dp),
-            text = stringResource(type.typeRes), color = Color.White,
+            text = stringResource(type.typeRes), color = Palette.White,
             style = TextStyle(
                 fontSize = 12.sp,
                 platformStyle = PlatformTextStyle(
@@ -508,7 +502,7 @@ fun CommentEmojiGroupAndOneLinePreview(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.White)
+                    .background(Palette.White)
                     .pointerInput(Unit) {
                         detectTapGestures()
                     }, contentAlignment = Alignment.CenterStart
@@ -570,7 +564,7 @@ fun PopUpImageSlide(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .shimmer()
-                                .background(White)
+                                .background(Palette.White)
                         )
                     }
                 }
@@ -585,7 +579,7 @@ fun PopUpImageSlide(
                     .align(Alignment.BottomCenter)
                     .background(
                         brush = Brush.verticalGradient(
-                            colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.75f))
+                            colors = listOf(Color.Transparent, Palette.Black.copy(alpha = 0.75f))
                         )
                     )
                     .padding(horizontal = 12.dp, vertical = 10.dp),
@@ -623,7 +617,7 @@ private fun ImageCation(
             title?.let {
                 Text(
                     text = it,
-                    color = Color.White,
+                    color = Palette.White,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium,
                     maxLines = 2,
@@ -633,7 +627,7 @@ private fun ImageCation(
             subTitle?.let {
                 Text(
                     text = it,
-                    color = Color.White.copy(alpha = 0.65f),
+                    color = Palette.White.copy(alpha = 0.65f),
                     fontSize = 11.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -667,8 +661,8 @@ private fun SlideIndicator(
                     .width(width)
                     .clip(CircleShape)
                     .background(
-                        if (isActive) Color.White
-                        else Color.White.copy(alpha = 0.4f)
+                        if (isActive) Palette.White
+                        else Palette.White.copy(alpha = 0.4f)
                     )
             )
         }
@@ -685,7 +679,7 @@ val previewItems = listOf(
 @Preview(widthDp = 400, heightDp = 600)
 @Composable
 fun PopupPreview() {
-    Box(modifier = Modifier.background(Green50)) {
+    Box(modifier = Modifier.background(Palette.Green50)) {
         MapPopup(
             modifier = Modifier.align(alignment = Alignment.BottomEnd),
             state = PopUpState(
@@ -734,7 +728,7 @@ fun PopupPreview() {
 @Preview(widthDp = 400, heightDp = 600)
 @Composable
 fun PopupNoSettingPreview() {
-    Box(modifier = Modifier.background(Green50)) {
+    Box(modifier = Modifier.background(Palette.Green50)) {
         MapPopup(
             modifier = Modifier.align(alignment = Alignment.BottomEnd),
             state = PopUpState(
@@ -783,7 +777,7 @@ fun PopupNoSettingPreview() {
 @Preview(widthDp = 400, heightDp = 600)
 @Composable
 fun PopupSettingPreview() {
-    Box(modifier = Modifier.background(Green50)) {
+    Box(modifier = Modifier.background(Palette.Green50)) {
         MapPopup(
             modifier = Modifier.align(alignment = Alignment.BottomEnd),
             state = PopUpState(

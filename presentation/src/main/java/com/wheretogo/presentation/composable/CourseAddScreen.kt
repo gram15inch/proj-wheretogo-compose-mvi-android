@@ -59,16 +59,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.naver.maps.map.CameraPosition
 import com.naver.maps.map.NaverMap
 import com.wheretogo.domain.RouteAttr
-import com.wheretogo.domain.ZOOM
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.map.CameraState
 import com.wheretogo.domain.model.map.MarkerInfo
 import com.wheretogo.domain.model.route.RouteCategory
 import com.wheretogo.presentation.DriveBottomSheetContent
-import com.wheretogo.presentation.NamSan
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.SheetVisibleMode
 import com.wheretogo.presentation.composable.content.AnimationDirection
@@ -82,21 +79,13 @@ import com.wheretogo.presentation.composable.content.SearchBar
 import com.wheretogo.presentation.composable.content.SlideAnimation
 import com.wheretogo.presentation.composable.effect.LifecycleDisposer
 import com.wheretogo.presentation.feature.intervalTab
-import com.wheretogo.presentation.feature.naver.getLastLatLng
 import com.wheretogo.presentation.intent.CourseAddIntent
 import com.wheretogo.presentation.model.ContentPadding
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.BottomSheetState
 import com.wheretogo.presentation.state.CourseAddScreenState
-import com.wheretogo.presentation.theme.Black
-import com.wheretogo.presentation.theme.Gray100
-import com.wheretogo.presentation.theme.Gray150
-import com.wheretogo.presentation.theme.Gray280
-import com.wheretogo.presentation.theme.Gray50
-import com.wheretogo.presentation.theme.PrimeBlue
-import com.wheretogo.presentation.theme.White
-import com.wheretogo.presentation.theme.White100
+import com.wheretogo.presentation.theme.Palette
 import com.wheretogo.presentation.theme.interBoldFontFamily
 import com.wheretogo.presentation.theme.interFontFamily
 import com.wheretogo.presentation.toStrRes
@@ -104,7 +93,6 @@ import com.wheretogo.presentation.viewmodel.CourseAddViewModel
 import com.wheretogo.presentation.viewmodel.MapEvent
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 
 @Composable
 fun CourseAddScreen(
@@ -333,7 +321,7 @@ fun FloatingButtonGroup(
                 modifier = Modifier
                     .size(50.dp)
                     .clip(CircleShape)
-                    .background(White100.copy(alpha = 0.85f))
+                    .background(Palette.White100.copy(alpha = 0.85f))
                     .clickable {
                         onMarkerMoveClick()
                     }, contentAlignment = Alignment.Center
@@ -344,7 +332,7 @@ fun FloatingButtonGroup(
                 modifier = Modifier
                     .size(50.dp)
                     .clip(CircleShape)
-                    .background(White100.copy(alpha = 0.85f))
+                    .background(Palette.White100.copy(alpha = 0.85f))
                     .clickable {
                         onMarkerRemoveClick()
                     }, contentAlignment = Alignment.Center
@@ -423,14 +411,14 @@ fun CommendButton(
         contentAlignment = Alignment.BottomCenter
     ) {
         val text = if (isDetailContent) R.string.done else R.string.next_step
-        val textColor = if (isCommendActive) White else Black
-        val backColor = if (isCommendActive) PrimeBlue else White
+        val textColor = if (isCommendActive) Palette.White else Palette.Gray320
+        val backColor = if (isCommendActive) Palette.PrimeBlue else Palette.White
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .clip(RoundedCornerShape(16.dp))
                 .border(
-                    color = Gray100.copy(alpha = 0.5f), shape = RoundedCornerShape(16.dp), width = 1.dp
+                    color = Palette.Gray100.copy(alpha = 0.5f), shape = RoundedCornerShape(16.dp), width = 1.dp
                 )
                 .background(backColor)
                 .intervalTab(1000L) {
@@ -550,7 +538,7 @@ fun RouteDetailItem(
         modifier = Modifier
             .clip(RoundedCornerShape(16.dp))
             .background(
-                if (isClick) PrimeBlue else Gray100.copy(alpha = 0.5f)
+                if (isClick) Palette.PrimeBlue else Palette.Gray100.copy(alpha = 0.5f)
             )
             .clickable {
                 onRouteDetailItemClick(item)
@@ -558,7 +546,7 @@ fun RouteDetailItem(
         Text(
             modifier = Modifier.padding(vertical = 3.dp, horizontal = 8.dp),
             text = "$emogi ${stringResource(strRes)}",
-            color = if (isClick) Color.White else Color.Black,
+            color = if (isClick) Palette.White else Palette.Black,
             fontSize = 11.sp,
             fontFamily = interBoldFontFamily
         )
@@ -597,7 +585,7 @@ fun RouteWaypointContent(
                         modifier = Modifier
                             .clip(RoundedCornerShape(16.dp))
                             .border(
-                                width = 1.dp, shape = RoundedCornerShape(16.dp), color = Gray150
+                                width = 1.dp, shape = RoundedCornerShape(16.dp), color = Palette.Gray150
                             )
                             .align(Alignment.TopEnd)
                             .intervalTab(2000) { onRouteCreateClick() },
@@ -627,7 +615,7 @@ fun RouteWaypointContent(
                 ) {
                     Text(
                         text = courseName,
-                        style = textStyle.copy(color = Gray150, fontSize = 11.sp)
+                        style = textStyle.copy(color = Palette.Gray150, fontSize = 11.sp)
                     )
                 }
                 Column(modifier = Modifier.padding(top = 17.dp)) {
@@ -643,7 +631,7 @@ fun RouteWaypointContent(
                             if (isTextCover && editText.text.isBlank())
                                 Text(
                                     text = courseName,
-                                    style = textStyle.copy(color = Gray150)
+                                    style = textStyle.copy(color = Palette.Gray150)
                                 )
                             FocusTextField(
                                 modifier = Modifier,
@@ -717,7 +705,7 @@ fun RouteWaypointContent(
                         modifier = Modifier
                             .clip(RoundedCornerShape(16.dp))
                             .fillMaxSize()
-                            .background(Gray50),
+                            .background(Palette.Gray50),
                         contentAlignment = Alignment.Center
                     ) {
                         Text("생성으로 새 경로를 만들어 보세요.", fontFamily = interFontFamily)
@@ -734,7 +722,7 @@ fun AddressItem(modifier: Modifier, item: CourseAddScreenState.RouteWaypointItem
         modifier = modifier
             .fillMaxWidth()
             .border(
-                width = 1.dp, color = Gray280, shape = RoundedCornerShape(16.dp)
+                width = 1.dp, color = Palette.Gray280, shape = RoundedCornerShape(16.dp)
             )
 
     ) {

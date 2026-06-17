@@ -45,6 +45,7 @@ import androidx.navigation.NavController
 import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.ZOOM
 import com.wheretogo.domain.model.comment.Comment
+import com.wheretogo.domain.model.course.CourseDirectionItem
 import com.wheretogo.domain.model.dummy.getCourseDummy
 import com.wheretogo.domain.model.report.ReportReason
 import com.wheretogo.domain.model.util.ImageInfo
@@ -80,7 +81,6 @@ import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.intent.MapIntent
 import com.wheretogo.presentation.model.ContentPadding
-import com.wheretogo.domain.model.course.CourseDirectionItem
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.model.TypeEditText
 import com.wheretogo.presentation.state.CheckPointAddState
@@ -91,9 +91,7 @@ import com.wheretogo.presentation.state.FloatingButtonState
 import com.wheretogo.presentation.state.GuideState
 import com.wheretogo.presentation.state.InfoState
 import com.wheretogo.presentation.state.ListState
-import com.wheretogo.presentation.theme.Gray100
-import com.wheretogo.presentation.theme.Gray50
-
+import com.wheretogo.presentation.theme.Palette
 import com.wheretogo.presentation.viewmodel.DriveViewModel
 import com.wheretogo.presentation.viewmodel.MapViewModel
 
@@ -399,7 +397,7 @@ fun DriveContent(
                                 .run{
                                     if(isCover)
                                         alpha(0.4f)
-                                        .background(Gray50)
+                                        .background(Palette.Gray50)
                                     else this
                                 }
                         )
@@ -547,7 +545,7 @@ fun BlurEffect(modifier: Modifier = Modifier, onClick: () -> Unit) {
         modifier = modifier
             .fillMaxSize()
             .alpha(0.5f)
-            .background(Gray100)
+            .background(Palette.Gray100)
             .clickable(
                 indication = null,
                 interactionSource = interactionSource

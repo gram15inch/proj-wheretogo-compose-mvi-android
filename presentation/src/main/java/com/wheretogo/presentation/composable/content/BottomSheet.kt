@@ -28,7 +28,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.wheretogo.presentation.SheetVisibleMode
-import com.wheretogo.presentation.theme.Gray100
+import com.wheretogo.presentation.theme.Palette
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -107,7 +107,7 @@ fun BottomSheet(
     ) {
         BottomSheetScaffold(
             scaffoldState = scaffoldState,
-            sheetContainerColor = Color.White,
+            sheetContainerColor = Palette.White,
             sheetContent = {
                 Column(
                     modifier = Modifier
@@ -158,7 +158,7 @@ fun DragHandle(modifier: Modifier = Modifier) {
                 .clip(RoundedCornerShape(16.dp))
                 .width(40.dp)
                 .height(5.dp)
-                .background(Gray100.copy(alpha = 0.5f))
+                .background(Palette.Gray100.copy(alpha = 0.5f))
         )
     }
 }

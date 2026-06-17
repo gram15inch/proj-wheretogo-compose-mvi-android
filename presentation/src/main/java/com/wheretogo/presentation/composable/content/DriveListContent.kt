@@ -45,8 +45,7 @@ import com.wheretogo.domain.model.route.RouteCategory
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.animation.highlightRoundedCorner
 import com.wheretogo.presentation.state.ListState
-import com.wheretogo.presentation.theme.Gray250
-import com.wheretogo.presentation.theme.White100
+import com.wheretogo.presentation.theme.Palette
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 import com.wheretogo.presentation.toStrRes
 
@@ -147,7 +146,7 @@ fun DriveListItem(
                     elevation = 1.dp,
                     shape = RoundedCornerShape(16.dp),
                     clip = false
-                ).background(White100.copy(alpha = 0.95f))
+                ).background(Palette.White100.copy(alpha = 0.95f))
         ) {
             // 방향 구분 버튼
             Row(
@@ -255,7 +254,7 @@ fun DirectionLabel(text:String, modifier: Modifier){
         text = text,
         fontFamily = hancomSansFontFamily,
         fontSize = 11.5.sp,
-        color = Gray250
+        color = Palette.Gray250
     )
 }
 
@@ -282,7 +281,7 @@ fun DriveItemAttribute(modifier: Modifier, content: String, type: String) {
                 text = type,
                 fontSize = 9.5.sp,
                 fontFamily = hancomSansFontFamily,
-                color = Gray250,
+                color = Palette.Gray250,
                 textAlign = TextAlign.Center,
                 style = TextStyle(
                     lineHeightStyle = LineHeightStyle(

@@ -17,11 +17,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.wheretogo.presentation.theme.Blue50
-import com.wheretogo.presentation.theme.Green50
+import com.wheretogo.presentation.theme.Palette
 
 @Composable
-fun highlightsBrush(durationMils: Int = 500, colors: List<Color> = listOf(Blue50, Green50)): Brush {
+fun highlightsBrush(durationMils: Int = 500, colors: List<Color> = listOf(Palette.Blue50, Palette.Green50)): Brush {
     val transition = rememberInfiniteTransition(label = "gradient-shine")
     val offsetX by transition.animateFloat(
         initialValue = 0f,

@@ -36,6 +36,7 @@ import com.wheretogo.presentation.feature.EventBus
 import com.wheretogo.presentation.feature.checkFalseOrData
 import com.wheretogo.presentation.feature.openUri
 import com.wheretogo.presentation.feature.show
+import com.wheretogo.presentation.theme.Palette
 import com.wheretogo.presentation.theme.WhereTogoTheme
 import com.wheretogo.presentation.viewmodel.RootViewModel
 import kotlinx.coroutines.launch
@@ -114,7 +115,7 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                     Snackbar(
                         snackbarData,
                         containerColor = Color.DarkGray,
-                        contentColor = Color.White,
+                        contentColor = Palette.White,
                         actionColor = Color.Cyan
                     )
                 }

@@ -33,8 +33,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
-import com.wheretogo.presentation.theme.Gray100
-
+import com.wheretogo.presentation.theme.Palette
 import kotlin.math.max
 
 
@@ -76,7 +75,7 @@ fun BlurEffect(modifier: Modifier = Modifier, onClick: () -> Unit) {
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Gray100.copy(alpha = 0.5f))
+            .background(Palette.Gray100.copy(alpha = 0.5f))
             .clickable(
                 indication = null,
                 interactionSource = interactionSource
