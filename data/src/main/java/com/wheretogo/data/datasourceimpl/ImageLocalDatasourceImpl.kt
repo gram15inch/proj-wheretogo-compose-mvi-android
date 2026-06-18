@@ -18,22 +18,25 @@ import com.wheretogo.data.ImageFormat
 import com.wheretogo.data.datasource.ImageLocalDatasource
 import com.wheretogo.data.feature.PhotoExifReader
 import com.wheretogo.data.model.confg.ImageConfig
+import com.wheretogo.data.datasourceimpl.database.GalleryDatabase
+import com.wheretogo.data.model.gallery.PhotoEntity
 import com.wheretogo.domain.ImageSize
-import com.wheretogo.domain.feature.fit
-import com.wheretogo.domain.feature.rotate
-import com.wheretogo.domain.feature.scale
-import com.wheretogo.domain.feature.scaleCrop
-import com.wheretogo.domain.model.util.ExifData
-import com.wheretogo.domain.model.util.FilePreview
 import com.wheretogo.domain.feature.rotateByExif
 import com.wheretogo.domain.feature.scaleCropToFill
 import com.wheretogo.domain.feature.scaleToFitInside
 import com.wheretogo.domain.model.address.LatLng
+import com.wheretogo.domain.model.util.ExifData
+import com.wheretogo.domain.model.util.FilePreview
 import com.wheretogo.domain.model.util.MediaImage
+import com.wheretogo.domain.model.gallery.GalleryPhoto
+import com.wheretogo.domain.model.gallery.PhotoExif
 import dagger.hilt.android.qualifiers.ApplicationContext
+import de.huxhorn.sulky.ulid.ULID
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import java.io.ByteArrayOutputStream
 import java.io.File
 import javax.inject.Inject
@@ -42,8 +45,10 @@ class ImageLocalDatasourceImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     private val imageFile: File,
     private val imageConfig: ImageConfig,
+    private val galleryDatabase: GalleryDatabase,
     private val exifReader: PhotoExifReader
 ) : ImageLocalDatasource {
+    private val photoDao by lazy { galleryDatabase.photoDao() }
     private val ext = imageConfig.format.ext
     private val mediaUri: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
 
@@ -75,11 +80,12 @@ class ImageLocalDatasourceImpl @Inject constructor(
     }
 
 
-    override suspend fun removeImage(imageId: String, size: ImageSize): Result<Unit> {
+    override suspend fun removeImage(imageId: String, size: ImageSize): Result<Boolean> {
         return runCatching {
             val localFile = getImage(imageId, size)
             if (localFile.exists())
                 localFile.delete()
+            else true
         }
     }
 
@@ -175,13 +181,123 @@ class ImageLocalDatasourceImpl @Inject constructor(
 
     override suspend fun getMediaImages(offset: Int, limit: Int): Result<List<MediaImage>> {
         return runCatching {
-            queryImages(offset, limit)?.use { cursor ->
-                cursor.toMediaImages()
-            } ?: emptyList()
+            context.contentResolver
+                .query(offset, limit)
+                ?.toMediaImages()
+                ?:emptyList()
         }
     }
 
-    private fun queryImages(offset: Int, limit: Int): Cursor? {
+    override suspend fun saveGalleryPhotos(uriStrings: List<String>): Result<List<Long>> = runCatching {
+        val keyed = uriStrings.associateBy { buildExistingKey(it) }
+        val existing = photoDao.findExistingKeys(keyed.keys.toList()).toSet()
+        val targets = keyed.filterKeys { it !in existing }
+        if (targets.isEmpty()) return@runCatching emptyList()
+        val entities = createEntity(targets)
+        val rowIds = photoDao.insertAll(entities)
+
+        entities.filterIndexed { i, entity ->
+            val inserted = rowIds.getOrNull(i) != -1L
+            if (!inserted) {
+                ImageSize.entries.forEach { removeImage(entity.imageId, it) }
+            }
+            inserted
+        }.map { it.id }
+    }
+
+    override suspend fun loadGalleyPhotos(): Result<List<GalleryPhoto>> {
+        return runCatching {
+            photoDao.getAll().mapNotNull {
+                it.toGalleryPhoto(it.imageId)
+            }
+        }
+    }
+
+    private fun ContentResolver.createExifData(uriString: String): ExifData?{
+        val uri = uriString.toUri()
+        return openInputStream(uri)?.use { exifReader.read(it) }
+    }
+
+    suspend fun List<Pair<ImageSize, ByteArray>>.saveImages(imageId: String) : File {
+        return  coroutineScope {
+            map { (size, bytes) ->
+                async { saveImage(bytes, imageId, size).getOrThrow() }
+            }.awaitAll().first()
+        }
+    }
+
+    override suspend fun clearGalleryPhotos(ids: Set<Long>): Result<Set<Long>> {
+        return runCatching {
+            val removed= buildSet {
+                val photos= photoDao.getByIds(ids)
+                coroutineScope {
+                    photos.map { entity ->
+                        async {
+                            removeImage(entity.imageId, ImageSize.NORMAL).getOrNull()?:return@async
+                            removeImage(entity.imageId, ImageSize.SMALL).getOrNull()?:return@async
+                            add(entity.id)
+                        }
+                    }.awaitAll()
+                }
+            }
+
+            photoDao.deleteByIds(removed)
+            removed
+        }
+    }
+
+    private suspend fun createEntity(targets: Map<String, String>): List<PhotoEntity> {
+        val semaphore = Semaphore(10)
+        return coroutineScope {
+            targets.map { (sourceKey, uriString) ->
+                async {
+                    semaphore.withPermit {
+                        runCatching {
+                            val imageId = generateImageId()
+                            val exif = context.contentResolver.createExifData(uriString)
+                            val file = openAndResizeImage(uriString, ImageSize.entries)
+                                .getOrThrow()
+                                .saveImages(imageId)
+
+                            PhotoEntity(
+                                id = generateId(),
+                                imageId = imageId,
+                                fileName = file.name,
+                                sourceKey = sourceKey,
+                                dateTaken = exif?.timestampMillis,
+                                width = exif?.imageWidth,
+                                height = exif?.imageHeight,
+                                latitude = exif?.latitude,
+                                longitude = exif?.longitude,
+                            )
+                        }.getOrNull()
+                    }
+                }
+            }.awaitAll().filterNotNull()
+        }
+    }
+
+    private suspend fun PhotoEntity.toGalleryPhoto(imageId:String): GalleryPhoto? {
+        val uriString= getImage(imageId, ImageSize.NORMAL).toUri().path?:return null
+        val thumbnail= getImage(imageId, ImageSize.SMALL).toUri().path?:return null
+
+        return GalleryPhoto(
+            id = id,
+            imageId = imageId,
+            uriString = uriString,
+            thumbnail= thumbnail,
+            exif = PhotoExif(
+                dateTaken = dateTaken,
+                width = width,
+                height = height,
+                location = if (latitude != null && longitude != null)
+                    LatLng(latitude, longitude) else null,
+            ),
+        )
+    }
+
+
+    private fun ContentResolver.query(offset: Int, limit: Int): Cursor? {
         val projection = arrayOf(MediaStore.Images.Media._ID)
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val args = bundleOf(
@@ -190,20 +306,22 @@ class ImageLocalDatasourceImpl @Inject constructor(
                 ContentResolver.QUERY_ARG_LIMIT to limit,
                 ContentResolver.QUERY_ARG_OFFSET to offset,
             )
-            context.contentResolver.query(mediaUri, projection, args, null)
+            query(mediaUri, projection, args, null)
         } else {
             val sortOrder = "${MediaStore.Images.Media.DATE_ADDED} DESC LIMIT $limit OFFSET $offset"
-            context.contentResolver.query(mediaUri, projection, null, null, sortOrder)
+            query(mediaUri, projection, null, null, sortOrder)
         }
     }
 
     private fun Cursor.toMediaImages(): List<MediaImage> {
-        val idCol = getColumnIndexOrThrow(MediaStore.Images.Media._ID)
-        return buildList(count) {
-            while (moveToNext()) {
-                val id = getLong(idCol)
-                val uri = ContentUris.withAppendedId(mediaUri, id).toString()
-                add(MediaImage(id, uri))
+        return use { cursor ->
+            val idCol = getColumnIndexOrThrow(MediaStore.Images.Media._ID)
+            buildList(count) {
+                while (moveToNext()) {
+                    val id = getLong(idCol)
+                    val uri = ContentUris.withAppendedId(mediaUri, id).toString()
+                    add(MediaImage(id, uri))
+                }
             }
         }
     }
@@ -229,4 +347,17 @@ class ImageLocalDatasourceImpl @Inject constructor(
             canvas.drawRect(0f, 0f, width.toFloat(), width.toFloat(), paint)
         }
     }
+
+
+    private fun buildExistingKey(uriString: String): String =
+        uriString.toUri().lastPathSegment ?: uriString.toUri().toString()
+
+    private var lastId = 0L
+    private fun generateId(): Long {
+        val now = System.currentTimeMillis()
+        lastId = if (now <= lastId) lastId + 1 else now
+        return lastId
+    }
+
+    private fun generateImageId():String = "IM${ULID().nextULID()}"
 }

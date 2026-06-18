@@ -36,6 +36,7 @@ import com.wheretogo.presentation.feature.EventBus
 import com.wheretogo.presentation.feature.checkFalseOrData
 import com.wheretogo.presentation.feature.openUri
 import com.wheretogo.presentation.feature.show
+import com.wheretogo.presentation.composable.gallery.GalleryFlow
 import com.wheretogo.presentation.theme.Palette
 import com.wheretogo.presentation.theme.WhereTogoTheme
 import com.wheretogo.presentation.viewmodel.RootViewModel
@@ -160,7 +161,7 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                         enterTransition = { slideInHorizontally(initialOffsetX = { it }) },
                         exitTransition = { slideOutHorizontally(targetOffsetX = { it }) }
                     ) {
-                        GalleryScreen()
+                        GalleryFlow()
                     }
                     composable(setting,
                         enterTransition = { slideInHorizontally(initialOffsetX = { it }) },

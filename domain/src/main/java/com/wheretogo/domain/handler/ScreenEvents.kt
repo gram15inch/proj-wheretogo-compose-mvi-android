@@ -20,3 +20,7 @@ enum class LoginEvent {
 enum class RootEvent {
     APP_CHECK_SUCCESS, USER_CHECK_SUCCESS, ACCOUNT_VALID_EXPIRE
 }
+
+enum class GalleryFlowMsgEvent {
+    GALLERY_LOAD_FAIL, MEDIA_SAVE_FAIL, PHOTO_DELETE_FAIL
+}
