@@ -3,12 +3,14 @@ package com.wheretogo.presentation.di
 import com.wheretogo.domain.handler.CourseAddHandler
 import com.wheretogo.domain.handler.DriveHandler
 import com.wheretogo.domain.handler.ErrorHandler
+import com.wheretogo.domain.handler.GalleryFlowHandler
 import com.wheretogo.domain.handler.HomeHandler
 import com.wheretogo.domain.handler.LoginHandler
 import com.wheretogo.domain.handler.RootHandler
 import com.wheretogo.presentation.handler.CourseAddHandlerImpl
 import com.wheretogo.presentation.handler.DefaultErrorHandlerImpl
 import com.wheretogo.presentation.handler.DriveHandlerImpl
+import com.wheretogo.presentation.handler.GalleryFlowHandlerImpl
 import com.wheretogo.presentation.handler.HomeHandlerImpl
 import com.wheretogo.presentation.handler.LoginHandlerImpl
 import com.wheretogo.presentation.handler.RootHandlerImpl
@@ -37,6 +39,9 @@ class HandlerModule {
 
     @Provides
     fun provideLoginHandler(error: ErrorHandler): LoginHandler = LoginHandlerImpl(error)
+
+    @Provides
+    fun provideGalleryFLowHandler(error: ErrorHandler): GalleryFlowHandler = GalleryFlowHandlerImpl(error)
 
     @Provides
     @Singleton

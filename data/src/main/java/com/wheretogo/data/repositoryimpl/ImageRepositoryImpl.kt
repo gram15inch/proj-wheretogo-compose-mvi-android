@@ -14,6 +14,7 @@ import com.wheretogo.domain.model.util.MediaImage
 import com.wheretogo.domain.repository.ImageRepository
 import com.wheretogo.domain.model.util.ExifData
 import com.wheretogo.domain.model.util.FilePreview
+import com.wheretogo.domain.model.gallery.GalleryPhoto
 import de.huxhorn.sulky.ulid.ULID
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -25,6 +26,7 @@ class ImageRepositoryImpl @Inject constructor(
     private val imageRemoteDatasource: ImageRemoteDatasource,
     private val imageLocalDatasource: ImageLocalDatasource
 ) : ImageRepository {
+    private fun generateId():String = "IM${ULID().nextULID()}"
 
     override suspend fun getImage(imageId: String, size: ImageSize): Result<String> {
         return runCatching {
@@ -43,8 +45,7 @@ class ImageRepositoryImpl @Inject constructor(
     }
 
     override suspend fun setImage(imgUriString: String): Result<ImageUris> {
-        val imageId = "IM${ULID().nextULID()}"
-
+        val imageId = generateId()
         return runCatching {
             val resizedImages =
                 imageLocalDatasource.openAndResizeImage(imgUriString, ImageSize.entries)
@@ -60,6 +61,18 @@ class ImageRepositoryImpl @Inject constructor(
         }.onFailure {
             coroutineScope { launch { removeImage(imageId) } }
         }.mapDataError().mapDomainError()
+    }
+
+    override suspend fun loadGalleyPhotos(): Result<List<GalleryPhoto>> {
+        return imageLocalDatasource.loadGalleyPhotos()
+    }
+
+    override suspend fun saveGalleryPhotos(imgUriStrings: List<String>): Result<List<Long>> {
+        return imageLocalDatasource.saveGalleryPhotos(imgUriStrings)
+    }
+
+    override suspend fun clearGalleryPhotos(ids: Set<Long>): Result<Set<Long>> {
+        return imageLocalDatasource.clearGalleryPhotos(ids)
     }
 
     override suspend fun removeImage(imageId: String): Result<Unit> {

@@ -15,6 +15,8 @@
     <string name="ranking_sub">지금 떠오르는 코스는?</string>
     <string name="course_add_main">코스등록</string>
     <string name="course_add_sub">나만의 코스를 공유해요</string>
+    <string name="gallery_main">스팟 갤러리</string>
+    <string name="gallery_sub">순간을 기록해요</string>
     <string name="bookmark_main">즐겨찾기</string>
     <string name="bookmark_sub">나의 추억들</string>
     <string name="sports_main">스포츠</string>
@@ -202,4 +204,30 @@
     <string name="selected_count">선택 완료 (%1$d개)</string>
     <string name="button_selected">선택됨</string>
     <string name="button_setting">설정</string>
+
+    // 갤러리
+    <string name="photo_delete_fail">사진을 삭제하지 못했어요</string>
+    <string name="gallery_load_fail">사진을 불러오지 못했어요</string>
+    <string name="media_save_fail">사진을 옮기지 못했어요</string>
+    <string name="photo_add">사진 추가</string>
+    <string name="photo_add_guide">사진을 추가해 주세요</string>
+    <string name="retry">다시 시도</string>
+    <string name="select_ing">선택중</string>
+    <string name="release_all">전체 해제</string>
+    <string name="select_all">전체 선택</string>
+    <string name="count_selected">%1$d장 선택</string>
+    <string name="delete">삭제</string>
+    <string name="request_count_delete">%1$d장을 삭제할까요?</string>
+    <string name="no_restore_photo_delete">삭제한 사진은 복구할 수 없어요.</string>
+    <string name="cancel">취소</string>
+    <string name="how_show">어떻게 볼까요?</string>
+    <string name="detail_info">상세 정보</string>
+
+    <string-array name="gallery_loading">
+        <item>사진을 안전한 곳에 차곡차곡 담는 중…</item>
+        <item>위치 정보를 지우는중…</item>
+        <item>마지막 한 장까지 확인하는 중…</item>
+        <item>사진을 사용하는 것에 대한 허락을 구하는 것을 묻는 것에 대한 승인을 요구하는중…</item>
+    </string-array>
+
 </resources>

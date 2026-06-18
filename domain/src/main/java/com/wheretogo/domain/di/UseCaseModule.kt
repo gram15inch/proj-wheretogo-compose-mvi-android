@@ -1,5 +1,11 @@
 package com.wheretogo.domain.di
 
+import com.wheretogo.domain.usecase.gallery.DeleteGalleryPhotosUseCase
+import com.wheretogo.domain.usecaseimpl.gallery.DeleteGalleryPhotosUseCaseImpl
+import com.wheretogo.domain.usecase.gallery.LoadGalleryPhotosUseCase
+import com.wheretogo.domain.usecaseimpl.gallery.LoadGalleryPhotosUseCaseImpl
+import com.wheretogo.domain.usecase.gallery.SavePickedImagesUseCase
+import com.wheretogo.domain.usecaseimpl.gallery.SavePickedImagesUseCaseImpl
 import com.wheretogo.domain.usecase.app.AppCheckBySignatureUseCase
 import com.wheretogo.domain.usecase.app.DriveTutorialUseCase
 import com.wheretogo.domain.usecase.app.ObserveMsgUseCase
@@ -156,6 +162,15 @@ abstract class UseCaseModule {
 
     @Binds
     abstract fun bindGetImagesPageUseCase(useCaseImpl: GetImagesPageUseCaseImpl): GetImagesPageUseCase
+
+    @Binds
+    abstract fun bindSavePickedImagesUseCase(useCaseImpl: SavePickedImagesUseCaseImpl): SavePickedImagesUseCase
+
+    @Binds
+    abstract fun bindLoadGalleryPhotosUseCase(useCaseImpl: LoadGalleryPhotosUseCaseImpl): LoadGalleryPhotosUseCase
+
+    @Binds
+    abstract fun bindDeleteGalleryPhotosUseCase(useCaseImpl: DeleteGalleryPhotosUseCaseImpl): DeleteGalleryPhotosUseCase
 
 }
 

@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.wheretogo.data.datasourceimpl.database.CheckPointDatabase
 import com.wheretogo.data.datasourceimpl.database.CourseDatabase
 import com.wheretogo.data.datasourceimpl.database.RouteDatabase
+import com.wheretogo.data.datasourceimpl.database.GalleryDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -49,5 +50,15 @@ object DaoDatabaseModule {
         ).fallbackToDestructiveMigration()
             .build()
     }
+
+    @Provides
+    @Singleton
+    fun provideDatabase(@ApplicationContext context: Context): GalleryDatabase =
+        Room.databaseBuilder(
+            context,
+            GalleryDatabase::class.java,
+            "gallery_db"
+        ).fallbackToDestructiveMigration()
+            .build()
 
 }

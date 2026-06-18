@@ -1,9 +1,10 @@
 package com.wheretogo.data.datasource
 
 import com.wheretogo.domain.ImageSize
-import com.wheretogo.domain.model.util.MediaImage
 import com.wheretogo.domain.model.util.ExifData
 import com.wheretogo.domain.model.util.FilePreview
+import com.wheretogo.domain.model.util.MediaImage
+import com.wheretogo.domain.model.gallery.GalleryPhoto
 import java.io.File
 
 
@@ -11,7 +12,7 @@ interface ImageLocalDatasource {
 
     suspend fun getImage(imageId: String, size: ImageSize): File
 
-    suspend fun removeImage(imageId: String, size: ImageSize): Result<Unit>
+    suspend fun removeImage(imageId: String, size: ImageSize): Result<Boolean>
 
     suspend fun saveImage(byteArray: ByteArray, imageId: String, size: ImageSize): Result<File>
 
@@ -28,4 +29,10 @@ interface ImageLocalDatasource {
     suspend fun getPreview(imageUriString: String): Result<FilePreview>
 
     suspend fun getMediaImages(offset: Int, limit: Int): Result<List<MediaImage>>
+
+    suspend fun loadGalleyPhotos():Result<List<GalleryPhoto>>
+
+    suspend fun saveGalleryPhotos(uriStrings:List<String>): Result<List<Long>>
+
+    suspend fun clearGalleryPhotos(ids: Set<Long>): Result<Set<Long>>
 }

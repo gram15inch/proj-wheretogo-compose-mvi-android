@@ -14,11 +14,14 @@ import androidx.core.view.WindowCompat
 
 private val LightColorScheme = lightColorScheme(
     primary = Palette.Blue300,
-    secondary = Palette.Blue50,
+    secondary = Palette.Blue100,
     tertiary = Palette.Pink80,
+    primaryContainer = Palette.White100,
     secondaryContainer = Palette.Blue30,
     onSecondaryContainer = Palette.Blue600,
-    surface = Palette.White50
+    surface = Palette.White50,
+    surfaceContainerLow = Palette.White100,
+    background = Palette.White100
 )
 
 @Composable

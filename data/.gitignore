@@ -5,3 +5,4 @@
 /src/main/java/com/wheretogo/data/datasourceimpl/AuthRemoteDatasourceImpl.kt
 /src/main/java/com/wheretogo/data/feature/DataEncryptorImpl.kt
 /src/main/java/com/wheretogo/data/feature/SecureStore.kt
+/src/main/java/com/wheretogo/data/test/**

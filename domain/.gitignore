@@ -1,2 +1,3 @@
 /build
 /src/main/java/com/wheretogo/domain/usecaseimpl/**
+/src/main/java/com/wheretogo/domain/test/**
