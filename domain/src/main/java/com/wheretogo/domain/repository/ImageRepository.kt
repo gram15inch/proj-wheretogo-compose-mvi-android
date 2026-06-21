@@ -18,5 +18,6 @@ interface ImageRepository {
 
     suspend fun loadGalleyPhotos():Result<List<GalleryPhoto>>
     suspend fun saveGalleryPhotos(imgUriStrings: List<String>): Result<List<Long>>
+    suspend fun updateGalleryPhotos(photos: List<GalleryPhoto>): Result<Unit>
     suspend fun clearGalleryPhotos(ids: Set<Long>): Result<Set<Long>>
 }

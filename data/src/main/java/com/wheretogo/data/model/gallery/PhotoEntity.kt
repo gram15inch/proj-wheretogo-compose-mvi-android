@@ -18,4 +18,6 @@ data class PhotoEntity(
     val height: Int?,
     val latitude: Double?,
     val longitude: Double?,
+    val courseId: String? = null,
+    val courseName: String? = null
 )

@@ -6,8 +6,9 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.RoomDatabase
+import androidx.room.Transaction
 import com.wheretogo.data.model.gallery.PhotoEntity
-import kotlinx.coroutines.flow.Flow
+import com.wheretogo.domain.model.gallery.GalleryPhoto
 
 @Database(entities = [PhotoEntity::class], version = 1, exportSchema = false)
 abstract class GalleryDatabase : RoomDatabase() {
@@ -22,7 +23,7 @@ interface GalleryPhotoDao {
     suspend fun insertAll(photos: List<PhotoEntity>): List<Long>
 
     @Query(
-        """
+"""
         SELECT * FROM gallery_photo
         ORDER BY (dateTaken IS NULL), dateTaken DESC
         """
@@ -38,12 +39,43 @@ interface GalleryPhotoDao {
     @Query("DELETE FROM gallery_photo WHERE id IN (:ids)")
     suspend fun deleteByIds(ids: Set<Long>)
 
-    // 흐름 관찰이 필요하면 추가 (확장용)
     @Query(
-        """
-        SELECT * FROM gallery_photo
-        ORDER BY (dateTaken IS NULL), dateTaken DESC
+"""
+        UPDATE gallery_photo 
+        SET dateTaken = COALESCE(:dateTaken, dateTaken),
+            width = COALESCE(:width, width),
+            height = COALESCE(:height, height),
+            latitude = COALESCE(:latitude, latitude),
+            longitude = COALESCE(:longitude, longitude),
+            courseId = COALESCE(:courseId, longitude),
+            courseName = COALESCE(:courseName, longitude)
+        WHERE id = :id
         """
     )
-    fun observeAll(): Flow<List<PhotoEntity>>
+    suspend fun updateById(
+        id: Long,
+        dateTaken: Long? = null,
+        width: Int? = null,
+        height: Int? = null,
+        latitude: Double? = null,
+        longitude: Double? = null,
+        courseId: String? = null,
+        courseName: String? = null
+    )
+
+    @Transaction
+    suspend fun updateGalleryPhotos(photos: List<GalleryPhoto>) {
+        photos.forEach { photo ->
+            updateById(
+                id = photo.id,
+                dateTaken = photo.exif.dateTaken,
+                width = photo.exif.width,
+                height = photo.exif.width,
+                latitude = photo.exif.location?.latitude,
+                longitude = photo.exif.location?.longitude,
+                courseId = photo.courseId,
+                courseName = photo.courseName
+            )
+        }
+    }
 }

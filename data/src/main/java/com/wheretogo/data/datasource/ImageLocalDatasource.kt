@@ -35,5 +35,7 @@ interface ImageLocalDatasource {
 
     suspend fun saveGalleryPhotos(uriStrings:List<String>): Result<List<Long>>
 
+    suspend fun updateGalleryPhotos(photos: List<GalleryPhoto>): Result<Unit>
+
     suspend fun clearGalleryPhotos(ids: Set<Long>): Result<Set<Long>>
 }

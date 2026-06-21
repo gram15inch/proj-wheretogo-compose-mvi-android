@@ -46,11 +46,13 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.WindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.wheretogo.domain.model.gallery.GalleryPhoto
@@ -118,7 +120,9 @@ fun PhotoViewerScreen(
                     .weight(1f)
                     .verticalScroll(rememberScrollState()),
             ) {
-                settingsContent(photo)
+                Box(modifier = Modifier.boundedHeight()) {
+                    settingsContent(photo)
+                }
             }
         }
 
@@ -132,6 +136,20 @@ fun PhotoViewerScreen(
             Icon(Icons.Default.Close, contentDescription = "닫기", tint = Color.White)
         }
     }
+}
+
+fun Modifier.boundedHeight(): Modifier = layout { measurable, constraints ->
+    val safe = if (constraints.maxHeight == Constraints.Infinity) {
+        val maxH = Constraints.fitPrioritizingWidth(
+            minWidth = constraints.minWidth,
+            maxWidth = constraints.maxWidth,
+            minHeight = 0,
+            maxHeight = 100_000,
+        ).maxHeight
+        constraints.copy(maxHeight = maxH)
+    } else constraints
+    val placeable = measurable.measure(safe)
+    layout(placeable.width, placeable.height) { placeable.place(0, 0) }
 }
 
 @Stable

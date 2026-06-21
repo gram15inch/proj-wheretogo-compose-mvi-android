@@ -9,6 +9,7 @@ import com.wheretogo.domain.usecase.gallery.DeleteGalleryPhotosUseCase
 import com.wheretogo.domain.usecase.gallery.LoadGalleryPhotosUseCase
 import com.wheretogo.domain.usecase.gallery.SavePickedImagesUseCase
 import com.wheretogo.presentation.MainDispatcher
+import com.wheretogo.presentation.feature.ByCourseGrouping
 import com.wheretogo.presentation.feature.ByDayGrouping
 import com.wheretogo.presentation.feature.GroupingStrategy
 import com.wheretogo.presentation.feature.toSections
@@ -52,7 +53,7 @@ class GalleryFlowViewModel @Inject constructor(
     private val _effect = MutableSharedFlow<GalleryUiEffect>()
     val effect: SharedFlow<GalleryUiEffect> = _effect.asSharedFlow()
 
-    val groupings: List<GroupingStrategy> = listOf(ByDayGrouping())
+    val groupings: List<GroupingStrategy> = listOf(ByCourseGrouping(),ByDayGrouping())
     private var _grouping: GroupingStrategy = groupings.first()
     val currentGroupingLabel: String get() = _grouping.label
 

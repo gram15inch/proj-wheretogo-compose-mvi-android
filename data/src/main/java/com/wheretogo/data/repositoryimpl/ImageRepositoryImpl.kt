@@ -71,6 +71,10 @@ class ImageRepositoryImpl @Inject constructor(
         return imageLocalDatasource.saveGalleryPhotos(imgUriStrings)
     }
 
+    override suspend fun updateGalleryPhotos(photos: List<GalleryPhoto>): Result<Unit> {
+        return imageLocalDatasource.updateGalleryPhotos(photos)
+    }
+
     override suspend fun clearGalleryPhotos(ids: Set<Long>): Result<Set<Long>> {
         return imageLocalDatasource.clearGalleryPhotos(ids)
     }

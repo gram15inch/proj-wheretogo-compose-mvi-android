@@ -224,6 +224,12 @@ class ImageLocalDatasourceImpl @Inject constructor(
         }
     }
 
+    override suspend fun updateGalleryPhotos(photos: List<GalleryPhoto>): Result<Unit> {
+        return runCatching {
+            photoDao.updateGalleryPhotos(photos)
+        }
+    }
+
     override suspend fun clearGalleryPhotos(ids: Set<Long>): Result<Set<Long>> {
         return runCatching {
             val removed= buildSet {
@@ -292,6 +298,8 @@ class ImageLocalDatasourceImpl @Inject constructor(
                 location = if (latitude != null && longitude != null)
                     LatLng(latitude, longitude) else null,
             ),
+            courseId = courseId,
+            courseName = courseName
         )
     }
 
