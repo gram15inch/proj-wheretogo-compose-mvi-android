@@ -77,6 +77,7 @@ import com.wheretogo.presentation.composable.content.KeyboardTrack
 import com.wheretogo.presentation.composable.content.NaverMapSheet
 import com.wheretogo.presentation.composable.content.SearchBar
 import com.wheretogo.presentation.composable.content.SlideAnimation
+import com.wheretogo.presentation.composable.content.rememberMapViewWithLifecycle
 import com.wheretogo.presentation.composable.effect.LifecycleDisposer
 import com.wheretogo.presentation.feature.intervalTab
 import com.wheretogo.presentation.intent.CourseAddIntent
@@ -184,23 +185,24 @@ fun CourseAddSheetContent(
             val context= LocalContext.current
             val bottomPadding = systemBars.calculateBottomPadding() + state.bottomSheetState.content.minHeight.dp
             NaverMapSheet(
+                mapView = rememberMapViewWithLifecycle(),
+                state = state.naverMapState,
                 modifier = Modifier
                     .zIndex(0f)
                     .fillMaxSize(),
-                state = state.naverMapState,
-                event= mapEvent,
                 overlayGroup = overlays,
                 fingerPrint = fingerPrint,
-                onMapAsync = {},
-                onCameraUpdate = onCameraUpdate,
-                onMapClick = onMapClick,
-                onMarkerClick = onMarkerClick,
+                event = mapEvent,
                 contentPadding = ContentPadding(
                     start = systemBars.calculateStartPadding(LocalLayoutDirection.current),
                     end = systemBars.calculateEndPadding(LocalLayoutDirection.current),
                     top = systemBars.calculateTopPadding(),
                     bottom = bottomPadding
-                )
+                ),
+                onMapAsync = {},
+                onMapClick = onMapClick,
+                onMarkerClick = onMarkerClick,
+                onCameraUpdate = onCameraUpdate
             )
 
             Column(
@@ -418,7 +420,9 @@ fun CommendButton(
                 .fillMaxSize()
                 .clip(RoundedCornerShape(16.dp))
                 .border(
-                    color = Palette.Gray100.copy(alpha = 0.5f), shape = RoundedCornerShape(16.dp), width = 1.dp
+                    color = Palette.Gray100.copy(alpha = 0.5f),
+                    shape = RoundedCornerShape(16.dp),
+                    width = 1.dp
                 )
                 .background(backColor)
                 .intervalTab(1000L) {
@@ -585,7 +589,9 @@ fun RouteWaypointContent(
                         modifier = Modifier
                             .clip(RoundedCornerShape(16.dp))
                             .border(
-                                width = 1.dp, shape = RoundedCornerShape(16.dp), color = Palette.Gray150
+                                width = 1.dp,
+                                shape = RoundedCornerShape(16.dp),
+                                color = Palette.Gray150
                             )
                             .align(Alignment.TopEnd)
                             .intervalTab(2000) { onRouteCreateClick() },

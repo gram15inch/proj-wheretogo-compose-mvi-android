@@ -1,7 +1,9 @@
- package com.wheretogo.presentation.composable.content
+package com.wheretogo.presentation.composable.content
 
 import android.content.Context
 import android.os.Bundle
+import android.view.View
+import android.view.ViewGroup
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -55,56 +57,84 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
- @Composable
+@Composable
+fun rememberMapViewWithLifecycle(
+): MapView {
+    val context = LocalContext.current
+    val mapView = remember {
+        MapView(context).apply { id = View.generateViewId() }
+    }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(mapView) {
+        val lifecycleObserver =
+            LifecycleEventObserver { _, event ->
+                mapView.syncLifecycle(event)()
+            }
+        lifecycleOwner.lifecycle.addObserver(lifecycleObserver)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(lifecycleObserver)
+        }
+    }
+    return mapView
+}
+
+@Composable
 fun NaverMapSheet(
-    modifier: Modifier = Modifier,
+    mapView: MapView,
     state: NaverMapState,
-    event: SharedFlow<MapEvent>? = null,
+    modifier: Modifier = Modifier,
     overlayGroup: List<MapOverlay> = emptyList(),
     fingerPrint: StateFlow<Int>? = null,
+    event: SharedFlow<MapEvent>? = null,
     contentPadding: ContentPadding = ContentPadding(),
     onMapAsync: (NaverMap) -> Unit = {},
-    onCameraUpdate: (CameraState) -> Unit = {},
     onMapClick: (LatLng) -> Unit = {},
     onMarkerClick: (MarkerInfo) -> Unit = {},
-    onOverlayRenderComplete: (Boolean) -> Unit = {}
+    onCameraUpdate: (CameraState) -> Unit = {},
+    onOverlayRenderComplete: (Boolean) -> Unit = {},
 ) {
-    val isPreview = LocalInspectionMode.current
-    val context = LocalContext.current
-    val density = LocalDensity.current
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val coroutineScope = rememberCoroutineScope()
-
     // SDK 기본 주소
     val initLatlng = LatLng(latitude = 37.566914081334204, longitude = 126.97838809999871)
     val initLatlng2 = LatLng(latitude = 37.56827472881153, longitude = 126.97838809999871)
     val initLatlng3 = LatLng(latitude = 37.56745834330747, longitude = 126.97799900088177)
 
-    var mapView: MapView? by remember { mutableStateOf(null) }
-    var isMoving by remember { mutableStateOf<Boolean>(false) }
-    var initPadding by remember { mutableStateOf(contentPadding.bottom) }
-    var listener : NaverMap.OnCameraIdleListener? by remember { mutableStateOf(null) }
+    var cameraIdleListener: NaverMap.OnCameraIdleListener? by remember { mutableStateOf(null) }
 
-    fun NaverMap.addCameraListener(){
-        if(listener==null)
+    fun NaverMap.addCameraListener() {
+        if (cameraIdleListener == null)
             NaverMap.OnCameraIdleListener {
                 val cameraSate = toCameraState()
-                if (!listOf(initLatlng,initLatlng2,initLatlng3).contains(cameraSate.latLng)) {
+                if (!listOf(initLatlng, initLatlng2, initLatlng3).contains(cameraSate.latLng)) {
                     onCameraUpdate(cameraSate)
                 }
             }.let {
                 addOnCameraIdleListener(it)
-                listener = it
+                cameraIdleListener = it
             }
     }
 
-    fun NaverMap.removeCameraListener(){
-        listener?.let {
+    fun NaverMap.addMapClickListener() {
+        if (onMapClickListener == null)
+            NaverMap.OnMapClickListener { _, latlng ->
+                onMapClick(latlng.toDomainLatLng())
+            }.let {
+                onMapClickListener = it
+            }
+    }
+
+    fun NaverMap.removeCameraListener() {
+        cameraIdleListener?.let {
             removeOnCameraIdleListener(it)
-            listener = null
+            cameraIdleListener = null
         }
     }
 
+    fun NaverMap.removeMapClickListener() {
+        onMapClickListener = null
+    }
+
+    val isPreview = LocalInspectionMode.current
     if (isPreview) {
         Box(
             modifier
@@ -112,40 +142,66 @@ fun NaverMapSheet(
                 .background(Palette.Green50)
         )
     } else {
-        // 초기 설정
-        mapView?.let { syncMapView ->
-            DisposableEffect(Unit) {
-                val lifecycleObserver =
-                    LifecycleEventObserver { _, event ->
-                        syncMapView.syncLifecycle(event)()
-                    }
-                lifecycleOwner.lifecycle.addObserver(lifecycleObserver)
-                onDispose { lifecycleOwner.lifecycle.removeObserver(lifecycleObserver) }
+        val context = LocalContext.current
+        val density = LocalDensity.current
+        var isMoving by remember { mutableStateOf<Boolean>(false) }
+        var initPadding by remember { mutableStateOf(contentPadding.bottom) }
+
+        val coroutineScope = rememberCoroutineScope()
+
+        //맵 초기화
+        DisposableEffect(mapView) {
+            mapView.getMapAsync { naverMap ->
+                onMapAsync(naverMap)
+                naverMap.setUiSetting(state.isZoomControl)
+                naverMap.locationSetting(context)
+                naverMap.addCameraListener()
+                naverMap.addMapClickListener()
+            }
+            onDispose {
+                mapView.getMapAsync { naverMap ->
+                    naverMap.removeCameraListener()
+                    naverMap.removeMapClickListener()
+                }
             }
         }
+
+        // 오버레이 업데이트
+        LaunchedEffect(Unit) {
+            fingerPrint?.collect {
+                mapView.getMapAsync { naverMap ->
+                    naverMap.overlayUpdate(
+                        overlayGroup = overlayGroup,
+                        onMarkerClick = onMarkerClick,
+                        onOverlayRenderComplete = onOverlayRenderComplete
+                    )
+                }
+            }
+        }
+
+        // 패딩 업데이트
         val mapBottomPadding by animateDpAsState(
             targetValue = contentPadding.bottom,
             animationSpec = tween(durationMillis = 300)
         )
-
-        //맵 초기화
-        LaunchedEffect(Unit) {
-            mapView = MapView(context).apply {
-                getMapAsync { naverMap ->
-                    naverMap.apply {
-                        onMapAsync(naverMap)
-                        naverMap.setUiSetting(state.isZoomControl)
-                        naverMap.locationSetting(context)
-                        naverMap.addCameraListener()
-
-                        setOnMapClickListener { _, latlng ->
-                            onMapClick(latlng.toDomainLatLng())
-                        }
-                    }
+        LaunchedEffect(mapBottomPadding) {
+            mapView.getMapAsync { naverMap ->
+                if (mapBottomPadding != initPadding) {
+                    naverMap.removeCameraListener()
+                    naverMap.contentPaddingUpdate(
+                        density,
+                        contentPadding.copy(bottom = mapBottomPadding)
+                    )
+                } else {
+                    naverMap.addCameraListener()
+                    naverMap.contentPaddingUpdate(
+                        density,
+                        contentPadding.copy(bottom = mapBottomPadding)
+                    )
                 }
             }
-
         }
+
 
         // 맵 이벤트
         LaunchedEffect(Unit) {
@@ -154,7 +210,7 @@ fun NaverMapSheet(
                     // 카메라 이동 요청
                     is MapEvent.MoveCamera -> {
                         val camera = e.cameraState
-                        mapView?.getMapAsync { naverMap ->
+                        mapView.getMapAsync { naverMap ->
                             when {
                                 isMoving -> {}
                                 camera.isMyLocation -> coroutineScope.launch {
@@ -185,41 +241,10 @@ fun NaverMapSheet(
             }
         }
 
-        // 패딩 업데이트
-        LaunchedEffect(mapBottomPadding) {
-            mapView?.getMapAsync { naverMap ->
-                if (mapBottomPadding != initPadding) {
-                    naverMap.removeCameraListener()
-                    naverMap.contentPaddingUpdate(
-                        density,
-                        contentPadding.copy(bottom = mapBottomPadding)
-                    )
-                } else {
-                    naverMap.addCameraListener()
-                    naverMap.contentPaddingUpdate(
-                        density,
-                        contentPadding.copy(bottom = mapBottomPadding)
-                    )
-                }
-            }
-        }
-
-        // 오버레이 업데이트
-        LaunchedEffect(Unit) {
-            fingerPrint?.collect {
-                mapView?.getMapAsync { naverMap ->
-                    naverMap.overlayUpdate(
-                        overlayGroup = overlayGroup,
-                        onMarkerClick = onMarkerClick,
-                        onOverlayRenderComplete = onOverlayRenderComplete
-                    )
-                }
-            }
-        }
-
-        mapView?.apply {
-            AndroidView(modifier = modifier, factory = { this })
-        }
+        AndroidView(modifier = modifier, factory = {
+            (mapView.parent as? ViewGroup)?.removeView(mapView)
+            mapView
+        })
     }
 
 }
@@ -288,6 +313,7 @@ private fun NaverMap.overlayUpdate(
             is AppPath -> {
                 overlay.corePathOverlay?.map = naverMap
             }
+
             is AppCluster -> {
                 overlay.clusterHolder.cluster?.map = naverMap
             }
@@ -300,11 +326,11 @@ private fun NaverMap.overlayUpdate(
         onOverlayRenderComplete(true)
 }
 
-private fun NaverMap.cameraMove(option: CameraOption,  moved: () -> Unit) {
+private fun NaverMap.cameraMove(option: CameraOption, moved: () -> Unit) {
     val naverMap = this
     option.latLng.let { latLng ->
         naverMap.moveCamera(
-            CameraUpdate.scrollAndZoomTo(latLng.toNaver(),option.zoom)
+            CameraUpdate.scrollAndZoomTo(latLng.toNaver(), option.zoom)
                 .animate(option.moveAnimation.toCameraAnimation())
                 .finishCallback { moved() }
                 .cancelCallback { moved() }
@@ -312,7 +338,7 @@ private fun NaverMap.cameraMove(option: CameraOption,  moved: () -> Unit) {
     }
 }
 
-fun MoveAnimation.toCameraAnimation(): CameraAnimation{
+fun MoveAnimation.toCameraAnimation(): CameraAnimation {
     return when (this) {
         MoveAnimation.APP_EASING -> CameraAnimation.Easing
         MoveAnimation.APP_LINEAR -> CameraAnimation.Linear
@@ -325,8 +351,8 @@ private fun MapView.syncLifecycle(event: Lifecycle.Event): () -> Unit {
         when (event) {
             Lifecycle.Event.ON_CREATE -> onCreate(Bundle())
             Lifecycle.Event.ON_START -> onStart()
-            Lifecycle.Event.ON_RESUME -> { onResume() }
-            Lifecycle.Event.ON_PAUSE -> { onPause() }
+            Lifecycle.Event.ON_RESUME -> onResume()
+            Lifecycle.Event.ON_PAUSE -> onPause()
             Lifecycle.Event.ON_STOP -> onStop()
             Lifecycle.Event.ON_DESTROY -> onDestroy()
             Lifecycle.Event.ON_ANY -> {}

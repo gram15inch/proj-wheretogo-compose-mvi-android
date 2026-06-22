@@ -72,6 +72,7 @@ import com.wheretogo.presentation.composable.content.OneTimeLottieAnimation
 import com.wheretogo.presentation.composable.content.SearchBar
 import com.wheretogo.presentation.composable.content.SlideAnimation
 import com.wheretogo.presentation.composable.content.ZIndexOfDriveContentArea
+import com.wheretogo.presentation.composable.content.rememberMapViewWithLifecycle
 import com.wheretogo.presentation.composable.effect.AppEventReceiveEffect
 import com.wheretogo.presentation.composable.effect.LifecycleDisposer
 import com.wheretogo.presentation.defaultCommentEmogiGroup
@@ -269,22 +270,23 @@ fun DriveContent(
                 val mapState by mapViewModel.state.collectAsState()
                 Box(modifier = Modifier.fillMaxSize()){
                     NaverMapSheet(
+                        mapView = rememberMapViewWithLifecycle(),
+                        state = mapState.naverMapState,
                         modifier = Modifier
                             .fillMaxSize()
                             .zIndex(0f),
-                        state = mapState.naverMapState,
-                        event = mapViewModel.event,
                         overlayGroup = mapViewModel.overlays,
                         fingerPrint = mapViewModel.fingerPrint,
-                        onMapAsync = { mapViewModel.handleIntent(MapIntent.MapAsync) },
-                        onCameraUpdate = { mapViewModel.handleIntent(MapIntent.CameraUpdated(it)) },
-                        onMarkerClick = { mapViewModel.handleIntent(MapIntent.MarkerClick(it)) },
+                        event = mapViewModel.event,
                         contentPadding = ContentPadding(
                             start = systemBars.calculateStartPadding(LocalLayoutDirection.current),
                             end = systemBars.calculateEndPadding(LocalLayoutDirection.current),
                             top = systemBars.calculateTopPadding(),
                             bottom = maxOf(bottomSheetHeight, systemBarBottomPadding)
-                        )
+                        ),
+                        onMapAsync = { mapViewModel.handleIntent(MapIntent.MapAsync) },
+                        onMarkerClick = { mapViewModel.handleIntent(MapIntent.MarkerClick(it)) },
+                        onCameraUpdate = { mapViewModel.handleIntent(MapIntent.CameraUpdated(it)) },
                     )
 
                     DelayLottieAnimation(
