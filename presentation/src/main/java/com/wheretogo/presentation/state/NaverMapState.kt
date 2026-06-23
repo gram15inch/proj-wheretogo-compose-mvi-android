@@ -1,8 +1,10 @@
 package com.wheretogo.presentation.state
 
 import com.wheretogo.domain.model.map.CameraState
+import com.wheretogo.presentation.model.CameraOption
 
 data class NaverMapState(
     val latestCameraState: CameraState = CameraState(),
-    val isZoomControl: Boolean = false
+    val initCamera: CameraOption? = null,
+    val isZoomControl: Boolean = false,
 )

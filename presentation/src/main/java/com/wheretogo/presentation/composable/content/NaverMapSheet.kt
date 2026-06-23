@@ -137,7 +137,7 @@ fun NaverMapSheet(
     val isPreview = LocalInspectionMode.current
     if (isPreview) {
         Box(
-            modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .background(Palette.Green50)
         )
@@ -153,6 +153,7 @@ fun NaverMapSheet(
         DisposableEffect(mapView) {
             mapView.getMapAsync { naverMap ->
                 onMapAsync(naverMap)
+                state.initCamera?.let { option -> naverMap.cameraUpdate(option) }
                 naverMap.setUiSetting(state.isZoomControl)
                 naverMap.locationSetting(context)
                 naverMap.addCameraListener()
@@ -215,12 +216,11 @@ fun NaverMapSheet(
                                 isMoving -> {}
                                 camera.isMyLocation -> coroutineScope.launch {
                                     val latlng = getLastLatLng(context) ?: NamSan
-                                    naverMap.cameraPosition = CameraPosition(latlng, camera.zoom)
+                                    naverMap.cameraUpdate(camera.copy(latlng.toDomainLatLng()))
                                 }
 
                                 camera.moveAnimation == MoveAnimation.APP_JUMP -> {
-                                    naverMap.cameraPosition =
-                                        CameraPosition(camera.latLng.toNaver(), camera.zoom)
+                                    naverMap.cameraUpdate(camera)
                                 }
 
                                 camera.latLng != LatLng() -> {
@@ -228,7 +228,6 @@ fun NaverMapSheet(
                                     naverMap.isCameraIdlePending = true
                                     naverMap.setGesture(false)
                                     naverMap.cameraMove(camera) {
-                                        coroutineScope
                                         isMoving = false
                                         naverMap.isCameraIdlePending = false
                                         naverMap.setGesture(true)
@@ -336,6 +335,15 @@ private fun NaverMap.cameraMove(option: CameraOption, moved: () -> Unit) {
                 .cancelCallback { moved() }
         )
     }
+}
+
+private fun NaverMap.cameraUpdate(option: CameraOption) {
+    val naverMap = this
+    naverMap.cameraPosition = option.toPosition()
+}
+
+private fun CameraOption.toPosition(): CameraPosition {
+    return CameraPosition(latLng.toNaver(), zoom)
 }
 
 fun MoveAnimation.toCameraAnimation(): CameraAnimation {
