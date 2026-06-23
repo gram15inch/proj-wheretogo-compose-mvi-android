@@ -82,6 +82,7 @@ import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.intent.MapIntent
 import com.wheretogo.presentation.model.ContentPadding
+import com.wheretogo.presentation.model.NaverMapStyle
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.model.TypeEditText
 import com.wheretogo.presentation.state.CheckPointAddState
@@ -275,6 +276,7 @@ fun DriveContent(
                         modifier = Modifier
                             .fillMaxSize()
                             .zIndex(0f),
+                        style = NaverMapStyle.Basic.copy(zoomControlEnabled = state.isTestUi),
                         overlayGroup = mapViewModel.overlays,
                         fingerPrint = mapViewModel.fingerPrint,
                         event = mapViewModel.event,

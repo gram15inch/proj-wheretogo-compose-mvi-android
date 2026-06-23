@@ -46,6 +46,7 @@ import com.wheretogo.presentation.model.AppPath
 import com.wheretogo.presentation.model.CameraOption
 import com.wheretogo.presentation.model.ContentPadding
 import com.wheretogo.presentation.model.MapOverlay
+import com.wheretogo.presentation.model.NaverMapStyle
 import com.wheretogo.presentation.state.NaverMapState
 import com.wheretogo.presentation.theme.Palette
 import com.wheretogo.presentation.toCameraState
@@ -84,6 +85,7 @@ fun NaverMapSheet(
     mapView: MapView,
     state: NaverMapState,
     modifier: Modifier = Modifier,
+    style: NaverMapStyle = NaverMapStyle.Basic,
     overlayGroup: List<MapOverlay> = emptyList(),
     fingerPrint: StateFlow<Int>? = null,
     event: SharedFlow<MapEvent>? = null,
@@ -154,7 +156,7 @@ fun NaverMapSheet(
             mapView.getMapAsync { naverMap ->
                 onMapAsync(naverMap)
                 state.initCamera?.let { option -> naverMap.cameraUpdate(option) }
-                naverMap.setUiSetting(state.isZoomControl)
+                naverMap.setMapStyle(style)
                 naverMap.locationSetting(context)
                 naverMap.addCameraListener()
                 naverMap.addMapClickListener()
@@ -264,16 +266,6 @@ private fun NaverMap.setGesture(isEnable: Boolean) {
     uiSettings.isRotateGesturesEnabled = isEnable
 }
 
-private fun NaverMap.setUiSetting(isZoomControl: Boolean) {
-    uiSettings.apply {
-        isLogoClickEnabled = false
-        isLocationButtonEnabled = true
-        isZoomControlEnabled = isZoomControl
-    }
-    minZoom = ZOOM.COUNTRY.level
-    setLayerGroupEnabled(NaverMap.LAYER_GROUP_BUILDING, false)
-}
-
 private fun NaverMap.contentPaddingUpdate(density: Density, contentPadding: ContentPadding) {
     val naverMap = this
     density.run {
@@ -340,6 +332,35 @@ private fun NaverMap.cameraMove(option: CameraOption, moved: () -> Unit) {
 private fun NaverMap.cameraUpdate(option: CameraOption) {
     val naverMap = this
     naverMap.cameraPosition = option.toPosition()
+}
+
+private fun NaverMap.setMapStyle(style: NaverMapStyle) {
+    mapType = style.mapType
+
+    setLayerGroupEnabled(NaverMap.LAYER_GROUP_BUILDING, style.buildingEnabled)
+    setLayerGroupEnabled(NaverMap.LAYER_GROUP_TRANSIT, style.transitEnabled)
+    setLayerGroupEnabled(NaverMap.LAYER_GROUP_BICYCLE, style.bicycleEnabled)
+    setLayerGroupEnabled(NaverMap.LAYER_GROUP_TRAFFIC, style.trafficEnabled)
+    setLayerGroupEnabled(NaverMap.LAYER_GROUP_CADASTRAL, style.cadastralEnabled)
+    setLayerGroupEnabled(NaverMap.LAYER_GROUP_MOUNTAIN, style.mountainEnabled)
+
+    symbolScale = style.symbolScale
+    symbolPerspectiveRatio = style.symbolPerspectiveRatio
+
+    isIndoorEnabled = style.indoorEnabled
+    isNightModeEnabled = style.nightModeEnabled
+
+    uiSettings.apply {
+        isScrollGesturesEnabled = style.scrollGesturesEnabled
+        isZoomGesturesEnabled = style.zoomGesturesEnabled
+        isTiltGesturesEnabled = style.tiltGesturesEnabled
+        isRotateGesturesEnabled = style.rotateGesturesEnabled
+        isZoomControlEnabled = style.zoomControlEnabled
+        isCompassEnabled = style.compassEnabled
+        isScaleBarEnabled = style.scaleBarEnabled
+        isLocationButtonEnabled = style.locationButtonEnabled
+        isLogoClickEnabled = style.logoClickEnabled
+    }
 }
 
 private fun CameraOption.toPosition(): CameraPosition {

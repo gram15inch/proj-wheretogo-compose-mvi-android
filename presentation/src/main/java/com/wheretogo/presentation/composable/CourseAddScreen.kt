@@ -83,6 +83,7 @@ import com.wheretogo.presentation.feature.intervalTab
 import com.wheretogo.presentation.intent.CourseAddIntent
 import com.wheretogo.presentation.model.ContentPadding
 import com.wheretogo.presentation.model.MapOverlay
+import com.wheretogo.presentation.model.NaverMapStyle
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.BottomSheetState
 import com.wheretogo.presentation.state.CourseAddScreenState
@@ -190,6 +191,7 @@ fun CourseAddSheetContent(
                 modifier = Modifier
                     .zIndex(0f)
                     .fillMaxSize(),
+                style = NaverMapStyle.Basic.copy(zoomControlEnabled = state.isTestUi),
                 overlayGroup = overlays,
                 fingerPrint = fingerPrint,
                 event = mapEvent,
