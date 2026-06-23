@@ -268,6 +268,7 @@ fun DriveContent(
             }
 
             if(mapViewModel!= null) {
+                val fingerPrint by mapViewModel.fingerPrint.collectAsState()
                 val mapState by mapViewModel.state.collectAsState()
                 Box(modifier = Modifier.fillMaxSize()){
                     NaverMapSheet(
@@ -278,7 +279,7 @@ fun DriveContent(
                             .zIndex(0f),
                         style = NaverMapStyle.Basic.copy(zoomControlEnabled = state.isTestUi),
                         overlayGroup = mapViewModel.overlays,
-                        fingerPrint = mapViewModel.fingerPrint,
+                        fingerPrint = fingerPrint,
                         event = mapViewModel.event,
                         contentPadding = ContentPadding(
                             start = systemBars.calculateStartPadding(LocalLayoutDirection.current),
@@ -316,7 +317,7 @@ fun DriveContent(
                                 fontSize = 50.sp
                             )
                             Text(
-                                text = "${mapViewModel.fingerPrint.value}",
+                                text = "${fingerPrint}",
                                 fontSize = 16.sp
                             )
                             mapState.naverMapState .apply {

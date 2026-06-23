@@ -101,7 +101,7 @@ fun CourseAddScreen(
     viewModel: CourseAddViewModel = hiltViewModel()
 ) {
     val state by viewModel.courseAddScreenState.collectAsState()
-
+    val fingerPrint by viewModel.fingerPrint.collectAsState()
     LifecycleDisposer {
         viewModel.handleIntent(CourseAddIntent.LifecycleChange(it))
     }
@@ -110,7 +110,7 @@ fun CourseAddScreen(
         state = state,
         mapEvent = viewModel.mapEvent,
         overlays = viewModel.overlays,
-        fingerPrint = viewModel.fingerPrint,
+        fingerPrint = fingerPrint,
 
         //NaverMap
         onMapAsync = {},
@@ -146,7 +146,7 @@ fun CourseAddSheetContent(
     state: CourseAddScreenState = CourseAddScreenState(),
     mapEvent : SharedFlow<MapEvent>? =null,
     overlays : List<MapOverlay> = emptyList(),
-    fingerPrint : StateFlow<Int>? = null,
+    fingerPrint : Int? = null,
 
     //NaverMap
     onMapAsync: (NaverMap) -> Unit = {},
@@ -274,7 +274,7 @@ fun CourseAddSheetContent(
                                 fontSize = 16.sp
                             )
                             Text(
-                                text = "${fingerPrint?.value}",
+                                text = "$fingerPrint",
                                 fontSize = 16.sp
                             )
                         }

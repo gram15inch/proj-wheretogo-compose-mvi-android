@@ -87,7 +87,7 @@ fun NaverMapSheet(
     modifier: Modifier = Modifier,
     style: NaverMapStyle = NaverMapStyle.Basic,
     overlayGroup: List<MapOverlay> = emptyList(),
-    fingerPrint: StateFlow<Int>? = null,
+    fingerPrint: Int? = null,
     event: SharedFlow<MapEvent>? = null,
     contentPadding: ContentPadding = ContentPadding(),
     onMapAsync: (NaverMap) -> Unit = {},
@@ -170,8 +170,8 @@ fun NaverMapSheet(
         }
 
         // 오버레이 업데이트
-        LaunchedEffect(Unit) {
-            fingerPrint?.collect {
+        LaunchedEffect(fingerPrint) {
+            if(fingerPrint!=null){
                 mapView.getMapAsync { naverMap ->
                     naverMap.overlayUpdate(
                         overlayGroup = overlayGroup,
