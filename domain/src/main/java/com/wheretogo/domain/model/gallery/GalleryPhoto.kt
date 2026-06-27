@@ -7,5 +7,6 @@ data class GalleryPhoto(
     val thumbnail:String = "",
     val courseId:String? = null,
     val courseName:String? = null,
+    val address: String? = null,
     val exif: PhotoExif,
 )

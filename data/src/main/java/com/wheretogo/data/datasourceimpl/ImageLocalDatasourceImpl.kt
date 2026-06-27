@@ -5,6 +5,7 @@ import android.content.ContentUris
 import android.content.Context
 import android.database.Cursor
 import android.graphics.Bitmap
+import android.location.Geocoder
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
@@ -40,6 +41,7 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.util.Locale
 import javax.inject.Inject
 
 class ImageLocalDatasourceImpl @Inject constructor(
@@ -129,7 +131,7 @@ class ImageLocalDatasourceImpl @Inject constructor(
         val maxBound = sizeGroup.maxOf { maxOf(it.width, it.height) }
         val decoded = resolver.downSampling(uri, maxBound)
         val rotated = decoded.rotateByExif(exif)
-        
+
         if(rotated != decoded) decoded.recycle()
 
         val images = sizeGroup.associateWith { size ->
@@ -253,27 +255,40 @@ class ImageLocalDatasourceImpl @Inject constructor(
     private suspend fun createEntity(targets: Map<String, String>): List<PhotoEntity> {
         val semaphore = Semaphore(10)
         return coroutineScope {
+            val geocoder = Geocoder(context, Locale.KOREA)
             targets.map { (sourceKey, uriString) ->
                 async {
                     semaphore.withPermit {
                         runCatching {
                             val imageId = generateImageId()
                             val exif = context.contentResolver.createExifData(uriString)
-                            val file = openAndResizeImage(uriString, ImageSize.entries)
-                                .getOrThrow()
-                                .images
-                                .saveImages(imageId)
+                            val (lat, lng) = exif?.latitude to exif?.longitude
+
+                            val fileDeferred = async {
+                                openAndResizeImage(uriString, ImageSize.entries)
+                                    .getOrThrow()
+                                    .images
+                                    .saveImages(imageId)
+                            }
+
+                            val addressDeferred = async {
+                                if (lat != null && lng != null) {
+                                    geocoder.getFromLocation(lat, lng, 1)?.firstOrNull()
+                                } else null
+                            }
+
 
                             PhotoEntity(
                                 id = generateId(),
                                 imageId = imageId,
-                                fileName = file.name,
+                                fileName = fileDeferred.await().name,
                                 sourceKey = sourceKey,
                                 dateTaken = exif?.timestampMillis,
                                 width = exif?.imageWidth,
                                 height = exif?.imageHeight,
-                                latitude = exif?.latitude,
-                                longitude = exif?.longitude,
+                                latitude = lat,
+                                longitude = lng,
+                                address = addressDeferred.await()?.getAddressLine(0)
                             )
                         }.getOrNull()
                     }
@@ -299,7 +314,8 @@ class ImageLocalDatasourceImpl @Inject constructor(
                     LatLng(latitude, longitude) else null,
             ),
             courseId = courseId,
-            courseName = courseName
+            courseName = courseName,
+            address = address
         )
     }
 
