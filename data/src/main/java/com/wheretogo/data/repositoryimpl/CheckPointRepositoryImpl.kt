@@ -30,16 +30,15 @@ class CheckPointRepositoryImpl @Inject constructor(
     override suspend fun getCheckPoint(
         checkPointId: String,
         isRemote: Boolean
-    ): Result<CheckPoint> {
+    ): Result<CheckPoint?> {
         return if (isRemote) {
             runCatching {
                 fetchCheckPoint(listOf(checkPointId)).firstOrNull()
-                    ?: throw DataError.NotFound("$checkPointId NOT_FOUND")
             }
         } else {
             checkPointLocalDatasource.getCheckPoints(listOf(checkPointId))
-                .map { it.firstOrNull() ?: throw DataError.NotFound("$checkPointId NOT_FOUND") }
-        }.map { it.toCheckPoint() }.mapDomainError()
+                .map { it.firstOrNull() }
+        }.map { it?.toCheckPoint() }.mapDomainError()
     }
 
     override suspend fun getCheckPointGroupByCourseId(courseId: String): Result<List<CheckPoint>> {

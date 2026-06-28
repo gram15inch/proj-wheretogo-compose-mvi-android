@@ -82,6 +82,8 @@ class ReportDetailViewModel @Inject constructor(
 
                 ContentType.CHECKPOINT.name -> {
                     checkpointRepository.getCheckPoint(contentId, true).mapSuccess { content ->
+                        if(content==null)
+                            return@launch
                         imageRepository.getImage(content.imageId, ImageSize.SMALL).map { imgUrl ->
                             content.copy(thumbnail = imgUrl)
                         }

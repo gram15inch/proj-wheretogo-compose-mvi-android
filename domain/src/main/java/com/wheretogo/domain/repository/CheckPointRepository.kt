@@ -7,7 +7,7 @@ interface CheckPointRepository {
 
     suspend fun getCheckPointGroupByCourseId(courseId: String): Result<List<CheckPoint>>
 
-    suspend fun getCheckPoint(checkPointId: String, isRemote: Boolean): Result<CheckPoint>
+    suspend fun getCheckPoint(checkPointId: String, isRemote: Boolean): Result<CheckPoint?>
 
     suspend fun addCheckPoint(request: CheckPointAddRequest): Result<CheckPoint>
 
