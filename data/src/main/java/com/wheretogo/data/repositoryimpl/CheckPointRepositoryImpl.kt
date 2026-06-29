@@ -31,14 +31,13 @@ class CheckPointRepositoryImpl @Inject constructor(
         checkPointId: String,
         isRemote: Boolean
     ): Result<CheckPoint?> {
-        return if (isRemote) {
-            runCatching {
-                fetchCheckPoint(listOf(checkPointId)).firstOrNull()
-            }
-        } else {
-            checkPointLocalDatasource.getCheckPoints(listOf(checkPointId))
-                .map { it.firstOrNull() }
-        }.map { it?.toCheckPoint() }.mapDomainError()
+       return runCatching {
+            val local= checkPointLocalDatasource.getCheckPoints(listOf(checkPointId))
+                .map { it.firstOrNull() }.getOrNull()
+           if (local == null && isRemote) {
+               fetchCheckPoint(listOf(checkPointId)).firstOrNull()
+           } else local
+        }.map { it?.toCheckPoint() }
     }
 
     override suspend fun getCheckPointGroupByCourseId(courseId: String): Result<List<CheckPoint>> {
