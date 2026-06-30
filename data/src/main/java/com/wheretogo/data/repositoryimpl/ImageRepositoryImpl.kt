@@ -52,7 +52,7 @@ class ImageRepositoryImpl @Inject constructor(
                     .getOrThrow()
 
             val imagePaths = coroutineScope {
-                resizedImages.map { (size, bytes) ->
+                resizedImages.images.map { (size, bytes) ->
                     async { uploadAndSaveImage(imageId, size, bytes) }
                 }.awaitAll()
             }

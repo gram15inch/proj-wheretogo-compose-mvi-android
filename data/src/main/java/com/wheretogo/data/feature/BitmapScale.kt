@@ -1,7 +1,11 @@
-package com.wheretogo.domain.feature
+package com.wheretogo.data.feature
 
+import android.content.ContentResolver
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Matrix
+import android.net.Uri
+import androidx.core.graphics.scale
 import androidx.exifinterface.media.ExifInterface
 import com.wheretogo.domain.ImageSize
 
@@ -22,17 +26,13 @@ fun Bitmap.scaleCropToFill(size: ImageSize): Bitmap {
         size.width.toFloat() / width,
         size.height.toFloat() / height,
     )
-    val scaledW = (width * scaleFactor).toInt().coerceAtLeast(size.width)
-    val scaledH = (height * scaleFactor).toInt().coerceAtLeast(size.height)
-    val scaled =
-        if (scaledW == width && scaledH == height) this
-        else Bitmap.createScaledBitmap(this, scaledW, scaledH, true)
+    val srcW = (size.width / scaleFactor).toInt().coerceAtMost(width)
+    val srcH = (size.height / scaleFactor).toInt().coerceAtMost(height)
+    val srcX = ((width - srcW) / 2).coerceAtLeast(0)
+    val srcY = ((height - srcH) / 2).coerceAtLeast(0)
 
-    val xOffset = ((scaled.width - size.width) / 2).coerceAtLeast(0)
-    val yOffset = ((scaled.height - size.height) / 2).coerceAtLeast(0)
-    val cropW = size.width.coerceAtMost(scaled.width)
-    val cropH = size.height.coerceAtMost(scaled.height)
-    return Bitmap.createBitmap(scaled, xOffset, yOffset, cropW, cropH)
+    val matrix = Matrix().apply { postScale(scaleFactor, scaleFactor) }
+    return Bitmap.createBitmap(this, srcX, srcY, srcW, srcH, matrix, true)
 }
 
 fun Bitmap.rotateByExif(exif: ExifInterface): Bitmap {
@@ -53,3 +53,26 @@ fun Bitmap.rotateByExif(exif: ExifInterface): Bitmap {
     return Bitmap.createBitmap(this, 0, 0, width, height, matrix, true)
 }
 
+fun ContentResolver.downSampling(uri: Uri, maxBound: Int): Bitmap {
+    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+    openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
+
+    var sample = 1
+    val marginRatio = 2
+    val largest = maxOf(bounds.outWidth, bounds.outHeight)
+    while (largest / sample > maxBound * marginRatio) sample *= marginRatio
+
+    val opts = BitmapFactory.Options().apply {
+        inSampleSize = sample
+        inPreferredConfig = Bitmap.Config.RGB_565
+    }
+    return openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, opts) }
+        ?: error("이미지 로드 실패: $uri")
+}
+
+fun ContentResolver.exif(
+    uri: Uri
+): ExifInterface {
+    return openInputStream(uri)?.use { ExifInterface(it) }
+        ?: error("exif 로드 실패: $uri")
+}
