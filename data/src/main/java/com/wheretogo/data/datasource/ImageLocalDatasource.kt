@@ -1,5 +1,6 @@
 package com.wheretogo.data.datasource
 
+import com.wheretogo.data.model.gallery.EncodedImage
 import com.wheretogo.domain.ImageSize
 import com.wheretogo.domain.model.util.ExifData
 import com.wheretogo.domain.model.util.FilePreview
@@ -22,7 +23,7 @@ interface ImageLocalDatasource {
         sourceUriString: String,
         sizeGroup: List<ImageSize>,
         compressionQuality: Int = 80
-    ): Result<List<Pair<ImageSize, ByteArray>>>
+    ): Result<EncodedImage>
 
     suspend fun getExif(imageUriString: String): Result<ExifData>
 

@@ -4,5 +4,6 @@ import com.wheretogo.data.ImageFormat
 
 data class ImageConfig(
     val format: ImageFormat,
-    val maxDownMB: Int
+    val maxDownMB: Int,
+    val maxBitmapStreamCount: Int
 )

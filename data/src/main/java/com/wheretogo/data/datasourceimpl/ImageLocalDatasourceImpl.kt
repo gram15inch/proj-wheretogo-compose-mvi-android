@@ -5,7 +5,6 @@ import android.content.ContentUris
 import android.content.Context
 import android.database.Cursor
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
@@ -13,23 +12,25 @@ import android.provider.OpenableColumns
 import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
-import androidx.exifinterface.media.ExifInterface
 import com.wheretogo.data.ImageFormat
 import com.wheretogo.data.datasource.ImageLocalDatasource
-import com.wheretogo.data.feature.PhotoExifReader
-import com.wheretogo.data.model.confg.ImageConfig
 import com.wheretogo.data.datasourceimpl.database.GalleryDatabase
+import com.wheretogo.data.feature.PhotoExifReader
+import com.wheretogo.data.feature.downSampling
+import com.wheretogo.data.feature.exif
+import com.wheretogo.data.feature.rotateByExif
+import com.wheretogo.data.feature.scaleCropToFill
+import com.wheretogo.data.feature.scaleToFitInside
+import com.wheretogo.data.model.confg.ImageConfig
+import com.wheretogo.data.model.gallery.EncodedImage
 import com.wheretogo.data.model.gallery.PhotoEntity
 import com.wheretogo.domain.ImageSize
-import com.wheretogo.domain.feature.rotateByExif
-import com.wheretogo.domain.feature.scaleCropToFill
-import com.wheretogo.domain.feature.scaleToFitInside
 import com.wheretogo.domain.model.address.LatLng
+import com.wheretogo.domain.model.gallery.GalleryPhoto
+import com.wheretogo.domain.model.gallery.PhotoExif
 import com.wheretogo.domain.model.util.ExifData
 import com.wheretogo.domain.model.util.FilePreview
 import com.wheretogo.domain.model.util.MediaImage
-import com.wheretogo.domain.model.gallery.GalleryPhoto
-import com.wheretogo.domain.model.gallery.PhotoExif
 import dagger.hilt.android.qualifiers.ApplicationContext
 import de.huxhorn.sulky.ulid.ULID
 import kotlinx.coroutines.async
@@ -120,39 +121,36 @@ class ImageLocalDatasourceImpl @Inject constructor(
         sourceUriString: String,
         sizeGroup: List<ImageSize>,
         compressionQuality: Int,
-    ): Result<List<Pair<ImageSize, ByteArray>>> = runCatching {
+    ): Result<EncodedImage> = runCatching {
         val uri = sourceUriString.toUri()
+        val resolver = context.contentResolver
+        val exif = resolver.exif(uri)
 
-        val originalBitmap = context.contentResolver.openInputStream(uri)?.use { input ->
-            BitmapFactory.decodeStream(input)
-        } ?: error("이미지 로드 실패: $sourceUriString")
+        val maxBound = sizeGroup.maxOf { maxOf(it.width, it.height) }
+        val decoded = resolver.downSampling(uri, maxBound)
+        val rotated = decoded.rotateByExif(exif)
+        
+        if(rotated != decoded) decoded.recycle()
 
-        val exif = context.contentResolver.openInputStream(uri)?.use { input ->
-            ExifInterface(input)
-        } ?: error("exif 로드 실패: $sourceUriString")
+        val images = sizeGroup.associateWith { size ->
+            val target = when (size) {
+                ImageSize.SMALL -> rotated.scaleCropToFill(size)
+                ImageSize.NORMAL -> rotated.scaleToFitInside(size)
+            }
 
-        val rotated = originalBitmap.rotateByExif(exif)
+            val bytes = ByteArrayOutputStream().use { stream ->
+                target.compress(imageConfig.format.toCompressFormat(), compressionQuality, stream)
+                stream.toByteArray()
+            }
 
-        coroutineScope {
-            sizeGroup.map { size ->
-                async {
-                    val target = when (size) {
-                        ImageSize.SMALL -> rotated.scaleCropToFill(size)     // 꽉 채워 크롭
-                        ImageSize.NORMAL -> rotated.scaleToFitInside(size)   // 비율 유지 축소
-                    }
+            if (target != rotated) target.recycle()
 
-                    val bytes = ByteArrayOutputStream().use { stream ->
-                        target.compress(
-                            imageConfig.format.toCompressFormat(),
-                            compressionQuality,
-                            stream,
-                        )
-                        stream.toByteArray()
-                    }
-                    size to bytes
-                }
-            }.awaitAll()
+            bytes
         }
+
+        rotated.recycle()
+
+        EncodedImage(images = images)
     }
 
     override suspend fun getExif(imageUriString: String): Result<ExifData> {
@@ -218,7 +216,7 @@ class ImageLocalDatasourceImpl @Inject constructor(
         return openInputStream(uri)?.use { exifReader.read(it) }
     }
 
-    suspend fun List<Pair<ImageSize, ByteArray>>.saveImages(imageId: String) : File {
+    suspend fun Map<ImageSize, ByteArray>.saveImages(imageId: String) : File {
         return  coroutineScope {
             map { (size, bytes) ->
                 async { saveImage(bytes, imageId, size).getOrThrow() }
@@ -257,6 +255,7 @@ class ImageLocalDatasourceImpl @Inject constructor(
                             val exif = context.contentResolver.createExifData(uriString)
                             val file = openAndResizeImage(uriString, ImageSize.entries)
                                 .getOrThrow()
+                                .images
                                 .saveImages(imageId)
 
                             PhotoEntity(
