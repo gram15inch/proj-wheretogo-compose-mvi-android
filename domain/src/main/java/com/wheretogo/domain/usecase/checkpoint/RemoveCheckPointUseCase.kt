@@ -1,6 +1,6 @@
 package com.wheretogo.domain.usecase.checkpoint
 
 interface RemoveCheckPointUseCase {
-    suspend operator fun invoke(courseId: String, checkPointId: String): Result<String>
+    suspend operator fun invoke(checkPointId: String): Result<String>
     suspend fun bySelect(): Result<String>
 }

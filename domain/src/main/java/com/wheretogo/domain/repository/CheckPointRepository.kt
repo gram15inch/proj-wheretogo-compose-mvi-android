@@ -11,7 +11,7 @@ interface CheckPointRepository {
 
     suspend fun addCheckPoint(request: CheckPointAddRequest): Result<CheckPoint>
 
-    suspend fun removeCheckPoint(checkPointId: String): Result<Unit>
+    suspend fun removeCheckPoint(checkPointId: String, courseId: String): Result<Unit>
 
     suspend fun refreshCheckPoint(checkpointIds: List<String>): Result<Unit>
 

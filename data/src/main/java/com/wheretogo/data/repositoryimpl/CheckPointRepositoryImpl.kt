@@ -64,8 +64,8 @@ class CheckPointRepositoryImpl @Inject constructor(
             }.mapDataError().mapDomainError()
     }
 
-    override suspend fun removeCheckPoint(checkPointId: String): Result<Unit> {
-        return checkPointRemoteDatasource.removeCheckPoint(checkPointId)
+    override suspend fun removeCheckPoint(checkPointId: String, courseId: String): Result<Unit> {
+        return checkPointRemoteDatasource.removeCheckPoint(checkPointId, courseId)
             .mapSuccess {
                 checkPointLocalDatasource.deleteCheckPoints(listOf(checkPointId))
             }.mapDataError().mapDomainError()
