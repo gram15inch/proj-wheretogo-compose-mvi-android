@@ -17,7 +17,7 @@ class PublicInterceptor @Inject constructor(
 ) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val authResponse = chain.proceed(chain.request().authRequest())
-        if (authResponse.code() != 401 ||
+        if (authResponse.code != 401 ||
             authResponse.header("WWW-Authenticate")?.contains("invalid_token") != true
         ) return authResponse
         authResponse.close()

@@ -66,4 +66,5 @@ dependencies {
     implementation(libs.google.identity.googleid)
     implementation(libs.sulky.ulid)
     implementation(libs.timber)
+    implementation(libs.coil.compose)
 }

@@ -1,7 +1,11 @@
 package com.wheretogo.data.di
 
 import android.content.Context
+import coil.ImageLoader
 import com.wheretogo.data.feature.DataEncryptorImpl
+import com.wheretogo.data.feature.StoragePathMapper
+import com.wheretogo.data.feature.StorageReferenceFetcher
+import com.wheretogo.data.model.confg.ImageConfig
 import com.wheretogo.domain.feature.DataEncryptor
 import dagger.Module
 import dagger.Provides
@@ -20,4 +24,15 @@ object FeatureModule {
         return DataEncryptorImpl(context)
     }
 
+    @Provides
+    @Singleton
+    fun provideImageLoader(
+        @ApplicationContext context: Context,
+        imageConfig: ImageConfig
+    ): ImageLoader =
+        ImageLoader.Builder(context)
+            .components {
+                add(StoragePathMapper())
+                add(StorageReferenceFetcher.Factory(imageConfig))
+            }.build()
 }

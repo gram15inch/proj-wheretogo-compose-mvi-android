@@ -4,6 +4,8 @@ import android.app.Application
 import android.os.StrictMode
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import coil.ImageLoader
+import coil.ImageLoaderFactory
 import com.dhkim139.wheretogo.migration.AppMigration
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
@@ -21,7 +23,7 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @HiltAndroidApp
-class BaseApplication : Application(), Configuration.Provider {
+class BaseApplication : Application(), Configuration.Provider, ImageLoaderFactory {
 
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
@@ -31,6 +33,11 @@ class BaseApplication : Application(), Configuration.Provider {
 
     @Inject
     lateinit var appMigration: AppMigration
+
+    @Inject
+    lateinit var imageLoader: ImageLoader
+
+    override fun newImageLoader(): ImageLoader = imageLoader
 
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
