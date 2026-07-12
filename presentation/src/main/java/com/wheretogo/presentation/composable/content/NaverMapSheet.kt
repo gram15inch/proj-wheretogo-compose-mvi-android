@@ -32,7 +32,6 @@ import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapView
 import com.naver.maps.map.NaverMap
-import com.wheretogo.domain.ZOOM
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.map.CameraState
 import com.wheretogo.domain.model.map.MarkerInfo
@@ -54,13 +53,11 @@ import com.wheretogo.presentation.toDomainLatLng
 import com.wheretogo.presentation.toNaver
 import com.wheretogo.presentation.viewmodel.MapEvent
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
 @Composable
-fun rememberMapViewWithLifecycle(
-): MapView {
+fun rememberMapViewWithLifecycle(): MapView {
     val context = LocalContext.current
     val mapView = remember {
         MapView(context).apply { id = View.generateViewId() }
@@ -157,7 +154,6 @@ fun NaverMapSheet(
                 onMapAsync(naverMap)
                 state.initCamera?.let { option -> naverMap.cameraUpdate(option) }
                 naverMap.setMapStyle(style)
-                naverMap.locationSetting(context)
                 naverMap.addCameraListener()
                 naverMap.addMapClickListener()
             }
@@ -212,7 +208,7 @@ fun NaverMapSheet(
                 when (e) {
                     // 카메라 이동 요청
                     is MapEvent.MoveCamera -> {
-                        val camera = e.cameraState
+                        val camera = e.option
                         mapView.getMapAsync { naverMap ->
                             when {
                                 isMoving -> {}
@@ -361,6 +357,9 @@ private fun NaverMap.setMapStyle(style: NaverMapStyle) {
         isLocationButtonEnabled = style.locationButtonEnabled
         isLogoClickEnabled = style.logoClickEnabled
     }
+
+    if(style.compassEnabled)
+        locationSetting(context)
 }
 
 private fun CameraOption.toPosition(): CameraPosition {

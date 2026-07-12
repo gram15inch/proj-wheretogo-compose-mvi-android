@@ -47,7 +47,7 @@ import javax.inject.Inject
 
 
 sealed class MapEvent{
-    data class MoveCamera(val cameraState: CameraOption):MapEvent()
+    data class MoveCamera(val option: CameraOption):MapEvent()
 }
 
 @HiltViewModel
