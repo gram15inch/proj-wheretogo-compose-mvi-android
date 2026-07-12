@@ -131,16 +131,16 @@
     <string name="account_valid_expire">계정 인증 만료, 로그인이 필요합니다.</string>
 
 
-    // 이미지 설명
+    <!-- 이미지 설명 -->
     <string name="google_logo">google logo</string>
 
-    // 메세지
+    <!-- 메세지 -->
     <string name="add_done">️📌 추가 완료.</string>
     <string name="remove_done">🗑 삭제 완료.</string>
     <string name="report_done">🚨 신고 완료.</string>
     <string name="retry_guide">잠시후 다시 시도해 주세요.</string>
 
-    // 가이드
+    <!-- 가이드 -->
     <string name="tutorial_start">🥳 반가워요, 같이 어디갈까를 둘러봐요!</string>
     <string name="tutorial_stop">🥺 튜토리얼은 다음에 다시 만나요.</string>
     <string name="welcome_start">새로운 시작을 환영해요\n아래에 정보를 눌러 코스를 확인하세요.</string>
@@ -156,11 +156,11 @@
 
     <string name="searchbar_guide_text">와인딩</string>
 
-    // 경고
+    <!-- 경고 -->
     <string name="warn_reason_inappropriate">부적절한 콘텐츠를 반복적으로 게시할 경우, 서비스 이용이 제한될 수 있습니다.</string>
     <string name="warn_reason_other">부적절한 사용이 계속되면 서비스 이용이 제한될 수 있습니다.</string>
 
-    // 차단
+    <!-- 차단 -->
     <string name="banned_user">이용이 제한된 사용자입니다</string>
     <string name="ban_reason_spam">정지: 스팸 또는 도배 행위 %s</string>
     <string name="ban_reason_abuse">정지: 욕설 또는 비하 발언 %s</string>
@@ -181,7 +181,7 @@
     <string name="report_copyright">저작권 침해</string>
     <string name="report_other">기타</string>
 
-    //오류
+    <!-- 오류 -->
     <string name="google_auth">구글 인증 오류</string>
     <string name="user_create_error">계정 생성 오류</string>
     <string name="unavailable_user">이용할 수 없는 계정 : %s</string>
@@ -193,7 +193,7 @@
 
     <string name="blank" />
 
-    // 사진 권한
+    <!-- 사진 권한 -->
     <string name="show_photo_select">선택한 사진 표시중</string>
     <string name="show_photo_select_desc">새로운 사진을 추가하려면 버튼을 클릭하세요.</string>
     <string name="need_photo_permission">사진을 불러오려면 접근 권한이 필요합니다</string>
@@ -205,7 +205,7 @@
     <string name="button_selected">선택됨</string>
     <string name="button_setting">설정</string>
 
-    // 갤러리
+    <!-- 갤러리 -->
     <string name="photo_delete_fail">사진을 삭제하지 못했어요</string>
     <string name="gallery_load_fail">사진을 불러오지 못했어요</string>
     <string name="media_save_fail">사진을 옮기지 못했어요</string>
@@ -222,12 +222,46 @@
     <string name="cancel">취소</string>
     <string name="how_show">어떻게 볼까요?</string>
     <string name="detail_info">상세 정보</string>
+    <string name="empty_gallery_question_title">혹시 코스에서 찍은 사진, 있지 않나요?</string>
+    <string name="empty_gallery_question_description">폰에 잠들어 있는 그 사진이면 충분해요.\n올리는 순간 코스를 알아서 찾아드려요.</string>
+    <string name="empty_gallery_find_in_gallery_button">갤러리에서 찾아보기</string>
+    <string name="empty_gallery_location_hint">위치 정보가 담긴 사진이면 바로 인식돼요</string>
 
+    <!-- 포토 뷰어 -->
+    <string name="not_yet_stamped_place">아직 도장을 안 찍은 곳</string>
+    <string name="num_visit">%1$s 방문</string>
+    <string name="swipe_to_pick_photo">스와이프해서 이곳을 대표할 사진을 고르세요.</string>
+    <string name="pick_this_photo">이 사진으로 게시 하기</string>
+    <string name="write_record_here">이곳에서의 기록을 남겨보세요.</string>
+    <string name="stamp_down">도장 찍기</string>
+    <string name="confirm_unstamp">도장을 내릴까요?</string>
+    <string name="record_removed_from_course">코스에 올린 기록이 내려가요. 사진과 기록은 내 기기에 그대로 남아요.</string>
+    <string name="unstamp">도장 내리기</string>
     <string-array name="gallery_loading">
+        <item>사진을 콕 집어 찾아오는 중…</item>
         <item>사진을 안전한 곳에 차곡차곡 담는 중…</item>
-        <item>위치 정보를 지우는중…</item>
-        <item>마지막 한 장까지 확인하는 중…</item>
+        <item>위치 정보를 지우는중…</item>작
         <item>사진을 사용하는 것에 대한 허락을 구하는 것을 묻는 것에 대한 승인을 요구하는중…</item>
     </string-array>
+    <string name="no_match_header_label">새 길의 시</string>
+    <string name="no_match_header_title">멋진 곳이었지만,\n코스는 아니었어요</string>
+    <string name="no_match_header_description">가까운 곳에서 다른 코스를 찾아보세요.</string>
+    <string name="no_location_status">위치 정보 없음</string>
+    <string name="no_location_transparency_title">위치 정보는 이렇게 쓰여요</string>
+    <string-array name="no_location_usage_chips">
+        <item>지도에 위치 표시</item>
+        <item>근처 코스 매칭</item>
+    </string-array>
+    <string name="no_location_reasons_title">이 사진에 위치가 없는 이유</string>
+    <string-array name="no_location_reasons">
+        <item>카메라 위치 태그가 꺼진 채 촬영됐어요</item>
+        <item>캡처·다운로드·메신저로 받은 사진이에요</item>
+        <item>촬영 앱에 위치 권한이 없었어요</item>
+    </string-array>
 
+    <string name="no_location_solution_title">다음 사진부터 저장하려면</string>
+    <string name="no_location_solution_body">카메라 설정에서 권한(위치)를 켜야해요.</string>
+
+    <string name="no_location_action_camera_settings">카메라 설정</string>
+    <string name="no_location_action_learn_more">더 알아보기</string>
 </resources>

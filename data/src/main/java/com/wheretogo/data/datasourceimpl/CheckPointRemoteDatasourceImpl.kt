@@ -6,7 +6,9 @@ import com.wheretogo.data.DataBuildConfig
 import com.wheretogo.data.FireStoreCollections
 import com.wheretogo.data.datasource.CheckPointRemoteDatasource
 import com.wheretogo.data.datasourceimpl.service.ContentApiService
+import com.wheretogo.data.feature.mapDataError
 import com.wheretogo.data.feature.safeApiCall
+import com.wheretogo.data.feature.safeMsgApiCall
 import com.wheretogo.data.model.checkpoint.RemoteCheckPoint
 import com.wheretogo.data.model.checkpoint.CheckPointCreateContent
 import kotlinx.coroutines.tasks.await
@@ -19,7 +21,7 @@ class CheckPointRemoteDatasourceImpl @Inject constructor(
     private val firestore by lazy { FirebaseFirestore.getInstance() }
     private val checkPointRootCollection =
         buildConfig.dbPrefix + FireStoreCollections.CHECKPOINT.name
-
+    private val type = "CHECKPOINT"
     override suspend fun getCheckPointGroup(checkPointIdGroup: List<String>): Result<List<RemoteCheckPoint>> {
         return runCatching {
             checkPointIdGroup.chunked(30).flatMap { chunk ->
@@ -68,11 +70,9 @@ class CheckPointRemoteDatasourceImpl @Inject constructor(
         }
     }
 
-    override suspend fun removeCheckPoint(checkPointId: String): Result<Unit> {
-        return runCatching {
-            firestore.collection(checkPointRootCollection).document(checkPointId)
-                .delete()
-                .await()
-        }
+    override suspend fun removeCheckPoint(checkPointId: String, courseId: String): Result<Unit> {
+        return safeMsgApiCall {
+            contentApiService.removeCheckPoint(checkPointId, type, courseId)
+        }.map {}.mapDataError()
     }
 }

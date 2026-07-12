@@ -5,6 +5,7 @@ import android.content.ContentUris
 import android.content.Context
 import android.database.Cursor
 import android.graphics.Bitmap
+import android.location.Geocoder
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
@@ -21,14 +22,12 @@ import com.wheretogo.data.feature.exif
 import com.wheretogo.data.feature.rotateByExif
 import com.wheretogo.data.feature.scaleCropToFill
 import com.wheretogo.data.feature.scaleToFitInside
+import com.wheretogo.data.feature.sha256
 import com.wheretogo.data.model.confg.ImageConfig
 import com.wheretogo.data.model.gallery.EncodedImage
+import com.wheretogo.data.model.gallery.ExifEntity
 import com.wheretogo.data.model.gallery.PhotoEntity
 import com.wheretogo.domain.ImageSize
-import com.wheretogo.domain.model.address.LatLng
-import com.wheretogo.domain.model.gallery.GalleryPhoto
-import com.wheretogo.domain.model.gallery.PhotoExif
-import com.wheretogo.domain.model.util.ExifData
 import com.wheretogo.domain.model.util.FilePreview
 import com.wheretogo.domain.model.util.MediaImage
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -36,10 +35,12 @@ import de.huxhorn.sulky.ulid.ULID
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.util.Locale
 import javax.inject.Inject
 
 class ImageLocalDatasourceImpl @Inject constructor(
@@ -53,11 +54,15 @@ class ImageLocalDatasourceImpl @Inject constructor(
     private val ext = imageConfig.format.ext
     private val mediaUri: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
 
+    private fun generateImageId():String = "IM${ULID().nextULID()}"
+    private fun generatePath(imageId: String, size: ImageSize): String =
+        "image/${size.pathName}/$imageId.${imageConfig.format.ext}"
+
     override suspend fun getImage(imageId: String, size: ImageSize): File {
         val localFile =
             File(
                 imageFile.parentFile,
-                "image/${size.pathName}/${imageId}.$ext"
+                generatePath(imageId,size)
             ).apply {
                 if (!parentFile!!.exists()) {
                     parentFile?.mkdirs()
@@ -117,7 +122,7 @@ class ImageLocalDatasourceImpl @Inject constructor(
         }
     }
 
-    override suspend fun openAndResizeImage(
+    override suspend fun encodeImage(
         sourceUriString: String,
         sizeGroup: List<ImageSize>,
         compressionQuality: Int,
@@ -125,11 +130,12 @@ class ImageLocalDatasourceImpl @Inject constructor(
         val uri = sourceUriString.toUri()
         val resolver = context.contentResolver
         val exif = resolver.exif(uri)
+        val sha256 = resolver.sha256(uri)
 
         val maxBound = sizeGroup.maxOf { maxOf(it.width, it.height) }
         val decoded = resolver.downSampling(uri, maxBound)
         val rotated = decoded.rotateByExif(exif)
-        
+
         if(rotated != decoded) decoded.recycle()
 
         val images = sizeGroup.associateWith { size ->
@@ -150,10 +156,10 @@ class ImageLocalDatasourceImpl @Inject constructor(
 
         rotated.recycle()
 
-        EncodedImage(images = images)
+        EncodedImage(images = images, sha256 = sha256)
     }
 
-    override suspend fun getExif(imageUriString: String): Result<ExifData> {
+    override suspend fun getExif(imageUriString: String): Result<ExifEntity> {
         return runCatching {
             context.contentResolver.openInputStream(imageUriString.toUri())?.use { stream ->
                 exifReader.read(stream)
@@ -188,11 +194,12 @@ class ImageLocalDatasourceImpl @Inject constructor(
 
     override suspend fun saveGalleryPhotos(uriStrings: List<String>): Result<List<Long>> = runCatching {
         val keyed = uriStrings.associateBy { buildExistingKey(it) }
-        val existing = photoDao.findExistingKeys(keyed.keys.toList()).toSet()
-        val targets = keyed.filterKeys { it !in existing }
+        val existingKeys = photoDao.findExistingKeys(keyed.keys.toList()).toSet()
+        val targets = keyed.filterKeys { it !in existingKeys }
         if (targets.isEmpty()) return@runCatching emptyList()
+
         val entities = createEntity(targets)
-        val rowIds = photoDao.insertAll(entities)
+        val rowIds = upsertPhotos(entities).getOrThrow()
 
         entities.filterIndexed { i, entity ->
             val inserted = rowIds.getOrNull(i) != -1L
@@ -203,31 +210,71 @@ class ImageLocalDatasourceImpl @Inject constructor(
         }.map { it.id }
     }
 
-    override suspend fun loadGalleyPhotos(): Result<List<GalleryPhoto>> {
+    override suspend fun upsertPhotos(photos: List<PhotoEntity>): Result<List<Long>> {
         return runCatching {
-            photoDao.getAll().mapNotNull {
-                it.toGalleryPhoto(it.imageId)
+            val local = loadAllPhotos().getOrThrow()
+            val update = mutableListOf<PhotoEntity>()
+            val insert = mutableListOf<PhotoEntity>()
+            photos.forEach { r->
+                val l = local.firstOrNull{it.sha256 == r.sha256}
+                if(l == null)
+                    insert.add(r)
+                else {
+                    update.add(
+                        l.copy(
+                            imageId = r.imageId,
+                            courseId = r.courseId,
+                            courseName = r.courseName,
+                            sourceKey = r.sourceKey,
+                            uriString = r.uriString,
+                        )
+                    )
+                }
             }
+            photoDao.updatePhotos(update) +
+            photoDao.insertAll(insert)
         }
     }
 
-    private fun ContentResolver.createExifData(uriString: String): ExifData?{
+    override suspend fun loadAllPhotos(): Result<List<PhotoEntity>> {
+        return runCatching { photoDao.getAll() }
+    }
+
+    override fun observePhotos(): Flow<List<PhotoEntity>> {
+        return photoDao.observePhotos()
+    }
+
+    override suspend fun getPhotosByHash(hashes:List<String>): Result<List<PhotoEntity>> {
+        return runCatching { photoDao.getByHashes(hashes) }
+    }
+
+    override suspend fun getPhotosByImageId(imageIds:List<String>): Result<List<PhotoEntity>> {
+        return runCatching { photoDao.getByImageId(imageIds.toSet()) }
+    }
+
+    private fun ContentResolver.createExifData(uriString: String): ExifEntity?{
         val uri = uriString.toUri()
         return openInputStream(uri)?.use { exifReader.read(it) }
     }
 
-    suspend fun Map<ImageSize, ByteArray>.saveImages(imageId: String) : File {
-        return  coroutineScope {
-            map { (size, bytes) ->
+    suspend fun Map<ImageSize, ByteArray>.saveImages(imageId: String): Map<ImageSize, File> {
+        return coroutineScope {
+            mapValues { (size, bytes) ->
                 async { saveImage(bytes, imageId, size).getOrThrow() }
-            }.awaitAll().first()
+            }.mapValues { it.value.await() }
+        }
+    }
+
+    override suspend fun updatePhotos(photos: List<PhotoEntity>): Result<Unit> {
+        return runCatching {
+            photoDao.updatePhotos(photos)
         }
     }
 
     override suspend fun clearGalleryPhotos(ids: Set<Long>): Result<Set<Long>> {
         return runCatching {
             val removed= buildSet {
-                val photos= photoDao.getByIds(ids)
+                val photos= photoDao.getById(ids)
                 coroutineScope {
                     photos.map { entity ->
                         async {
@@ -247,27 +294,39 @@ class ImageLocalDatasourceImpl @Inject constructor(
     private suspend fun createEntity(targets: Map<String, String>): List<PhotoEntity> {
         val semaphore = Semaphore(10)
         return coroutineScope {
+            val geocoder = Geocoder(context, Locale.KOREA)
             targets.map { (sourceKey, uriString) ->
                 async {
                     semaphore.withPermit {
                         runCatching {
-                            val imageId = generateImageId()
                             val exif = context.contentResolver.createExifData(uriString)
-                            val file = openAndResizeImage(uriString, ImageSize.entries)
-                                .getOrThrow()
-                                .images
+                            val (lat, lng) = exif?.latitude to exif?.longitude
+
+                            val imageId = generateImageId()
+                            val encodeDeferred = async {
+                                encodeImage(uriString, ImageSize.entries)
+                                    .getOrThrow()
+                            }
+
+                            val addressDeferred = async {
+                                if (lat != null && lng != null) {
+                                    geocoder.getFromLocation(lat, lng, 1)?.firstOrNull()
+                                } else null
+                            }
+
+                            val encodedImages = encodeDeferred.await()
+
+                            val images = encodedImages.images
                                 .saveImages(imageId)
 
                             PhotoEntity(
-                                id = generateId(),
                                 imageId = imageId,
-                                fileName = file.name,
                                 sourceKey = sourceKey,
-                                dateTaken = exif?.timestampMillis,
-                                width = exif?.imageWidth,
-                                height = exif?.imageHeight,
-                                latitude = exif?.latitude,
-                                longitude = exif?.longitude,
+                                sha256 = encodedImages.sha256,
+                                exif = exif,
+                                address = addressDeferred.await()?.getAddressLine(0),
+                                thumbnail = images[ImageSize.SMALL]!!.toUri().toString(),
+                                uriString = images[ImageSize.NORMAL]!!.toUri().toString()
                             )
                         }.getOrNull()
                     }
@@ -275,26 +334,6 @@ class ImageLocalDatasourceImpl @Inject constructor(
             }.awaitAll().filterNotNull()
         }
     }
-
-    private suspend fun PhotoEntity.toGalleryPhoto(imageId:String): GalleryPhoto? {
-        val uriString= getImage(imageId, ImageSize.NORMAL).toUri().path?:return null
-        val thumbnail= getImage(imageId, ImageSize.SMALL).toUri().path?:return null
-
-        return GalleryPhoto(
-            id = id,
-            imageId = imageId,
-            uriString = uriString,
-            thumbnail= thumbnail,
-            exif = PhotoExif(
-                dateTaken = dateTaken,
-                width = width,
-                height = height,
-                location = if (latitude != null && longitude != null)
-                    LatLng(latitude, longitude) else null,
-            ),
-        )
-    }
-
 
     private fun ContentResolver.query(offset: Int, limit: Int): Cursor? {
         val projection = arrayOf(MediaStore.Images.Media._ID)
@@ -350,13 +389,4 @@ class ImageLocalDatasourceImpl @Inject constructor(
 
     private fun buildExistingKey(uriString: String): String =
         uriString.toUri().lastPathSegment ?: uriString.toUri().toString()
-
-    private var lastId = 0L
-    private fun generateId(): Long {
-        val now = System.currentTimeMillis()
-        lastId = if (now <= lastId) lastId + 1 else now
-        return lastId
-    }
-
-    private fun generateImageId():String = "IM${ULID().nextULID()}"
 }

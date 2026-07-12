@@ -1,11 +1,19 @@
 package com.wheretogo.data
 
 import com.wheretogo.data.model.auth.DataSyncToken
+import com.wheretogo.data.model.checkpoint.CheckPointCreateContent
 import com.wheretogo.data.model.checkpoint.LocalCheckPoint
 import com.wheretogo.data.model.checkpoint.RemoteCheckPoint
+import com.wheretogo.data.model.comment.CommentCreateContent
 import com.wheretogo.data.model.comment.RemoteComment
+import com.wheretogo.data.model.course.CourseCreateContent
 import com.wheretogo.data.model.course.LocalCourse
 import com.wheretogo.data.model.course.RemoteCourse
+import com.wheretogo.data.model.gallery.ExifEntity
+import com.wheretogo.data.model.gallery.ExifResponse
+import com.wheretogo.data.model.gallery.ImageMetaCreateContent
+import com.wheretogo.data.model.gallery.ImageMetaResponse
+import com.wheretogo.data.model.gallery.PhotoEntity
 import com.wheretogo.data.model.history.LocalHistory
 import com.wheretogo.data.model.history.LocalHistoryGroupWrapper
 import com.wheretogo.data.model.history.LocalHistoryIdGroup
@@ -26,13 +34,12 @@ import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.auth.SyncToken
 import com.wheretogo.domain.model.checkpoint.CheckPoint
 import com.wheretogo.domain.model.checkpoint.CheckPointAddRequest
-import com.wheretogo.data.model.checkpoint.CheckPointCreateContent
-import com.wheretogo.data.model.comment.CommentCreateContent
-import com.wheretogo.data.model.course.CourseCreateContent
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.comment.CommentAddRequest
 import com.wheretogo.domain.model.course.Course
 import com.wheretogo.domain.model.course.CourseAddRequest
+import com.wheretogo.domain.model.gallery.GalleryPhoto
+import com.wheretogo.domain.model.gallery.PhotoExif
 import com.wheretogo.domain.model.history.HistoryGroupWrapper
 import com.wheretogo.domain.model.history.HistoryIdGroup
 import com.wheretogo.domain.model.report.Report
@@ -44,7 +51,9 @@ import com.wheretogo.domain.model.route.Route
 import com.wheretogo.domain.model.user.History
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePrivate
+import com.wheretogo.domain.model.util.ExifData
 import com.wheretogo.domain.toGeoHash
+import timber.log.Timber
 
 fun RemoteSyncUser.toProfileHistoryPair(): Pair<Profile, History> {
     val profile = publicUser.toProfile(privateUser)
@@ -602,3 +611,78 @@ fun SyncToken.toDataSyncToken(): DataSyncToken {
         msgToken = msgToken
     )
 }
+
+fun PhotoEntity.toGalleryPhoto(): GalleryPhoto? {
+    val (lat, lng) = listOf(exif?.latitude, exif?.longitude)
+    if (thumbnail == null) {
+        Timber.e("$id not found $thumbnail")
+        return null
+    }
+    return GalleryPhoto(
+        id = id,
+        exif = PhotoExif(
+            dateTaken = exif?.timestampMillis,
+            width = exif?.imageWidth,
+            height = exif?.imageHeight,
+            location = if (lat != null && lng != null)
+                LatLng(lat, lng) else null,
+        ),
+        sha256 = sha256,
+        entityId = id,
+        imageId = imageId,
+        courseId = courseId,
+        courseName = courseName,
+        address = address,
+        imageSource = uriString,
+        thumbnail = thumbnail
+    )
+}
+
+fun ImageMetaResponse.toPhotoEntity(): PhotoEntity = PhotoEntity(
+    imageId = imageId,
+    sha256 = sha256,
+    exif = exif.toEntity(),
+    address = address,
+)
+
+fun PhotoEntity.toCreateContent(): ImageMetaCreateContent = ImageMetaCreateContent(
+    imageId = imageId,
+    exif = exif?.toDomain() ?: ExifData(),
+    address = address ?: "",
+    sha256 = sha256,
+    createAt = System.currentTimeMillis()
+)
+
+fun ExifResponse.toEntity(): ExifEntity = ExifEntity(
+    latitude = latitude,
+    longitude = longitude,
+    altitude = altitude,
+    dateTimeOriginal = dateTimeOriginal,
+    timestampMillis = timestampMillis,
+    make = make,
+    model = model,
+    orientation = orientation,
+    imageWidth = imageWidth,
+    imageHeight = imageHeight,
+    fNumber = fNumber,
+    exposureTime = exposureTime,
+    iso = iso,
+    focalLength = focalLength,
+)
+
+fun ExifEntity.toDomain(): ExifData = ExifData(
+    latitude = latitude,
+    longitude = longitude,
+    altitude = altitude,
+    dateTimeOriginal = dateTimeOriginal,
+    timestampMillis = timestampMillis,
+    make = make,
+    model = model,
+    orientation = orientation,
+    imageWidth = imageWidth,
+    imageHeight = imageHeight,
+    fNumber = fNumber,
+    exposureTime = exposureTime,
+    iso = iso,
+    focalLength = focalLength,
+)

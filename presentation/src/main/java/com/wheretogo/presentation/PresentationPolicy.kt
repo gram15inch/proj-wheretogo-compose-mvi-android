@@ -1,6 +1,7 @@
 package com.wheretogo.presentation
 
 import android.Manifest.permission.ACCESS_FINE_LOCATION
+import android.Manifest.permission.ACCESS_MEDIA_LOCATION
 import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.Manifest.permission.READ_MEDIA_IMAGES
 import android.Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED
@@ -114,6 +115,7 @@ sealed class AppPermission(val names: List<String>) {
             val api = Build.VERSION.SDK_INT
             if (api >= 34) add(READ_MEDIA_VISUAL_USER_SELECTED)
             if (api >= 33) add(READ_MEDIA_IMAGES)
+            if (api >= 29) add(ACCESS_MEDIA_LOCATION)
             if (api >= 16 && api < 33) add(READ_EXTERNAL_STORAGE)
         }
     )

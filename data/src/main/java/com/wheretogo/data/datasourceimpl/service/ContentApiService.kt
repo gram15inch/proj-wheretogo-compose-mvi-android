@@ -13,6 +13,7 @@ import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.PATCH
 import retrofit2.http.POST
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface ContentApiService {
@@ -41,5 +42,12 @@ interface ContentApiService {
     suspend fun addCheckPoint(
         @Body body: CheckPointCreateContent
     ): Response<DataResponse<RemoteCheckPoint>>
+
+    @DELETE("api/content/{id}")
+    suspend fun removeCheckPoint(
+        @Path("id") contentId: String,
+        @Query("type") type: String,
+        @Query("groupId") groupId: String,
+    ): Response<MessageResponse>
 
 }

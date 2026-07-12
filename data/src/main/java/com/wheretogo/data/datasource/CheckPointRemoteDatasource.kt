@@ -15,6 +15,6 @@ interface CheckPointRemoteDatasource {
 
     suspend fun updateCheckPoint(checkPointId: String, caption: String): Result<Unit>
 
-    suspend fun removeCheckPoint(checkPointId: String): Result<Unit>
+    suspend fun removeCheckPoint(checkPointId: String, courseId: String): Result<Unit>
 
 }

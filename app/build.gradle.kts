@@ -146,6 +146,7 @@ dependencies {
 
     // Libraries
     implementation(libs.timber)
+    implementation(libs.coil.compose)
 
     // Android Test
     androidTestImplementation(libs.dagger.hilt.android.testing)

@@ -82,6 +82,11 @@ class UserRepositoryImpl @Inject constructor(
         }.mapDomainError()
     }
 
+    override fun observeHistory(type: HistoryType): Flow<HistoryGroupWrapper> {
+        return userLocalDatasource.observeHistory(type.toDataHistoryType())
+            .map { local -> local.toHistoryGroupWrapper() }
+    }
+
     override suspend fun addHistory(
         type: HistoryType,
         groupId:String,

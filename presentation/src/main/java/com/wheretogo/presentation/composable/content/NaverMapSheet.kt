@@ -32,7 +32,6 @@ import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapView
 import com.naver.maps.map.NaverMap
-import com.wheretogo.domain.ZOOM
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.map.CameraState
 import com.wheretogo.domain.model.map.MarkerInfo
@@ -46,6 +45,7 @@ import com.wheretogo.presentation.model.AppPath
 import com.wheretogo.presentation.model.CameraOption
 import com.wheretogo.presentation.model.ContentPadding
 import com.wheretogo.presentation.model.MapOverlay
+import com.wheretogo.presentation.model.NaverMapStyle
 import com.wheretogo.presentation.state.NaverMapState
 import com.wheretogo.presentation.theme.Palette
 import com.wheretogo.presentation.toCameraState
@@ -53,13 +53,11 @@ import com.wheretogo.presentation.toDomainLatLng
 import com.wheretogo.presentation.toNaver
 import com.wheretogo.presentation.viewmodel.MapEvent
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
 @Composable
-fun rememberMapViewWithLifecycle(
-): MapView {
+fun rememberMapViewWithLifecycle(): MapView {
     val context = LocalContext.current
     val mapView = remember {
         MapView(context).apply { id = View.generateViewId() }
@@ -84,8 +82,9 @@ fun NaverMapSheet(
     mapView: MapView,
     state: NaverMapState,
     modifier: Modifier = Modifier,
+    style: NaverMapStyle = NaverMapStyle.Basic,
     overlayGroup: List<MapOverlay> = emptyList(),
-    fingerPrint: StateFlow<Int>? = null,
+    fingerPrint: Int? = null,
     event: SharedFlow<MapEvent>? = null,
     contentPadding: ContentPadding = ContentPadding(),
     onMapAsync: (NaverMap) -> Unit = {},
@@ -137,7 +136,7 @@ fun NaverMapSheet(
     val isPreview = LocalInspectionMode.current
     if (isPreview) {
         Box(
-            modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .background(Palette.Green50)
         )
@@ -153,8 +152,8 @@ fun NaverMapSheet(
         DisposableEffect(mapView) {
             mapView.getMapAsync { naverMap ->
                 onMapAsync(naverMap)
-                naverMap.setUiSetting(state.isZoomControl)
-                naverMap.locationSetting(context)
+                state.initCamera?.let { option -> naverMap.cameraUpdate(option) }
+                naverMap.setMapStyle(style)
                 naverMap.addCameraListener()
                 naverMap.addMapClickListener()
             }
@@ -167,8 +166,8 @@ fun NaverMapSheet(
         }
 
         // 오버레이 업데이트
-        LaunchedEffect(Unit) {
-            fingerPrint?.collect {
+        LaunchedEffect(fingerPrint) {
+            if(fingerPrint!=null){
                 mapView.getMapAsync { naverMap ->
                     naverMap.overlayUpdate(
                         overlayGroup = overlayGroup,
@@ -209,18 +208,17 @@ fun NaverMapSheet(
                 when (e) {
                     // 카메라 이동 요청
                     is MapEvent.MoveCamera -> {
-                        val camera = e.cameraState
+                        val camera = e.option
                         mapView.getMapAsync { naverMap ->
                             when {
                                 isMoving -> {}
                                 camera.isMyLocation -> coroutineScope.launch {
                                     val latlng = getLastLatLng(context) ?: NamSan
-                                    naverMap.cameraPosition = CameraPosition(latlng, camera.zoom)
+                                    naverMap.cameraUpdate(camera.copy(latlng.toDomainLatLng()))
                                 }
 
                                 camera.moveAnimation == MoveAnimation.APP_JUMP -> {
-                                    naverMap.cameraPosition =
-                                        CameraPosition(camera.latLng.toNaver(), camera.zoom)
+                                    naverMap.cameraUpdate(camera)
                                 }
 
                                 camera.latLng != LatLng() -> {
@@ -228,7 +226,6 @@ fun NaverMapSheet(
                                     naverMap.isCameraIdlePending = true
                                     naverMap.setGesture(false)
                                     naverMap.cameraMove(camera) {
-                                        coroutineScope
                                         isMoving = false
                                         naverMap.isCameraIdlePending = false
                                         naverMap.setGesture(true)
@@ -263,16 +260,6 @@ private fun NaverMap.setGesture(isEnable: Boolean) {
     uiSettings.isZoomGesturesEnabled = isEnable
     uiSettings.isTiltGesturesEnabled = isEnable
     uiSettings.isRotateGesturesEnabled = isEnable
-}
-
-private fun NaverMap.setUiSetting(isZoomControl: Boolean) {
-    uiSettings.apply {
-        isLogoClickEnabled = false
-        isLocationButtonEnabled = true
-        isZoomControlEnabled = isZoomControl
-    }
-    minZoom = ZOOM.COUNTRY.level
-    setLayerGroupEnabled(NaverMap.LAYER_GROUP_BUILDING, false)
 }
 
 private fun NaverMap.contentPaddingUpdate(density: Density, contentPadding: ContentPadding) {
@@ -336,6 +323,47 @@ private fun NaverMap.cameraMove(option: CameraOption, moved: () -> Unit) {
                 .cancelCallback { moved() }
         )
     }
+}
+
+private fun NaverMap.cameraUpdate(option: CameraOption) {
+    val naverMap = this
+    naverMap.cameraPosition = option.toPosition()
+}
+
+private fun NaverMap.setMapStyle(style: NaverMapStyle) {
+    mapType = style.mapType
+
+    setLayerGroupEnabled(NaverMap.LAYER_GROUP_BUILDING, style.buildingEnabled)
+    setLayerGroupEnabled(NaverMap.LAYER_GROUP_TRANSIT, style.transitEnabled)
+    setLayerGroupEnabled(NaverMap.LAYER_GROUP_BICYCLE, style.bicycleEnabled)
+    setLayerGroupEnabled(NaverMap.LAYER_GROUP_TRAFFIC, style.trafficEnabled)
+    setLayerGroupEnabled(NaverMap.LAYER_GROUP_CADASTRAL, style.cadastralEnabled)
+    setLayerGroupEnabled(NaverMap.LAYER_GROUP_MOUNTAIN, style.mountainEnabled)
+
+    symbolScale = style.symbolScale
+    symbolPerspectiveRatio = style.symbolPerspectiveRatio
+
+    isIndoorEnabled = style.indoorEnabled
+    isNightModeEnabled = style.nightModeEnabled
+
+    uiSettings.apply {
+        isScrollGesturesEnabled = style.scrollGesturesEnabled
+        isZoomGesturesEnabled = style.zoomGesturesEnabled
+        isTiltGesturesEnabled = style.tiltGesturesEnabled
+        isRotateGesturesEnabled = style.rotateGesturesEnabled
+        isZoomControlEnabled = style.zoomControlEnabled
+        isCompassEnabled = style.compassEnabled
+        isScaleBarEnabled = style.scaleBarEnabled
+        isLocationButtonEnabled = style.locationButtonEnabled
+        isLogoClickEnabled = style.logoClickEnabled
+    }
+
+    if(style.compassEnabled)
+        locationSetting(context)
+}
+
+private fun CameraOption.toPosition(): CameraPosition {
+    return CameraPosition(latLng.toNaver(), zoom)
 }
 
 fun MoveAnimation.toCameraAnimation(): CameraAnimation {

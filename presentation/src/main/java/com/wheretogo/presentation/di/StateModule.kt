@@ -38,18 +38,13 @@ class StateModule {
         buildConfig: PresentationBuildConfig
     ): CourseAddScreenState {
         return CourseAddScreenState(
-            naverMapState = NaverMapState(isZoomControl = buildConfig.isTestUi),
             isTestUi = buildConfig.isTestUi
         )
     }
 
     @Singleton
     @Provides
-    fun provideMapState(
-        buildConfig: PresentationBuildConfig
-    ): MapState {
-        return MapState(
-            naverMapState = NaverMapState(isZoomControl = buildConfig.isTestUi),
-        )
+    fun provideMapState(): MapState {
+        return MapState()
     }
 }

@@ -4,4 +4,5 @@ import com.wheretogo.domain.ImageSize
 
 data class EncodedImage(
     val images: Map<ImageSize, ByteArray>,
+    val sha256 :String
 )

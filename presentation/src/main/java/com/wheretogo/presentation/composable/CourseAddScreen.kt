@@ -83,6 +83,7 @@ import com.wheretogo.presentation.feature.intervalTab
 import com.wheretogo.presentation.intent.CourseAddIntent
 import com.wheretogo.presentation.model.ContentPadding
 import com.wheretogo.presentation.model.MapOverlay
+import com.wheretogo.presentation.model.NaverMapStyle
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.BottomSheetState
 import com.wheretogo.presentation.state.CourseAddScreenState
@@ -100,7 +101,7 @@ fun CourseAddScreen(
     viewModel: CourseAddViewModel = hiltViewModel()
 ) {
     val state by viewModel.courseAddScreenState.collectAsState()
-
+    val fingerPrint by viewModel.fingerPrint.collectAsState()
     LifecycleDisposer {
         viewModel.handleIntent(CourseAddIntent.LifecycleChange(it))
     }
@@ -109,7 +110,7 @@ fun CourseAddScreen(
         state = state,
         mapEvent = viewModel.mapEvent,
         overlays = viewModel.overlays,
-        fingerPrint = viewModel.fingerPrint,
+        fingerPrint = fingerPrint,
 
         //NaverMap
         onMapAsync = {},
@@ -145,7 +146,7 @@ fun CourseAddSheetContent(
     state: CourseAddScreenState = CourseAddScreenState(),
     mapEvent : SharedFlow<MapEvent>? =null,
     overlays : List<MapOverlay> = emptyList(),
-    fingerPrint : StateFlow<Int>? = null,
+    fingerPrint : Int? = null,
 
     //NaverMap
     onMapAsync: (NaverMap) -> Unit = {},
@@ -190,6 +191,7 @@ fun CourseAddSheetContent(
                 modifier = Modifier
                     .zIndex(0f)
                     .fillMaxSize(),
+                style = NaverMapStyle.Basic.copy(zoomControlEnabled = state.isTestUi),
                 overlayGroup = overlays,
                 fingerPrint = fingerPrint,
                 event = mapEvent,
@@ -272,7 +274,7 @@ fun CourseAddSheetContent(
                                 fontSize = 16.sp
                             )
                             Text(
-                                text = "${fingerPrint?.value}",
+                                text = "$fingerPrint",
                                 fontSize = 16.sp
                             )
                         }

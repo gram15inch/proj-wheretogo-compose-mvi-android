@@ -13,6 +13,7 @@ sealed interface GalleryState {
         val isSelectionMode: Boolean get() = selectedIds.isNotEmpty()
         val allPhotos: List<GalleryPhoto> get() = sections.flatMap { it.photos }
     }
+    data object Empty : GalleryState
     data class Error(val message: String) : GalleryState
 
     suspend fun<T> onSuccessAwait(callback: suspend (Success)-> T): T?{

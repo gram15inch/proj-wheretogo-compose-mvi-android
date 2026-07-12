@@ -1,11 +1,12 @@
 package com.wheretogo.data.datasource
 
 import com.wheretogo.data.model.gallery.EncodedImage
+import com.wheretogo.data.model.gallery.ExifEntity
+import com.wheretogo.data.model.gallery.PhotoEntity
 import com.wheretogo.domain.ImageSize
-import com.wheretogo.domain.model.util.ExifData
 import com.wheretogo.domain.model.util.FilePreview
 import com.wheretogo.domain.model.util.MediaImage
-import com.wheretogo.domain.model.gallery.GalleryPhoto
+import kotlinx.coroutines.flow.Flow
 import java.io.File
 
 
@@ -19,21 +20,31 @@ interface ImageLocalDatasource {
 
     suspend fun getDefaultImageBytes(size: ImageSize): Result<ByteArray>
 
-    suspend fun openAndResizeImage(
+    suspend fun encodeImage(
         sourceUriString: String,
         sizeGroup: List<ImageSize>,
         compressionQuality: Int = 80
     ): Result<EncodedImage>
 
-    suspend fun getExif(imageUriString: String): Result<ExifData>
+    suspend fun getExif(imageUriString: String): Result<ExifEntity>
 
     suspend fun getPreview(imageUriString: String): Result<FilePreview>
 
     suspend fun getMediaImages(offset: Int, limit: Int): Result<List<MediaImage>>
 
-    suspend fun loadGalleyPhotos():Result<List<GalleryPhoto>>
+    suspend fun loadAllPhotos(): Result<List<PhotoEntity>>
 
-    suspend fun saveGalleryPhotos(uriStrings:List<String>): Result<List<Long>>
+    fun observePhotos(): Flow<List<PhotoEntity>>
+
+    suspend fun getPhotosByHash(hashes:List<String>): Result<List<PhotoEntity>>
+
+    suspend fun getPhotosByImageId(imageIds: List<String>): Result<List<PhotoEntity>>
+
+    suspend fun saveGalleryPhotos(uriStrings: List<String>): Result<List<Long>>
+
+    suspend fun upsertPhotos(photos: List<PhotoEntity>): Result<List<Long>>
+
+    suspend fun updatePhotos(photos: List<PhotoEntity>): Result<Unit>
 
     suspend fun clearGalleryPhotos(ids: Set<Long>): Result<Set<Long>>
 }

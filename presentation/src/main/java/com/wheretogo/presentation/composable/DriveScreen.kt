@@ -82,6 +82,7 @@ import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.intent.MapIntent
 import com.wheretogo.presentation.model.ContentPadding
+import com.wheretogo.presentation.model.NaverMapStyle
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.model.TypeEditText
 import com.wheretogo.presentation.state.CheckPointAddState
@@ -267,6 +268,7 @@ fun DriveContent(
             }
 
             if(mapViewModel!= null) {
+                val fingerPrint by mapViewModel.fingerPrint.collectAsState()
                 val mapState by mapViewModel.state.collectAsState()
                 Box(modifier = Modifier.fillMaxSize()){
                     NaverMapSheet(
@@ -275,8 +277,9 @@ fun DriveContent(
                         modifier = Modifier
                             .fillMaxSize()
                             .zIndex(0f),
+                        style = NaverMapStyle.Basic.copy(zoomControlEnabled = state.isTestUi),
                         overlayGroup = mapViewModel.overlays,
-                        fingerPrint = mapViewModel.fingerPrint,
+                        fingerPrint = fingerPrint,
                         event = mapViewModel.event,
                         contentPadding = ContentPadding(
                             start = systemBars.calculateStartPadding(LocalLayoutDirection.current),
@@ -314,7 +317,7 @@ fun DriveContent(
                                 fontSize = 50.sp
                             )
                             Text(
-                                text = "${mapViewModel.fingerPrint.value}",
+                                text = "${fingerPrint}",
                                 fontSize = 16.sp
                             )
                             mapState.naverMapState .apply {

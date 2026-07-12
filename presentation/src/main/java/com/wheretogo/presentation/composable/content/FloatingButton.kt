@@ -82,8 +82,7 @@ fun FloatingButtons(
 ) {
     val scope = rememberCoroutineScope()
     val isCommentVisible = isVisible && FloatingButtonState.commentVisible.contains(state.stateMode)
-    val isCheckpointAddVisible =
-        isVisible && FloatingButtonState.checkpointAddVisible.contains(state.stateMode)
+    val isCheckpointAddVisible = false
     val isInfoVisible: Boolean =
         isVisible && FloatingButtonState.infoVisible.contains(state.stateMode)
     val isExportVisible: Boolean =

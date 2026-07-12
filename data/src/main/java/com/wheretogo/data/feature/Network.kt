@@ -50,3 +50,26 @@ suspend fun <T> safeApiCall(
         Result.failure(e)
     }
 }
+
+suspend fun safeMsgApiCall(
+    call: suspend () -> Response<MessageResponse>
+): Result<String> {
+    return try {
+        val response = call()
+        if (response.isSuccessful) {
+            val body = response.body()
+            if (body != null) {
+                if(body.success)
+                    Result.success(body.message)
+                else
+                    Result.failure(response.toDataError())
+            } else {
+                Result.failure(Exception("네트워크의 결과값이 없습니다."))
+            }
+        } else {
+            return Result.failure(response.toDataError())
+        }
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+}

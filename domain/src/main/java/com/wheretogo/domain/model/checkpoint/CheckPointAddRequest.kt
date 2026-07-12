@@ -3,8 +3,7 @@ package com.wheretogo.domain.model.checkpoint
 
 data class CheckPointAddRequest(
     val content: CheckPointContent,
-    val imageId: String,
-    val thumbnail: String
+    val imageId: String
 ) {
     fun valid(): CheckPointAddRequest {
         require(content.latLng.latitude != 0.0) { "inValid latLng" }
@@ -28,7 +27,6 @@ data class CheckPointAddRequest(
             captionId = "",
             caption = "",
             imageId = imageId,
-            thumbnail = thumbnail,
             description = "",
             isUserCreated = true,
             isHide = false,

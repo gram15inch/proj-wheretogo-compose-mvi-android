@@ -6,44 +6,84 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.RoomDatabase
+import androidx.room.Transaction
 import com.wheretogo.data.model.gallery.PhotoEntity
 import kotlinx.coroutines.flow.Flow
 
 @Database(entities = [PhotoEntity::class], version = 1, exportSchema = false)
 abstract class GalleryDatabase : RoomDatabase() {
-    abstract fun photoDao(): GalleryPhotoDao
+    abstract fun photoDao(): PhotoDao
 }
 
 
 @Dao
-interface GalleryPhotoDao {
+interface PhotoDao {
 
     @Insert(onConflict = OnConflictStrategy.Companion.IGNORE)
     suspend fun insertAll(photos: List<PhotoEntity>): List<Long>
 
     @Query(
-        """
-        SELECT * FROM gallery_photo
-        ORDER BY (dateTaken IS NULL), dateTaken DESC
+"""
+        SELECT * FROM photo
+        ORDER BY (timestampMillis IS NULL), timestampMillis DESC
         """
     )
     suspend fun getAll(): List<PhotoEntity>
 
-    @Query("SELECT sourceKey FROM gallery_photo WHERE sourceKey IN (:keys)")
-    suspend fun findExistingKeys(keys: List<String>): List<String>
-
-    @Query("SELECT * FROM gallery_photo WHERE id IN (:ids)")
-    suspend fun getByIds(ids: Set<Long>): List<PhotoEntity>
-
-    @Query("DELETE FROM gallery_photo WHERE id IN (:ids)")
-    suspend fun deleteByIds(ids: Set<Long>)
-
-    // 흐름 관찰이 필요하면 추가 (확장용)
     @Query(
         """
-        SELECT * FROM gallery_photo
-        ORDER BY (dateTaken IS NULL), dateTaken DESC
+        SELECT * FROM photo
+        ORDER BY (timestampMillis IS NULL), timestampMillis DESC
         """
     )
-    fun observeAll(): Flow<List<PhotoEntity>>
+    fun observePhotos(): Flow<List<PhotoEntity>>
+
+    @Query("SELECT * FROM photo WHERE sha256 IN (:hashes)")
+    suspend fun getByHashes(hashes: List<String>): List<PhotoEntity>
+
+    @Query("SELECT sourceKey FROM photo WHERE sourceKey IN (:keys)")
+    suspend fun findExistingKeys(keys: List<String>): List<String>
+
+    @Query("SELECT * FROM photo WHERE id IN (:ids)")
+    suspend fun getById(ids: Set<Long>): List<PhotoEntity>
+
+    @Query("SELECT * FROM photo WHERE imageId IN (:ids)")
+    suspend fun getByImageId(ids: Set<String>): List<PhotoEntity>
+
+    @Query("DELETE FROM photo WHERE id IN (:ids)")
+    suspend fun deleteByIds(ids: Set<Long>)
+
+    @Query(
+        """
+        UPDATE photo 
+        SET imageId = COALESCE(:imageId, imageId),
+            courseId = COALESCE(:courseId, courseId),
+            courseName = COALESCE(:courseName, courseName),
+            uriString = COALESCE(:uriString, uriString),
+            sourceKey = COALESCE(:sourceKey, sourceKey)
+        WHERE id = :id
+        """
+    ) suspend fun updateById(
+        id: Long,
+        imageId: String? = null,
+        courseId: String? = null,
+        courseName: String? = null,
+        uriString: String? = null,
+        sourceKey: String? = null,
+    )
+
+    @Transaction
+    suspend fun updatePhotos(photos: List<PhotoEntity>) :List<Long> {
+        return photos.map { photo ->
+            updateById(
+                id = photo.id,
+                imageId = photo.imageId,
+                courseId = photo.courseId,
+                courseName = photo.courseName,
+                uriString = photo.uriString,
+                sourceKey = photo.sourceKey,
+            )
+            photo.id
+        }
+    }
 }
