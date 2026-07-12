@@ -19,6 +19,8 @@ interface UserRepository {
 
     suspend fun getHistory(type: HistoryType): Result<HistoryGroupWrapper>
 
+    fun observeHistory(type: HistoryType): Flow<HistoryGroupWrapper>
+
     suspend fun addHistory(
         type: HistoryType,
         groupId: String,

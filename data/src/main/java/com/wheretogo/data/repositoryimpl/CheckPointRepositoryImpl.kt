@@ -1,7 +1,6 @@
 package com.wheretogo.data.repositoryimpl
 
 import com.wheretogo.data.CachePolicy
-import com.wheretogo.data.DataError
 import com.wheretogo.data.datasource.CheckPointLocalDatasource
 import com.wheretogo.data.datasource.CheckPointRemoteDatasource
 import com.wheretogo.data.di.CheckpointCache
@@ -40,6 +39,18 @@ class CheckPointRepositoryImpl @Inject constructor(
         }.map { it?.toCheckPoint() }
     }
 
+    override suspend fun getCheckPoints(
+        checkPointIds: List<String>,
+    ): Result<List<CheckPoint>> {
+        return runCatching {
+            val local= checkPointLocalDatasource.getCheckPoints(checkPointIds).getOrThrow()
+            val missingIds = local.map { it.checkPointId }.filter { !checkPointIds.contains(it) }
+            if (missingIds.isNotEmpty()) {
+                fetchCheckPoint(missingIds)
+            } else local
+        }.map { it.toDomain() }
+    }
+
     override suspend fun getCheckPointGroupByCourseId(courseId: String): Result<List<CheckPoint>> {
         val localGroup = checkPointLocalDatasource.getCluster(courseId).getOrNull()
         return if (localGroup == null || localGroup.isExpired(cachePolicy)) {
@@ -59,8 +70,7 @@ class CheckPointRepositoryImpl @Inject constructor(
                 val local = remote.toLocalCheckPoint()
                 checkPointLocalDatasource.saveCheckPoints(listOf(local)).map { local }
             }.mapCatching { local ->
-                val imageLocalPath = request.thumbnail
-                local.toCheckPoint(imageLocalPath)
+                local.toCheckPoint()
             }.mapDataError().mapDomainError()
     }
 

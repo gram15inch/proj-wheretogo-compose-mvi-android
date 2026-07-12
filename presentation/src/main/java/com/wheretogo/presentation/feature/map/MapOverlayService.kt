@@ -68,4 +68,12 @@ interface MapOverlayService {
 
     fun createFullPath(points: List<LatLng> = emptyList()): Result<Unit>
 
+
+    //================================
+
+    fun refreshSpot(latLng: LatLng)
+
+    fun refreshPath(course: Course)
+
+
 }

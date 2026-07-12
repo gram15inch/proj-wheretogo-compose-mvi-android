@@ -35,7 +35,6 @@ fun CourseContent.toCourseAddRequest(
 }
 
 fun CheckPointContent.toAddRequest(
-    thumbnail: String,
     imageId: String,
     groupId: String? = null, // 선택된 코스에서 실제 Id 삽입시 사용
 ): CheckPointAddRequest {
@@ -48,7 +47,6 @@ fun CheckPointContent.toAddRequest(
     return CheckPointAddRequest(
         content = content,
         imageId = imageId,
-        thumbnail = thumbnail,
     )
 }
 

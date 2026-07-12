@@ -14,6 +14,8 @@ interface UserLocalDatasource {
 
     suspend fun getHistory(type: DataHistoryType): LocalHistoryGroupWrapper
 
+    fun observeHistory(type: DataHistoryType): Flow<LocalHistoryGroupWrapper>
+
     suspend fun setProfile(profile: LocalProfile): Result<Unit>
 
     suspend fun iniHistory(history: LocalHistory): Result<Unit>

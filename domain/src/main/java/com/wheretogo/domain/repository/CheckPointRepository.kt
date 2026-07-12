@@ -9,6 +9,8 @@ interface CheckPointRepository {
 
     suspend fun getCheckPoint(checkPointId: String, isRemote: Boolean): Result<CheckPoint?>
 
+    suspend fun getCheckPoints(checkPointIds: List<String>): Result<List<CheckPoint>>
+
     suspend fun addCheckPoint(request: CheckPointAddRequest): Result<CheckPoint>
 
     suspend fun removeCheckPoint(checkPointId: String, courseId: String): Result<Unit>

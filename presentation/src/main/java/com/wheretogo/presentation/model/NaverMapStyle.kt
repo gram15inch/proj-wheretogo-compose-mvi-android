@@ -54,7 +54,9 @@ data class NaverMapStyle(
             locationButtonEnabled = true
         )
 
-        val Place = NaverMapStyle()
+        val Place = NaverMapStyle(
+            symbolScale = 1f
+        )
     }
 }
 

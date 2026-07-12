@@ -1,7 +1,9 @@
 package com.wheretogo.domain.usecase.gallery
 
 import com.wheretogo.domain.model.gallery.GalleryPhoto
+import kotlinx.coroutines.flow.Flow
 
 interface LoadGalleryPhotosUseCase {
-    suspend operator fun invoke(): Result<List<GalleryPhoto>>
+    fun observe(): Flow<List<GalleryPhoto>>
+    suspend fun groupRefresh(forceRefresh: Boolean = false): Result<Unit>
 }

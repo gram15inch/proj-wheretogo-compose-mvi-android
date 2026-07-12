@@ -13,6 +13,9 @@
     <queries>
         <package android:name="com.skt.skaf.l001mtm091"/>
         <package android:name="com.skt.tmap.ku"/>
+        <intent>
+            <action android:name="android.media.action.IMAGE_CAPTURE" />
+        </intent>
     </queries>
     <application
         android:name=".BaseApplication"

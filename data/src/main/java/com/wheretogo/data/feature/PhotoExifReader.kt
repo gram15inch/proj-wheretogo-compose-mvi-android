@@ -1,7 +1,7 @@
 package com.wheretogo.data.feature
 
 import androidx.exifinterface.media.ExifInterface
-import com.wheretogo.domain.model.util.ExifData
+import com.wheretogo.data.model.gallery.ExifEntity
 import java.io.File
 import java.io.InputStream
 import java.text.SimpleDateFormat
@@ -10,11 +10,11 @@ import javax.inject.Inject
 
 class PhotoExifReader @Inject constructor() {
 
-    fun read(input: InputStream): ExifData = ExifInterface(input).toExifData()
+    fun read(input: InputStream): ExifEntity = ExifInterface(input).toExifData()
 
-    fun read(file: File): ExifData = ExifInterface(file.absolutePath).toExifData()
+    fun read(file: File): ExifEntity = ExifInterface(file.absolutePath).toExifData()
 
-    private fun ExifInterface.toExifData(): ExifData {
+    private fun ExifInterface.toExifData(): ExifEntity {
         val latLong = FloatArray(2)
         val hasLocation = getLatLong(latLong)
 
@@ -39,7 +39,7 @@ class PhotoExifReader @Inject constructor() {
             ?: getAttribute(ExifInterface.TAG_DATETIME)
         val timestamp = dateTimeStr?.let { parseExifDateTime(it) }
 
-        return ExifData(
+        return ExifEntity(
             latitude = if (hasLocation) latLong[0].toDouble() else null,
             longitude = if (hasLocation) latLong[1].toDouble() else null,
             altitude = altitude,

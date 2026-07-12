@@ -8,74 +8,82 @@ import androidx.room.Query
 import androidx.room.RoomDatabase
 import androidx.room.Transaction
 import com.wheretogo.data.model.gallery.PhotoEntity
-import com.wheretogo.domain.model.gallery.GalleryPhoto
+import kotlinx.coroutines.flow.Flow
 
 @Database(entities = [PhotoEntity::class], version = 1, exportSchema = false)
 abstract class GalleryDatabase : RoomDatabase() {
-    abstract fun photoDao(): GalleryPhotoDao
+    abstract fun photoDao(): PhotoDao
 }
 
 
 @Dao
-interface GalleryPhotoDao {
+interface PhotoDao {
 
     @Insert(onConflict = OnConflictStrategy.Companion.IGNORE)
     suspend fun insertAll(photos: List<PhotoEntity>): List<Long>
 
     @Query(
 """
-        SELECT * FROM gallery_photo
-        ORDER BY (dateTaken IS NULL), dateTaken DESC
+        SELECT * FROM photo
+        ORDER BY (timestampMillis IS NULL), timestampMillis DESC
         """
     )
     suspend fun getAll(): List<PhotoEntity>
 
-    @Query("SELECT sourceKey FROM gallery_photo WHERE sourceKey IN (:keys)")
+    @Query(
+        """
+        SELECT * FROM photo
+        ORDER BY (timestampMillis IS NULL), timestampMillis DESC
+        """
+    )
+    fun observePhotos(): Flow<List<PhotoEntity>>
+
+    @Query("SELECT * FROM photo WHERE sha256 IN (:hashes)")
+    suspend fun getByHashes(hashes: List<String>): List<PhotoEntity>
+
+    @Query("SELECT sourceKey FROM photo WHERE sourceKey IN (:keys)")
     suspend fun findExistingKeys(keys: List<String>): List<String>
 
-    @Query("SELECT * FROM gallery_photo WHERE id IN (:ids)")
-    suspend fun getByIds(ids: Set<Long>): List<PhotoEntity>
+    @Query("SELECT * FROM photo WHERE id IN (:ids)")
+    suspend fun getById(ids: Set<Long>): List<PhotoEntity>
 
-    @Query("DELETE FROM gallery_photo WHERE id IN (:ids)")
+    @Query("SELECT * FROM photo WHERE imageId IN (:ids)")
+    suspend fun getByImageId(ids: Set<String>): List<PhotoEntity>
+
+    @Query("DELETE FROM photo WHERE id IN (:ids)")
     suspend fun deleteByIds(ids: Set<Long>)
 
     @Query(
-"""
-        UPDATE gallery_photo 
-        SET dateTaken = COALESCE(:dateTaken, dateTaken),
-            width = COALESCE(:width, width),
-            height = COALESCE(:height, height),
-            latitude = COALESCE(:latitude, latitude),
-            longitude = COALESCE(:longitude, longitude),
-            courseId = COALESCE(:courseId, longitude),
-            courseName = COALESCE(:courseName, longitude)
+        """
+        UPDATE photo 
+        SET imageId = COALESCE(:imageId, imageId),
+            courseId = COALESCE(:courseId, courseId),
+            courseName = COALESCE(:courseName, courseName),
+            uriString = COALESCE(:uriString, uriString),
+            sourceKey = COALESCE(:sourceKey, sourceKey)
         WHERE id = :id
         """
-    )
-    suspend fun updateById(
+    ) suspend fun updateById(
         id: Long,
-        dateTaken: Long? = null,
-        width: Int? = null,
-        height: Int? = null,
-        latitude: Double? = null,
-        longitude: Double? = null,
+        imageId: String? = null,
         courseId: String? = null,
-        courseName: String? = null
+        courseName: String? = null,
+        uriString: String? = null,
+        sourceKey: String? = null,
     )
 
     @Transaction
-    suspend fun updateGalleryPhotos(photos: List<GalleryPhoto>) {
-        photos.forEach { photo ->
+    suspend fun updatePhotos(photos: List<PhotoEntity>) :List<Long> {
+        return photos.map { photo ->
             updateById(
                 id = photo.id,
-                dateTaken = photo.exif.dateTaken,
-                width = photo.exif.width,
-                height = photo.exif.width,
-                latitude = photo.exif.location?.latitude,
-                longitude = photo.exif.location?.longitude,
+                imageId = photo.imageId,
                 courseId = photo.courseId,
-                courseName = photo.courseName
+                courseName = photo.courseName,
+                uriString = photo.uriString,
+                sourceKey = photo.sourceKey,
             )
+            photo.id
         }
     }
 }

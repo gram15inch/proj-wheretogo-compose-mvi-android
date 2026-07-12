@@ -16,6 +16,7 @@ import com.wheretogo.data.model.history.LocalHistoryIdGroup
 import com.wheretogo.data.model.user.LocalProfile
 import com.wheretogo.data.model.user.LocalProfilePrivate
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -141,7 +142,8 @@ class UserLocalDatasourceImpl @Inject constructor(
             preferences[historyKey]?.run { Cbor.decodeFromByteArray(this) } ?: LocalHistoryIdGroup()
         }.first()
 
-        val addedAt = if (addedAtKey == null) 0L else userDataStore.data.map { preferences ->
+        val addedAt = userDataStore.data.map { preferences ->
+            if (addedAtKey == null) return@map 0L
             preferences[addedAtKey] ?: 0L
         }.first()
 
@@ -150,6 +152,27 @@ class UserLocalDatasourceImpl @Inject constructor(
             historyIdGroup = historyIdGroup,
             lastAddedAt = addedAt
         )
+    }
+
+    override fun observeHistory(type: DataHistoryType): Flow<LocalHistoryGroupWrapper> {
+        val historyKey = getHistoryKey(type)
+        val addedAtKey = getHistoryAddedAtKey(type)
+        val historyIdGroup = userDataStore.data.map { preferences ->
+            preferences[historyKey]?.run { Cbor.decodeFromByteArray(this) } ?: LocalHistoryIdGroup()
+        }
+
+        val addedAt = userDataStore.data.map { preferences ->
+            if (addedAtKey == null) return@map 0L
+            preferences[addedAtKey] ?: 0L
+        }
+
+        return historyIdGroup.combine(addedAt){ idGroup, addedAt->
+            LocalHistoryGroupWrapper(
+                type = type,
+                historyIdGroup = idGroup,
+                lastAddedAt = addedAt
+            )
+        }
     }
 
     override suspend fun setProfile(profile: LocalProfile): Result<Unit> {

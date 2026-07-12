@@ -18,8 +18,10 @@ import com.wheretogo.domain.usecase.comment.GetCommentForCheckPointUseCase
 import com.wheretogo.domain.usecase.comment.RemoveCommentToCheckPointUseCase
 import com.wheretogo.domain.usecase.course.AddCourseUseCase
 import com.wheretogo.domain.usecase.course.FilterListCourseUseCase
+import com.wheretogo.domain.usecase.course.GetCourseUseCase
 import com.wheretogo.domain.usecase.course.GetNearByCourseUseCase
 import com.wheretogo.domain.usecase.course.RemoveCourseUseCase
+import com.wheretogo.domain.usecase.gallery.GetStampUseCase
 import com.wheretogo.domain.usecase.report.ReportContentUseCase
 import com.wheretogo.domain.usecase.user.DeleteUserUseCase
 import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
@@ -47,8 +49,10 @@ import com.wheretogo.domain.usecaseimpl.comment.GetCommentForCheckPointUseCaseIm
 import com.wheretogo.domain.usecaseimpl.comment.RemoveCommentToCheckPointUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.course.AddCourseUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.course.FilterListCourseUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.course.GetCourseUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.course.GetNearByCourseUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.course.RemoveCourseUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.gallery.GetStampUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.report.ReportContentUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.DeleteUserUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.GetUserProfileStreamUseCaseImpl
@@ -92,7 +96,10 @@ abstract class UseCaseModule {
 
 
     @Binds
-    abstract fun bindGetNearByJourneyUseCase(useCaseImpl: GetNearByCourseUseCaseImpl): GetNearByCourseUseCase
+    abstract fun bindGetNearByCourseUseCase(useCaseImpl: GetNearByCourseUseCaseImpl): GetNearByCourseUseCase
+
+    @Binds
+    abstract fun bindGetCourseUseCase(useCaseImpl: GetCourseUseCaseImpl): GetCourseUseCase
 
     @Binds
     abstract fun bindUserSignOutUseCase(useCaseImpl: UserSignOutUseCaseImpl): UserSignOutUseCase
@@ -171,6 +178,9 @@ abstract class UseCaseModule {
 
     @Binds
     abstract fun bindDeleteGalleryPhotosUseCase(useCaseImpl: DeleteGalleryPhotosUseCaseImpl): DeleteGalleryPhotosUseCase
+
+    @Binds
+    abstract fun bindGetStampUseCase(useCaseImpl: GetStampUseCaseImpl): GetStampUseCase
 
 }
 

@@ -27,7 +27,11 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -38,13 +42,15 @@ sealed interface GalleryUiEffect {
     data class NavigateToDetail(val photoId: Long) : GalleryUiEffect
 }
 
+data class GroupPhoto(val photos: List<GalleryPhoto>, val selectedIndex: Int)
+
 @HiltViewModel
 class GalleryFlowViewModel @Inject constructor(
     @MainDispatcher private val dispatcher: CoroutineDispatcher,
     private val handler: GalleryFlowHandler,
     private val savePickedImagesUseCase: SavePickedImagesUseCase,
-    private val loadGalleryPhotos: LoadGalleryPhotosUseCase,
-    private val deleteGalleryPhotos: DeleteGalleryPhotosUseCase,
+    private val loadGalleryPhotosUseCase: LoadGalleryPhotosUseCase,
+    private val deleteGalleryPhotosUseCase: DeleteGalleryPhotosUseCase,
 ) : ViewModel() {
     private val _galleyState =
         MutableStateFlow<GalleryState>(GalleryState.Loading)
@@ -53,24 +59,42 @@ class GalleryFlowViewModel @Inject constructor(
     private val _effect = MutableSharedFlow<GalleryUiEffect>()
     val effect: SharedFlow<GalleryUiEffect> = _effect.asSharedFlow()
 
-    val groupings: List<GroupingStrategy> = listOf(ByCourseGrouping(),ByDayGrouping())
+    val groupings: List<GroupingStrategy> = listOf(ByCourseGrouping(), ByDayGrouping())
     private var _grouping: GroupingStrategy = groupings.first()
     val currentGroupingLabel: String get() = _grouping.label
 
     private var _cachedPhotos: List<GalleryPhoto> = emptyList()
     private val _detailPhotoId = MutableStateFlow<Long?>(null)
-    val detailPhoto: StateFlow<GalleryPhoto?> = _detailPhotoId
-        .map { id -> id?.let { selectedId -> _cachedPhotos.firstOrNull { it.id == selectedId } } }
+
+    val groupPhoto: StateFlow<GroupPhoto?> = _detailPhotoId
+        .map { id ->
+            val select = id?.let { selectedId -> _cachedPhotos.firstOrNull { it.id == selectedId } } ?: return@map null
+            if(select.courseId.isNullOrBlank()){
+                return@map GroupPhoto(listOf(select),0)
+            }
+            val group = _cachedPhotos.filter { it.courseId == select.courseId }
+            val index = group.indexOfFirst { it.id == select.id }.coerceAtLeast(0)
+            GroupPhoto(group, index)
+        }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     init {
-        initSuccess()
-        viewModelScope.launch(dispatcher) {
-            withContext(Dispatchers.IO){
-                delay(350)
-                handleIntent(GalleryIntent.Refresh)
+        observeGalleryPhotos()
+    }
+
+    private fun observeGalleryPhotos() {
+        loadGalleryPhotosUseCase.observe()
+            .onStart { delay(310) } // 화면 이동 대기
+            .onEach { photos ->
+                _cachedPhotos = photos
+                val selected = (_galleyState.value as? GalleryState.Success)?.selectedIds ?: emptySet()
+                if(photos.isEmpty())
+                    initEmpty()
+                else
+                    initSuccess(selectedIds = selected)
             }
-        }
+            .flowOn(Dispatchers.IO)
+            .launchIn(viewModelScope)
     }
 
     fun handleIntent(intent: GalleryIntent) {
@@ -96,7 +120,6 @@ class GalleryFlowViewModel @Inject constructor(
         handler.handle(e,event)
     }
 
-    // 갤러리 갱신
     private suspend fun onMediaPicked(images: List<PickerImage>) {
         if (images.isEmpty()) return
         _galleyState.value = GalleryState.Loading
@@ -108,18 +131,13 @@ class GalleryFlowViewModel @Inject constructor(
     }
 
     private suspend fun refreshGallery() {
-        withContext(Dispatchers.IO) { loadGalleryPhotos() }
-            .onSuccess { photos ->
-                _cachedPhotos = photos
-                initSuccess()
-            }.onFailure {
+        withContext(Dispatchers.IO) { loadGalleryPhotosUseCase.groupRefresh() }
+            .onFailure {
                 _galleyState.value = GalleryState.Error("")
                 handleError(it, GalleryFlowMsgEvent.GALLERY_LOAD_FAIL)
             }
     }
 
-
-    // 갤러리 로드 성공시
     private fun changeGrouping(strategy: GroupingStrategy) {
         if (strategy.label == _grouping.label) return
         _galleyState.value.onSuccess {
@@ -128,12 +146,12 @@ class GalleryFlowViewModel @Inject constructor(
         }
     }
 
-    private suspend fun onPhotoClick(pickerId: Long) {
+    private suspend fun onPhotoClick(photoId: Long) {
         _galleyState.value.onSuccessAwait {
             if (it.isSelectionMode) {
-                it.toggleSelection(pickerId)
+                it.toggleSelection(photoId)
             } else {
-                _effect.emit(GalleryUiEffect.NavigateToDetail(pickerId))
+                _effect.emit(GalleryUiEffect.NavigateToDetail(photoId))
             }
         }
     }
@@ -160,12 +178,9 @@ class GalleryFlowViewModel @Inject constructor(
         _galleyState.value.onSuccessAwait {
             val targets = it.selectedIds
             if (targets.isEmpty()) return@onSuccessAwait
-            withContext(Dispatchers.IO) { deleteGalleryPhotos(targets) }
-                .onSuccess { deletedIds ->
-                    _cachedPhotos = _cachedPhotos.filterNot { it.id in deletedIds }
-                    initSuccess()
-                }.onFailure {
-                    handleError(it, GalleryFlowMsgEvent.PHOTO_DELETE_FAIL)
+            withContext(Dispatchers.IO) { deleteGalleryPhotosUseCase(targets) }
+                .onFailure { e ->
+                    handleError(e, GalleryFlowMsgEvent.PHOTO_DELETE_FAIL)
                 }
         }
     }
@@ -190,6 +205,10 @@ class GalleryFlowViewModel @Inject constructor(
             selectedIds = validSelected,
             groupingLabel = _grouping.label,
         )
+    }
+
+    private fun initEmpty(){
+        _galleyState.value = GalleryState.Empty
     }
 
     private fun GalleryState.Success.toggleSelection(id: Long) {

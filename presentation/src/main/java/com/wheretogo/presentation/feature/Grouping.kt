@@ -24,7 +24,12 @@ fun List<GalleryPhoto>.toSections(strategy: GroupingStrategy): List<PhotoSection
     this.sortedWith(strategy.comparator)
         .groupBy { strategy.keyOf(it) }
         .map { (key, photos) ->
-            PhotoSection(key = key, title = strategy.titleOf(key, photos.first()), photos = photos)
+            PhotoSection(
+                key = key,
+                title = strategy.titleOf(key, photos.first()),
+                hasStamp = photos.any{it.isStampedGroup?:false},
+                photos = photos
+            )
         }
 
 class ByDayGrouping : GroupingStrategy {

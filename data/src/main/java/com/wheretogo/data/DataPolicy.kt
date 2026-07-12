@@ -204,6 +204,7 @@ enum class FireStoreCollections {
     CHECKPOINT,
     ROUTE,
     LIKE,
+    IMAGE,
 
     COMMENT,
     REPORT,

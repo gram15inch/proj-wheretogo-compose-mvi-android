@@ -364,4 +364,44 @@ class MapOverlayServiceImpl @Inject constructor(
         }.map { }
     }
 
+
+    //======================================
+
+    override fun refreshSpot(latLng: LatLng) {
+        val id = "SIMPLE_SPOT"
+        val spotKey = oneTimeMarkerKey(id)
+        if (overlayProvider.overlays.none { it.key == spotKey.value }) {
+            overlayProvider.addMarker(
+                key = spotKey,
+                info = MarkerInfo(
+                    contentId = id,
+                    position = latLng,
+                    iconRes = R.drawable.ic_mk_df
+                )
+            )
+        } else {
+            overlayProvider.updateMarkerPosition(spotKey, latLng)
+        }
+    }
+
+    override fun refreshPath(
+        course: Course,
+    ) = updateScope {
+        val pathKey = coursePathKey(course.courseId)
+        var path: MapOverlay? = null
+        val remove = buildList {
+            overlayProvider.overlays.forEach {
+                if (it.type == OverlayType.FULL_PATH)
+                    when (it.key) {
+                        pathKey.value -> path = it
+                        else -> add(StringKey(it.key))
+                    }
+            }
+        }
+
+        if (path == null)
+            overlayProvider.addPath(pathKey, course.toPathInfo())
+
+        overlayProvider.removeOverlay(remove)
+    }
 }

@@ -1,44 +1,49 @@
-package com.wheretogo.presentation.composable.gallery
+package com.wheretogo.presentation.composable.photoviewer
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -50,39 +55,60 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.WindowInfo
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.naver.maps.map.MapView
 import com.wheretogo.domain.model.gallery.GalleryPhoto
 import com.wheretogo.domain.model.gallery.PhotoExif
-import com.wheretogo.presentation.R
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import com.wheretogo.presentation.composable.effect.LifecycleDisposer
+import com.wheretogo.presentation.intent.PhotoViewerIntent
+import com.wheretogo.presentation.theme.Palette
+import com.wheretogo.presentation.viewmodel.PhotoViewerViewModel
 
-
-@OptIn(ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun PhotoViewerScreen(
-    photo: GalleryPhoto,
+    photos: List<GalleryPhoto>,
+    initialIndex: Int,
     sharedScope: SharedTransitionScope,
     animatedScope: AnimatedVisibilityScope,
-    onClose: () -> Unit,
-    settingsContent: @Composable (GalleryPhoto) -> Unit = { DefaultPhotoSettings(it) },
+    mapView: MapView?,
+    viewModel: PhotoViewerViewModel = hiltViewModel(),
+    onClose: () -> Unit = {},
 ) {
+    val state by viewModel.state.collectAsState()
     val density = LocalDensity.current
     val window = LocalWindowInfo.current
-    val photoHeightIn = calculateHeightIn(window,photo.exif)
-    val heightInScrollState = remember(photoHeightIn.max) { HeightInScrollState(photoHeightIn) }
+
+    val pagerState = rememberPagerState(
+        initialPage = initialIndex,
+        pageCount = { photos.size },
+    )
+    val currentPhoto = photos[pagerState.currentPage]
+
+    val photoHeightIn = calculateHeightIn(window, currentPhoto.exif)
+    val heightInScrollState = remember(photoHeightIn.max) {
+        HeightInScrollState(photoHeightIn)
+    }
     val photoHeight by animateFloatAsState(
         targetValue = heightInScrollState.targetHeight,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessLow),
+        animationSpec =
+            spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessLow),
         label = "photoHeight",
     )
+    val fingerPrint by viewModel.fingerPrint.collectAsState()
 
     BackHandler { onClose() }
+
+    LaunchedEffect(pagerState.currentPage) {
+        viewModel.handleIntent(PhotoViewerIntent.Refresh(currentPhoto))
+    }
+
+    LifecycleDisposer {
+        viewModel.handleIntent(PhotoViewerIntent.LifecycleChange(it))
+    }
 
     Box(
         Modifier
@@ -96,32 +122,84 @@ fun PhotoViewerScreen(
                     .fillMaxWidth()
                     .height(with(density) { photoHeight.toDp() })
                     .clipToBounds(),
-                contentAlignment = Alignment.Center,
             ) {
-                with(sharedScope) {
-                    AsyncImage(
-                        model = photo.uriString,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxSize(),
+                ) { page ->
+                    val pagePhoto = photos[page]
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        val imageModifier = if (page == initialIndex) {
+                            with(sharedScope) {
+                                Modifier
+                                    .fillMaxSize()
+                                    .sharedElement(
+                                        sharedContentState =
+                                            rememberSharedContentState(key = pagePhoto.id),
+                                        animatedVisibilityScope = animatedScope,
+                                    )
+                            }
+                        } else {
+                            Modifier.fillMaxSize()
+                        }
+                        if(pagePhoto.imageSource==null)
+                            AsyncImage(
+                                model = pagePhoto.thumbnail,
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = imageModifier,
+                            )
+                        AsyncImage(
+                            model = pagePhoto.imageSource,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = imageModifier,
+                        )
+                    }
+                }
+
+                if (photos.size > 1) {
+                    PageIndicator(
+                        pageCount = photos.size,
+                        currentPage = pagerState.currentPage,
                         modifier = Modifier
-                            .fillMaxSize()
-                            .sharedElement(
-                                rememberSharedContentState(key = photo.id),
-                                animatedVisibilityScope = animatedScope,
-                            ),
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 12.dp),
                     )
                 }
             }
 
+
             Surface(
-                color = MaterialTheme.colorScheme.surface,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
                     .verticalScroll(rememberScrollState()),
             ) {
                 Box(modifier = Modifier.boundedHeight()) {
-                    settingsContent(photo)
+                    PhotoViewerContent(
+                        mapView = mapView,
+                        photo = currentPhoto,
+                        overlay = viewModel.overlay,
+                        fingerPrint = fingerPrint,
+                        event = viewModel.event,
+                        stampState = state.stampState,
+                        stampProgress = state.stampProgress,
+                        actions = PhotoViewerActions(
+                            onStamp = {
+                                viewModel.handleIntent(PhotoViewerIntent.Stamp(currentPhoto,it))
+                            },
+                            onRemoveStamp = {
+                                viewModel.handleIntent(PhotoViewerIntent.RemoveStamp(currentPhoto))
+                            },
+                            onCameraUpdate = {
+                                viewModel.handleIntent(PhotoViewerIntent.CameraUpdate(it))
+                            }
+                        ),
+                    )
                 }
             }
         }
@@ -133,12 +211,42 @@ fun PhotoViewerScreen(
                 .padding(8.dp)
                 .align(Alignment.TopStart),
         ) {
-            Icon(Icons.Default.Close, contentDescription = "닫기", tint = Color.White)
+            Icon(Icons.Default.Close, null, tint = Color.White)
         }
     }
 }
 
-fun Modifier.boundedHeight(): Modifier = layout { measurable, constraints ->
+@Composable
+private fun PageIndicator(
+    pageCount: Int,
+    currentPage: Int,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        repeat(pageCount) { i ->
+            val isCurrent = i == currentPage
+            val width by animateDpAsState(
+                targetValue = if (isCurrent) 18.dp else 6.dp,
+                animationSpec = tween(durationMillis = 250),
+                label = "dot_width"
+            )
+            Box(
+                modifier = Modifier
+                    .height(6.dp)
+                    .width(width)
+                    .clip(if (isCurrent) RoundedCornerShape(3.dp) else CircleShape)
+                    .background(Palette.White)
+                ,
+            )
+        }
+    }
+}
+
+private fun Modifier.boundedHeight(): Modifier = layout { measurable, constraints ->
     val safe = if (constraints.maxHeight == Constraints.Infinity) {
         val maxH = Constraints.fitPrioritizingWidth(
             minWidth = constraints.minWidth,
@@ -182,40 +290,6 @@ private class HeightInScrollState(
         val consumedHeight = resizeHeight - targetHeight
         targetHeight = resizeHeight
         return consumedHeight / followRatio  // 원본 단위로 환산
-    }
-}
-
-@Composable
-private fun DefaultPhotoSettings(photo: GalleryPhoto) {
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Text(stringResource(R.string.detail_info), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-
-        photo.exif.dateTaken?.let { ts ->
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Info, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    SimpleDateFormat("yyyy.MM.dd HH:mm", Locale.KOREA).format(Date(ts)),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-        }
-
-        photo.exif.location?.let { loc ->
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.LocationOn, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    "%.4f, %.4f".format(loc.latitude, loc.longitude),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-        }
     }
 }
 

@@ -40,6 +40,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.rounded.Verified
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -151,6 +152,9 @@ fun GalleryScreen(
                                     onClick = { viewModel.handleIntent(GalleryIntent.Refresh) }
                                 ) { Text(stringResource(R.string.retry)) }
                             }
+                        is GalleryState.Empty -> EmptyGalleryScreen(
+                            onFindInGalleryClick = { showPicker = true }
+                        )
                         is GalleryState.Success ->
                             PhotoGrid(
                                 sections = state.sections,
@@ -302,7 +306,7 @@ private fun PhotoGrid(
     ) {
         sections.forEach { section ->
             item(key = "header_${section.key}", span = { GridItemSpan(maxLineSpan) }) {
-                SectionHeader(section.title)
+                SectionHeader(section.title,section.hasStamp)
             }
             items(section.photos, key = { it.id }) { photo ->
                 PhotoCell(
@@ -321,13 +325,23 @@ private fun PhotoGrid(
 }
 
 @Composable
-private fun SectionHeader(title: String, modifier: Modifier = Modifier) {
-    Text(
-        title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold,
+private fun SectionHeader(title: String, hasStamp: Boolean, modifier: Modifier = Modifier) {
+    Row(verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
-            .fillMaxWidth()
-            .padding(start = 4.dp, top = 16.dp, bottom = 6.dp),
-    )
+            .padding(start = 4.dp, top = 16.dp, bottom = 6.dp)
+    ) {
+        Text(
+            title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold
+        )
+        Spacer(Modifier.width(3.dp))
+        if(hasStamp)
+            Icon(
+                Icons.Rounded.Verified,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(14.dp)
+            )
+    }
 }
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -344,6 +358,8 @@ private fun PhotoCell(
 ) {
     val haptic = LocalHapticFeedback.current
     val scale by animateFloatAsState(if (selected) 0.88f else 1f)
+    val isLocationBadge=
+        photo.exif.location != null && !selectionMode && photo.courseId.isNullOrBlank()
 
     Box(
         modifier = modifier
@@ -381,7 +397,7 @@ private fun PhotoCell(
                     .background(Color.Black.copy(alpha = 0.25f))
             )
         }
-        if (photo.exif.location != null && !selectionMode) {
+        if (isLocationBadge) {
             LocationBadge(Modifier
                 .align(Alignment.TopEnd)
                 .padding(4.dp))

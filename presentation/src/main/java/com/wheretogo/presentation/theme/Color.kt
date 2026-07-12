@@ -1,8 +1,13 @@
 package com.wheretogo.presentation.theme
 
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 
-
+@Immutable
+data class ExtendedColors(
+    val tint: Color,
+    val container: Color,
+)
 object Palette {
 
     // Brand / Blue
@@ -14,7 +19,9 @@ object Palette {
     val Blue400 = Color(0xFF0046A7)
     val Blue500 = Color(0xFF182A56)
     val Blue600 = Color(0xFF214876)
+
     val PrimeBlue = Color(0xFF509BDC)
+    val MutedBlue = Color(0xFF3A6EA5)
 
     // Purple / Pink
     val Purple200 = Color(0xFFBB86FC)
@@ -27,6 +34,12 @@ object Palette {
     // Green
     val Green50 = Color(0xFFCCE8CC)
     val Green100 = Color(0xFFB9D7B9)
+
+    // Wood
+    val Warning = ExtendedColors(
+        tint =  Color(0xFF633806),
+        container = Color(0xFFFAEEDA)
+    )
 
     // Neutral - White
     val White = Color(0xFFFFFFFF)
@@ -45,5 +58,6 @@ object Palette {
 
     // Neutral - Black
     val Black = Color(0xFF000000)
+    val Black50 = Color(0xFF2A2A28)
     val Black100 = Color(0xFF202020)
 }
