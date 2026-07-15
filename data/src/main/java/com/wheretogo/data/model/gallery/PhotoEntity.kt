@@ -24,4 +24,6 @@ data class PhotoEntity(
     val courseName: String? = null,
     val checkPointId: String? = null,
     val address: String? = null,
+    val stampAt: Long? = null,
+    val createAt: Long? = null, // 로컬에 저장된 시간
 )

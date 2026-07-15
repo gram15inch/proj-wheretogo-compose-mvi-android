@@ -80,6 +80,7 @@ class GalleryFlowViewModel @Inject constructor(
 
     init {
         observeGalleryPhotos()
+        handleIntent(GalleryIntent.Refresh)
     }
 
     private fun observeGalleryPhotos() {

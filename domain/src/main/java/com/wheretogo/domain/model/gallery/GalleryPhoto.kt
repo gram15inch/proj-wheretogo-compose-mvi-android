@@ -11,7 +11,7 @@ data class GalleryPhoto(
     val courseId: String? = null,
     val courseName: String? = null,
     val address: String? = null,
-    val isStampedGroup: Boolean? = null
+    val stampAt: Long? = null
 ){
     fun simpleAddress(drop:Int = 1, take:Int = 2) : String? =
         address?.split(" ")

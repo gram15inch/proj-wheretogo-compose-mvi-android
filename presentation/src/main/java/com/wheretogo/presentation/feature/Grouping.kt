@@ -27,7 +27,7 @@ fun List<GalleryPhoto>.toSections(strategy: GroupingStrategy): List<PhotoSection
             PhotoSection(
                 key = key,
                 title = strategy.titleOf(key, photos.first()),
-                hasStamp = photos.any{it.isStampedGroup?:false},
+                hasStamp = photos.any { it.stampAt != null },
                 photos = photos
             )
         }

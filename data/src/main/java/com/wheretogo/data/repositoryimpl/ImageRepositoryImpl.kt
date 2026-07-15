@@ -129,9 +129,10 @@ class ImageRepositoryImpl @Inject constructor(
         }
     }
 
-
-    override suspend fun loadGalleyPhotos(): Result<List<GalleryPhoto>> {
-        return imageLocalDatasource.loadAllPhotos().map { it.mapNotNull { it.toGalleryPhoto() } }
+    override suspend fun getGalleryPhotosByImageId(imageIds: List<String>): Result<List<GalleryPhoto>> {
+        return imageLocalDatasource.getPhotosByImageId(imageIds).map { entities ->
+            entities.mapNotNull { it.toGalleryPhoto() }
+        }
     }
 
     override fun observeGalleryPhotos(): Flow<List<GalleryPhoto>> {
@@ -158,7 +159,7 @@ class ImageRepositoryImpl @Inject constructor(
                                     uriString = normal,
                                 )
                             } else {
-                                local.copy(imageId = res.imageId)
+                                local.copy(imageId = res.imageId, stampAt = res.createAt)
                             }
                         }
                     }.awaitAll()
@@ -180,9 +181,14 @@ class ImageRepositoryImpl @Inject constructor(
                 imageId = it.imageId,
                 courseId = it.courseId,
                 courseName = it.courseName,
+                stampAt = it.stampAt,
             )
         }
         return imageLocalDatasource.updatePhotos(entities)
+    }
+
+    override suspend fun clearStampAt(imageIds: List<String>): Result<Unit> {
+        return imageLocalDatasource.clearStampAt(imageIds)
     }
 
     override suspend fun clearGalleryPhotos(ids: Set<Long>): Result<Set<Long>> {
