@@ -15,8 +15,8 @@
     <string name="ranking_sub">지금 떠오르는 코스는?</string>
     <string name="course_add_main">코스등록</string>
     <string name="course_add_sub">나만의 코스를 공유해요</string>
-    <string name="gallery_main">스팟 갤러리</string>
-    <string name="gallery_sub">순간을 기록해요</string>
+    <string name="checkin_main">인증 갤러리</string>
+    <string name="checkin_sub">다녀온 순간을 남겨요</string>
     <string name="bookmark_main">즐겨찾기</string>
     <string name="bookmark_sub">나의 추억들</string>
     <string name="sports_main">스포츠</string>
@@ -243,14 +243,14 @@
         <item>위치 정보를 지우는중…</item>작
         <item>사진을 사용하는 것에 대한 허락을 구하는 것을 묻는 것에 대한 승인을 요구하는중…</item>
     </string-array>
-    <string name="no_match_header_label">새 길의 시</string>
+    <string name="no_match_header_label">새 길의 시작</string>
     <string name="no_match_header_title">멋진 곳이었지만,\n코스는 아니었어요</string>
     <string name="no_match_header_description">가까운 곳에서 다른 코스를 찾아보세요.</string>
     <string name="no_location_status">위치 정보 없음</string>
     <string name="no_location_transparency_title">위치 정보는 이렇게 쓰여요</string>
     <string-array name="no_location_usage_chips">
         <item>지도에 위치 표시</item>
-        <item>근처 코스 매칭</item>
+        <item>코스 방문 인증</item>
     </string-array>
     <string name="no_location_reasons_title">이 사진에 위치가 없는 이유</string>
     <string-array name="no_location_reasons">
@@ -264,4 +264,28 @@
 
     <string name="no_location_action_camera_settings">카메라 설정</string>
     <string name="no_location_action_learn_more">더 알아보기</string>
+
+    <!-- 티어 -->
+    <string name="tier_sprout">새싹</string>
+    <string name="tier_rookie">루키</string>
+    <string name="tier_wanderer">방랑자</string>
+    <string name="tier_cartographer">지도제작자</string>
+    <string name="tier_pioneer">개척자</string>
+
+
+    <!-- 체크인 -->
+    <string name="checkin_title">인증 갤러리</string>
+    <string name="tier_roadmap">티어 로드맵</string>
+    <string name="tier_requirement">인증 %d회 필요</string>
+    <string name="latest_certification">최근 인증</string>
+    <string name="view_all">전체보기</string>
+
+    <string name="course_suggestion">다음은 %s 어때요?</string>
+    <string name="my_history">최근 기록</string>
+
+    <string name="tier_champion">인증 완료</string>
+    <string name="tier_remaining_format">%d개 남음</string>
+    <string name="tier_max_title">최고 등급 달성!</string>
+    <string name="tier_certified_format">%d 인증</string>
+
 </resources>

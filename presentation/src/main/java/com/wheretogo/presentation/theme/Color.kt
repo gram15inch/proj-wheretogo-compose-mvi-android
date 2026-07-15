@@ -56,8 +56,23 @@ object Palette {
     val Gray300 = Color(0xFF525252)
     val Gray320 = Color(0xFF474747)
 
+    val OutlineGray = Color(0xFF9A958A)
+
+
     // Neutral - Black
     val Black = Color(0xFF000000)
     val Black50 = Color(0xFF2A2A28)
     val Black100 = Color(0xFF202020)
+
+
+    //Cream
+    val Cream = Color(0xFFF7F5F0)
+
+
+    //Tier
+    val TierGreen  = Color(0xFF6BA05C) // 새싹
+    val TierAmber  = Color(0xFFCC8438) // 루키
+    val TierBlue   = Color(0xFF5A8FBF) // 방랑자
+    val TierPurple = Color(0xFF8A6FBE) // 지도제작자
+    val TierGold   = Color(0xFFC29429) // 개척자
 }

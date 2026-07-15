@@ -15,11 +15,12 @@ import com.wheretogo.domain.model.comment.CommentContent
 import com.wheretogo.domain.model.course.Course
 import com.wheretogo.domain.model.course.CourseContent
 import com.wheretogo.domain.model.course.CourseDirectionItem
-import com.wheretogo.domain.model.course.StartDirection
+import com.wheretogo.domain.model.gallery.GalleryPhoto
 import com.wheretogo.domain.model.map.MarkerInfo
 import com.wheretogo.domain.model.route.RouteCategory
 import com.wheretogo.domain.model.util.Navigation
 import com.wheretogo.presentation.model.LeafInfo
+import com.wheretogo.presentation.model.MiniPhoto
 import com.wheretogo.presentation.model.PathInfo
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.CheckPointAddState
@@ -170,5 +171,13 @@ fun CheckPoint.toMarkerInfo(): MarkerInfo {
         type = MarkerType.CHECKPOINT,
         iconPath = thumbnail.ifEmpty { null },
         iconRes = icon
+    )
+}
+
+fun GalleryPhoto.toMiniPhoto(): MiniPhoto {
+    return MiniPhoto(
+        id = id,
+        photoUri = thumbnail,
+        courseName = courseName?:""
     )
 }

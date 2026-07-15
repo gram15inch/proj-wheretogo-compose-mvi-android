@@ -44,7 +44,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -413,7 +412,7 @@ private fun StampedSection(
     val isPreview = LocalInspectionMode.current
     if (state.thumbnail.isNullOrBlank()) return
 
-    val surfaceColor = Color(0xFFF7F5F0)
+    val surfaceColor = Palette.Cream
     val accentColor = Palette.MutedBlue
 
     Row(

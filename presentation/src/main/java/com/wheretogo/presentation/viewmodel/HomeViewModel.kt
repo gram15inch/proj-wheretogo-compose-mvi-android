@@ -57,8 +57,8 @@ class HomeViewModel @Inject constructor(
                 handler.handle(HomeEvent.COURSE_ADD_NAVIGATE)
             }
 
-            HomeBodyBtn.GALLERY -> {
-                handler.handle(HomeEvent.GALLERY_NAVIGATE)
+            HomeBodyBtn.CHECKIN -> {
+                handler.handle(HomeEvent.CHECKIN_NAVIGATE)
             }
 
             HomeBodyBtn.GUIDE -> {
