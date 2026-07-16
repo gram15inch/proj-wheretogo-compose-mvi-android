@@ -38,6 +38,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
+import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.Locale
@@ -216,6 +217,7 @@ class ImageLocalDatasourceImpl @Inject constructor(
             val update = mutableListOf<PhotoEntity>()
             val insert = mutableListOf<PhotoEntity>()
             photos.forEach { r->
+                //Timber.d("tst_ ${r.stampAt} ")
                 val l = local.firstOrNull{it.sha256 == r.sha256}
                 if(l == null)
                     insert.add(r)
@@ -227,6 +229,7 @@ class ImageLocalDatasourceImpl @Inject constructor(
                             courseName = r.courseName,
                             sourceKey = r.sourceKey,
                             uriString = r.uriString,
+                            stampAt = r.stampAt
                         )
                     )
                 }
@@ -268,6 +271,12 @@ class ImageLocalDatasourceImpl @Inject constructor(
     override suspend fun updatePhotos(photos: List<PhotoEntity>): Result<Unit> {
         return runCatching {
             photoDao.updatePhotos(photos)
+        }
+    }
+
+    override suspend fun clearStampAt(imageIds: List<String>): Result<Unit> {
+        return runCatching {
+            photoDao.clearStampAtByImageIds(imageIds.toSet())
         }
     }
 
@@ -326,7 +335,8 @@ class ImageLocalDatasourceImpl @Inject constructor(
                                 exif = exif,
                                 address = addressDeferred.await()?.getAddressLine(0),
                                 thumbnail = images[ImageSize.SMALL]!!.toUri().toString(),
-                                uriString = images[ImageSize.NORMAL]!!.toUri().toString()
+                                uriString = images[ImageSize.NORMAL]!!.toUri().toString(),
+                                createAt = System.currentTimeMillis()
                             )
                         }.getOrNull()
                     }

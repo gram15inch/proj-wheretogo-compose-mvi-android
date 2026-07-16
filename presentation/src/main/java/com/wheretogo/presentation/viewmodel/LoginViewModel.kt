@@ -6,6 +6,7 @@ import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.wheretogo.domain.handler.LoginEvent
 import com.wheretogo.domain.handler.LoginHandler
 import com.wheretogo.domain.model.auth.AuthRequest
+import com.wheretogo.domain.usecase.gallery.LoadGalleryPhotosUseCase
 import com.wheretogo.domain.usecase.user.UserSignUpAndSignInUseCase
 import com.wheretogo.presentation.AppError
 import com.wheretogo.presentation.MainDispatcher

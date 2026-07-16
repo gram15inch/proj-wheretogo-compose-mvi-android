@@ -98,6 +98,7 @@ sealed class AppScreen {
     data object Drive : AppScreen()
     data object CourseAdd : AppScreen()
     data object Gallery : AppScreen()
+    data object Checkin : AppScreen()
     data object Setting : AppScreen()
 }
 
@@ -150,7 +151,7 @@ enum class HomeBodyBtnHighlight {
 }
 
 enum class HomeBodyBtn {
-    DRIVE, COURSE_ADD, GALLERY, GUIDE, CREATER_REQUEST
+    DRIVE, COURSE_ADD, CHECKIN, GUIDE, CREATER_REQUEST,
 }
 
 enum class DriveBottomSheetContent(val minHeight: Int) {

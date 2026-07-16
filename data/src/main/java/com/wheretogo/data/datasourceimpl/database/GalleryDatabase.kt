@@ -53,6 +53,9 @@ interface PhotoDao {
     @Query("DELETE FROM photo WHERE id IN (:ids)")
     suspend fun deleteByIds(ids: Set<Long>)
 
+    @Query("UPDATE photo SET stampAt = NULL WHERE imageId IN (:ids)")
+    suspend fun clearStampAtByImageIds(ids: Set<String>)
+
     @Query(
         """
         UPDATE photo 
@@ -60,7 +63,8 @@ interface PhotoDao {
             courseId = COALESCE(:courseId, courseId),
             courseName = COALESCE(:courseName, courseName),
             uriString = COALESCE(:uriString, uriString),
-            sourceKey = COALESCE(:sourceKey, sourceKey)
+            sourceKey = COALESCE(:sourceKey, sourceKey),
+            stampAt = COALESCE(:stampAt, stampAt)
         WHERE id = :id
         """
     ) suspend fun updateById(
@@ -70,6 +74,7 @@ interface PhotoDao {
         courseName: String? = null,
         uriString: String? = null,
         sourceKey: String? = null,
+        stampAt: Long? = null,
     )
 
     @Transaction
@@ -82,6 +87,7 @@ interface PhotoDao {
                 courseName = photo.courseName,
                 uriString = photo.uriString,
                 sourceKey = photo.sourceKey,
+                stampAt = photo.stampAt,
             )
             photo.id
         }

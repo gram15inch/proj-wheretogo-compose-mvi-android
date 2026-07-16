@@ -46,5 +46,7 @@ interface ImageLocalDatasource {
 
     suspend fun updatePhotos(photos: List<PhotoEntity>): Result<Unit>
 
+    suspend fun clearStampAt(imageIds: List<String>): Result<Unit>
+
     suspend fun clearGalleryPhotos(ids: Set<Long>): Result<Set<Long>>
 }

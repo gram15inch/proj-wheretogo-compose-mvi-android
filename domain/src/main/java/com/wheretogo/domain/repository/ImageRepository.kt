@@ -23,10 +23,11 @@ interface ImageRepository {
     suspend fun getPreview(imageUriString: String): Result<FilePreview>
     suspend fun getMediaImages(offset: Int, limit: Int): Result<List<MediaImage>>
 
-    suspend fun loadGalleyPhotos():Result<List<GalleryPhoto>>
+    suspend fun getGalleryPhotosByImageId(imageIds: List<String>): Result<List<GalleryPhoto>>
     fun observeGalleryPhotos(): Flow<List<GalleryPhoto>>
     suspend fun refreshGalleyPhotosByUserId(userId: String):Result<Unit>
     suspend fun saveGalleryPhotos(imgUriStrings: List<String>): Result<List<Long>>
     suspend fun updateGalleryPhotos(photos: List<GalleryPhoto>): Result<Unit>
+    suspend fun clearStampAt(imageIds: List<String>): Result<Unit>
     suspend fun clearGalleryPhotos(ids: Set<Long>): Result<Set<Long>>
 }

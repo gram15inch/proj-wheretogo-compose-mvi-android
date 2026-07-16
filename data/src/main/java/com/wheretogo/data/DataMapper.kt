@@ -634,7 +634,8 @@ fun PhotoEntity.toGalleryPhoto(): GalleryPhoto? {
         courseName = courseName,
         address = address,
         imageSource = uriString,
-        thumbnail = thumbnail
+        thumbnail = thumbnail,
+        stampAt = stampAt
     )
 }
 
@@ -643,14 +644,15 @@ fun ImageMetaResponse.toPhotoEntity(): PhotoEntity = PhotoEntity(
     sha256 = sha256,
     exif = exif.toEntity(),
     address = address,
+    stampAt = createAt
 )
 
 fun PhotoEntity.toCreateContent(): ImageMetaCreateContent = ImageMetaCreateContent(
     imageId = imageId,
-    exif = exif?.toDomain() ?: ExifData(),
+    exif = exif?: ExifEntity(),
     address = address ?: "",
     sha256 = sha256,
-    createAt = System.currentTimeMillis()
+    createAt = createAt?:System.currentTimeMillis()
 )
 
 fun ExifResponse.toEntity(): ExifEntity = ExifEntity(

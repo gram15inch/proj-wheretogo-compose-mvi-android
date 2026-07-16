@@ -2,6 +2,8 @@ package com.wheretogo.presentation.composable
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
@@ -37,6 +39,7 @@ import com.wheretogo.presentation.feature.checkFalseOrData
 import com.wheretogo.presentation.feature.openUri
 import com.wheretogo.presentation.feature.show
 import com.wheretogo.presentation.composable.gallery.GalleryFlow
+import com.wheretogo.presentation.composable.checkin.CheckinScreen
 import com.wheretogo.presentation.theme.Palette
 import com.wheretogo.presentation.theme.WhereTogoTheme
 import com.wheretogo.presentation.viewmodel.RootViewModel
@@ -139,6 +142,7 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                 val drive = AppScreen.Drive.toString()
                 val courseAdd = AppScreen.CourseAdd.toString()
                 val gallery = AppScreen.Gallery.toString()
+                val checkin = AppScreen.Checkin.toString()
                 val setting = AppScreen.Setting.toString()
 
                 NavHost(navController = navController, startDestination = home) {
@@ -157,11 +161,26 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                     ) {
                          CourseAddScreen()
                      }
-                    composable(gallery,
+                    composable(
+                        gallery,
                         enterTransition = { slideInHorizontally(initialOffsetX = { it }) },
-                        exitTransition = { slideOutHorizontally(targetOffsetX = { it }) }
+                        popExitTransition = { slideOutHorizontally(targetOffsetX = { it }) },
                     ) {
                         GalleryFlow()
+                    }
+                    composable(checkin,
+                        enterTransition = { slideInHorizontally(initialOffsetX = { it }) },
+                        popExitTransition = { slideOutHorizontally(targetOffsetX = { it }) },
+                        popEnterTransition = {  fadeIn(animationSpec = tween(500)) }
+                    ) {
+                        CheckinScreen(
+                            onGalleyClick = {
+                                navController.navigate(AppScreen.Gallery.toString())
+                            },
+                            onBackClick = {
+                                navController.popBackStack()
+                            },
+                        )
                     }
                     composable(setting,
                         enterTransition = { slideInHorizontally(initialOffsetX = { it }) },

@@ -27,10 +27,10 @@ class HomeHandlerImpl() : HomeHandler {
                 )
             )
 
-            HomeEvent.GALLERY_NAVIGATE -> EventBus.send(
+            HomeEvent.CHECKIN_NAVIGATE -> EventBus.send(
                 AppEvent.Navigation(
                     AppScreen.Home,
-                    AppScreen.Gallery,
+                    AppScreen.Checkin,
                     false
                 )
             )

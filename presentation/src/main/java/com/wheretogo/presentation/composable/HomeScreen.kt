@@ -163,11 +163,11 @@ fun Body(homeBodyBtnHighlight: HomeBodyBtnHighlight, onClick: (HomeBodyBtn) -> U
                 row = 3,
                 isHighlight = homeBodyBtnHighlight == HomeBodyBtnHighlight.COURSE_ADD,
                 isActive = isActive,
-                click = { onClick(HomeBodyBtn.GALLERY) }
+                click = { onClick(HomeBodyBtn.CHECKIN) }
             ) {
                 ContentTextImage(
-                    stringResource(R.string.gallery_main),
-                    stringResource(R.string.gallery_sub),
+                    stringResource(R.string.checkin_main),
+                    stringResource(R.string.checkin_sub),
                     0.dp,
                     null
                 )
