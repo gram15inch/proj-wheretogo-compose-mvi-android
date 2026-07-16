@@ -649,7 +649,7 @@ fun ImageMetaResponse.toPhotoEntity(): PhotoEntity = PhotoEntity(
 
 fun PhotoEntity.toCreateContent(): ImageMetaCreateContent = ImageMetaCreateContent(
     imageId = imageId,
-    exif = exif?.toDomain() ?: ExifData(),
+    exif = exif?: ExifEntity(),
     address = address ?: "",
     sha256 = sha256,
     createAt = createAt?:System.currentTimeMillis()
