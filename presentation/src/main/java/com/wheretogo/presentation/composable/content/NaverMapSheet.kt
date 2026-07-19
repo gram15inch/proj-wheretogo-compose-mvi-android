@@ -333,6 +333,9 @@ private fun NaverMap.cameraUpdate(option: CameraOption) {
 private fun NaverMap.setMapStyle(style: NaverMapStyle) {
     mapType = style.mapType
 
+    maxZoom = style.maxZoom
+    minZoom = style.minZoom
+
     setLayerGroupEnabled(NaverMap.LAYER_GROUP_BUILDING, style.buildingEnabled)
     setLayerGroupEnabled(NaverMap.LAYER_GROUP_TRANSIT, style.transitEnabled)
     setLayerGroupEnabled(NaverMap.LAYER_GROUP_BICYCLE, style.bicycleEnabled)

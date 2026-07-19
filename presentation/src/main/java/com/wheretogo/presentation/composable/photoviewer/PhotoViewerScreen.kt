@@ -5,27 +5,20 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -43,7 +36,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -62,9 +54,9 @@ import coil.compose.AsyncImage
 import com.naver.maps.map.MapView
 import com.wheretogo.domain.model.gallery.GalleryPhoto
 import com.wheretogo.domain.model.gallery.PhotoExif
+import com.wheretogo.presentation.composable.content.PageIndicator
 import com.wheretogo.presentation.composable.effect.LifecycleDisposer
 import com.wheretogo.presentation.intent.PhotoViewerIntent
-import com.wheretogo.presentation.theme.Palette
 import com.wheretogo.presentation.viewmodel.PhotoViewerViewModel
 
 @OptIn(ExperimentalSharedTransitionApi::class, ExperimentalFoundationApi::class)
@@ -165,6 +157,7 @@ fun PhotoViewerScreen(
                     PageIndicator(
                         pageCount = photos.size,
                         currentPage = pagerState.currentPage,
+                        maxDotCount = 11,
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
                             .padding(bottom = 12.dp),
@@ -212,36 +205,6 @@ fun PhotoViewerScreen(
                 .align(Alignment.TopStart),
         ) {
             Icon(Icons.Default.Close, null, tint = Color.White)
-        }
-    }
-}
-
-@Composable
-private fun PageIndicator(
-    pageCount: Int,
-    currentPage: Int,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        repeat(pageCount) { i ->
-            val isCurrent = i == currentPage
-            val width by animateDpAsState(
-                targetValue = if (isCurrent) 18.dp else 6.dp,
-                animationSpec = tween(durationMillis = 250),
-                label = "dot_width"
-            )
-            Box(
-                modifier = Modifier
-                    .height(6.dp)
-                    .width(width)
-                    .clip(if (isCurrent) RoundedCornerShape(3.dp) else CircleShape)
-                    .background(Palette.White)
-                ,
-            )
         }
     }
 }

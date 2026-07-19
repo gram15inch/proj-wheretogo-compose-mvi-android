@@ -3,7 +3,6 @@ package com.wheretogo.presentation.composable.content
 import android.view.MotionEvent
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -18,11 +17,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -585,9 +582,10 @@ fun PopUpImageSlide(
                     .padding(horizontal = 12.dp, vertical = 10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                SlideIndicator(
-                    currentIndex = pagerState.currentPage,
-                    totalCount = slideItems.size,
+                PageIndicator(
+                    pageCount = slideItems.size,
+                    currentPage = pagerState.currentPage,
+                    maxDotCount = 9,
                     modifier = Modifier.padding(bottom = 6.dp)
                 )
                 val item = slideItems.getOrNull(pagerState.currentPage)
@@ -633,38 +631,6 @@ private fun ImageCation(
                     overflow = TextOverflow.Ellipsis
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun SlideIndicator(
-    currentIndex: Int,
-    totalCount: Int,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        repeat(totalCount) { index ->
-            val isActive = index == currentIndex
-            val width by animateDpAsState(
-                targetValue = if (isActive) 18.dp else 6.dp,
-                animationSpec = tween(durationMillis = 250),
-                label = "dot_width"
-            )
-            Box(
-                modifier = Modifier
-                    .height(6.dp)
-                    .width(width)
-                    .clip(CircleShape)
-                    .background(
-                        if (isActive) Palette.White
-                        else Palette.White.copy(alpha = 0.4f)
-                    )
-            )
         }
     }
 }
