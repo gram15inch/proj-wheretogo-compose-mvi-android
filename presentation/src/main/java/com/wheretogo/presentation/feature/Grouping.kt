@@ -1,6 +1,8 @@
 package com.wheretogo.presentation.feature
 
+import androidx.compose.ui.res.stringResource
 import com.wheretogo.domain.model.gallery.GalleryPhoto
+import com.wheretogo.presentation.R
 import com.wheretogo.presentation.model.PhotoSection
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -8,7 +10,7 @@ import java.util.Locale
 
 interface GroupingStrategy {
     // 그룹 이름
-    val label: String
+    val label: Int
 
     // 그룹간 순서
     val comparator: Comparator<GalleryPhoto>
@@ -34,7 +36,7 @@ fun List<GalleryPhoto>.toSections(strategy: GroupingStrategy): List<PhotoSection
 
 class ByDayGrouping : GroupingStrategy {
 
-    override val label: String = "날짜별"
+    override val label: Int = R.string.group_by_date
 
     override val comparator: Comparator<GalleryPhoto> =
         compareByDescending<GalleryPhoto> { it.exif.dateTaken != null }
@@ -58,7 +60,7 @@ class ByDayGrouping : GroupingStrategy {
 
 class ByCourseGrouping : GroupingStrategy {
 
-    override val label: String = "코스별"
+    override val label: Int = R.string.group_by_course
 
     override val comparator: Comparator<GalleryPhoto> =
         compareByDescending<GalleryPhoto> { it.courseId != null && it.courseName != null }
