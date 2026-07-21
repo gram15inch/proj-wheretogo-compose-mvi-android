@@ -1,0 +1,298 @@
+<resources>
+    <string name="navi_home">home</string>
+    <string name="navi_drive">drive</string>
+    <string name="navi_courseAdd">courseAdd</string>
+    <string name="navi_setting">setting</string>
+
+    <string name="app_name">WhereToGo</string>
+    <string name="where_to_go">WhereToGo</string>
+
+    <string name="drive_main">Drive</string>
+    <string name="drive_sub">Head out with family\nfriends or your special someone</string>
+    <string name="trainng_main">Practice Driving</string>
+    <string name="trainng_sub">Leave beginner days behind</string>
+
+    <string name="ranking_main">Live Rankings</string>
+    <string name="ranking_sub">Which courses are trending now?</string>
+    <string name="course_add_main">Add Course</string>
+    <string name="course_add_sub">Share a course of your own</string>
+    <string name="checkin_main">Check In</string>
+    <string name="checkin_sub">Keep the moments from your trips</string>
+    <string name="bookmark_main">Favorites</string>
+    <string name="bookmark_sub">My memories</string>
+    <string name="sports_main">Sports</string>
+    <string name="sports_sub">When you need\nto blow off steam</string>
+    <string name="visit_first_main">First time here?</string>
+    <string name="visit_first_sub">We\'ll show you around</string>
+    <string name="banner_main">Become a\nCreator</string>
+    <string name="banner_sub">Want to publish your own course?</string>
+    <string name="comment_hint">Be the first to leave a mark.</string>
+
+    <string name="created_by">✨ Created by %s</string>
+
+    <string name="oneline_review">Quick Review</string>
+    <string name="detail_review">Detailed Review</string>
+
+    <string name="route">Route</string>
+    <string name="create">Create</string>
+    <string name="tab_create">Tap Create to make a new route.</string>
+    <string name="course_name">Route Name</string>
+    <string name="duration_minutes">Duration: %1$d min</string>
+
+    <string name="category">Type</string>
+    <string name="level">Difficulty</string>
+    <string name="duration">Duration</string>
+    <string name="recommend">Recommended</string>
+    <string name="forward">Forward</string>
+    <string name="reverse">Reverse</string>
+
+    <string name="unknown">Unknown</string>
+
+    <string name="drive">Drive</string>
+    <string name="sports">Sports</string>
+    <string name="training">Practice</string>
+    <string name="beginner">Beginner</string>
+    <string name="lover">Enthusiast</string>
+    <string name="expert">Expert</string>
+    <string name="pro">Pro</string>
+    <string name="solo">Solo</string>
+    <string name="friend">Friends</string>
+    <string name="family">Family</string>
+    <string name="couple">Couple</string>
+    <string name="unknown_driver">Anonymous driver</string>
+
+    <string name="k_way">K way</string>
+    <string name="n_way">N way</string>
+    <string name="t_way">T way</string>
+    <string name="no_supprot_app_exclude_my_loction">This app doesn\'t support excluding your location.</string>
+    <string name="exclude_my_location_on_long_press">Long-press to exclude your location from the route</string>
+
+    <string name="minute">~%d min</string>
+    <string name="hour">%d hr+</string>
+
+    <string name="done">Done</string>
+    <string name="next_step">Next</string>
+
+    <string name="course_add_done">Course added!</string>
+    <string name="course_add_error">Couldn\'t add course: %s</string>
+    <string name="name_need_two_char">Name must be at least 2 characters.</string>
+    <string name="course_create_need">Tap Create to finish your route.</string>
+    <string name="need_two_marker_for_path">You need at least 2 markers to create a route.</string>
+
+    <string name="setting_open">Open Settings</string>
+    <string name="grant_permission">Grant permission</string>
+    <string name="grant_location_permission">Allow location access</string>
+    <string name="grant_picture_permission">Allow photo access</string>
+
+    <string name="checkpoint">Checkpoint</string>
+    <string name="start">Start</string>
+    <string name="end">End</string>
+    <string name="photo">Photo</string>
+    <string name="photo_hint">Select a photo</string>
+    <string name="description">Description</string>
+    <string name="description_hint">Write something…</string>
+    <string name="submit">Post</string>
+    <string name="click_need_more_marker">Tap the map to add more markers.</string>
+    <string name="invalid_name">This name can\'t be used.</string>
+    <string name="route_create_error">Couldn\'t create the route.</string>
+
+    <string name="contact_banner">Feedback &amp; bug reports</string>
+    <string name="dev_gmail">wherecarhelp@gmail.com</string>
+    <string name="title_activity_test">TestActivity</string>
+
+    <string name="login">Sign in</string>
+    <string name="login_cancel">Sign-in canceled</string>
+    <string name="login_fail">Sign-in failed</string>
+    <string name="login_fail_msg">Sign-in failed: %s</string>
+    <string name="logout">Sign out</string>
+    <string name="session_logout">Your session expired and you\'ve been signed out.</string>
+    <string name="need_login">Sign-in required</string>
+    <string name="explore_without_login">Browse without signing in</string>
+    <string name="welcome_user">Welcome, %1$s!</string>
+
+    <string name="info">About</string>
+    <string name="privacy">Privacy Policy</string>
+    <string name="open_licence">Open Source Licenses</string>
+    <string name="terms">Terms of Service</string>
+    <string name="map_legal_notice">Map Legal Notice</string>
+    <string name="map_open_source">Map Open Source Licenses</string>
+
+    <string name="delete_user">Delete Account</string>
+    <string name="keep_going">Continue</string>
+    <string name="turn_around">Go Back</string>
+    <string name="user_delete_confirm">Deleted accounts can\'t be recovered. Do you want to continue?</string>
+    <string name="user_delete_request">Request Account Deletion</string>
+
+    <string name="no_search_data">No results found</string>
+
+    <string name="app_check_success">✨ Verified!</string>
+    <string name="account_valid_expire">Session expired. Please sign in again.</string>
+
+    <!-- Image descriptions -->
+    <string name="google_logo">Google logo</string>
+
+    <!-- Messages -->
+    <string name="add_done">📌 Added.</string>
+    <string name="remove_done">🗑 Removed.</string>
+    <string name="report_done">🚨 Reported.</string>
+    <string name="retry_guide">Please try again in a moment.</string>
+
+    <!-- Tutorial -->
+    <string name="tutorial_start">🥳 Welcome! Let\'s take a look around Wheretogo!</string>
+    <string name="tutorial_stop">🥺 We\'ll save the tutorial for next time.</string>
+    <string name="welcome_start">Welcome aboard!\nTap the info below to explore courses.</string>
+    <string name="move_to_spot">Move the map around\nto explore spots.</string>
+    <string name="spot_click">Found a spot you like? Tap it to zoom in.</string>
+    <string name="comment_guide">Spots are special moments along a course — leave a quick review!</string>
+    <string name="export_guide">While browsing a course, you can head out right away with your map app.</string>
+    <string name="map_export_click">Pick the map app you use.</string>
+    <string name="use_search">Tired of hunting on the map?\nTry search!</string>
+    <string name="display_course_and_place">Search works with keywords. Let\'s try our signature keyword: 와인딩.</string>
+    <string name="blue_course_white_normal">Blue means a course,\nwhite means a regular place.\nTap an item to jump to its location.</string>
+    <string name="safe_drive_with_app">That\'s the whole tutorial!\nNow drive safe\nwith Wheretogo!</string>
+
+    <string name="searchbar_guide_text">와인딩</string>
+
+    <!-- Warnings -->
+    <string name="warn_reason_inappropriate">Repeatedly posting inappropriate content may restrict your access to the service.</string>
+    <string name="warn_reason_other">Continued misuse may restrict your access to the service.</string>
+
+    <!-- Bans -->
+    <string name="banned_user">This account has been restricted</string>
+    <string name="ban_reason_spam">Suspended: spam or repeated posting %s</string>
+    <string name="ban_reason_abuse">Suspended: profanity or disparaging remarks %s</string>
+    <string name="ban_reason_harassment">Suspended: repeated harassment %s</string>
+    <string name="ban_reason_inappropriate">Suspended: posting inappropriate content %s</string>
+    <string name="ban_reason_illegal_content">Suspended: posting illegal content %s</string>
+    <string name="ban_reason_fraud">Suspended: fraud or deceptive behavior %s</string>
+    <string name="ban_reason_impersonation">Suspended: impersonating others %s</string>
+    <string name="ban_reason_malicious_behavior">Suspended: malicious behavior or system abuse %s</string>
+    <string name="ban_reason_policy_violation">Suspended: violation of service policies %s</string>
+
+    <string name="report_spam">Spam</string>
+    <string name="report_harassment">Harassment</string>
+    <string name="report_inappropriate">Inappropriate content</string>
+    <string name="report_violence">Violence</string>
+    <string name="report_hate_speech">Hate speech</string>
+    <string name="report_misinformation">Misinformation</string>
+    <string name="report_copyright">Copyright infringement</string>
+    <string name="report_other">Other</string>
+
+    <!-- Errors -->
+    <string name="google_auth">Google sign-in error</string>
+    <string name="user_create_error">Account creation error</string>
+    <string name="unavailable_user">Account unavailable: %s</string>
+    <string name="invalid_user">Invalid account</string>
+    <string name="invalid_data">Invalid data</string>
+    <string name="network_error">Network connection is unstable. Please check your connection.</string>
+    <string name="unexpect_error">Couldn\'t complete your request. Try restarting the app or clearing the cache.</string>
+    <string name="cool_down_error">🏝️ Hang on while we prep better travel info.\nYou can post again in %s minutes.</string>
+
+    <string name="blank" />
+
+    <!-- Photo permissions -->
+    <string name="show_photo_select">Showing selected photos</string>
+    <string name="show_photo_select_desc">Tap the button to add more photos.</string>
+    <string name="need_photo_permission">Photo access is required to load your photos</string>
+    <string name="need_all_photo_permission">To see all your photos, allow full access in Settings.</string>
+    <string name="need_permission">Grant permission</string>
+    <string name="more_add">Add more</string>
+    <string name="photo_select">Select photos</string>
+    <string name="selected_count">Done (%1$d selected)</string>
+    <string name="button_selected">Selected</string>
+    <string name="button_setting">Settings</string>
+
+    <!-- Gallery -->
+    <string name="group_by_date">Date</string>
+    <string name="group_by_course">Course</string>
+    <string name="photo_delete_fail">Couldn\'t delete the photo</string>
+    <string name="gallery_load_fail">Couldn\'t load your photos</string>
+    <string name="media_save_fail">Couldn\'t move the photo</string>
+    <string name="photo_add">Add photos</string>
+    <string name="photo_add_guide">Please add a photo</string>
+    <string name="retry">Retry</string>
+    <string name="select_ing">Selecting</string>
+    <string name="release_all">Deselect all</string>
+    <string name="select_all">Select all</string>
+    <string name="count_selected">%1$d selected</string>
+    <string name="delete">Delete</string>
+    <plurals name="request_count_delete">
+        <item quantity="one">Delete %1$d photo?</item>
+        <item quantity="other">Delete %1$d photos?</item>
+    </plurals>
+    <string name="no_restore_photo_delete">Deleted photos can\'t be recovered.</string>
+    <string name="cancel">Cancel</string>
+    <string name="how_show">How would you like to view them?</string>
+    <string name="detail_info">Details</string>
+    <string name="empty_gallery_question_title">Got any photos taken on a course?</string>
+    <string name="empty_gallery_question_description">That photo sitting in your phone is all you need.\nUpload it and we\'ll find the course for you.</string>
+    <string name="empty_gallery_find_in_gallery_button">Browse my gallery</string>
+    <string name="empty_gallery_location_hint">Photos with location info are recognized instantly</string>
+
+    <!-- Photo viewer -->
+    <string name="not_yet_stamped_place">Not stamped yet</string>
+    <string name="num_visit">%1$s visits</string>
+    <string name="swipe_to_pick_photo">Swipe to pick the photo that best represents this place.</string>
+    <string name="pick_this_photo">Post with this photo</string>
+    <string name="write_record_here">Leave a note about this place.</string>
+    <string name="stamp_down">Stamp it</string>
+    <string name="confirm_unstamp">Remove this stamp?</string>
+    <string name="record_removed_from_course">Your post will be removed from the course. Your photos and notes stay on your device.</string>
+    <string name="unstamp">Remove stamp</string>
+    <string-array name="gallery_loading">
+        <item>Picking out just the right photos…</item>
+        <item>Tucking your photos somewhere safe…</item>
+        <item>Removing location info…</item>
+        <item>Requesting approval to ask permission to request consent to use your photos…</item>
+    </string-array>
+    <string name="no_match_header_label">A new road begins</string>
+    <string name="no_match_header_title">A lovely place —\njust not a course</string>
+    <string name="no_match_header_description">Try finding another course nearby.</string>
+    <string name="no_location_status">No location info</string>
+    <string name="no_location_transparency_title">How we use location info</string>
+    <string-array name="no_location_usage_chips">
+        <item>Show it on the map</item>
+        <item>Verify course visits</item>
+    </string-array>
+    <string name="no_location_reasons_title">Why this photo has no location</string>
+    <string-array name="no_location_reasons">
+        <item>It was taken with the camera\'s location tag turned off</item>
+        <item>It\'s a screenshot, download, or photo received via messenger</item>
+        <item>The camera app didn\'t have location permission</item>
+    </string-array>
+
+    <string name="no_location_solution_title">To save location with your next photos</string>
+    <string name="no_location_solution_body">Turn on location permission in your camera settings.</string>
+
+    <string name="no_location_action_camera_settings">Camera settings</string>
+    <string name="no_location_action_learn_more">Learn more</string>
+
+    <!-- Tiers -->
+    <string name="tier_sprout">Sprout</string>
+    <string name="tier_rookie">Rookie</string>
+    <string name="tier_wanderer">Wanderer</string>
+    <string name="tier_cartographer">Cartographer</string>
+    <string name="tier_pioneer">Pioneer</string>
+
+    <!-- Check-in -->
+    <string name="checkin_title">Check In</string>
+    <string name="tier_roadmap">Tier Roadmap</string>
+    <plurals name="tier_requirement">
+        <item quantity="one">%d check-in required</item>
+        <item quantity="other">%d check-ins required</item>
+    </plurals>
+    <string name="latest_certification">Recent</string>
+    <string name="view_all">View all</string>
+
+    <string name="course_suggestion">How about %s next?</string>
+    <string name="my_history">Recent activity</string>
+
+    <string name="tier_champion">Checked in</string>
+    <string name="tier_remaining_format">%d to go</string>
+    <string name="tier_max_title">Top tier reached!</string>
+    <plurals name="tier_certified_format">
+        <item quantity="one">%d check-in</item>
+        <item quantity="other">%d check-ins</item>
+    </plurals>
+
+</resources>

@@ -222,7 +222,9 @@
     <string name="select_all">전체 선택</string>
     <string name="count_selected">%1$d장 선택</string>
     <string name="delete">삭제</string>
-    <string name="request_count_delete">%1$d장을 삭제할까요?</string>
+    <plurals name="request_count_delete">
+        <item quantity="other">%1$d장을 삭제할까요?</item>
+    </plurals>
     <string name="no_restore_photo_delete">삭제한 사진은 복구할 수 없어요.</string>
     <string name="cancel">취소</string>
     <string name="how_show">어떻게 볼까요?</string>
@@ -281,7 +283,9 @@
     <!-- 체크인 -->
     <string name="checkin_title">인증 갤러리</string>
     <string name="tier_roadmap">티어 로드맵</string>
-    <string name="tier_requirement">인증 %d회 필요</string>
+    <plurals name="tier_requirement">
+        <item quantity="other">인증 %d회 필요</item>
+    </plurals>
     <string name="latest_certification">최근 인증</string>
     <string name="view_all">전체보기</string>
 
@@ -291,6 +295,8 @@
     <string name="tier_champion">인증 완료</string>
     <string name="tier_remaining_format">%d개 남음</string>
     <string name="tier_max_title">최고 등급 달성!</string>
-    <string name="tier_certified_format">%d 인증</string>
+    <plurals name="tier_certified_format">
+        <item quantity="other">%d 인증</item>
+    </plurals>
 
 </resources>

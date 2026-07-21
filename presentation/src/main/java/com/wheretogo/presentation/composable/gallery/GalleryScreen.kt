@@ -66,6 +66,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -127,7 +128,7 @@ fun GalleryScreen(
                 if (state is GalleryState.Success) {
                     GalleryTopArea(
                         selectionMode = isSelectionMode,
-                        groupingLabel = state.groupingLabel,
+                        groupingLabel = stringResource(state.groupingLabel),
                         sheetExpanded = showGroupingSheet,
                         allSelected = state.allPhotos.isNotEmpty() &&
                                 state.selectedIds.size == state.allPhotos.size,
@@ -470,7 +471,7 @@ private fun SelectionActionBar(
     if (showConfirm) {
         AlertDialog(
             onDismissRequest = { showConfirm = false },
-            title = { Text(stringResource(R.string.request_count_delete, selectedCount)) },
+            title = { Text(pluralStringResource(R.plurals.request_count_delete, selectedCount,selectedCount)) },
             text = { Text(stringResource(R.string.no_restore_photo_delete)) },
             confirmButton = {
                 TextButton(onClick = { showConfirm = false; onDelete() }) {
@@ -518,7 +519,7 @@ private fun GroupingStrategyItem(
             .padding(vertical = 16.dp, horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(strategy.label, style = MaterialTheme.typography.titleMedium,
+        Text(text = stringResource(strategy.label), style = MaterialTheme.typography.titleMedium,
             fontWeight = if (isSelect) FontWeight.Bold else FontWeight.Normal, modifier = Modifier.weight(1f))
         if (isSelect) Icon(Icons.Default.Check, null, tint = MaterialTheme.colorScheme.primary)
     }

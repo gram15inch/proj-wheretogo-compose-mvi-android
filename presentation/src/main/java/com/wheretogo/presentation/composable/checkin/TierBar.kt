@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -61,8 +62,9 @@ fun TierBar(
                     color = if (achieved) cs.onSurface else cs.onSurfaceVariant,
                 )
                 Text(
-                    text = stringResource(
-                        R.string.tier_requirement,
+                    text = pluralStringResource(
+                        R.plurals.tier_requirement,
+                        tier.requiredCount,
                         tier.requiredCount
                     ),
                     style = MaterialTheme.typography.bodySmall,
