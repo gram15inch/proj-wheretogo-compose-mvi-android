@@ -94,7 +94,6 @@ import com.wheretogo.presentation.toStrRes
 import com.wheretogo.presentation.viewmodel.CourseAddViewModel
 import com.wheretogo.presentation.viewmodel.MapEvent
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun CourseAddScreen(
@@ -583,7 +582,10 @@ fun RouteWaypointContent(
             FadeAnimation(modifier = Modifier, !isFocus) {
                 Box(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        modifier = Modifier.padding(start = 5.dp, top = 5.dp), text = "경로",
+                        modifier = Modifier.padding(start = 5.dp, top = 5.dp),
+                        text = stringResource(
+                            R.string.route
+                        ),
                         fontSize = 20.sp,
                         fontFamily = interBoldFontFamily
                     )
@@ -601,7 +603,7 @@ fun RouteWaypointContent(
                     ) {
                         Text(
                             modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-                            text = "\uD83D\uDCCD 생성",
+                            text = "\uD83D\uDCCD "+ stringResource(R.string.create),
                             fontSize = 15.sp,
                             fontFamily = interBoldFontFamily
                         )
@@ -685,7 +687,7 @@ fun RouteWaypointContent(
                                 }
                             })
                         Text(
-                            "소요시간 : ${duration / 60000}분",
+                            stringResource(R.string.duration_minutes, duration / 60000),
                             fontSize = 15.sp,
                             fontFamily = interFontFamily
                         )
@@ -716,7 +718,7 @@ fun RouteWaypointContent(
                             .background(Palette.Gray50),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("생성으로 새 경로를 만들어 보세요.", fontFamily = interFontFamily)
+                        Text(stringResource(R.string.tab_create), fontFamily = interFontFamily)
                     }
                 }
             }

@@ -211,7 +211,7 @@ fun DriveListItem(
                         content = stringResource(
                             RouteCategory.fromCode(listItem.course.type)?.item.toStrRes().second
                         ),
-                        type = "태그"
+                        type = stringResource(R.string.category)
                     )
 
                     if (false) // todo 평점 추가
@@ -226,7 +226,7 @@ fun DriveListItem(
                             content = stringResource(
                                 RouteCategory.fromCode(listItem.course.relation)?.item.toStrRes().second
                             ),
-                            type = "인원"
+                            type = stringResource(R.string.recommend)
                         )
                     else
                         DriveItemAttribute(
@@ -234,12 +234,12 @@ fun DriveListItem(
                             content = stringResource(
                                 RouteCategory.fromCode(listItem.course.level)?.item.toStrRes().second
                             ),
-                            type = "난이도"
+                            type = stringResource(R.string.level)
                         )
                     DriveItemAttribute(
                         modifier = Modifier.weight(1f),
                         content = listItem.course.duration + "분",
-                        type = "소요시간"
+                        type = stringResource(R.string.duration)
                     )
                 }
             }
