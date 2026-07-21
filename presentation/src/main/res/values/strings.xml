@@ -209,6 +209,8 @@
     <string name="button_setting">설정</string>
 
     <!-- 갤러리 -->
+    <string name="group_by_date">날짜별</string>
+    <string name="group_by_course">코스별</string>
     <string name="photo_delete_fail">사진을 삭제하지 못했어요</string>
     <string name="gallery_load_fail">사진을 불러오지 못했어요</string>
     <string name="media_save_fail">사진을 옮기지 못했어요</string>

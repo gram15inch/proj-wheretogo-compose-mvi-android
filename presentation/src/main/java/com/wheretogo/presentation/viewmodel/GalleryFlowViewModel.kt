@@ -61,7 +61,7 @@ class GalleryFlowViewModel @Inject constructor(
 
     val groupings: List<GroupingStrategy> = listOf(ByCourseGrouping(), ByDayGrouping())
     private var _grouping: GroupingStrategy = groupings.first()
-    val currentGroupingLabel: String get() = _grouping.label
+    val currentGroupingLabel: Int get() = _grouping.label
 
     private var _cachedPhotos: List<GalleryPhoto> = emptyList()
     private val _detailPhotoId = MutableStateFlow<Long?>(null)

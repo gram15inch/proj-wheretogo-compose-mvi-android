@@ -486,7 +486,7 @@ private fun SelectionActionBar(
 @Composable
 private fun GroupingBottomSheet(
     options: List<GroupingStrategy>,
-    currentLabel: String,
+    currentLabel: Int,
     onSelect: (GroupingStrategy) -> Unit,
     onDismiss: () -> Unit,
 ) {
