@@ -43,7 +43,7 @@ class CheckinViewModel @Inject constructor(
     }
 
     private fun observeGalleryPhotos() {
-        loadGalleryPhotosUseCase.observe()
+        loadGalleryPhotosUseCase.observeStamped(4)
             .onStart { delay(310) } // 화면 이동 대기
             .onEach { photos ->
                 _cachedPhotos = photos

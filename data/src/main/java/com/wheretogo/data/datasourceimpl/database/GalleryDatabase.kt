@@ -33,6 +33,16 @@ interface PhotoDao {
     @Query(
         """
         SELECT * FROM photo
+        WHERE stampAt IS NOT NULL AND stampAt != 0
+        ORDER BY (stampAt IS NULL), stampAt DESC
+        LIMIT :limit
+        """
+    )
+    fun observeStampedPhotos(limit: Int): Flow<List<PhotoEntity>>
+
+    @Query(
+        """
+        SELECT * FROM photo
         ORDER BY (timestampMillis IS NULL), timestampMillis DESC
         """
     )

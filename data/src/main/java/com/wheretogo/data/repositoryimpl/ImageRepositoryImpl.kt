@@ -141,6 +141,12 @@ class ImageRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun observeStampedGalleryPhotos(limit: Int): Flow<List<GalleryPhoto>> {
+        return imageLocalDatasource.observeStampedPhotos(limit).map { entities ->
+            entities.mapNotNull { it.toGalleryPhoto() }
+        }
+    }
+
     override suspend fun refreshGalleyPhotosByUserId(userId: String): Result<Unit> {
         return runCatching {
             coroutineScope {
