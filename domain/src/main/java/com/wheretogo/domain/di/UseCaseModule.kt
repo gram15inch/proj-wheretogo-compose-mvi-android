@@ -22,6 +22,7 @@ import com.wheretogo.domain.usecase.course.GetCourseUseCase
 import com.wheretogo.domain.usecase.course.GetNearByCourseUseCase
 import com.wheretogo.domain.usecase.course.RemoveCourseUseCase
 import com.wheretogo.domain.usecase.gallery.GetStampUseCase
+import com.wheretogo.domain.usecase.home.GetRecentCardUseCase
 import com.wheretogo.domain.usecase.report.ReportContentUseCase
 import com.wheretogo.domain.usecase.user.DeleteUserUseCase
 import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
@@ -53,6 +54,7 @@ import com.wheretogo.domain.usecaseimpl.course.GetCourseUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.course.GetNearByCourseUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.course.RemoveCourseUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.gallery.GetStampUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.home.GetRecentCardUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.report.ReportContentUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.DeleteUserUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.GetUserProfileStreamUseCaseImpl
@@ -181,6 +183,9 @@ abstract class UseCaseModule {
 
     @Binds
     abstract fun bindGetStampUseCase(useCaseImpl: GetStampUseCaseImpl): GetStampUseCase
+
+    @Binds
+    abstract fun bindGetRecentCardSituationUseCase(useCaseImpl: GetRecentCardUseCaseImpl): GetRecentCardUseCase
 
 }
 

@@ -295,4 +295,13 @@
         <item quantity="other">%d check-ins</item>
     </plurals>
 
+    <string name="recent_card_total_empty">No photos yet</string>
+
+    <!-- 마지막 인증 시각 (하이브리드) -->
+    <string name="recent_card_last_today">Today %1$s</string>
+    <string name="recent_card_last_yesterday">Yesterday</string>
+    <string name="recent_card_last_days_ago">%1$d days ago</string>
+    <string name="recent_card_date_this_year">MMM d</string>
+    <string name="recent_card_date_full">MMM d, yyyy</string>
+
 </resources>

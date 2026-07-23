@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- EMPTY : 아직 인증 없음 -->
+    <string-array name="recent_card_headline_empty">
+        <item>Start with\nyour very first photo</item>
+        <item>This is where\nyour story begins</item>
+        <item>Today,\nlet\'s take your first step</item>
+        <item>Fill this empty space\nwith your first photo</item>
+        <item>Starting is half the battle\none photo is all it takes</item>
+        <item>Capture\nyour very first moment</item>
+        <item>Your first check-in\nis easier than you think</item>
+        <item>Capture who you are today\nand keep it</item>
+        <item>This moment\nbecomes your first page</item>
+    </string-array>
+
+    <!-- TODAY : 오늘 인증 -->
+    <string-array name="recent_card_headline_today">
+        <item>One step today,\nlet\'s keep filling it in</item>
+        <item>Today\'s photo is in\nnicely done</item>
+        <item>The photo you took today\nwill stay with you</item>
+        <item>Today, captured,\nbecomes tomorrow\'s strength</item>
+        <item>One photo at a time,\npainting your memories</item>
+        <item>Checked in again today\nkeep this rhythm going</item>
+    </string-array>
+
+    <!-- RECENT : 1~3일 전 -->
+    <string-array name="recent_card_headline_recent">
+        <item>Leave a photo\nwherever you go</item>
+        <item>Just like yesterday,\nlet\'s capture today too</item>
+        <item>No pressure,\njust add one more</item>
+        <item>You\'re on a roll,\nlet\'s keep it going today</item>
+        <item>A little gap,\none photo fills it right in</item>
+        <item>Keep it going\nwith today\'s photo</item>
+        <item>Perfect timing right now,\nleave a photo</item>
+        <item>At your own pace,\ntake it slow</item>
+        <item>Today\'s too good to miss,\ncapture a photo</item>
+    </string-array>
+
+    <!-- PAUSED : 4~7일 전 → 부담 없이 복귀 -->
+    <string-array name="recent_card_headline_paused">
+        <item>It\'s been a few days,\nshall we start again today?</item>
+        <item>A little break is okay,\nlet\'s pick it back up</item>
+        <item>It\'s been a while,\nhow about a photo today?</item>
+        <item>Even if the streak breaks,\nyou can always start again</item>
+        <item>Your journal is waiting,\nshall we fill it today?</item>
+        <item>A few days\' gap,\none photo fills it in</item>
+        <item>Time to pick up\nthe camera again</item>
+        <item>After the pause,\nlet\'s carry on</item>
+        <item>It\'s been about a week,\none more photo today</item>
+        <item>Take your time coming back,\nnow\'s just right</item>
+    </string-array>
+
+    <!-- DORMANT : 8일 이상 전 -->
+    <string-array name="recent_card_headline_dormant">
+        <item>Your last photo\nis waiting for you</item>
+        <item>Your records don\'t disappear,\npick up anytime</item>
+        <item>Today, once more,\na photo like day one</item>
+        <item>From where you paused,\nshall we start walking again?</item>
+        <item>Welcome back,\none photo is all it takes</item>
+        <item>Your past records\nare glad to see you</item>
+        <item>A fresh start today,\nlet\'s capture it again</item>
+    </string-array>
+</resources>

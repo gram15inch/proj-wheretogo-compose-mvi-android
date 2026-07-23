@@ -265,3 +265,7 @@ enum class MarkerType {
 enum class PathType {
     SCAFFOLD, FULL
 }
+
+enum class RecentCardSituation {
+    EMPTY, TODAY, RECENT, PAUSED, DORMANT
+}
