@@ -5,19 +5,25 @@ import androidx.lifecycle.viewModelScope
 import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.handler.HomeEvent
 import com.wheretogo.domain.handler.HomeHandler
+import com.wheretogo.domain.model.home.RecentCard
 import com.wheretogo.domain.usecase.app.DriveTutorialUseCase
 import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
+import com.wheretogo.domain.usecase.home.GetRecentCardUseCase
 import com.wheretogo.presentation.AppLifecycle
 import com.wheretogo.presentation.HomeBodyBtn
 import com.wheretogo.presentation.HomeBodyBtnHighlight
 import com.wheretogo.presentation.MainDispatcher
+import com.wheretogo.presentation.model.home.RecentCardUiState
 import com.wheretogo.presentation.intent.HomeIntent
 import com.wheretogo.presentation.state.HomeScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -28,10 +34,19 @@ class HomeViewModel @Inject constructor(
     private val handler: HomeHandler,
     @MainDispatcher private val dispatcher: CoroutineDispatcher,
     private val observeSettingsUseCase: ObserveSettingsUseCase,
+    private val getRecentCardSituationUseCase: GetRecentCardUseCase,
     private val driveTutorialUseCase: DriveTutorialUseCase
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(stateInit)
     val uiState: StateFlow<HomeScreenState> = _uiState.asStateFlow()
+
+    val cardState: StateFlow<RecentCardUiState> = getRecentCardSituationUseCase()
+        .map { it.toRecentCardUiState() }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = RecentCardUiState.Empty
+        )
 
     init {
         observe()
@@ -123,5 +138,13 @@ class HomeViewModel @Inject constructor(
                     }
                 }
         }
+    }
+
+    private fun RecentCard.toRecentCardUiState(): RecentCardUiState {
+        return RecentCardUiState(
+            imageModel = latestPhoto?.thumbnail,
+            stampAt = latestPhoto?.stampAt,
+            situation = situation,
+        )
     }
 }

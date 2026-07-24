@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- EMPTY : 인증 사진-->
+    <string-array name="recent_card_headline_empty">
+        <item>첫 한 장을\n남겨보세요</item>
+        <item>여기서\n당신의 기록이 시작돼요</item>
+        <item>오늘,\n첫 발자국을 찍어볼까요</item>
+        <item>비어 있는 이 자리\n당신의 한 장으로 채워요</item>
+        <item>시작이 반이에요\n한 장이면 충분해요</item>
+        <item>가장 처음의 순간을\n담아보세요</item>
+        <item>첫 인증,\n생각보다 간단해요</item>
+        <item>오늘의 나를\n기록으로 남겨봐요</item>
+        <item>지금 이 순간이\n첫 페이지가 돼요</item>
+    </string-array>
+
+    <!-- TODAY : 오늘 인증 -->
+    <string-array name="recent_card_headline_today">
+        <item>오늘도 한 걸음,\n더 많이 채워봐요</item>
+        <item>오늘의 기록 완료\n멋져요</item>
+        <item>오늘 남긴 한 장,\n오래 남을 거예요</item>
+        <item>기록으로 남긴 오늘\n내일의 힘이 돼요</item>
+        <item>한 장 한 장\n추억을 그려가요</item>
+        <item>오늘도 인증 완료\n이 리듬 그대로</item>
+    </string-array>
+
+    <!-- RECENT : 1~3일 전-->
+    <string-array name="recent_card_headline_recent">
+        <item>지나온 자리마다\n한 장씩 남겨두세요</item>
+        <item>어제의 당신처럼\n오늘도 남겨볼까요</item>
+        <item>가벼운 마음으로\n한 장 더해요</item>
+        <item>흐름이 좋아요\n오늘도 이어가요</item>
+        <item>잠깐의 틈,\n한 장이면 메워져요</item>
+        <item>오늘의 한 장으로\n기록을 이어봐요</item>
+        <item>지금 딱 좋은 타이밍\n한 장 남겨요</item>
+        <item>당신의 페이스대로\n천천히 이어가요</item>
+        <item>오늘도 놓치기 아까워요\n한 장 담아요</item>
+    </string-array>
+
+    <!-- PAUSED : 4~7일 전 → 부담 없이 복귀 -->
+    <string-array name="recent_card_headline_paused">
+        <item>며칠 쉬었네요.\n오늘 다시 시작해볼까요</item>
+        <item>잠깐 쉬어도 괜찮아요\n다시 이어가요</item>
+        <item>오랜만이에요\n오늘 한 장 어때요</item>
+        <item>흐름이 끊겨도\n다시 시작하면 돼요</item>
+        <item>기록이 기다리고 있어요\n오늘 채워볼까요</item>
+        <item>며칠의 공백,\n한 장이면 메워져요</item>
+        <item>다시 카메라를\n들어볼 시간이에요</item>
+        <item>쉼표 뒤에\n다시 이어가 봐요</item>
+        <item>일주일쯤 지났어요\n오늘 다시 한 장</item>
+        <item>천천히 돌아와도 돼요\n지금이 딱 좋아요</item>
+    </string-array>
+    <!-- DORMANT : 8일 이상 전-->
+    <string-array name="recent_card_headline_dormant">
+        <item>당신의 마지막 한 장이\n기다리고 있어요</item>
+        <item>기록은 사라지지 않아요\n언제든 이어가요</item>
+        <item>오늘 다시,\n첫 마음으로 한 장</item>
+        <item>멈춰 있던 자리에서\n다시 걸어볼까요</item>
+        <item>돌아온 걸 환영해요\n한 장이면 충분해요</item>
+        <item>지난 기록들이\n당신을 반겨요</item>
+        <item>새로 시작하는 오늘,\n다시 남겨봐요</item>
+    </string-array>
+</resources>

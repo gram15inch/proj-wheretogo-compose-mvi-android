@@ -36,6 +36,8 @@ interface ImageLocalDatasource {
 
     fun observePhotos(): Flow<List<PhotoEntity>>
 
+    fun observeStampedPhotos(limit: Int): Flow<List<PhotoEntity>>
+
     suspend fun getPhotosByHash(hashes:List<String>): Result<List<PhotoEntity>>
 
     suspend fun getPhotosByImageId(imageIds: List<String>): Result<List<PhotoEntity>>

@@ -54,6 +54,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -76,15 +77,16 @@ import com.wheretogo.domain.model.gallery.GalleryPhoto
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.MediaPicker
 import com.wheretogo.presentation.feature.GroupingStrategy
+import com.wheretogo.presentation.intent.GalleryIntent
 import com.wheretogo.presentation.model.PhotoSection
 import com.wheretogo.presentation.state.GalleryState
 import com.wheretogo.presentation.viewmodel.GalleryFlowViewModel
-import com.wheretogo.presentation.intent.GalleryIntent
 
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun GalleryScreen(
+    openPicker: Boolean,
     sharedScope:SharedTransitionScope,
     animatedScope: AnimatedVisibilityScope,
     gridState: LazyGridState,
@@ -92,16 +94,20 @@ fun GalleryScreen(
     viewModel: GalleryFlowViewModel,
 ) {
     val uiState by viewModel.galleryState.collectAsStateWithLifecycle()
-    var showPicker by rememberSaveable { mutableStateOf(false) }
+    val showPicker by viewModel.pickerVisible.collectAsStateWithLifecycle()
     var showGroupingSheet by rememberSaveable { mutableStateOf(false) }
 
-    if (showPicker) {
+
+    LaunchedEffect(Unit) {
+        viewModel.handleIntent(GalleryIntent.Initialize(openPicker))
+    }
+
+    if (showPicker==true) {
         MediaPicker(
             onPicked = { picked ->
-                showPicker = false
                 viewModel.handleIntent(GalleryIntent.MediaPicked(picked))
             },
-            onNavigateBack = { showPicker = false },
+            onNavigateBack = { viewModel.handleIntent(GalleryIntent.DismissPicker) },
         )
         return
     }
@@ -114,7 +120,9 @@ fun GalleryScreen(
     Scaffold(
         floatingActionButton = {
             if (!isSelectionMode) {
-                FloatingActionButton(onClick = { showPicker = true }) {
+                FloatingActionButton(onClick = {
+                    viewModel.handleIntent(GalleryIntent.PhotoAddClick)
+                }) {
                     Icon(Icons.Default.Add, contentDescription = stringResource(R.string.photo_add))
                 }
             }
@@ -154,7 +162,9 @@ fun GalleryScreen(
                                 ) { Text(stringResource(R.string.retry)) }
                             }
                         is GalleryState.Empty -> EmptyGalleryScreen(
-                            onFindInGalleryClick = { showPicker = true }
+                            onFindInGalleryClick = {
+                                viewModel.handleIntent(GalleryIntent.PhotoAddClick)
+                            }
                         )
                         is GalleryState.Success ->
                             PhotoGrid(

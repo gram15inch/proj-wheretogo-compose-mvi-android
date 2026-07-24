@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- EMPTY : 설렘, 첫 시작 -->
+    <string-array name="recent_card_kaomoji_empty">
+        <item>(｡•̀ᴗ-)✧</item>
+        <item>(๑˃ᴗ˂)ﻭ</item>
+        <item>＼(^o^)／</item>
+        <item>(っ˘ω˘ς )</item>
+        <item>(✿◡‿◡)</item>
+        <item>٩(ˊᗜˋ*)و</item>
+        <item>(๑•̀ㅂ•́)و✧</item>
+        <item>(｡･ω･｡)ﾉ♡</item>
+        <item>(⁀ᗢ⁀)</item>
+        <item>ヽ(๑´◡`๑)ﾉ</item>
+    </string-array>
+
+    <!-- TODAY : 만족, 뿌듯 -->
+    <string-array name="recent_card_kaomoji_today">
+        <item>(｡•ᴗ•｡)</item>
+        <item>(◍•ᴗ•◍)</item>
+        <item>(´｡• ᵕ •｡`)</item>
+        <item>( ˶ˆ꒳ˆ˵ )</item>
+        <item>(๑˘︶˘๑)</item>
+        <item>(ᵔ◡ᵔ)</item>
+        <item>♪(´▽｀)</item>
+        <item>(｡◕‿◕｡)</item>
+        <item>(*ˊᗜˋ*)</item>
+        <item>٩(◕‿◕)۶</item>
+    </string-array>
+
+    <!-- RECENT : 가벼움, 부드러움 -->
+    <string-array name="recent_card_kaomoji_recent">
+        <item>(◡‿◡✿)</item>
+        <item>(｡･ω･)ﾉﾞ</item>
+        <item>(・ω&lt;)☆</item>
+        <item>(｡• ᵕ •｡)</item>
+        <item>(´･ᴗ･`)</item>
+        <item>ヽ(・∀・)ﾉ</item>
+    </string-array>
+
+    <!-- PAUSED : 다독임, 복귀 유도 -->
+    <string-array name="recent_card_kaomoji_paused">
+        <item>( ˘•ω•˘ )</item>
+        <item>(´-ω-`)</item>
+        <item>( ˘ω˘ )</item>
+        <item>(｡ᵔᴗᵔ｡)</item>
+        <item>(っ- ‸ - ς)</item>
+        <item>(´｡•ω•｡`)</item>
+        <item>(・_・;)ゞ</item>
+        <item>( ᵕ ᴗ ᵕ )</item>
+        <item>(｡•́︿•̀｡)</item>
+        <item> (っ˘ω˘ς )</item>
+    </string-array>
+
+    <!-- DORMANT : 그리움, 따뜻한 리마인드 -->
+    <string-array name="recent_card_kaomoji_dormant">
+        <item>( っ˘̩╭╮˘̩)っ</item>
+        <item>(´ ᵕ ` )♡</item>
+        <item>( ˘ ³˘)♥</item>
+        <item>(｡•ᴗ•｡)♡</item>
+        <item>ヽ(๑´◡`๑)ﾉ</item>
+        <item>(´｡• ᵕ •｡`)♡</item>
+        <item>(っ˘ω˘ς )</item>
+        <item>(◍•ᴗ•◍)❤</item>
+        <item>( ´ ˘ ` )♡</item>
+    </string-array>
+
+</resources>

@@ -48,11 +48,14 @@ import com.wheretogo.presentation.HomeBodyBtn
 import com.wheretogo.presentation.HomeBodyBtnHighlight
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.animation.highlightRoundedCorner
+import com.wheretogo.presentation.composable.content.PolaroidRecentCard
+import com.wheretogo.presentation.model.home.RecentCardUiState
 import com.wheretogo.presentation.composable.effect.LifecycleDisposer
 import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.feature.openWeb
 import com.wheretogo.presentation.intent.HomeIntent
 import com.wheretogo.presentation.theme.Palette
+import com.wheretogo.presentation.theme.WhereTogoTheme
 import com.wheretogo.presentation.theme.hancomMalangFontFamily
 import com.wheretogo.presentation.theme.hancomSansFontFamily
 import com.wheretogo.presentation.theme.meslolgsFontFamily
@@ -64,6 +67,7 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
+    val recentState by viewModel.cardState.collectAsState()
     val scrollState = rememberScrollState()
     val outPadding = 12.dp
 
@@ -84,9 +88,16 @@ fun HomeScreen(
         TopBar(onSettingClick = {
             navController.navigate(AppScreen.Setting.toString())
         })
-        Body(homeBodyBtnHighlight = state.bodyBtnHighlight) {
-            viewModel.handleIntent(HomeIntent.BodyButtonClick(it))
-        }
+        Body(
+            recentCardUiState = recentState,
+            homeBodyBtnHighlight = state.bodyBtnHighlight,
+            onRecentCardClick = {
+                navController.navigate(AppScreen.Gallery.args(it))
+            },
+            onClick = {
+                viewModel.handleIntent(HomeIntent.BodyButtonClick(it))
+            }
+        )
         Spacer(modifier = Modifier.weight(1f))
         BottomBar()
     }
@@ -123,7 +134,12 @@ fun TopBar(onSettingClick: () -> Unit) {
 }
 
 @Composable
-fun Body(homeBodyBtnHighlight: HomeBodyBtnHighlight, onClick: (HomeBodyBtn) -> Unit) {
+fun Body(
+    recentCardUiState: RecentCardUiState,
+    homeBodyBtnHighlight: HomeBodyBtnHighlight,
+    onClick: (HomeBodyBtn) -> Unit = {},
+    onRecentCardClick: (Boolean) -> Unit = {},
+) {
     val context = LocalContext.current
     val gridGap = 12.dp
     val isActive = homeBodyBtnHighlight == HomeBodyBtnHighlight.NONE
@@ -175,6 +191,28 @@ fun Body(homeBodyBtnHighlight: HomeBodyBtnHighlight, onClick: (HomeBodyBtn) -> U
 
         }
 
+
+        PolaroidRecentCard(
+            state = recentCardUiState,
+            onCardClick = { onRecentCardClick(false) },
+            onAddClick = { onRecentCardClick(true) },
+        )
+
+        GridButton(
+            row = 4,
+            isHighlight = homeBodyBtnHighlight == HomeBodyBtnHighlight.CREATER_REQUEST,
+            isActive = isActive,
+            click = {
+                onClick(HomeBodyBtn.CREATER_REQUEST)
+                openWeb(context, BANNER_URL)
+            }
+        ) {
+            ContentBanner(
+                stringResource(R.string.banner_main),
+                stringResource(R.string.banner_sub)
+            )
+        }
+
         GridButton(
             row = 2,
             isHighlight = homeBodyBtnHighlight == HomeBodyBtnHighlight.GUIDE,
@@ -186,20 +224,6 @@ fun Body(homeBodyBtnHighlight: HomeBodyBtnHighlight, onClick: (HomeBodyBtn) -> U
             ContentTextImage(
                 stringResource(R.string.visit_first_main),
                 stringResource(R.string.visit_first_sub), 0.dp, null
-            )
-        }
-        GridButton(
-            row = 5,
-            isHighlight = homeBodyBtnHighlight == HomeBodyBtnHighlight.CREATER_REQUEST,
-            isActive = isActive,
-            click = {
-                onClick(HomeBodyBtn.CREATER_REQUEST)
-                openWeb(context, BANNER_URL)
-            }
-        ) {
-            ContentBanner(
-                stringResource(R.string.banner_main),
-                stringResource(R.string.banner_sub)
             )
         }
     }
@@ -340,46 +364,35 @@ fun BottomBar() {
 @Preview(showBackground = true)
 @Composable
 fun BodyPreview() {
-    Surface(modifier = Modifier.width(400.dp)) {
-        Body(HomeBodyBtnHighlight.NONE) {}
+    WhereTogoTheme {
+        Surface(modifier = Modifier.width(400.dp)) {
+            Body(RecentCardUiState.Empty, HomeBodyBtnHighlight.NONE)
+        }
     }
 }
 
 @Preview
 @Composable
 fun GridButtonPreview() {
-    Surface(modifier = Modifier.width(400.dp)) {
-        GridButton(
-            row = 2,
-            isHighlight = false,
-            isActive = true,
-            content = { ContentTextImage("메인", "서브", 0.dp, R.raw.lt_togeter) },
-            click = {})
+    WhereTogoTheme{
+        Surface(modifier = Modifier.width(400.dp)) {
+            GridButton(
+                row = 2,
+                isHighlight = false,
+                isActive = true,
+                content = { ContentTextImage("메인", "서브", 0.dp, R.raw.lt_togeter) },
+                click = {})
+        }
     }
 }
-
-@Preview
-@Composable
-fun GrindBannerPreview() {
-    Surface(modifier = Modifier.width(400.dp)) {
-        GridButton(
-            row = 4,
-            content = {
-            ContentBanner(
-                stringResource(R.string.banner_main),
-                stringResource(R.string.banner_sub)
-            )
-        }, click = {})
-    }
-}
-
 
 @Preview(showBackground = true)
 @Composable
 fun TopBarPreview() {
-    Surface(modifier = Modifier.width(400.dp)) {
-
-        TopBar {}
+    WhereTogoTheme {
+        Surface(modifier = Modifier.width(400.dp)) {
+            TopBar {}
+        }
     }
 }
 
@@ -387,7 +400,9 @@ fun TopBarPreview() {
 @Preview(showBackground = true)
 @Composable
 fun BottomBarPreview() {
-    Surface(modifier = Modifier.width(400.dp)) {
-        BottomBar()
+    WhereTogoTheme{
+        Surface(modifier = Modifier.width(400.dp)) {
+            BottomBar()
+        }
     }
 }

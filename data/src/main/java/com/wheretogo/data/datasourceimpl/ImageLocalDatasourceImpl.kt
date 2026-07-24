@@ -38,7 +38,6 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
-import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.Locale
@@ -245,6 +244,10 @@ class ImageLocalDatasourceImpl @Inject constructor(
 
     override fun observePhotos(): Flow<List<PhotoEntity>> {
         return photoDao.observePhotos()
+    }
+
+    override fun observeStampedPhotos(limit: Int): Flow<List<PhotoEntity>> {
+        return photoDao.observeStampedPhotos(limit)
     }
 
     override suspend fun getPhotosByHash(hashes:List<String>): Result<List<PhotoEntity>> {

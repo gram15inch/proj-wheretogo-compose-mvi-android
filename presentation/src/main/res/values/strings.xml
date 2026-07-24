@@ -299,4 +299,14 @@
         <item quantity="other">%d 인증</item>
     </plurals>
 
+    <string name="recent_card_total_empty">아직 기록이 없어요</string>
+
+    <!-- 마지막 인증 시각 (하이브리드) -->
+    <string name="recent_card_last_today">오늘 %1$s</string>
+    <string name="recent_card_last_yesterday">어제</string>
+    <string name="recent_card_last_days_ago">%1$d일 전</string>
+    <string name="recent_card_date_this_year">M월 d일</string>
+    <string name="recent_card_date_full">yyyy년 M월 d일</string>
+
+
 </resources>

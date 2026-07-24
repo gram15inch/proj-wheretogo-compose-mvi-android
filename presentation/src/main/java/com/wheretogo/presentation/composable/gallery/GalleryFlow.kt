@@ -23,6 +23,7 @@ import com.wheretogo.presentation.viewmodel.GalleryFlowViewModel
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun GalleryFlow(
+    openPicker: Boolean,
     viewModel: GalleryFlowViewModel = hiltViewModel(),
 ) {
     val groupPhoto by viewModel.groupPhoto.collectAsState()
@@ -41,6 +42,7 @@ fun GalleryFlow(
         ) { groupPhoto ->
             if (groupPhoto == null) {
                 GalleryScreen(
+                    openPicker = openPicker,
                     sharedScope = this@SharedTransitionLayout,
                     animatedScope = this@AnimatedContent,
                     gridState = gridState,
