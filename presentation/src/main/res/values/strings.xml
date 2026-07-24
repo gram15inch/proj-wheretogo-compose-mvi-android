@@ -201,6 +201,7 @@
     <string name="show_photo_select_desc">새로운 사진을 추가하려면 버튼을 클릭하세요.</string>
     <string name="need_photo_permission">사진을 불러오려면 접근 권한이 필요합니다</string>
     <string name="need_all_photo_permission">전체 사진을 보려면 설정에서 접근 권한을 허용하세요.</string>
+    <string name="course_found_app">사진속 코스를 알아서 찾아줘요.</string>
     <string name="need_permission">권한 요청</string>
     <string name="more_add">더 추가</string>
     <string name="photo_select">사진 선택</string>

@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
@@ -203,6 +204,7 @@ private fun GalleryView(
     onOpenSettings: () -> Unit
 ) {
     Column {
+        PickPhotoBanner()
         if (access == MediaAccess.PARTIAL) {
             AllowAllBanner(onOpenSettings)
             PartialBanner(onOpenPicker)
@@ -232,6 +234,40 @@ private fun GalleryView(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun PickPhotoBanner() {
+    val tint = Palette.TealBanner
+    Surface(
+        color = tint.copy(alpha = 0.12f),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .size(15.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.AutoAwesome,
+                    contentDescription = null,
+                    tint= tint
+                )
+            }
+            Spacer(modifier = Modifier.width(7.dp))
+            Text(
+                stringResource(R.string.course_found_app),
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.weight(1f),
+                color = tint
+            )
         }
     }
 }
