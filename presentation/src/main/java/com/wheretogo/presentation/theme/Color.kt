@@ -31,6 +31,8 @@ object Palette {
     val Teal200 = Color(0xFF03DAC5)
     val Teal700 = Color(0xFF018786)
 
+    val TealBanner = Color(0xFF1D9E75)
+
     // Green
     val Green50 = Color(0xFFCCE8CC)
     val Green100 = Color(0xFFB9D7B9)

@@ -3,6 +3,7 @@ package com.wheretogo.presentation.composable
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,12 +22,15 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -67,6 +71,7 @@ import com.wheretogo.presentation.viewmodel.MediaPickerUiEvent
 import com.wheretogo.presentation.viewmodel.MediaPickerViewModel
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MediaPicker(
     onPicked: (List<PickerImage>) -> Unit,
@@ -118,7 +123,7 @@ fun MediaPicker(
     LaunchedEffect(pagingItems.loadState) {
         val refresh = pagingItems.loadState.refresh
         val append = pagingItems.loadState.append
-        val error= when {
+        val error = when {
             refresh is LoadState.Error -> refresh.error
             append is LoadState.Error -> append.error
             else -> null
@@ -126,32 +131,45 @@ fun MediaPicker(
         error?.let { viewModel.handleError(it) }
     }
 
-    when (state.access) {
-        null -> DeniedView(
-            {
-                coroutine.launch {
-                    requestPermission(context, AppPermission.MEDIA)
-                }
-            },
-        )
-
-        MediaAccess.FULL,
-        MediaAccess.PARTIAL -> GalleryView(
-            access = state.access!!,
-            pagingItems = pagingItems,
-            selected = state.selected,
-            onToggle = viewModel::toggle,
-            onOpenPicker = {
-                coroutine.launch { requestPermission(context, AppPermission.MEDIA) }
-            },
-            onOpenSettings = {
-                coroutine.launch { openSetting(context, AppPermission.MEDIA) }
-            },
-            onConfirm = {
-                onPicked(it)
+    Scaffold(topBar = {
+        TopAppBar(title = { Text(stringResource(R.string.photo_select)) }, navigationIcon = {
+            IconButton(onClick = onNavigateBack) {
+                Icon(Icons.Default.Close, contentDescription = null)
+            }
+        })
+    }, bottomBar = {
+        SelectBottomBar(
+            selectedSize = state.selected.size, onConfirm = {
+                val picked = (0 until pagingItems.itemCount).mapNotNull { pagingItems[it] }
+                    .filter { it.id in state.selected }
+                onPicked(picked)
                 onNavigateBack()
-            },
-        )
+            })
+    }) { padding ->
+        Box(Modifier.padding(padding)) {
+            when (state.access) {
+                null -> DeniedView(
+                    onRequestPermission = {
+                        coroutine.launch {
+                            requestPermission(context, AppPermission.MEDIA)
+                        }
+                    })
+
+                MediaAccess.FULL,
+                MediaAccess.PARTIAL -> GalleryView(
+                    access = state.access!!,
+                    pagingItems = pagingItems,
+                    selected = state.selected,
+                    onToggle = viewModel::toggle,
+                    onOpenPicker = {
+                        coroutine.launch { requestPermission(context, AppPermission.MEDIA) }
+                    },
+                    onOpenSettings = {
+                        coroutine.launch { openSetting(context, AppPermission.MEDIA) }
+                    },
+                )
+            }
+        }
     }
 }
 
@@ -176,7 +194,6 @@ private fun DeniedView(onRequestPermission: () -> Unit) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun GalleryView(
     access: MediaAccess,
@@ -184,69 +201,73 @@ private fun GalleryView(
     selected: Set<Long>,
     onToggle: (Long) -> Unit,
     onOpenPicker: () -> Unit,
-    onOpenSettings: () -> Unit,
-    onConfirm: (List<PickerImage>) -> Unit,
+    onOpenSettings: () -> Unit
 ) {
-    Scaffold(
-        topBar = {
-            TopAppBar(title = { Text(stringResource(R.string.photo_select)) })
-        },
-        bottomBar = {
-            Surface(tonalElevation = 2.dp) {
-                Button(
-                    onClick = {
-                        val picked = (0 until pagingItems.itemCount)
-                            .mapNotNull { pagingItems[it] }
-                            .filter { it.id in selected }
-                        onConfirm(picked)
-                    },
-                    enabled = selected.isNotEmpty(),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                ) {
-                    Text(stringResource(R.string.selected_count, selected.size))
+    Column {
+        PickPhotoBanner()
+        if (access == MediaAccess.PARTIAL) {
+            AllowAllBanner(onOpenSettings)
+            PartialBanner(onOpenPicker)
+        }
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(3),
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(2.dp),
+        ) {
+            items(
+                count = pagingItems.itemCount,
+                key = { index -> pagingItems[index]?.id ?: index },
+            ) { index ->
+                val image = pagingItems[index]
+                if (image != null) {
+                    PhotoCell(
+                        image = image,
+                        isSelected = image.id in selected,
+                        onClick = { onToggle(image.id) },
+                    )
+                } else {
+                    Box(
+                        Modifier
+                            .aspectRatio(1f)
+                            .padding(1.dp)
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                    )
                 }
             }
-        },
-    ) { padding ->
-        Column(Modifier.padding(padding).background(
-            color = Palette.White100
-        )) {
-            when (access) {
-                MediaAccess.PARTIAL -> {
-                    AllowAllBanner(onOpenSettings)
-                    PartialBanner(onOpenPicker)
-                }
-                else -> {}
-            }
+        }
+    }
+}
 
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(3),
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(2.dp),
+@Composable
+private fun PickPhotoBanner() {
+    val tint = Palette.TealBanner
+    Surface(
+        color = tint.copy(alpha = 0.12f),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .size(15.dp),
+                contentAlignment = Alignment.Center
             ) {
-                items(
-                    count = pagingItems.itemCount,
-                    key = { index -> pagingItems[index]?.id ?: index },
-                ) { index ->
-                    val image = pagingItems[index]
-                    if (image != null) {
-                        PhotoCell(
-                            image = image,
-                            isSelected = image.id in selected,
-                            onClick = { onToggle(image.id) },
-                        )
-                    } else {
-                        Box(
-                            Modifier
-                                .aspectRatio(1f)
-                                .padding(1.dp)
-                                .background(MaterialTheme.colorScheme.surfaceVariant),
-                        )
-                    }
-                }
+                Icon(
+                    imageVector = Icons.Default.AutoAwesome,
+                    contentDescription = null,
+                    tint= tint
+                )
             }
+            Spacer(modifier = Modifier.width(7.dp))
+            Text(
+                stringResource(R.string.course_found_app),
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.weight(1f),
+                color = tint
+            )
         }
     }
 }
@@ -360,16 +381,28 @@ private fun PhotoCell(
     }
 }
 
-private fun Modifier.clickableNoRipple(onClick: () -> Unit): Modifier =
-    this.then(
-        Modifier.clickable(
-            interactionSource = mutableStateOf(
-                androidx.compose.foundation.interaction.MutableInteractionSource()
-            ).value,
-            indication = null,
-            onClick = onClick,
-        )
+@Composable
+fun SelectBottomBar(selectedSize: Int, onConfirm: () -> Unit) {
+    Surface(tonalElevation = 2.dp) {
+        Button(
+            onClick = onConfirm,
+            enabled = selectedSize > 0,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+        ) {
+            Text(stringResource(R.string.selected_count, selectedSize))
+        }
+    }
+}
+
+private fun Modifier.clickableNoRipple(onClick: () -> Unit): Modifier = this.then(
+    Modifier.clickable(
+        interactionSource = mutableStateOf(MutableInteractionSource()).value,
+        indication = null,
+        onClick = onClick,
     )
+)
 
 @Composable
 private fun fakePagingItems(count: Int): LazyPagingItems<PickerImage> {
@@ -389,7 +422,6 @@ private fun GalleryViewFullPreview() {
             onToggle = {},
             onOpenPicker = {},
             onOpenSettings = {},
-            onConfirm = {},
         )
     }
 }
@@ -405,7 +437,14 @@ private fun GalleryViewPartialPreview() {
             onToggle = {},
             onOpenPicker = {},
             onOpenSettings = {},
-            onConfirm = {},
         )
+    }
+}
+
+@Preview(showBackground = true, name = "DENIED")
+@Composable
+private fun DeniedViewPreview() {
+    WhereTogoTheme {
+        DeniedView(onRequestPermission = {})
     }
 }

@@ -83,7 +83,6 @@ class GalleryFlowViewModel @Inject constructor(
 
     init {
         observeGalleryPhotos()
-        handleIntent(GalleryIntent.Refresh)
     }
 
     private fun observeGalleryPhotos() {
@@ -200,6 +199,7 @@ class GalleryFlowViewModel @Inject constructor(
     }
 
     private fun initialize(openPicker: Boolean) {
+        handleIntent(GalleryIntent.Refresh)
         if(_pickerVisible.value == null && openPicker)
             _pickerVisible.value = true
     }

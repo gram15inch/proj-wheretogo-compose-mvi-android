@@ -81,6 +81,7 @@ import com.wheretogo.presentation.intent.GalleryIntent
 import com.wheretogo.presentation.model.PhotoSection
 import com.wheretogo.presentation.state.GalleryState
 import com.wheretogo.presentation.viewmodel.GalleryFlowViewModel
+import kotlinx.coroutines.delay
 
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -99,17 +100,8 @@ fun GalleryScreen(
 
 
     LaunchedEffect(Unit) {
+        delay(200)
         viewModel.handleIntent(GalleryIntent.Initialize(openPicker))
-    }
-
-    if (showPicker==true) {
-        MediaPicker(
-            onPicked = { picked ->
-                viewModel.handleIntent(GalleryIntent.MediaPicked(picked))
-            },
-            onNavigateBack = { viewModel.handleIntent(GalleryIntent.DismissPicker) },
-        )
-        return
     }
 
     val state = uiState
@@ -128,9 +120,11 @@ fun GalleryScreen(
             }
         },
     ) { padding ->
-        Box(Modifier
-            .fillMaxSize()
-            .padding(padding)) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
             Column(Modifier.fillMaxSize()) {
 
                 if (state is GalleryState.Success) {
@@ -154,18 +148,22 @@ fun GalleryScreen(
                     when (state) {
                         is GalleryState.Loading ->
                             LoadingMessageScreen()
+
                         is GalleryState.Error ->
-                            Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(state.message)
-                                TextButton(
-                                    onClick = { viewModel.handleIntent(GalleryIntent.Refresh) }
-                                ) { Text(stringResource(R.string.retry)) }
-                            }
-                        is GalleryState.Empty -> EmptyGalleryScreen(
-                            onFindInGalleryClick = {
-                                viewModel.handleIntent(GalleryIntent.PhotoAddClick)
-                            }
-                        )
+                            GalleryErrorScreen(
+                                message = state.message,
+                                onRetryButtonClick = {
+                                    viewModel.handleIntent(GalleryIntent.Refresh)
+                                }
+                            )
+
+                        is GalleryState.Empty ->
+                            EmptyGalleryScreen(
+                                onFindInGalleryClick = {
+                                    viewModel.handleIntent(GalleryIntent.PhotoAddClick)
+                                }
+                            )
+
                         is GalleryState.Success ->
                             PhotoGrid(
                                 sections = state.sections,
@@ -202,6 +200,19 @@ fun GalleryScreen(
                 )
             }
         }
+    }
+
+    AnimatedVisibility(
+        visible = showPicker == true,
+        enter = slideInVertically { it } + fadeIn(),
+        exit = slideOutVertically { it } + fadeOut(),
+    ) {
+        MediaPicker(
+            onPicked = { picked ->
+                viewModel.handleIntent(GalleryIntent.MediaPicked(picked))
+            },
+            onNavigateBack = { viewModel.handleIntent(GalleryIntent.DismissPicker) },
+        )
     }
 
     if (showGroupingSheet) {
