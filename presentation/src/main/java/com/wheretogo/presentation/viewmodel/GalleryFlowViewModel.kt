@@ -66,6 +66,9 @@ class GalleryFlowViewModel @Inject constructor(
     private var _cachedPhotos: List<GalleryPhoto> = emptyList()
     private val _detailPhotoId = MutableStateFlow<Long?>(null)
 
+    private val _pickerVisible = MutableStateFlow<Boolean?>(null)
+    val pickerVisible : StateFlow<Boolean?> = _pickerVisible
+
     val groupPhoto: StateFlow<GroupPhoto?> = _detailPhotoId
         .map { id ->
             val select = id?.let { selectedId -> _cachedPhotos.firstOrNull { it.id == selectedId } } ?: return@map null
@@ -101,10 +104,13 @@ class GalleryFlowViewModel @Inject constructor(
     fun handleIntent(intent: GalleryIntent) {
         viewModelScope.launch(dispatcher) {
             when (intent) {
+                is GalleryIntent.Initialize -> initialize(intent.openPicker)
+
                 is GalleryIntent.Refresh -> refreshGallery()
                 is GalleryIntent.MediaPicked -> onMediaPicked(intent.images)
 
                 is GalleryIntent.ChangeGrouping -> changeGrouping(intent.strategy)
+                is GalleryIntent.PhotoAddClick -> handelPickerVisible(true)
                 is GalleryIntent.PhotoClick -> onPhotoClick(intent.pickerId)
                 is GalleryIntent.PhotoLongClick -> onPhotoLongClick(intent.pickerId)
                 is GalleryIntent.ClearSelection -> clearSelection()
@@ -113,6 +119,8 @@ class GalleryFlowViewModel @Inject constructor(
 
                 is GalleryIntent.OpenDetail -> openDetail(intent.id)
                 is GalleryIntent.CloseDetail -> closeDetail()
+
+                is GalleryIntent.DismissPicker -> handelPickerVisible(false)
             }
         }
     }
@@ -122,6 +130,7 @@ class GalleryFlowViewModel @Inject constructor(
     }
 
     private suspend fun onMediaPicked(images: List<PickerImage>) {
+        _pickerVisible.value = false
         if (images.isEmpty()) return
         _galleyState.value = GalleryState.Loading
         val mediaImages = images.map { it.toMarkerImage() }
@@ -184,6 +193,15 @@ class GalleryFlowViewModel @Inject constructor(
                     handleError(e, GalleryFlowMsgEvent.PHOTO_DELETE_FAIL)
                 }
         }
+    }
+
+    private fun handelPickerVisible(isShow: Boolean) {
+        _pickerVisible.value = isShow
+    }
+
+    private fun initialize(openPicker: Boolean) {
+        if(_pickerVisible.value == null && openPicker)
+            _pickerVisible.value = true
     }
 
     // 상세화면

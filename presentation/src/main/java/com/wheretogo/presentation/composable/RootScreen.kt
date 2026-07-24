@@ -24,22 +24,24 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.wheretogo.presentation.AppEvent
 import com.wheretogo.presentation.AppPermission
 import com.wheretogo.presentation.AppScreen
+import com.wheretogo.presentation.composable.checkin.CheckinScreen
 import com.wheretogo.presentation.composable.content.AnimationDirection
 import com.wheretogo.presentation.composable.content.SlideAnimation
 import com.wheretogo.presentation.composable.effect.AppEventReceiveEffect
 import com.wheretogo.presentation.composable.effect.AppEventSendEffect
+import com.wheretogo.presentation.composable.gallery.GalleryFlow
 import com.wheretogo.presentation.feature.EventBus
 import com.wheretogo.presentation.feature.checkFalseOrData
 import com.wheretogo.presentation.feature.openUri
 import com.wheretogo.presentation.feature.show
-import com.wheretogo.presentation.composable.gallery.GalleryFlow
-import com.wheretogo.presentation.composable.checkin.CheckinScreen
 import com.wheretogo.presentation.theme.Palette
 import com.wheretogo.presentation.theme.WhereTogoTheme
 import com.wheretogo.presentation.viewmodel.RootViewModel
@@ -141,7 +143,6 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                 val home = AppScreen.Home.toString()
                 val drive = AppScreen.Drive.toString()
                 val courseAdd = AppScreen.CourseAdd.toString()
-                val gallery = AppScreen.Gallery.toString()
                 val checkin = AppScreen.Checkin.toString()
                 val setting = AppScreen.Setting.toString()
 
@@ -162,11 +163,17 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                          CourseAddScreen()
                      }
                     composable(
-                        gallery,
+                        AppScreen.Gallery.route,
+                        arguments = listOf(navArgument(AppScreen.Gallery.openPicker){
+                            type = NavType.BoolType
+                            defaultValue = false
+                        }),
                         enterTransition = { slideInHorizontally(initialOffsetX = { it }) },
                         popExitTransition = { slideOutHorizontally(targetOffsetX = { it }) },
-                    ) {
-                        GalleryFlow()
+                    ) { entry ->
+                        GalleryFlow(
+                            openPicker = entry.arguments?.getBoolean(AppScreen.Gallery.openPicker) ?: false
+                        )
                     }
                     composable(checkin,
                         enterTransition = { slideInHorizontally(initialOffsetX = { it }) },
