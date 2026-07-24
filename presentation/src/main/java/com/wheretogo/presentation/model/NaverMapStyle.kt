@@ -8,7 +8,7 @@ data class NaverMapStyle(
     val mapType: NaverMap.MapType = NaverMap.MapType.Basic,
 
     // 줌
-    val maxZoom: Double = ZOOM.Place.level,
+    val maxZoom: Double = 18.0,
     val minZoom: Double = ZOOM.COUNTRY.level,
 
     // 레이어 그룹 on/off
