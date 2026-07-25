@@ -88,15 +88,6 @@ android {
     }
 }
 
-kotlin {
-    jvmToolchain(17)
-}
-
-tasks.withType<Test>().configureEach {
-    javaLauncher.set(
-        javaToolchains.launcherFor { languageVersion.set(JavaLanguageVersion.of(17)) }
-    )
-}
 dependencies {
     implementation(project(mapOf("path" to ":presentation")))
     implementation(project(mapOf("path" to ":data")))
