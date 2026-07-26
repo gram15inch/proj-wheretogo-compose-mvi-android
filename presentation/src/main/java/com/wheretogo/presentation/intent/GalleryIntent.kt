@@ -1,7 +1,7 @@
 package com.wheretogo.presentation.intent
 
 import com.wheretogo.presentation.feature.GroupingStrategy
-import com.wheretogo.presentation.model.PickerImage
+import com.dhkim139.feature.mediapicker.model.PickerImage
 
 sealed interface GalleryIntent {
     data class Initialize(val openPicker: Boolean) : GalleryIntent

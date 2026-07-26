@@ -14,7 +14,7 @@ import com.wheretogo.presentation.feature.ByDayGrouping
 import com.wheretogo.presentation.feature.GroupingStrategy
 import com.wheretogo.presentation.feature.toSections
 import com.wheretogo.presentation.intent.GalleryIntent
-import com.wheretogo.presentation.model.PickerImage
+import com.dhkim139.feature.mediapicker.model.PickerImage
 import com.wheretogo.presentation.state.GalleryState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher

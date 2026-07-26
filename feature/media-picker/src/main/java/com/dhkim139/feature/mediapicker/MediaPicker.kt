@@ -1,5 +1,6 @@
-package com.wheretogo.presentation.composable
+package com.dhkim139.feature.mediapicker
 
+import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -53,22 +54,21 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
+import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.wheretogo.presentation.AppPermission
-import com.wheretogo.presentation.R
-import com.wheretogo.presentation.composable.effect.LifecycleDisposer
-import com.wheretogo.presentation.feature.MediaAccess
-import com.wheretogo.presentation.feature.checkFalseOrData
-import com.wheretogo.presentation.feature.openSetting
-import com.wheretogo.presentation.feature.requestPermission
-import com.wheretogo.presentation.model.PickerImage
-import com.wheretogo.presentation.theme.Palette
-import com.wheretogo.presentation.theme.WhereTogoTheme
-import com.wheretogo.presentation.viewmodel.MediaPickerUiEvent
-import com.wheretogo.presentation.viewmodel.MediaPickerViewModel
+import com.dhkim139.core.ui.permission.AppPermission
+import com.dhkim139.core.ui.screen.LifecycleDisposer
+import com.dhkim139.core.ui.permission.checkFalseOrData
+import com.dhkim139.core.ui.model.MediaAccess
+import com.dhkim139.core.ui.permission.openSetting
+import com.dhkim139.core.ui.permission.requestPermission
+import com.dhkim139.core.ui.theme.Palette
+import com.dhkim139.core.ui.theme.WhereTogoTheme
+import com.dhkim139.feature.mediapicker.model.PickerImage
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -146,7 +146,7 @@ fun MediaPicker(
                 onNavigateBack()
             })
     }) { padding ->
-        Box(Modifier.padding(padding)) {
+        Box(Modifier.Companion.padding(padding)) {
             when (state.access) {
                 null -> DeniedView(
                     onRequestPermission = {
@@ -179,17 +179,17 @@ private fun DeniedView(onRequestPermission: () -> Unit) {
         onRequestPermission()
     }
     Column(
-        modifier = Modifier
+        modifier = Modifier.Companion
             .fillMaxSize()
             .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+        horizontalAlignment = Alignment.Companion.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
         Text(
             stringResource(R.string.need_photo_permission),
             style = MaterialTheme.typography.bodyLarge,
         )
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.Companion.height(16.dp))
         Button(onClick = onRequestPermission) { Text(stringResource(R.string.need_permission)) }
     }
 }
@@ -211,7 +211,7 @@ private fun GalleryView(
         }
         LazyVerticalGrid(
             columns = GridCells.Fixed(3),
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.Companion.weight(1f),
             contentPadding = PaddingValues(2.dp),
         ) {
             items(
@@ -227,7 +227,7 @@ private fun GalleryView(
                     )
                 } else {
                     Box(
-                        Modifier
+                        Modifier.Companion
                             .aspectRatio(1f)
                             .padding(1.dp)
                             .background(MaterialTheme.colorScheme.surfaceVariant),
@@ -240,32 +240,33 @@ private fun GalleryView(
 
 @Composable
 private fun PickPhotoBanner() {
-    val tint = Palette.TealBanner
+    val tint =
+        Palette.TealBanner
     Surface(
         color = tint.copy(alpha = 0.12f),
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.Companion.fillMaxWidth(),
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp)
+            verticalAlignment = Alignment.Companion.CenterVertically,
+            modifier = Modifier.Companion.padding(horizontal = 10.dp, vertical = 8.dp)
         ) {
             Box(
-                modifier = Modifier
+                modifier = Modifier.Companion
                     .clip(RoundedCornerShape(20.dp))
                     .size(15.dp),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Companion.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.AutoAwesome,
                     contentDescription = null,
-                    tint= tint
+                    tint = tint
                 )
             }
-            Spacer(modifier = Modifier.width(7.dp))
+            Spacer(modifier = Modifier.Companion.width(7.dp))
             Text(
                 stringResource(R.string.course_found_app),
                 style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.Companion.weight(1f),
                 color = tint
             )
         }
@@ -276,24 +277,24 @@ private fun PickPhotoBanner() {
 private fun AllowAllBanner(onOpenSettings: () -> Unit) {
     Surface(
         color = Palette.Gray50,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.Companion.fillMaxWidth(),
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 14.dp),
-            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.Companion.padding(horizontal = 14.dp),
+            verticalAlignment = Alignment.Companion.CenterVertically,
         ) {
             Text(
                 stringResource(R.string.need_all_photo_permission),
                 style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.Companion.weight(1f),
             )
             Box(
-                modifier = Modifier
+                modifier = Modifier.Companion
                     .defaultMinSize(minWidth = 58.dp, minHeight = 36.dp)
-                    .clip(RoundedCornerShape(20.dp))
+                    .clip(androidx.compose.foundation.shape.RoundedCornerShape(20.dp))
                     .clickable { onOpenSettings() }
                     .padding(ButtonDefaults.TextButtonContentPadding),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Companion.Center
             ) {
                 Text(
                     text = stringResource(R.string.button_setting),
@@ -309,15 +310,15 @@ private fun AllowAllBanner(onOpenSettings: () -> Unit) {
 private fun PartialBanner(onRequestMore: () -> Unit) {
     Surface(
         color = MaterialTheme.colorScheme.secondaryContainer,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.Companion.fillMaxWidth(),
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.Companion.padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.Companion.CenterVertically,
         ) {
             Icon(Icons.Default.Info, contentDescription = null)
-            Spacer(Modifier.width(8.dp))
-            Column(Modifier.weight(1f)) {
+            Spacer(Modifier.Companion.width(8.dp))
+            Column(Modifier.Companion.weight(1f)) {
                 Text(
                     stringResource(R.string.show_photo_select),
                     style = MaterialTheme.typography.labelLarge,
@@ -340,10 +341,10 @@ private fun PhotoCell(
 ) {
     val context = LocalContext.current
     Box(
-        modifier = Modifier
+        modifier = Modifier.Companion
             .aspectRatio(1f)
             .padding(1.dp)
-            .clip(RoundedCornerShape(0.dp)),
+            .clip(androidx.compose.foundation.shape.RoundedCornerShape(0.dp)),
     ) {
         AsyncImage(
             model = ImageRequest.Builder(context)
@@ -351,22 +352,22 @@ private fun PhotoCell(
                 .crossfade(true)
                 .build(),
             contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
+            contentScale = ContentScale.Companion.Crop,
+            modifier = Modifier.Companion
                 .fillMaxSize()
                 .clickableNoRipple(onClick),
         )
         if (isSelected) {
             Box(
-                Modifier
+                Modifier.Companion
                     .fillMaxSize()
                     .background(Palette.Black.copy(alpha = 0.25f)),
             )
             Surface(
-                shape = RoundedCornerShape(50),
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(50),
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
+                modifier = Modifier.Companion
+                    .align(Alignment.Companion.TopEnd)
                     .padding(5.dp)
                     .size(20.dp),
             ) {
@@ -374,7 +375,7 @@ private fun PhotoCell(
                     Icons.Default.Check,
                     contentDescription = stringResource(R.string.button_selected),
                     tint = Palette.White,
-                    modifier = Modifier.padding(2.dp),
+                    modifier = Modifier.Companion.padding(2.dp),
                 )
             }
         }
@@ -387,7 +388,7 @@ fun SelectBottomBar(selectedSize: Int, onConfirm: () -> Unit) {
         Button(
             onClick = onConfirm,
             enabled = selectedSize > 0,
-            modifier = Modifier
+            modifier = Modifier.Companion
                 .fillMaxWidth()
                 .padding(16.dp),
         ) {
@@ -397,7 +398,7 @@ fun SelectBottomBar(selectedSize: Int, onConfirm: () -> Unit) {
 }
 
 private fun Modifier.clickableNoRipple(onClick: () -> Unit): Modifier = this.then(
-    Modifier.clickable(
+    Modifier.Companion.clickable(
         interactionSource = mutableStateOf(MutableInteractionSource()).value,
         indication = null,
         onClick = onClick,
@@ -406,8 +407,8 @@ private fun Modifier.clickableNoRipple(onClick: () -> Unit): Modifier = this.the
 
 @Composable
 private fun fakePagingItems(count: Int): LazyPagingItems<PickerImage> {
-    val items = (0 until count).map { PickerImage(id = it.toLong(), uri = android.net.Uri.EMPTY) }
-    return kotlinx.coroutines.flow.flowOf(androidx.paging.PagingData.from(items))
+    val items = (0 until count).map { PickerImage(id = it.toLong(), uri = Uri.EMPTY) }
+    return flowOf(PagingData.from(items))
         .collectAsLazyPagingItems()
 }
 

@@ -1,4 +1,4 @@
-package com.wheretogo.presentation.viewmodel
+package com.dhkim139.feature.mediapicker
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,11 +8,11 @@ import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.paging.cachedIn
+import com.dhkim139.core.ui.model.AppLifecycle
+import com.dhkim139.core.ui.model.MediaAccess
+import com.dhkim139.feature.mediapicker.model.PickerImage
+import com.dhkim139.feature.mediapicker.model.PickerImage.Companion.toPickerImage
 import com.wheretogo.domain.usecase.util.GetImagesPageUseCase
-import com.wheretogo.presentation.AppLifecycle
-import com.wheretogo.presentation.feature.MediaAccess
-import com.wheretogo.presentation.model.PickerImage
-import com.wheretogo.presentation.model.PickerImage.Companion.toPickerImage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow

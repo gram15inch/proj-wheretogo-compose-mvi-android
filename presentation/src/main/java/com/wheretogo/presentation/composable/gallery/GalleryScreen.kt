@@ -75,7 +75,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.wheretogo.domain.model.gallery.GalleryPhoto
 import com.wheretogo.presentation.R
-import com.wheretogo.presentation.composable.MediaPicker
+import com.dhkim139.feature.mediapicker.MediaPicker
 import com.wheretogo.presentation.feature.GroupingStrategy
 import com.wheretogo.presentation.intent.GalleryIntent
 import com.wheretogo.presentation.model.PhotoSection
