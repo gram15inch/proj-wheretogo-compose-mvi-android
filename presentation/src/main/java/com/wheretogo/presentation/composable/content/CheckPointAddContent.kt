@@ -45,10 +45,10 @@ import com.wheretogo.presentation.feature.formatFileSizeToMB
 import com.wheretogo.presentation.state.BottomSheetState
 import com.wheretogo.presentation.state.CheckPointAddState
 import com.wheretogo.presentation.state.InfoState
-import com.wheretogo.presentation.theme.Palette
-import com.wheretogo.presentation.theme.WhereTogoTheme
-import com.wheretogo.presentation.theme.interBoldFontFamily
-import com.wheretogo.presentation.theme.interFontFamily
+import com.dhkim139.core.ui.theme.Palette
+import com.dhkim139.core.ui.theme.WhereTogoTheme
+import com.dhkim139.core.ui.theme.interBoldFontFamily
+import com.dhkim139.core.ui.theme.interFontFamily
 
 @Composable
 fun CheckPointAddContent(

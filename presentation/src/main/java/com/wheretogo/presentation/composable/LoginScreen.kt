@@ -33,13 +33,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.dhkim139.core.ui.screen.consumptionEvent
+import com.dhkim139.core.ui.theme.Palette
+import com.dhkim139.core.ui.theme.interFontFamily
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.content.DelayLottieAnimation
-import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.feature.googleAuthOnDevice
 import com.wheretogo.presentation.state.LoginScreenState
-import com.wheretogo.presentation.theme.Palette
-import com.wheretogo.presentation.theme.interFontFamily
 import com.wheretogo.presentation.viewmodel.LoginViewModel
 import kotlinx.coroutines.launch
 

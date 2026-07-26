@@ -68,9 +68,9 @@ import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.NaverMapStyle
 import com.wheretogo.presentation.state.NaverMapState
 import com.wheretogo.presentation.state.StampProgress
-import com.wheretogo.presentation.theme.Palette
-import com.wheretogo.presentation.theme.WhereTogoTheme
-import com.wheretogo.presentation.theme.interFontFamily
+import com.dhkim139.core.ui.theme.Palette
+import com.dhkim139.core.ui.theme.WhereTogoTheme
+import com.dhkim139.core.ui.theme.interFontFamily
 import com.wheretogo.presentation.viewmodel.MapEvent
 import kotlinx.coroutines.flow.SharedFlow
 import java.text.SimpleDateFormat

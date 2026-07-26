@@ -9,7 +9,7 @@ import com.wheretogo.domain.model.home.RecentCard
 import com.wheretogo.domain.usecase.app.DriveTutorialUseCase
 import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
 import com.wheretogo.domain.usecase.home.GetRecentCardUseCase
-import com.wheretogo.presentation.AppLifecycle
+import com.dhkim139.core.ui.model.AppLifecycle
 import com.wheretogo.presentation.HomeBodyBtn
 import com.wheretogo.presentation.HomeBodyBtnHighlight
 import com.wheretogo.presentation.MainDispatcher

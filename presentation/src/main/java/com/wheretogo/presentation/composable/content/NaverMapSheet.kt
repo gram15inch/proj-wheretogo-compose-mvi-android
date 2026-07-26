@@ -47,7 +47,7 @@ import com.wheretogo.presentation.model.ContentPadding
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.NaverMapStyle
 import com.wheretogo.presentation.state.NaverMapState
-import com.wheretogo.presentation.theme.Palette
+import com.dhkim139.core.ui.theme.Palette
 import com.wheretogo.presentation.toCameraState
 import com.wheretogo.presentation.toDomainLatLng
 import com.wheretogo.presentation.toNaver

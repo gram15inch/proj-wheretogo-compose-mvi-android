@@ -24,7 +24,6 @@ import com.wheretogo.domain.WarningReason
 import com.wheretogo.domain.ZOOM
 import com.wheretogo.domain.model.map.CameraState
 import com.wheretogo.domain.model.util.Viewport
-import com.wheretogo.presentation.model.EventMsg
 import timber.log.Timber
 import javax.inject.Qualifier
 
@@ -86,61 +85,12 @@ sealed class AppError : Exception() {
     data class UnexpectedException(val msg: String) : AppError()
 }
 
-sealed class AppEvent {
-    data class Navigation(val from: AppScreen?, val to: AppScreen, val inclusive: Boolean = true) : AppEvent()
-    data class SnackBar(val msg: EventMsg) : AppEvent()
-    data class Permission(val permission: AppPermission) : AppEvent()
-    data object SignInScreen : AppEvent()
-}
-
-sealed class AppScreen {
-    data object Home : AppScreen()
-    data object Drive : AppScreen()
-    data object CourseAdd : AppScreen()
-    data object Gallery : AppScreen() {
-        val route = "${Gallery}?openPicker={openPicker}"
-        const val openPicker = "openPicker"
-        fun args(openPicker: Boolean) = "${Gallery}?openPicker=$openPicker"
-    }
-    data object Checkin : AppScreen()
-    data object Setting : AppScreen()
-}
-
 enum class AdMinSize(val widthDp: Int, val heightDp: Int) {
     INVISIBLE(0, 0),
     Row(600, 320),
     Card(300, 600)
 }
 
-
-sealed class AppPermission(val names: List<String>) {
-    data object LOCATION : AppPermission(listOf(ACCESS_FINE_LOCATION))
-    data object MEDIA : AppPermission(
-        buildList {
-            val api = Build.VERSION.SDK_INT
-            if (api >= 34) add(READ_MEDIA_VISUAL_USER_SELECTED)
-            if (api >= 33) add(READ_MEDIA_IMAGES)
-            if (api >= 29) add(ACCESS_MEDIA_LOCATION)
-            if (api >= 16 && api < 33) add(READ_EXTERNAL_STORAGE)
-        }
-    )
-
-    data object UNKNOWN : AppPermission(listOf("UNKNOWN"))
-
-    fun isEqual(other: Set<String>): Boolean {
-        return names.toSet().hashCode() == other.toSet().hashCode()
-    }
-
-    companion object {
-        fun valueOf(names: Set<String>): AppPermission {
-            return when {
-                LOCATION.isEqual(names) -> LOCATION
-                MEDIA.isEqual(names) -> MEDIA
-                else -> UNKNOWN
-            }
-        }
-    }
-}
 
 enum class ExportMap {
     NAVER, KAKAO, SKT
@@ -165,10 +115,6 @@ enum class DriveBottomSheetContent(val minHeight: Int) {
     COURSE_INFO(0),
     CHECKPOINT_INFO(0),
     PREVIEW(400)
-}
-
-enum class AppLifecycle {
-    onLaunch, onResume, onPause, onDispose, onDestory
 }
 
 enum class DriveVisibleMode {

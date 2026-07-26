@@ -8,8 +8,8 @@ import com.google.android.gms.location.LocationServices
 import com.naver.maps.map.LocationSource
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.util.FusedLocationSource
-import com.wheretogo.presentation.AppPermission
-import com.wheretogo.presentation.feature.requestPermission
+import com.dhkim139.core.ui.permission.AppPermission
+import com.dhkim139.core.ui.permission.requestPermission
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

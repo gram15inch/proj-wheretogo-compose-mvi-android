@@ -1,5 +1,8 @@
 package com.dhkim139.wheretogo.viewmodel.drive
 
+import com.dhkim139.core.ui.event.AppEvent
+import com.dhkim139.core.ui.event.EventResult
+import com.dhkim139.core.ui.model.AppLifecycle
 import com.dhkim139.wheretogo.feature.MainDispatcherRule
 import com.dhkim139.wheretogo.feature.assertFlows
 import com.google.common.truth.Truth.assertThat
@@ -8,11 +11,8 @@ import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.model.app.Settings
 import com.wheretogo.domain.usecase.app.DriveTutorialUseCase
 import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
-import com.wheretogo.presentation.AppEvent
-import com.wheretogo.presentation.AppLifecycle
 import com.wheretogo.presentation.DriveVisibleMode
 import com.wheretogo.presentation.event.DriveEvent
-import com.wheretogo.presentation.feature.EventResult
 import com.wheretogo.presentation.feature.ads.AdService
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.model.AdItem

@@ -42,23 +42,23 @@ import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
-import com.wheretogo.presentation.AppScreen
+import com.dhkim139.core.ui.screen.AppScreen
+import com.dhkim139.core.ui.screen.LifecycleDisposer
+import com.dhkim139.core.ui.screen.consumptionEvent
+import com.dhkim139.core.ui.theme.Palette
+import com.dhkim139.core.ui.theme.WhereTogoTheme
+import com.dhkim139.core.ui.theme.hancomMalangFontFamily
+import com.dhkim139.core.ui.theme.hancomSansFontFamily
+import com.dhkim139.core.ui.theme.meslolgsFontFamily
 import com.wheretogo.presentation.BANNER_URL
 import com.wheretogo.presentation.HomeBodyBtn
 import com.wheretogo.presentation.HomeBodyBtnHighlight
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.animation.highlightRoundedCorner
 import com.wheretogo.presentation.composable.content.PolaroidRecentCard
-import com.wheretogo.presentation.model.home.RecentCardUiState
-import com.wheretogo.presentation.composable.effect.LifecycleDisposer
-import com.wheretogo.presentation.feature.consumptionEvent
 import com.wheretogo.presentation.feature.openWeb
 import com.wheretogo.presentation.intent.HomeIntent
-import com.wheretogo.presentation.theme.Palette
-import com.wheretogo.presentation.theme.WhereTogoTheme
-import com.wheretogo.presentation.theme.hancomMalangFontFamily
-import com.wheretogo.presentation.theme.hancomSansFontFamily
-import com.wheretogo.presentation.theme.meslolgsFontFamily
+import com.wheretogo.presentation.model.home.RecentCardUiState
 import com.wheretogo.presentation.viewmodel.HomeViewModel
 
 @Composable

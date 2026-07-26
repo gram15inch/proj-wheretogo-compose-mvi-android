@@ -1,8 +1,8 @@
 package com.wheretogo.presentation.intent
 
-import com.wheretogo.presentation.AppLifecycle
+import com.dhkim139.core.ui.model.AppLifecycle
 import com.wheretogo.presentation.SettingInfoType
-import com.wheretogo.presentation.feature.EventResult
+import com.dhkim139.core.ui.event.EventResult
 
 sealed class SettingIntent {
     data object EmptyProfileClick : SettingIntent()

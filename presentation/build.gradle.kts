@@ -17,6 +17,8 @@ android {
 
 dependencies {
     implementation(project(mapOf("path" to ":domain")))
+    implementation(project(mapOf("path" to ":core:ui")))
+    androidTestImplementation(project(mapOf("path" to ":core:ui")))
 
     // AndroidX
     implementation(libs.androidx.core.ktx)

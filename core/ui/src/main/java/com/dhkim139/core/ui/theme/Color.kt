@@ -1,4 +1,4 @@
-package com.wheretogo.presentation.theme
+package com.dhkim139.core.ui.theme
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color

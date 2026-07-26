@@ -11,8 +11,8 @@ import com.wheretogo.domain.usecase.app.ObserveMsgUseCase
 import com.wheretogo.domain.usecase.user.UserCheckUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
 import com.wheretogo.domain.usecase.util.ClearExpireCacheUseCase
-import com.wheretogo.presentation.AppEvent
-import com.wheretogo.presentation.feature.EventResult
+import com.dhkim139.core.ui.event.AppEvent
+import com.dhkim139.core.ui.event.EventResult
 import com.wheretogo.presentation.state.RootScreenState
 import com.wheretogo.presentation.toAppError
 import dagger.hilt.android.lifecycle.HiltViewModel

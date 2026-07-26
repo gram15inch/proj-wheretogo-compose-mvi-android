@@ -42,8 +42,8 @@ import com.wheretogo.domain.model.report.ReportReason
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.toDisplayName
 import com.wheretogo.presentation.state.InfoState
-import com.wheretogo.presentation.theme.Palette
-import com.wheretogo.presentation.theme.hancomSansFontFamily
+import com.dhkim139.core.ui.theme.Palette
+import com.dhkim139.core.ui.theme.hancomSansFontFamily
 
 
 @Composable

@@ -2,7 +2,7 @@ package com.wheretogo.presentation.intent
 
 import com.wheretogo.domain.model.gallery.GalleryPhoto
 import com.wheretogo.domain.model.map.CameraState
-import com.wheretogo.presentation.AppLifecycle
+import com.dhkim139.core.ui.model.AppLifecycle
 
 sealed class PhotoViewerIntent {
 

@@ -55,7 +55,7 @@ import com.naver.maps.map.MapView
 import com.wheretogo.domain.model.gallery.GalleryPhoto
 import com.wheretogo.domain.model.gallery.PhotoExif
 import com.wheretogo.presentation.composable.content.PageIndicator
-import com.wheretogo.presentation.composable.effect.LifecycleDisposer
+import com.dhkim139.core.ui.screen.LifecycleDisposer
 import com.wheretogo.presentation.intent.PhotoViewerIntent
 import com.wheretogo.presentation.viewmodel.PhotoViewerViewModel
 

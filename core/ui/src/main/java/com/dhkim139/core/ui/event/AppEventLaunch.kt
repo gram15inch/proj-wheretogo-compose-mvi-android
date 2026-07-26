@@ -1,10 +1,7 @@
-package com.wheretogo.presentation.composable.effect
+package com.dhkim139.core.ui.event
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import com.wheretogo.presentation.AppEvent
-import com.wheretogo.presentation.feature.EventBus
-import com.wheretogo.presentation.feature.EventResult
 
 @Composable
 fun AppEventSendEffect(onSend: (AppEvent)-> Unit){

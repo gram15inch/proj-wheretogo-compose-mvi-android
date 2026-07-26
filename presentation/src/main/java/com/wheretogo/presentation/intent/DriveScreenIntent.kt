@@ -3,12 +3,11 @@ package com.wheretogo.presentation.intent
 import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.report.ReportReason
-import com.wheretogo.domain.model.util.ImageInfo
-import com.wheretogo.presentation.AppLifecycle
+import com.dhkim139.core.ui.model.AppLifecycle
 import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.SheetVisibleMode
 import com.wheretogo.domain.model.course.CourseDirectionItem
-import com.wheretogo.presentation.feature.EventResult
+import com.dhkim139.core.ui.event.EventResult
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.model.TypeEditText
 import com.wheretogo.presentation.state.CommentState.CommentItemState

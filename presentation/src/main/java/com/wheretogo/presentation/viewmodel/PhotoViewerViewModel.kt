@@ -14,7 +14,7 @@ import com.wheretogo.domain.usecase.gallery.GetStampUseCase
 import com.wheretogo.domain.model.gallery.Stamp
 import com.wheretogo.domain.model.map.CameraState
 import com.wheretogo.domain.model.map.MoveAnimation
-import com.wheretogo.presentation.AppLifecycle
+import com.dhkim139.core.ui.model.AppLifecycle
 import com.wheretogo.presentation.MainDispatcher
 import com.wheretogo.presentation.composable.photoviewer.StampState
 import com.wheretogo.presentation.feature.map.MapOverlayService

@@ -1,11 +1,10 @@
-package com.wheretogo.presentation.feature
+package com.dhkim139.core.ui.event
 
 import android.content.Context
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
-import com.wheretogo.presentation.AppEvent
-import com.wheretogo.presentation.model.EventMsg
+import com.dhkim139.core.ui.model.EventMsg
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -38,11 +37,11 @@ object EventBus {
         return when(event){
             is AppEvent.Permission ->{
                  withTimeoutOrNull(10 * 1000L) {
-                    val result = receiveFlow
-                        .filter { it.event == event }
-                        .first()
-                    return@withTimeoutOrNull result.isSuccess
-                } ?: run {
+                     val result = receiveFlow
+                         .filter { it.event == event }
+                         .first()
+                     return@withTimeoutOrNull result.isSuccess
+                 } ?: run {
                      _receiveFlow.emit(EventResult(event,false))
                      false
                  }
@@ -68,17 +67,17 @@ suspend fun SnackbarHostState.show(
     withContext(Dispatchers.IO) {
         val message = eventMsg.getString(context)
         val actionLabel = eventMsg.labelRes?.run { context.getString(this) }
-        val duration =  when{
+        val duration = when {
             eventMsg.isLongShow -> SnackbarDuration.Long
             actionLabel == null -> SnackbarDuration.Short
             else -> SnackbarDuration.Indefinite
         }
-        val delay = if(eventMsg.isLongShow) 1000*10L else 1500L
+        val delay = if (eventMsg.isLongShow) 1000 * 10L else 1500L
         val job = launch {
             val result = showSnackbar(
                 message = message,
                 actionLabel = actionLabel,
-                duration =  duration
+                duration = duration
             )
             if (result == SnackbarResult.ActionPerformed && eventMsg.uri != null)
                 onActionPerformed(eventMsg.uri)

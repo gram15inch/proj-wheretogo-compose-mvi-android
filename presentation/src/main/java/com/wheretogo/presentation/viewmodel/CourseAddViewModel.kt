@@ -33,7 +33,7 @@ import com.wheretogo.domain.model.map.MarkerInfo
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.BottomSheetState
 import com.wheretogo.domain.model.map.CameraState
-import com.wheretogo.presentation.AppLifecycle
+import com.dhkim139.core.ui.model.AppLifecycle
 import com.wheretogo.presentation.model.CameraOption
 import com.wheretogo.presentation.state.CourseAddScreenState
 import com.wheretogo.presentation.state.NaverMapState

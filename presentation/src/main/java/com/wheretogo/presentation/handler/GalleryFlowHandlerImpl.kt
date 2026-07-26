@@ -3,10 +3,10 @@ package com.wheretogo.presentation.handler
 import com.wheretogo.domain.handler.ErrorHandler
 import com.wheretogo.domain.handler.GalleryFlowHandler
 import com.wheretogo.domain.handler.GalleryFlowMsgEvent
-import com.wheretogo.presentation.AppEvent
+import com.dhkim139.core.ui.event.AppEvent
 import com.wheretogo.presentation.R
-import com.wheretogo.presentation.feature.EventBus
-import com.wheretogo.presentation.model.EventMsg
+import com.dhkim139.core.ui.event.EventBus
+import com.dhkim139.core.ui.model.EventMsg
 
 class GalleryFlowHandlerImpl(val errorHandler: ErrorHandler) : GalleryFlowHandler {
     override suspend fun handle(e: Throwable, msgEvent: GalleryFlowMsgEvent?) {

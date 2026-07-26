@@ -66,17 +66,17 @@ import com.wheretogo.presentation.R
 import com.wheretogo.presentation.SheetVisibleMode
 import com.wheretogo.presentation.WIDE_WIDTH
 import com.wheretogo.presentation.defaultCommentEmogiGroup
-import com.wheretogo.presentation.feature.BlurEffect
-import com.wheretogo.presentation.feature.ImeStickyBox
-import com.wheretogo.presentation.feature.consumptionEvent
-import com.wheretogo.presentation.feature.topShadow
+import com.dhkim139.core.ui.screen.BlurEffect
+import com.dhkim139.core.ui.screen.ImeStickyBox
+import com.dhkim139.core.ui.screen.consumptionEvent
+import com.dhkim139.core.ui.screen.topShadow
 import com.wheretogo.presentation.model.TypeEditText
 import com.wheretogo.presentation.state.CommentState
 import com.wheretogo.presentation.state.CommentState.CommentAddState
 import com.wheretogo.presentation.state.CommentState.CommentItemState
 import com.wheretogo.presentation.state.PopUpState
-import com.wheretogo.presentation.theme.Palette
-import com.wheretogo.presentation.theme.hancomMalangFontFamily
+import com.dhkim139.core.ui.theme.Palette
+import com.dhkim139.core.ui.theme.hancomMalangFontFamily
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

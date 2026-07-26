@@ -36,9 +36,9 @@ import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.animation.highlightRoundedCorner
 import com.wheretogo.presentation.state.GuideState
-import com.wheretogo.presentation.theme.Palette
-import com.wheretogo.presentation.theme.hancomMalangFontFamily
-import com.wheretogo.presentation.theme.hancomSansFontFamily
+import com.dhkim139.core.ui.theme.Palette
+import com.dhkim139.core.ui.theme.hancomMalangFontFamily
+import com.dhkim139.core.ui.theme.hancomSansFontFamily
 import com.wheretogo.presentation.toStrRes
 
 @Composable

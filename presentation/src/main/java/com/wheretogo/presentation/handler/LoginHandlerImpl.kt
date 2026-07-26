@@ -4,10 +4,10 @@ import com.wheretogo.domain.handler.ErrorHandler
 import com.wheretogo.domain.handler.LoginEvent
 import com.wheretogo.domain.handler.LoginHandler
 import com.wheretogo.presentation.AppError
-import com.wheretogo.presentation.AppEvent
+import com.dhkim139.core.ui.event.AppEvent
 import com.wheretogo.presentation.R
-import com.wheretogo.presentation.feature.EventBus
-import com.wheretogo.presentation.model.EventMsg
+import com.dhkim139.core.ui.event.EventBus
+import com.dhkim139.core.ui.model.EventMsg
 import com.wheretogo.presentation.toAppError
 
 class LoginHandlerImpl(val errorHandler: ErrorHandler) : LoginHandler {

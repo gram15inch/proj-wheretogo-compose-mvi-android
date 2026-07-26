@@ -1,6 +1,6 @@
 package com.wheretogo.presentation.intent
 
-import com.wheretogo.presentation.AppLifecycle
+import com.dhkim139.core.ui.model.AppLifecycle
 import com.wheretogo.presentation.HomeBodyBtn
 
 sealed class HomeIntent {

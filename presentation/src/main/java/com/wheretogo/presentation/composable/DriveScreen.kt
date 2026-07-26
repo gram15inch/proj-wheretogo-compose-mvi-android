@@ -73,12 +73,13 @@ import com.wheretogo.presentation.composable.content.SearchBar
 import com.wheretogo.presentation.composable.content.SlideAnimation
 import com.wheretogo.presentation.composable.content.ZIndexOfDriveContentArea
 import com.wheretogo.presentation.composable.content.rememberMapViewWithLifecycle
-import com.wheretogo.presentation.composable.effect.AppEventReceiveEffect
-import com.wheretogo.presentation.composable.effect.LifecycleDisposer
+import com.dhkim139.core.ui.event.AppEventReceiveEffect
+import com.dhkim139.core.ui.screen.LifecycleDisposer
 import com.wheretogo.presentation.defaultCommentEmogiGroup
 import com.wheretogo.presentation.event.DriveEvent
-import com.wheretogo.presentation.feature.ImeStickyBox
-import com.wheretogo.presentation.feature.consumptionEvent
+import com.dhkim139.core.ui.screen.ImeStickyBox
+import com.dhkim139.core.ui.screen.consumptionEvent
+import com.dhkim139.core.ui.theme.Palette
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.intent.MapIntent
 import com.wheretogo.presentation.model.ContentPadding
@@ -93,7 +94,6 @@ import com.wheretogo.presentation.state.FloatingButtonState
 import com.wheretogo.presentation.state.GuideState
 import com.wheretogo.presentation.state.InfoState
 import com.wheretogo.presentation.state.ListState
-import com.wheretogo.presentation.theme.Palette
 import com.wheretogo.presentation.viewmodel.DriveViewModel
 import com.wheretogo.presentation.viewmodel.MapViewModel
 

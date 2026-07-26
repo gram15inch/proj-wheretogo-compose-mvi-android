@@ -8,11 +8,11 @@ import com.wheretogo.domain.usecase.user.DeleteUserUseCase
 import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
 import com.wheretogo.presentation.AppError
-import com.wheretogo.presentation.AppEvent
-import com.wheretogo.presentation.AppLifecycle
+import com.dhkim139.core.ui.event.AppEvent
+import com.dhkim139.core.ui.model.AppLifecycle
 import com.wheretogo.presentation.MainDispatcher
 import com.wheretogo.presentation.SettingInfoType
-import com.wheretogo.presentation.feature.EventResult
+import com.dhkim139.core.ui.event.EventResult
 import com.wheretogo.presentation.feature.ads.AdService
 import com.wheretogo.presentation.intent.SettingIntent
 import com.wheretogo.presentation.state.SettingScreenState

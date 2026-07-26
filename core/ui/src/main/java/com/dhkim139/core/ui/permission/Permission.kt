@@ -1,4 +1,4 @@
-package com.wheretogo.presentation.feature
+package com.dhkim139.core.ui.permission
 
 import android.Manifest
 import android.app.Activity
@@ -9,10 +9,11 @@ import android.net.Uri
 import android.provider.Settings
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.wheretogo.presentation.AppEvent
-import com.wheretogo.presentation.AppPermission
-import com.wheretogo.presentation.R
-import com.wheretogo.presentation.model.EventMsg
+import com.dhkim139.core.ui.event.AppEvent
+import com.dhkim139.core.ui.event.EventBus
+import com.dhkim139.core.ui.R
+import com.dhkim139.core.ui.model.EventMsg
+import com.dhkim139.core.ui.model.MediaAccess
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -68,8 +69,6 @@ suspend fun openSetting(context: Context, permission: AppPermission){
         )
     )
 }
-
-enum class MediaAccess { FULL, PARTIAL }
 
 fun checkFalseOrData(context: Context, appPermission: AppPermission): Any {
     if(appPermission.names.isEmpty())

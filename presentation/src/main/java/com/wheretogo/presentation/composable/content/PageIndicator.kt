@@ -18,7 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
-import com.wheretogo.presentation.theme.Palette
+import com.dhkim139.core.ui.theme.Palette
 
 @Composable
 fun PageIndicator(

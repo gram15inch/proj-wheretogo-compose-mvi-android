@@ -6,7 +6,7 @@ import com.wheretogo.domain.model.map.MarkerInfo
 import com.wheretogo.domain.model.map.MoveCameraOption
 import com.wheretogo.domain.model.map.RefreshContentOption
 import com.wheretogo.domain.model.map.RefreshOverlayOption
-import com.wheretogo.presentation.AppLifecycle
+import com.dhkim139.core.ui.model.AppLifecycle
 
 sealed class MapIntent {
     object MapAsync : MapIntent()

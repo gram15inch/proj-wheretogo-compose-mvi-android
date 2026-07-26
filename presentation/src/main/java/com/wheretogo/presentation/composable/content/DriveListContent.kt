@@ -45,8 +45,8 @@ import com.wheretogo.domain.model.route.RouteCategory
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.animation.highlightRoundedCorner
 import com.wheretogo.presentation.state.ListState
-import com.wheretogo.presentation.theme.Palette
-import com.wheretogo.presentation.theme.hancomSansFontFamily
+import com.dhkim139.core.ui.theme.Palette
+import com.dhkim139.core.ui.theme.hancomSansFontFamily
 import com.wheretogo.presentation.toStrRes
 
 

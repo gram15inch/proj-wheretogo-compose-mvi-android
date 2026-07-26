@@ -1,4 +1,4 @@
-package com.wheretogo.presentation.theme
+package com.dhkim139.core.ui.theme
 
 import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme

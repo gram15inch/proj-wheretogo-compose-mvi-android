@@ -24,7 +24,7 @@ import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
 import com.wheretogo.domain.usecase.checkpoint.GetCheckpointForMarkerUseCase
 import com.wheretogo.domain.usecase.course.FilterListCourseUseCase
 import com.wheretogo.domain.usecase.course.GetNearByCourseUseCase
-import com.wheretogo.presentation.AppLifecycle
+import com.dhkim139.core.ui.model.AppLifecycle
 import com.wheretogo.presentation.CHECKPOINT_ADD_MARKER
 import com.wheretogo.presentation.MainDispatcher
 import com.wheretogo.presentation.feature.map.MapOverlayService
