@@ -28,7 +28,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.wheretogo.presentation.SheetVisibleMode
-import com.wheretogo.presentation.theme.Palette
+import com.dhkim139.core.ui.theme.Palette
 
 
 @OptIn(ExperimentalMaterial3Api::class)

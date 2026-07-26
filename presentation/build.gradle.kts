@@ -17,6 +17,9 @@ android {
 
 dependencies {
     implementation(project(mapOf("path" to ":domain")))
+    implementation(project(mapOf("path" to ":core:ui")))
+    androidTestImplementation(project(mapOf("path" to ":core:ui")))
+    implementation(project(mapOf("path" to ":feature:media-picker")))
 
     // AndroidX
     implementation(libs.androidx.core.ktx)

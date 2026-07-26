@@ -5,11 +5,11 @@ import com.wheretogo.domain.RouteFieldType
 import com.wheretogo.domain.handler.CourseAddEvent
 import com.wheretogo.domain.handler.CourseAddHandler
 import com.wheretogo.domain.handler.ErrorHandler
-import com.wheretogo.presentation.AppEvent
-import com.wheretogo.presentation.AppScreen
+import com.dhkim139.core.ui.event.AppEvent
+import com.dhkim139.core.ui.screen.AppScreen
 import com.wheretogo.presentation.R
-import com.wheretogo.presentation.feature.EventBus
-import com.wheretogo.presentation.model.EventMsg
+import com.dhkim139.core.ui.event.EventBus
+import com.dhkim139.core.ui.model.EventMsg
 
 class CourseAddHandlerImpl(val errorHandler: ErrorHandler) : CourseAddHandler {
     override suspend fun handle(event: CourseAddEvent) {

@@ -56,11 +56,11 @@ import com.wheretogo.presentation.DriveFloatingVisibleMode
 import com.wheretogo.presentation.ExportMap
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.animation.highlightCircle
-import com.wheretogo.presentation.feature.FontMaxScale
+import com.dhkim139.core.ui.screen.FontMaxScale
 import com.wheretogo.presentation.feature.callMap
 import com.wheretogo.presentation.state.FloatingButtonState
-import com.wheretogo.presentation.theme.Palette
-import com.wheretogo.presentation.theme.hancomSansFontFamily
+import com.dhkim139.core.ui.theme.Palette
+import com.dhkim139.core.ui.theme.hancomSansFontFamily
 import com.wheretogo.presentation.toNavigation
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

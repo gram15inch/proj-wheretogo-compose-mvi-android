@@ -64,6 +64,9 @@ turbine = "1.2.1"
 splashscreen = "1.2.0"
 
 [plugins]
+wheretogo-android-application = { id = "wheretogo.android.application", version = "unspecified" }
+wheretogo-android-library = { id = "wheretogo.android.library", version = "unspecified" }
+
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library     = { id = "com.android.library", version.ref = "agp" }
 kotlin-android      = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
@@ -200,7 +203,6 @@ cash-turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 google-truth = { module = "com.google.truth:truth", version.ref = "truth" }
 androidx-paging-common = { group = "androidx.paging", name = "paging-common", version.ref = "paging-common" }
 androidx-paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging-compose" }
-
 
 [bundles]
 androidx-lifecycle = ["androidx-lifecycle-runtime-ktx", "androidx-lifecycle-viewmodel-compose"]

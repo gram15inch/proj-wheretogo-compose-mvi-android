@@ -43,7 +43,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wheretogo.presentation.R
-import com.wheretogo.presentation.theme.WhereTogoTheme
+import com.dhkim139.core.ui.theme.WhereTogoTheme
 
 
 @Composable

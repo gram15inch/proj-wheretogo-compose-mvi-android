@@ -2,6 +2,8 @@ package com.wheretogo.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dhkim139.core.ui.event.EventResult
+import com.dhkim139.core.ui.model.AppLifecycle
 import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.MarkerType
 import com.wheretogo.domain.ZOOM
@@ -11,6 +13,7 @@ import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.checkpoint.CheckPoint
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.course.Course
+import com.wheretogo.domain.model.course.CourseDirectionItem
 import com.wheretogo.domain.model.dummy.guideCourse
 import com.wheretogo.domain.model.map.CameraMoveTrigger
 import com.wheretogo.domain.model.map.MarkerInfo
@@ -38,8 +41,7 @@ import com.wheretogo.domain.usecase.util.GetImageUseCase
 import com.wheretogo.domain.usecase.util.SearchKeywordUseCase
 import com.wheretogo.domain.usecase.util.UpdateLikeUseCase
 import com.wheretogo.presentation.AppError
-import com.wheretogo.presentation.AppEvent
-import com.wheretogo.presentation.AppLifecycle
+import com.dhkim139.core.ui.event.AppEvent
 import com.wheretogo.presentation.CHECKPOINT_ADD_MARKER
 import com.wheretogo.presentation.CLEAR_ADDRESS
 import com.wheretogo.presentation.CommentType
@@ -64,8 +66,6 @@ import com.wheretogo.presentation.feature.executeAction
 import com.wheretogo.presentation.feature.executeActionWithUpdateUi
 import com.wheretogo.presentation.feature.guide.toStepState
 import com.wheretogo.presentation.intent.DriveScreenIntent
-import com.wheretogo.domain.model.course.CourseDirectionItem
-import com.wheretogo.presentation.feature.EventResult
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.model.TypeEditText
 import com.wheretogo.presentation.state.BottomSheetState

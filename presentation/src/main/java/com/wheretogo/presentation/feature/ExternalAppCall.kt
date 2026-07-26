@@ -7,12 +7,13 @@ import android.content.Context
 import android.content.Intent
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.net.toUri
+import com.dhkim139.core.ui.permission.requestPermission
 import com.skt.Tmap.TMapTapi
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.course.StartDirection
 import com.wheretogo.domain.model.util.Navigation
 import com.wheretogo.presentation.AppError
-import com.wheretogo.presentation.AppPermission
+import com.dhkim139.core.ui.permission.AppPermission
 import com.wheretogo.presentation.ExportMap
 import com.wheretogo.presentation.feature.naver.getLastLatLng
 import com.wheretogo.presentation.model.CallRoute

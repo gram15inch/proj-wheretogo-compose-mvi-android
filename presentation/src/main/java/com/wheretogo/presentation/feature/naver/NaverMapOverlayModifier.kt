@@ -33,7 +33,7 @@ import com.wheretogo.presentation.model.ClusterHolder
 import com.wheretogo.presentation.model.ClusterInfo
 import com.wheretogo.presentation.model.LeafInfo
 import com.wheretogo.presentation.model.PathInfo
-import com.wheretogo.presentation.theme.Palette
+import com.dhkim139.core.ui.theme.Palette
 import com.wheretogo.presentation.toNaver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

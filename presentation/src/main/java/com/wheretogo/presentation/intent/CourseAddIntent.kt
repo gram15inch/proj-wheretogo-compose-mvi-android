@@ -6,7 +6,7 @@ import com.wheretogo.presentation.SheetVisibleMode
 import com.wheretogo.domain.model.map.MarkerInfo
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.domain.model.map.CameraState
-import com.wheretogo.presentation.AppLifecycle
+import com.dhkim139.core.ui.model.AppLifecycle
 
 sealed class CourseAddIntent {
 

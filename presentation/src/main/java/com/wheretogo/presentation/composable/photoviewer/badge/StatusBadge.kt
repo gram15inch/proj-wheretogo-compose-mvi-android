@@ -9,7 +9,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,8 +18,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wheretogo.presentation.theme.Palette
-import com.wheretogo.presentation.theme.WhereTogoTheme
+import com.dhkim139.core.ui.theme.Palette
+import com.dhkim139.core.ui.theme.WhereTogoTheme
 
 @Composable
 fun StatusBadge(text: String, icon: ImageVector) {

@@ -10,7 +10,7 @@ import androidx.compose.material.icons.outlined.Spa
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.wheretogo.presentation.R
-import com.wheretogo.presentation.theme.Palette
+import com.dhkim139.core.ui.theme.Palette
 
 data class Tier(
     @StringRes val nameRes: Int,

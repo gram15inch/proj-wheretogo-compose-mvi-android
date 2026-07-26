@@ -61,9 +61,9 @@ import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.toDisplayName
 import com.wheretogo.presentation.state.CommentState
 import com.wheretogo.presentation.state.CommentState.CommentItemState
-import com.wheretogo.presentation.theme.Palette
-import com.wheretogo.presentation.theme.hancomMalangFontFamily
-import com.wheretogo.presentation.theme.hancomSansFontFamily
+import com.dhkim139.core.ui.theme.Palette
+import com.dhkim139.core.ui.theme.hancomMalangFontFamily
+import com.dhkim139.core.ui.theme.hancomSansFontFamily
 
 @Composable
 fun CommentList(

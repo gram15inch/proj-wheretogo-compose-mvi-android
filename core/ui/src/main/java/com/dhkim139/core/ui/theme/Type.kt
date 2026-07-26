@@ -1,13 +1,12 @@
-package com.wheretogo.presentation.theme
+package com.dhkim139.core.ui.theme
 
 import androidx.compose.material3.Typography
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import com.wheretogo.presentation.R
+import com.dhkim139.core.ui.R
 
 val hancomSansFontFamily = FontFamily(
     Font(R.font.hancom_sans_semibold_0, FontWeight.SemiBold)

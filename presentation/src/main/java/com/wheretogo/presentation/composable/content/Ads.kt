@@ -38,6 +38,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.dhkim139.core.ui.screen.FontMaxScale
+import com.dhkim139.core.ui.theme.Palette
+import com.dhkim139.core.ui.theme.hancomSansFontFamily
+import com.dhkim139.core.ui.theme.interBoldFontFamily
+import com.dhkim139.core.ui.theme.interFontFamily
 import com.google.android.gms.ads.nativead.NativeAd
 import com.skydoves.landscapist.ImageOptions
 import com.skydoves.landscapist.glide.GlideImage
@@ -53,12 +58,7 @@ import com.wheretogo.presentation.composable.content.ad.NativeAdMediaView
 import com.wheretogo.presentation.composable.content.ad.NativeAdView
 import com.wheretogo.presentation.composable.effect.CardAdEffect
 import com.wheretogo.presentation.composable.effect.RowAdEffect
-import com.wheretogo.presentation.feature.FontMaxScale
 import com.wheretogo.presentation.model.AdItem
-import com.wheretogo.presentation.theme.Palette
-import com.wheretogo.presentation.theme.hancomSansFontFamily
-import com.wheretogo.presentation.theme.interBoldFontFamily
-import com.wheretogo.presentation.theme.interFontFamily
 
 data class AdPreview(val headline: String, val image: Int, val body: String, val advertiser: String)
 

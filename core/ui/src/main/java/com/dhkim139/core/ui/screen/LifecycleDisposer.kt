@@ -1,11 +1,11 @@
-package com.wheretogo.presentation.composable.effect
+package com.dhkim139.core.ui.screen
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.wheretogo.presentation.AppLifecycle
+import com.dhkim139.core.ui.model.AppLifecycle
 
 @Composable
 fun LifecycleDisposer(

@@ -17,7 +17,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.wheretogo.presentation.theme.Palette
+import com.dhkim139.core.ui.theme.Palette
 
 @Composable
 fun highlightsBrush(durationMils: Int = 500, colors: List<Color> = listOf(Palette.Blue50, Palette.Green50)): Brush {

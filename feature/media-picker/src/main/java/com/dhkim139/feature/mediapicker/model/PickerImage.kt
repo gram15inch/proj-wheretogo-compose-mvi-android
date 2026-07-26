@@ -1,4 +1,4 @@
-package com.wheretogo.presentation.model
+package com.dhkim139.feature.mediapicker.model
 
 import android.net.Uri
 import androidx.core.net.toUri

@@ -1,0 +1,16 @@
+<resources>
+
+    <!-- Photo permissions -->
+    <string name="show_photo_select">Showing selected photos</string>
+    <string name="show_photo_select_desc">Tap the button to add more photos.</string>
+    <string name="need_photo_permission">Photo access is required to load your photos</string>
+    <string name="need_all_photo_permission">To see all your photos, allow full access in Settings.</string>
+    <string name="course_found_app">We\'ll find the course in your photo for you.</string>
+    <string name="need_permission">Grant permission</string>
+    <string name="more_add">Add more</string>
+    <string name="photo_select">Select photos</string>
+    <string name="selected_count">Done (%1$d selected)</string>
+    <string name="button_selected">Selected</string>
+    <string name="button_setting">Settings</string>
+
+</resources>

@@ -2,11 +2,11 @@ package com.wheretogo.presentation.handler
 
 import com.wheretogo.domain.handler.HomeEvent
 import com.wheretogo.domain.handler.HomeHandler
-import com.wheretogo.presentation.AppEvent
-import com.wheretogo.presentation.AppScreen
+import com.dhkim139.core.ui.event.AppEvent
+import com.dhkim139.core.ui.screen.AppScreen
 import com.wheretogo.presentation.R
-import com.wheretogo.presentation.feature.EventBus
-import com.wheretogo.presentation.model.EventMsg
+import com.dhkim139.core.ui.event.EventBus
+import com.dhkim139.core.ui.model.EventMsg
 
 class HomeHandlerImpl() : HomeHandler {
     override suspend fun handle(event: HomeEvent) {

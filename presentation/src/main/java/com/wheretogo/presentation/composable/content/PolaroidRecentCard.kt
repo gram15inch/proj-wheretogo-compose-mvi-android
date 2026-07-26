@@ -38,10 +38,10 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.wheretogo.domain.RecentCardSituation
 import com.wheretogo.presentation.R
-import com.wheretogo.presentation.feature.pressHighlightEffect
+import com.dhkim139.core.ui.screen.pressHighlightEffect
 import com.wheretogo.presentation.model.home.RecentCardUiState
-import com.wheretogo.presentation.theme.Palette
-import com.wheretogo.presentation.theme.WhereTogoTheme
+import com.dhkim139.core.ui.theme.Palette
+import com.dhkim139.core.ui.theme.WhereTogoTheme
 import java.util.concurrent.TimeUnit
 
 

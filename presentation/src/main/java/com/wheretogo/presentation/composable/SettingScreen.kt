@@ -48,17 +48,17 @@ import com.wheretogo.presentation.R
 import com.wheretogo.presentation.SettingInfoType
 import com.wheretogo.presentation.composable.content.AdaptiveAd
 import com.wheretogo.presentation.composable.content.DelayLottieAnimation
-import com.wheretogo.presentation.composable.effect.AppEventReceiveEffect
-import com.wheretogo.presentation.composable.effect.LifecycleDisposer
+import com.dhkim139.core.ui.event.AppEventReceiveEffect
+import com.dhkim139.core.ui.screen.LifecycleDisposer
 import com.wheretogo.presentation.feature.openActivity
 import com.wheretogo.presentation.feature.openWeb
 import com.wheretogo.presentation.intent.SettingIntent
 import com.wheretogo.presentation.model.AdItem
 import com.wheretogo.presentation.parseLogoImgRes
 import com.wheretogo.presentation.state.SettingScreenState
-import com.wheretogo.presentation.theme.Palette
-import com.wheretogo.presentation.theme.hancomMalangFontFamily
-import com.wheretogo.presentation.theme.hancomSansFontFamily
+import com.dhkim139.core.ui.theme.Palette
+import com.dhkim139.core.ui.theme.hancomMalangFontFamily
+import com.dhkim139.core.ui.theme.hancomSansFontFamily
 import com.wheretogo.presentation.viewmodel.SettingViewModel
 
 @Composable

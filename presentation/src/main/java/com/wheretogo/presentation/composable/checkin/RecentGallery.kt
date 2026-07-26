@@ -42,9 +42,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.wheretogo.presentation.R
-import com.wheretogo.presentation.feature.pressHighlightEffect
+import com.dhkim139.core.ui.screen.pressHighlightEffect
 import com.wheretogo.presentation.model.MiniPhoto
-import com.wheretogo.presentation.theme.WhereTogoTheme
+import com.dhkim139.core.ui.theme.WhereTogoTheme
 
 @Composable
 fun RecentGallery(

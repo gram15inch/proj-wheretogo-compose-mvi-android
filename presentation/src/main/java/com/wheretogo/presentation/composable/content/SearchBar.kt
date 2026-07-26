@@ -55,11 +55,11 @@ import com.wheretogo.presentation.AdMinSize
 import com.wheretogo.presentation.CLEAR_ADDRESS
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.animation.highlightRoundedCorner
-import com.wheretogo.presentation.feature.intervalTab
+import com.dhkim139.core.ui.screen.intervalTab
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.SearchBarState
-import com.wheretogo.presentation.theme.Palette
-import com.wheretogo.presentation.theme.hancomSansFontFamily
+import com.dhkim139.core.ui.theme.Palette
+import com.dhkim139.core.ui.theme.hancomSansFontFamily
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay

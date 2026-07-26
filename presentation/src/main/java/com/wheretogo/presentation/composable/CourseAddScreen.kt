@@ -78,8 +78,11 @@ import com.wheretogo.presentation.composable.content.NaverMapSheet
 import com.wheretogo.presentation.composable.content.SearchBar
 import com.wheretogo.presentation.composable.content.SlideAnimation
 import com.wheretogo.presentation.composable.content.rememberMapViewWithLifecycle
-import com.wheretogo.presentation.composable.effect.LifecycleDisposer
-import com.wheretogo.presentation.feature.intervalTab
+import com.dhkim139.core.ui.screen.LifecycleDisposer
+import com.dhkim139.core.ui.screen.intervalTab
+import com.dhkim139.core.ui.theme.Palette
+import com.dhkim139.core.ui.theme.interBoldFontFamily
+import com.dhkim139.core.ui.theme.interFontFamily
 import com.wheretogo.presentation.intent.CourseAddIntent
 import com.wheretogo.presentation.model.ContentPadding
 import com.wheretogo.presentation.model.MapOverlay
@@ -87,9 +90,6 @@ import com.wheretogo.presentation.model.NaverMapStyle
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.BottomSheetState
 import com.wheretogo.presentation.state.CourseAddScreenState
-import com.wheretogo.presentation.theme.Palette
-import com.wheretogo.presentation.theme.interBoldFontFamily
-import com.wheretogo.presentation.theme.interFontFamily
 import com.wheretogo.presentation.toStrRes
 import com.wheretogo.presentation.viewmodel.CourseAddViewModel
 import com.wheretogo.presentation.viewmodel.MapEvent
