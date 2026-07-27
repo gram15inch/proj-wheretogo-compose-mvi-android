@@ -248,9 +248,13 @@ class ImageRepositoryImpl @Inject constructor(
 
     override suspend fun getMediaImages(
         offset: Int,
-        limit: Int
+        limit: Int,
+        isProvider: Boolean
     ): Result<List<MediaImage>> {
-        return imageLocalDatasource.getMediaImages(offset, limit)
+        return if(isProvider)
+            imageLocalDatasource.getProviderImages(offset, limit)
+        else
+            imageLocalDatasource.getMediaImages(offset, limit)
     }
 
     private suspend fun uploadAndSaveImage(imageId: String, size: ImageSize, bytes: ByteArray): Pair<ImageSize, String> {

@@ -1,25 +1,17 @@
-import java.util.Properties
-
 plugins {
-    id("wheretogo.android.library")
-    id("com.google.dagger.hilt.android")
-    id("org.jetbrains.kotlin.plugin.compose")
-    id("com.google.devtools.ksp")
+    alias(libs.plugins.wheretogo.android.library)
+    alias(libs.plugins.dagger.hilt.android)
+    alias(libs.plugins.kotlin.plugin.compose)
+    alias(libs.plugins.devtools.ksp)
 }
 
 android {
-    namespace = "com.wheretogo.presentation"
-
-    defaultConfig {
-        manifestPlaceholders["adsMobAppId"] = getLocalProperties("adsMobAppId")
-    }
+    namespace = "com.dhkim139.feature.providerpicker"
 }
 
 dependencies {
     implementation(project(mapOf("path" to ":domain")))
     implementation(project(mapOf("path" to ":core:ui")))
-    androidTestImplementation(project(mapOf("path" to ":core:ui")))
-    implementation(project(mapOf("path" to ":feature:provider-picker")))
 
     // AndroidX
     implementation(libs.androidx.core.ktx)
@@ -59,35 +51,6 @@ dependencies {
     ksp(libs.dagger.hilt.compiler)
     ksp(libs.dagger.hilt.android.compiler)
 
-    // Retrofit
-    implementation(libs.squareup.retrofit)
-
-    // Google
-    implementation(libs.google.identity.googleid)
-    implementation(libs.google.play.services.location)
-    implementation(libs.google.play.services.ads)
-
-    // Firebase
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.crashlytics)
-
-    // Libraries
-    implementation(libs.naver.maps)
-    api(files("libs/com.skt.Tmap_1.76.jar"))
-    implementation(libs.lottie.compose)
-    implementation(libs.landscapist.glide)
-    implementation(libs.compose.shimmer)
-    implementation(libs.timber)
     implementation(libs.coil.compose)
-}
 
-fun getLocalProperties(key: String): String{
-    val localPropertiesFile = File(rootProject.projectDir, "local.properties")
-    val properties = Properties()
-
-    if (localPropertiesFile.exists()) {
-        localPropertiesFile.inputStream().use { properties.load(it) }
-    }
-
-    return properties[key].toString()
 }
