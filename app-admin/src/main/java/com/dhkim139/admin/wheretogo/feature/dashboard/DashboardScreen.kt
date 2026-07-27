@@ -35,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -46,6 +47,10 @@ import com.dhkim139.admin.wheretogo.feature.report.ReportSummaryCard
 import com.dhkim139.admin.wheretogo.feature.report.model.ModerateSeverity
 import com.dhkim139.admin.wheretogo.feature.report.model.Report
 import com.dhkim139.admin.wheretogo.feature.report.model.ReportStatus
+import com.dhkim139.core.ui.model.MediaAccess
+import com.dhkim139.core.ui.permission.AppPermission
+import com.dhkim139.core.ui.permission.checkFalseOrData
+import com.dhkim139.core.ui.permission.requestPermission
 
 @Composable
 fun DashboardScreen(
@@ -56,7 +61,7 @@ fun DashboardScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-
+    val context = LocalContext.current
     LaunchedEffect(uiState.errorMessage) {
         uiState.errorMessage?.let {
             when(it.trim()){
@@ -69,6 +74,13 @@ fun DashboardScreen(
                     viewModel.clearError()
                 }
             }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        // 사진 권한 요청
+        if(checkFalseOrData(context, AppPermission.MEDIA) != MediaAccess.FULL){
+            requestPermission(context, AppPermission.MEDIA)
         }
     }
 

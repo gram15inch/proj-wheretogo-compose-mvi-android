@@ -1,12 +1,15 @@
 package com.dhkim139.wheretogo.di
 
+import android.content.Context
 import com.dhkim139.wheretogo.BuildConfig
+import com.dhkim139.wheretogo.R
 import com.wheretogo.data.DataBuildConfig
 import com.wheretogo.domain.model.app.AppBuildConfig
 import com.wheretogo.presentation.PresentationBuildConfig
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
@@ -62,7 +65,9 @@ object AppConfigModule {
 
     @Singleton
     @Provides
-    fun provideDataConfig(): DataBuildConfig{
+    fun provideDataConfig(
+        @ApplicationContext context: Context
+    ): DataBuildConfig{
         val config = when (BuildConfig.BUILD_TYPE) {
             "release" -> {
                 DataBuildConfig(
@@ -76,6 +81,7 @@ object AppConfigModule {
                     naverClientIdKey = BuildConfig.NAVER_CLIENT_ID_KEY,
                     naverClientSecretKey = BuildConfig.NAVER_CLIENT_SECRET_KEY,
                     isTokenLog = false,
+                    authority = context.getString(R.string.admin_authority),
                     dbPrefix = "RELEASE_"
                 )
             }
@@ -91,6 +97,7 @@ object AppConfigModule {
                     naverClientIdKey = BuildConfig.NAVER_CLIENT_ID_KEY,
                     naverClientSecretKey = BuildConfig.NAVER_CLIENT_SECRET_KEY,
                     isTokenLog = true,
+                    authority = context.getString(R.string.admin_authority),
                     dbPrefix = "TEST_",
                 )
             }

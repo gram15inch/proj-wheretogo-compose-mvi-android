@@ -23,7 +23,7 @@ android {
 
     defaultConfig {
         applicationId = "com.dhkim139.admin.wheretogo"
-
+        minSdk = 29
         versionCode = 1
         versionName = "1.0"
 
@@ -65,6 +65,7 @@ android {
 dependencies {
     implementation(project(mapOf("path" to ":data")))
     implementation(project(mapOf("path" to ":domain")))
+    implementation(project(mapOf("path" to ":core:ui")))
 
     // Kotlin (BOM)
     implementation(platform(libs.kotlin.bom))
