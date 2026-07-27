@@ -75,10 +75,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.wheretogo.domain.model.gallery.GalleryPhoto
 import com.wheretogo.presentation.R
-import com.dhkim139.feature.mediapicker.MediaPicker
+import com.dhkim139.feature.providerpicker.ProviderPicker
 import com.wheretogo.presentation.feature.GroupingStrategy
 import com.wheretogo.presentation.intent.GalleryIntent
 import com.wheretogo.presentation.model.PhotoSection
+import com.wheretogo.presentation.model.PickedImage
 import com.wheretogo.presentation.state.GalleryState
 import com.wheretogo.presentation.viewmodel.GalleryFlowViewModel
 import kotlinx.coroutines.delay
@@ -207,9 +208,9 @@ fun GalleryScreen(
         enter = slideInVertically { it } + fadeIn(),
         exit = slideOutVertically { it } + fadeOut(),
     ) {
-        MediaPicker(
+        ProviderPicker(
             onPicked = { picked ->
-                viewModel.handleIntent(GalleryIntent.MediaPicked(picked))
+                viewModel.handleIntent(GalleryIntent.MediaPicked(PickedImage.fromPicker(picked)))
             },
             onNavigateBack = { viewModel.handleIntent(GalleryIntent.DismissPicker) },
         )

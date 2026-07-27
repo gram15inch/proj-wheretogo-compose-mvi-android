@@ -8,11 +8,13 @@ import android.graphics.Bitmap
 import android.location.Geocoder
 import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.provider.MediaStore
 import android.provider.OpenableColumns
 import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
+import com.wheretogo.data.DataBuildConfig
 import com.wheretogo.data.ImageFormat
 import com.wheretogo.data.datasource.ImageLocalDatasource
 import com.wheretogo.data.datasourceimpl.database.GalleryDatabase
@@ -47,6 +49,7 @@ class ImageLocalDatasourceImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     private val imageFile: File,
     private val imageConfig: ImageConfig,
+    private val dataConfig: DataBuildConfig,
     private val galleryDatabase: GalleryDatabase,
     private val exifReader: PhotoExifReader
 ) : ImageLocalDatasource {
@@ -57,6 +60,8 @@ class ImageLocalDatasourceImpl @Inject constructor(
     private fun generateImageId():String = "IM${ULID().nextULID()}"
     private fun generatePath(imageId: String, size: ImageSize): String =
         "image/${size.pathName}/$imageId.${imageConfig.format.ext}"
+
+    private val AUTHORITY = dataConfig.authority
 
     override suspend fun getImage(imageId: String, size: ImageSize): File {
         val localFile =
@@ -186,9 +191,21 @@ class ImageLocalDatasourceImpl @Inject constructor(
     override suspend fun getMediaImages(offset: Int, limit: Int): Result<List<MediaImage>> {
         return runCatching {
             context.contentResolver
-                .query(offset, limit)
+                .mediaQuery(offset, limit)
                 ?.toMediaImages()
                 ?:emptyList()
+        }
+    }
+
+    override suspend fun getProviderImages(
+        offset: Int,
+        limit: Int
+    ): Result<List<MediaImage>> {
+        return runCatching {
+            context.contentResolver
+                .providerQuery(offset, limit)
+                ?.toProviderImages()
+                ?: emptyList()
         }
     }
 
@@ -348,7 +365,7 @@ class ImageLocalDatasourceImpl @Inject constructor(
         }
     }
 
-    private fun ContentResolver.query(offset: Int, limit: Int): Cursor? {
+    private fun ContentResolver.mediaQuery(offset: Int, limit: Int): Cursor? {
         val projection = arrayOf(MediaStore.Images.Media._ID)
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val args = bundleOf(
@@ -371,6 +388,30 @@ class ImageLocalDatasourceImpl @Inject constructor(
                 while (moveToNext()) {
                     val id = getLong(idCol)
                     val uri = ContentUris.withAppendedId(mediaUri, id).toString()
+                    add(MediaImage(id, uri))
+                }
+            }
+        }
+    }
+
+    fun ContentResolver.providerQuery(offset: Int, limit: Int): Cursor? {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return null
+        val listUri = Uri.parse("content://$AUTHORITY/list")
+        val args = Bundle().apply {
+            putInt(ContentResolver.QUERY_ARG_LIMIT, limit)
+            putInt(ContentResolver.QUERY_ARG_OFFSET, offset)
+        }
+        return query(listUri, arrayOf("_id", "uri"), args, null)
+    }
+
+    private fun Cursor.toProviderImages(): List<MediaImage> {
+        return use { cursor ->
+            val idCol = getColumnIndexOrThrow("_id")
+            val uriCol = getColumnIndexOrThrow("uri")
+            buildList(count) {
+                while (moveToNext()) {
+                    val id = getLong(idCol)
+                    val uri = getString(uriCol)
                     add(MediaImage(id, uri))
                 }
             }

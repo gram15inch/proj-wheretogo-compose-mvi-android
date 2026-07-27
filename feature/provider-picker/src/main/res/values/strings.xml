@@ -1,0 +1,8 @@
+<resources>
+    <!-- 사진 권한 -->
+    <string name="show_photo_select">선택한 사진 표시중</string>
+    <string name="course_found_app">사진속 코스를 알아서 찾아줘요.</string>
+    <string name="photo_select">사진 선택</string>
+    <string name="selected_count">선택 완료 (%1$d개)</string>
+    <string name="button_selected">선택됨</string>
+</resources>

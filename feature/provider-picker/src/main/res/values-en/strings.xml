@@ -1,0 +1,10 @@
+<resources>
+
+    <!-- Photo permissions -->
+    <string name="show_photo_select">Showing selected photos</string>
+    <string name="course_found_app">We\'ll find the course in your photo for you.</string>
+    <string name="photo_select">Select photos</string>
+    <string name="selected_count">Done (%1$d selected)</string>
+    <string name="button_selected">Selected</string>
+
+</resources>

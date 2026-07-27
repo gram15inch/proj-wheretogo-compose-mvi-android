@@ -14,7 +14,7 @@ import com.wheretogo.presentation.feature.ByDayGrouping
 import com.wheretogo.presentation.feature.GroupingStrategy
 import com.wheretogo.presentation.feature.toSections
 import com.wheretogo.presentation.intent.GalleryIntent
-import com.dhkim139.feature.mediapicker.model.PickerImage
+import com.wheretogo.presentation.model.PickedImage
 import com.wheretogo.presentation.state.GalleryState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -128,7 +128,7 @@ class GalleryFlowViewModel @Inject constructor(
         handler.handle(e,event)
     }
 
-    private suspend fun onMediaPicked(images: List<PickerImage>) {
+    private suspend fun onMediaPicked(images: List<PickedImage>) {
         _pickerVisible.value = false
         if (images.isEmpty()) return
         _galleyState.value = GalleryState.Loading
