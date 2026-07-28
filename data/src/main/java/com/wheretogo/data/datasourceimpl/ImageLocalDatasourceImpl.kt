@@ -54,7 +54,6 @@ class ImageLocalDatasourceImpl @Inject constructor(
 ) : ImageLocalDatasource {
     private val photoDao by lazy { galleryDatabase.photoDao() }
     private val ext = imageConfig.format.ext
-    private val mediaUri: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
 
     private fun generateImageId():String = "IM${ULID().nextULID()}"
     private fun generatePath(imageId: String, size: ImageSize): String =
@@ -184,16 +183,6 @@ class ImageLocalDatasourceImpl @Inject constructor(
             FilePreview(fileName, fileSize)
         }
     }
-
-    override suspend fun getMediaImages(offset: Int, limit: Int): Result<List<MediaImage>> {
-        return runCatching {
-            context.contentResolver
-                .mediaQuery(offset, limit)
-                ?.toMediaImages()
-                ?:emptyList()
-        }
-    }
-
 
     override suspend fun saveGalleryPhotos(uriStrings: List<String>): Result<List<Long>> = runCatching {
         val keyed = uriStrings.associateBy { buildExistingKey(it) }
@@ -348,35 +337,6 @@ class ImageLocalDatasourceImpl @Inject constructor(
                     }
                 }
             }.awaitAll().filterNotNull()
-        }
-    }
-
-    private fun ContentResolver.mediaQuery(offset: Int, limit: Int): Cursor? {
-        val projection = arrayOf(MediaStore.Images.Media._ID)
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val args = bundleOf(
-                ContentResolver.QUERY_ARG_SORT_COLUMNS to arrayOf(MediaStore.Images.Media.DATE_ADDED),
-                ContentResolver.QUERY_ARG_SORT_DIRECTION to ContentResolver.QUERY_SORT_DIRECTION_DESCENDING,
-                ContentResolver.QUERY_ARG_LIMIT to limit,
-                ContentResolver.QUERY_ARG_OFFSET to offset,
-            )
-            query(mediaUri, projection, args, null)
-        } else {
-            val sortOrder = "${MediaStore.Images.Media.DATE_ADDED} DESC LIMIT $limit OFFSET $offset"
-            query(mediaUri, projection, null, null, sortOrder)
-        }
-    }
-
-    private fun Cursor.toMediaImages(): List<MediaImage> {
-        return use { cursor ->
-            val idCol = getColumnIndexOrThrow(MediaStore.Images.Media._ID)
-            buildList(count) {
-                while (moveToNext()) {
-                    val id = getLong(idCol)
-                    val uri = ContentUris.withAppendedId(mediaUri, id).toString()
-                    add(MediaImage(id, uri))
-                }
-            }
         }
     }
 

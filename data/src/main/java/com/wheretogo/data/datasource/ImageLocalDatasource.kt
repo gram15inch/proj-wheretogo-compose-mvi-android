@@ -30,8 +30,6 @@ interface ImageLocalDatasource {
 
     suspend fun getPreview(imageUriString: String): Result<FilePreview>
 
-    suspend fun getMediaImages(offset: Int, limit: Int): Result<List<MediaImage>>
-
     suspend fun loadAllPhotos(): Result<List<PhotoEntity>>
 
     fun observePhotos(): Flow<List<PhotoEntity>>

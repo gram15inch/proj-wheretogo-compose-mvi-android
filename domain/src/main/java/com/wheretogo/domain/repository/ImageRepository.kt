@@ -21,7 +21,6 @@ interface ImageRepository {
 
     suspend fun getExif(imageUriString: String): Result<ExifData>
     suspend fun getPreview(imageUriString: String): Result<FilePreview>
-    suspend fun getMediaImages(offset: Int, limit: Int, isProvider: Boolean): Result<List<MediaImage>>
 
     suspend fun getGalleryPhotosByImageId(imageIds: List<String>): Result<List<GalleryPhoto>>
     fun observeGalleryPhotos(): Flow<List<GalleryPhoto>>
