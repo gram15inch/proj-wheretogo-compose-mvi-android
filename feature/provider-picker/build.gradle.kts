@@ -7,6 +7,16 @@ plugins {
 
 android {
     namespace = "com.dhkim139.feature.providerpicker"
+
+    buildTypes{
+        debug {
+            manifestPlaceholders["providerPermission"] = "com.dhkim139.admin.wheretogo.debug.ACCESS_PROVIDER"
+        }
+
+        release {
+            manifestPlaceholders["providerPermission"] = "com.dhkim139.admin.wheretogo.ACCESS_PROVIDER"
+        }
+    }
 }
 
 dependencies {

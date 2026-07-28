@@ -1,11 +1,5 @@
 package com.wheretogo.domain.di
 
-import com.wheretogo.domain.usecase.gallery.DeleteGalleryPhotosUseCase
-import com.wheretogo.domain.usecaseimpl.gallery.DeleteGalleryPhotosUseCaseImpl
-import com.wheretogo.domain.usecase.gallery.LoadGalleryPhotosUseCase
-import com.wheretogo.domain.usecaseimpl.gallery.LoadGalleryPhotosUseCaseImpl
-import com.wheretogo.domain.usecase.gallery.SavePickedImagesUseCase
-import com.wheretogo.domain.usecaseimpl.gallery.SavePickedImagesUseCaseImpl
 import com.wheretogo.domain.usecase.app.AppCheckBySignatureUseCase
 import com.wheretogo.domain.usecase.app.DriveTutorialUseCase
 import com.wheretogo.domain.usecase.app.ObserveMsgUseCase
@@ -21,7 +15,10 @@ import com.wheretogo.domain.usecase.course.FilterListCourseUseCase
 import com.wheretogo.domain.usecase.course.GetCourseUseCase
 import com.wheretogo.domain.usecase.course.GetNearByCourseUseCase
 import com.wheretogo.domain.usecase.course.RemoveCourseUseCase
+import com.wheretogo.domain.usecase.gallery.DeleteGalleryPhotosUseCase
 import com.wheretogo.domain.usecase.gallery.GetStampUseCase
+import com.wheretogo.domain.usecase.gallery.LoadGalleryPhotosUseCase
+import com.wheretogo.domain.usecase.gallery.SavePickedImagesUseCase
 import com.wheretogo.domain.usecase.home.GetRecentCardUseCase
 import com.wheretogo.domain.usecase.report.ReportContentUseCase
 import com.wheretogo.domain.usecase.user.DeleteUserUseCase
@@ -34,7 +31,6 @@ import com.wheretogo.domain.usecase.util.ClearExpireCacheUseCase
 import com.wheretogo.domain.usecase.util.CourseAddValidUseCase
 import com.wheretogo.domain.usecase.util.CreateRouteUseCase
 import com.wheretogo.domain.usecase.util.GetImageUseCase
-import com.wheretogo.domain.usecase.util.GetImagesPageUseCase
 import com.wheretogo.domain.usecase.util.GetLatLngFromAddressUseCase
 import com.wheretogo.domain.usecase.util.SearchKeywordUseCase
 import com.wheretogo.domain.usecase.util.UpdateLikeUseCase
@@ -53,7 +49,10 @@ import com.wheretogo.domain.usecaseimpl.course.FilterListCourseUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.course.GetCourseUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.course.GetNearByCourseUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.course.RemoveCourseUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.gallery.DeleteGalleryPhotosUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.gallery.GetStampUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.gallery.LoadGalleryPhotosUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.gallery.SavePickedImagesUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.home.GetRecentCardUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.report.ReportContentUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.DeleteUserUseCaseImpl
@@ -66,7 +65,6 @@ import com.wheretogo.domain.usecaseimpl.util.ClearExpireCacheUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.util.CourseAddValidUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.util.CreateRouteUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.util.GetImageUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.util.GetImagesPageUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.util.GetLatLngFromAddressUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.util.SearchKeywordUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.util.UpdateLikeUseCaseImpl
@@ -168,9 +166,6 @@ abstract class UseCaseModule {
 
     @Binds
     abstract fun bindClearExpireCacheUseCase(useCaseImpl: ClearExpireCacheUseCaseImpl): ClearExpireCacheUseCase
-
-    @Binds
-    abstract fun bindGetImagesPageUseCase(useCaseImpl: GetImagesPageUseCaseImpl): GetImagesPageUseCase
 
     @Binds
     abstract fun bindSavePickedImagesUseCase(useCaseImpl: SavePickedImagesUseCaseImpl): SavePickedImagesUseCase

@@ -39,7 +39,6 @@ object AppConfigModule {
                     naverClientIdKey = BuildConfig.NAVER_CLIENT_ID_KEY,
                     naverClientSecretKey = BuildConfig.NAVER_CLIENT_SECRET_KEY,
                     isTokenLog = false,
-                    authority = "", // 재귀 방지
                     dbPrefix = "RELEASE_"
                 )
             }
@@ -56,7 +55,6 @@ object AppConfigModule {
                     naverClientIdKey = BuildConfig.NAVER_CLIENT_ID_KEY,
                     naverClientSecretKey = BuildConfig.NAVER_CLIENT_SECRET_KEY,
                     isTokenLog = false,
-                    authority = "", // 재귀 방지
                     dbPrefix = "TEST_",
                 )
             }

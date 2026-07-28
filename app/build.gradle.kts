@@ -58,8 +58,6 @@ android {
             applicationIdSuffix = ".debug"
             buildConfigField("String",  "BuildType", "\"debug\"")
             buildConfigField("String",  "GOOGLE_WEB_CLIENT_ID_KEY", getLocalProperties("googleStagingWebClientId"))
-
-            manifestPlaceholders["providerPermission"] = "com.dhkim139.admin.wheretogo.debug.ACCESS_PROVIDER"
        }
 
         release {
@@ -73,8 +71,6 @@ android {
 
             buildConfigField("String",  "BuildType", "\"release\"")
             buildConfigField("String", "GOOGLE_WEB_CLIENT_ID_KEY", getLocalProperties("googleWebClientId"))
-
-            manifestPlaceholders["providerPermission"] = "com.dhkim139.admin.wheretogo.ACCESS_PROVIDER"
         }
     }
 
