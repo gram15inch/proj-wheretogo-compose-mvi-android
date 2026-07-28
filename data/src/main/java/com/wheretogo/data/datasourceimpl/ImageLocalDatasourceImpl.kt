@@ -49,7 +49,6 @@ class ImageLocalDatasourceImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     private val imageFile: File,
     private val imageConfig: ImageConfig,
-    private val dataConfig: DataBuildConfig,
     private val galleryDatabase: GalleryDatabase,
     private val exifReader: PhotoExifReader
 ) : ImageLocalDatasource {
@@ -60,8 +59,6 @@ class ImageLocalDatasourceImpl @Inject constructor(
     private fun generateImageId():String = "IM${ULID().nextULID()}"
     private fun generatePath(imageId: String, size: ImageSize): String =
         "image/${size.pathName}/$imageId.${imageConfig.format.ext}"
-
-    private val AUTHORITY = dataConfig.authority
 
     override suspend fun getImage(imageId: String, size: ImageSize): File {
         val localFile =
@@ -197,17 +194,6 @@ class ImageLocalDatasourceImpl @Inject constructor(
         }
     }
 
-    override suspend fun getProviderImages(
-        offset: Int,
-        limit: Int
-    ): Result<List<MediaImage>> {
-        return runCatching {
-            context.contentResolver
-                .providerQuery(offset, limit)
-                ?.toProviderImages()
-                ?: emptyList()
-        }
-    }
 
     override suspend fun saveGalleryPhotos(uriStrings: List<String>): Result<List<Long>> = runCatching {
         val keyed = uriStrings.associateBy { buildExistingKey(it) }
@@ -388,30 +374,6 @@ class ImageLocalDatasourceImpl @Inject constructor(
                 while (moveToNext()) {
                     val id = getLong(idCol)
                     val uri = ContentUris.withAppendedId(mediaUri, id).toString()
-                    add(MediaImage(id, uri))
-                }
-            }
-        }
-    }
-
-    fun ContentResolver.providerQuery(offset: Int, limit: Int): Cursor? {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return null
-        val listUri = Uri.parse("content://$AUTHORITY/list")
-        val args = Bundle().apply {
-            putInt(ContentResolver.QUERY_ARG_LIMIT, limit)
-            putInt(ContentResolver.QUERY_ARG_OFFSET, offset)
-        }
-        return query(listUri, arrayOf("_id", "uri"), args, null)
-    }
-
-    private fun Cursor.toProviderImages(): List<MediaImage> {
-        return use { cursor ->
-            val idCol = getColumnIndexOrThrow("_id")
-            val uriCol = getColumnIndexOrThrow("uri")
-            buildList(count) {
-                while (moveToNext()) {
-                    val id = getLong(idCol)
-                    val uri = getString(uriCol)
                     add(MediaImage(id, uri))
                 }
             }

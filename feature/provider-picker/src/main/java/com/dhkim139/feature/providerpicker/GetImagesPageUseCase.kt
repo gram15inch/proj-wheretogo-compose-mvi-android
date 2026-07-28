@@ -1,4 +1,4 @@
-package com.wheretogo.domain.usecase.util
+package com.dhkim139.feature.providerpicker
 
 import com.wheretogo.domain.model.util.MediaImage
 

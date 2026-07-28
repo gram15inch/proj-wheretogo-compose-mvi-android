@@ -27,7 +27,6 @@ data class DataBuildConfig(
     val naverMapsApigwClientSecretkey: String,
     val naverClientIdKey: String,
     val naverClientSecretKey: String,
-    val authority: String,
     val isTokenLog: Boolean,
     val dbPrefix: String,
 )

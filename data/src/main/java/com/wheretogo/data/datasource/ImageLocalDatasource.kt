@@ -32,8 +32,6 @@ interface ImageLocalDatasource {
 
     suspend fun getMediaImages(offset: Int, limit: Int): Result<List<MediaImage>>
 
-    suspend fun getProviderImages(offset: Int, limit: Int): Result<List<MediaImage>>
-
     suspend fun loadAllPhotos(): Result<List<PhotoEntity>>
 
     fun observePhotos(): Flow<List<PhotoEntity>>
