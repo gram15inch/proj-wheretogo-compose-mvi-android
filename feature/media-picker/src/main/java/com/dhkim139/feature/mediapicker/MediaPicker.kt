@@ -67,14 +67,14 @@ import com.dhkim139.core.ui.permission.openSetting
 import com.dhkim139.core.ui.permission.requestPermission
 import com.dhkim139.core.ui.theme.Palette
 import com.dhkim139.core.ui.theme.WhereTogoTheme
-import com.dhkim139.feature.mediapicker.model.PickerImage
+import com.dhkim139.feature.mediapicker.model.MediaPickerItem
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MediaPicker(
-    onPicked: (List<PickerImage>) -> Unit,
+    onPicked: (List<MediaPickerItem>) -> Unit,
     onNavigateBack: () -> Unit = {},
     viewModel: MediaPickerViewModel = hiltViewModel(),
 ) {
@@ -197,7 +197,7 @@ private fun DeniedView(onRequestPermission: () -> Unit) {
 @Composable
 private fun GalleryView(
     access: MediaAccess,
-    pagingItems: LazyPagingItems<PickerImage>,
+    pagingItems: LazyPagingItems<MediaPickerItem>,
     selected: Set<Long>,
     onToggle: (Long) -> Unit,
     onOpenPicker: () -> Unit,
@@ -335,7 +335,7 @@ private fun PartialBanner(onRequestMore: () -> Unit) {
 
 @Composable
 private fun PhotoCell(
-    image: PickerImage,
+    image: MediaPickerItem,
     isSelected: Boolean,
     onClick: () -> Unit,
 ) {
@@ -406,8 +406,8 @@ private fun Modifier.clickableNoRipple(onClick: () -> Unit): Modifier = this.the
 )
 
 @Composable
-private fun fakePagingItems(count: Int): LazyPagingItems<PickerImage> {
-    val items = (0 until count).map { PickerImage(id = it.toLong(), uri = Uri.EMPTY) }
+private fun fakePagingItems(count: Int): LazyPagingItems<MediaPickerItem> {
+    val items = (0 until count).map { MediaPickerItem(id = it.toLong(), uri = Uri.EMPTY) }
     return flowOf(PagingData.from(items))
         .collectAsLazyPagingItems()
 }
