@@ -8,8 +8,8 @@ import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.paging.cachedIn
-import com.dhkim139.feature.providerpicker.model.PickerImage
-import com.dhkim139.feature.providerpicker.model.PickerImage.Companion.toPickerImage
+import com.dhkim139.feature.providerpicker.model.ProviderPickerItem
+import com.dhkim139.feature.providerpicker.model.ProviderPickerItem.Companion.toPickerImage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -38,7 +38,7 @@ class ProviderPickerViewModel  @Inject constructor(
     val uiState: StateFlow<ProviderPickerUiState> = _uiState.asStateFlow()
     val uiEvent = _uiEvent.asSharedFlow()
 
-    val images: Flow<PagingData<PickerImage>> =
+    val images: Flow<PagingData<ProviderPickerItem>> =
         Pager(
             config = PagingConfig(
                 pageSize = 60,
@@ -69,15 +69,15 @@ class ProviderPickerViewModel  @Inject constructor(
 
 class MediaPagingSource(
     private val getImagesPage: GetImagesPageUseCase,
-) : PagingSource<Int, PickerImage>() {
+) : PagingSource<Int, ProviderPickerItem>() {
 
-    override fun getRefreshKey(state: PagingState<Int, PickerImage>): Int? {
+    override fun getRefreshKey(state: PagingState<Int, ProviderPickerItem>): Int? {
         val anchor = state.anchorPosition ?: return null
         val page = state.closestPageToPosition(anchor)
         return page?.prevKey?.plus(1) ?: page?.nextKey?.minus(1)
     }
 
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, PickerImage> {
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, ProviderPickerItem> {
         val offset = params.key ?: 0
         val limit = params.loadSize
         return try {

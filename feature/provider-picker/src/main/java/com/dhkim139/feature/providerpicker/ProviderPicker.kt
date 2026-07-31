@@ -54,13 +54,13 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.dhkim139.core.ui.theme.Palette
 import com.dhkim139.core.ui.theme.WhereTogoTheme
-import com.dhkim139.feature.providerpicker.model.PickerImage
+import com.dhkim139.feature.providerpicker.model.ProviderPickerItem
 import kotlinx.coroutines.flow.flowOf
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProviderPicker(
-    onPicked: (List<PickerImage>) -> Unit,
+    onPicked: (List<ProviderPickerItem>) -> Unit,
     onNavigateBack: () -> Unit = {},
     viewModel: ProviderPickerViewModel = hiltViewModel(),
 ) {
@@ -128,7 +128,7 @@ fun ProviderPicker(
 
 @Composable
 private fun GalleryView(
-    pagingItems: LazyPagingItems<PickerImage>,
+    pagingItems: LazyPagingItems<ProviderPickerItem>,
     selected: Set<Long>,
     onToggle: (Long) -> Unit
 ) {
@@ -200,7 +200,7 @@ private fun PickPhotoBanner() {
 
 @Composable
 private fun PhotoCell(
-    image: PickerImage,
+    image: ProviderPickerItem,
     isSelected: Boolean,
     onClick: () -> Unit,
 ) {
@@ -271,8 +271,8 @@ private fun Modifier.clickableNoRipple(onClick: () -> Unit): Modifier = this.the
 )
 
 @Composable
-private fun fakePagingItems(count: Int): LazyPagingItems<PickerImage> {
-    val items = (0 until count).map { PickerImage(id = it.toLong(), uri = Uri.EMPTY) }
+private fun fakePagingItems(count: Int): LazyPagingItems<ProviderPickerItem> {
+    val items = (0 until count).map { ProviderPickerItem(id = it.toLong(), uri = Uri.EMPTY) }
     return flowOf(PagingData.from(items))
         .collectAsLazyPagingItems()
 }

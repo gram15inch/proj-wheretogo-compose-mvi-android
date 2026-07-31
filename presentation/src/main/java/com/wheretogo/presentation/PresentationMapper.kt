@@ -1,6 +1,7 @@
 package com.wheretogo.presentation
 
 
+import com.dhkim139.feature.providerpicker.model.ProviderPickerItem
 import com.wheretogo.domain.AuthCompany
 import com.wheretogo.domain.MarkerType
 import com.wheretogo.domain.PathType
@@ -22,6 +23,7 @@ import com.wheretogo.domain.model.util.Navigation
 import com.wheretogo.presentation.model.LeafInfo
 import com.wheretogo.presentation.model.MiniPhoto
 import com.wheretogo.presentation.model.PathInfo
+import com.wheretogo.presentation.model.PickedImage
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.CheckPointAddState
 import com.wheretogo.presentation.state.CommentState
@@ -181,3 +183,8 @@ fun GalleryPhoto.toMiniPhoto(): MiniPhoto {
         courseName = courseName?:""
     )
 }
+
+fun ProviderPickerItem.toPickedImageGroup() = PickedImage(
+    id = id,
+    uri = uri
+)

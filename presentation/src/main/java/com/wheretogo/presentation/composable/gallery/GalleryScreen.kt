@@ -81,6 +81,7 @@ import com.wheretogo.presentation.intent.GalleryIntent
 import com.wheretogo.presentation.model.PhotoSection
 import com.wheretogo.presentation.model.PickedImage
 import com.wheretogo.presentation.state.GalleryState
+import com.wheretogo.presentation.toPickedImageGroup
 import com.wheretogo.presentation.viewmodel.GalleryFlowViewModel
 import kotlinx.coroutines.delay
 
@@ -209,8 +210,8 @@ fun GalleryScreen(
         exit = slideOutVertically { it } + fadeOut(),
     ) {
         ProviderPicker(
-            onPicked = { picked ->
-                viewModel.handleIntent(GalleryIntent.MediaPicked(PickedImage.fromPicker(picked)))
+            onPicked = { items ->
+                viewModel.handleIntent(GalleryIntent.MediaPicked(items.map { it.toPickedImageGroup() }))
             },
             onNavigateBack = { viewModel.handleIntent(GalleryIntent.DismissPicker) },
         )

@@ -9,10 +9,6 @@ data class PickedImage(
     val uri: Uri
 ){
 
-    companion object{
-        fun fromPicker(list:List<PickerImage>) = list.map { PickedImage(it.id,it.uri) }
-    }
-
     fun toMarkerImage(): MediaImage {
         return MediaImage(
             id = id,
