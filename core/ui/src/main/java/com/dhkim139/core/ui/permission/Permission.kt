@@ -9,9 +9,9 @@ import android.net.Uri
 import android.provider.Settings
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.dhkim139.core.ui.R
 import com.dhkim139.core.ui.event.AppEvent
 import com.dhkim139.core.ui.event.EventBus
-import com.dhkim139.core.ui.R
 import com.dhkim139.core.ui.model.EventMsg
 import com.dhkim139.core.ui.model.MediaAccess
 import kotlinx.coroutines.Dispatchers
@@ -77,6 +77,12 @@ fun checkFalseOrData(context: Context, appPermission: AppPermission): Any {
         ContextCompat.checkSelfPermission(context, p) == PackageManager.PERMISSION_GRANTED
     }
     return when (appPermission) {
+        AppPermission.LOCATION->{
+            when{
+                granted(Manifest.permission.ACCESS_FINE_LOCATION) -> true
+                else -> false
+            }
+        }
         AppPermission.MEDIA -> {
             when {
                 granted(Manifest.permission.READ_MEDIA_IMAGES) -> MediaAccess.FULL
