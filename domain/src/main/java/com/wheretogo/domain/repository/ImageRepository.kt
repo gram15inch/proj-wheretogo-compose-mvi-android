@@ -26,7 +26,7 @@ interface ImageRepository {
     fun observeGalleryPhotos(): Flow<List<GalleryPhoto>>
     fun observeStampedGalleryPhotos(limit: Int): Flow<List<GalleryPhoto>>
     suspend fun refreshGalleyPhotosByUserId(userId: String):Result<Unit>
-    suspend fun saveGalleryPhotos(imgUriStrings: List<String>): Result<List<Long>>
+    suspend fun saveGalleryPhotos(images: List<MediaImage>): Result<List<Long>>
     suspend fun updateGalleryPhotos(photos: List<GalleryPhoto>): Result<Unit>
     suspend fun clearStampAt(imageIds: List<String>): Result<Unit>
     suspend fun clearGalleryPhotos(ids: Set<Long>): Result<Set<Long>>

@@ -4,7 +4,12 @@ import android.Manifest
 import android.os.Build
 
 sealed class AppPermission(val names: List<String>) {
-    data object LOCATION : AppPermission(listOf(Manifest.permission.ACCESS_FINE_LOCATION))
+    data object LOCATION : AppPermission(
+        buildList {
+            add(Manifest.permission.ACCESS_COARSE_LOCATION)
+            add(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+    )
     data object MEDIA : AppPermission(
         buildList {
             val api = Build.VERSION.SDK_INT

@@ -8,6 +8,7 @@ import com.wheretogo.domain.model.gallery.GalleryPhoto
 import com.wheretogo.domain.usecase.gallery.DeleteGalleryPhotosUseCase
 import com.wheretogo.domain.usecase.gallery.LoadGalleryPhotosUseCase
 import com.wheretogo.domain.usecase.gallery.SavePickedImagesUseCase
+import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
 import com.wheretogo.presentation.MainDispatcher
 import com.wheretogo.presentation.feature.ByCourseGrouping
 import com.wheretogo.presentation.feature.ByDayGrouping
@@ -20,13 +21,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -38,16 +37,15 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 
-sealed interface GalleryUiEffect {
-    data class NavigateToDetail(val photoId: Long) : GalleryUiEffect
-}
-
 data class GroupPhoto(val photos: List<GalleryPhoto>, val selectedIndex: Int)
+
+enum class PickerVisible { CAMERA, GALLERY, INVISIBLE }
 
 @HiltViewModel
 class GalleryFlowViewModel @Inject constructor(
     @MainDispatcher private val dispatcher: CoroutineDispatcher,
     private val handler: GalleryFlowHandler,
+    private val getUserProfileStreamUseCase: GetUserProfileStreamUseCase,
     private val savePickedImagesUseCase: SavePickedImagesUseCase,
     private val loadGalleryPhotosUseCase: LoadGalleryPhotosUseCase,
     private val deleteGalleryPhotosUseCase: DeleteGalleryPhotosUseCase,
@@ -56,9 +54,6 @@ class GalleryFlowViewModel @Inject constructor(
         MutableStateFlow<GalleryState>(GalleryState.Loading)
     val galleryState: StateFlow<GalleryState> = _galleyState.asStateFlow()
 
-    private val _effect = MutableSharedFlow<GalleryUiEffect>()
-    val effect: SharedFlow<GalleryUiEffect> = _effect.asSharedFlow()
-
     val groupings: List<GroupingStrategy> = listOf(ByCourseGrouping(), ByDayGrouping())
     private var _grouping: GroupingStrategy = groupings.first()
     val currentGroupingLabel: Int get() = _grouping.label
@@ -66,8 +61,8 @@ class GalleryFlowViewModel @Inject constructor(
     private var _cachedPhotos: List<GalleryPhoto> = emptyList()
     private val _detailPhotoId = MutableStateFlow<Long?>(null)
 
-    private val _pickerVisible = MutableStateFlow<Boolean?>(null)
-    val pickerVisible : StateFlow<Boolean?> = _pickerVisible
+    private val _pickerVisible: MutableStateFlow<PickerVisible?> = MutableStateFlow<PickerVisible?>(null)
+    val pickerVisible: StateFlow<PickerVisible?> = _pickerVisible
 
     val groupPhoto: StateFlow<GroupPhoto?> = _detailPhotoId
         .map { id ->
@@ -107,9 +102,11 @@ class GalleryFlowViewModel @Inject constructor(
 
                 is GalleryIntent.Refresh -> refreshGallery()
                 is GalleryIntent.MediaPicked -> onMediaPicked(intent.images)
+                is GalleryIntent.CameraPicked -> onCameraPicked(intent.images)
 
                 is GalleryIntent.ChangeGrouping -> changeGrouping(intent.strategy)
-                is GalleryIntent.PhotoAddClick -> handelPickerVisible(true)
+                is GalleryIntent.PhotoAddClick -> handelPickerVisible(PickerVisible.CAMERA)
+                is GalleryIntent.GroupingButtonLongClick -> handelPickerVisible(PickerVisible.GALLERY)
                 is GalleryIntent.PhotoClick -> onPhotoClick(intent.pickerId)
                 is GalleryIntent.PhotoLongClick -> onPhotoLongClick(intent.pickerId)
                 is GalleryIntent.ClearSelection -> clearSelection()
@@ -119,7 +116,7 @@ class GalleryFlowViewModel @Inject constructor(
                 is GalleryIntent.OpenDetail -> openDetail(intent.id)
                 is GalleryIntent.CloseDetail -> closeDetail()
 
-                is GalleryIntent.DismissPicker -> handelPickerVisible(false)
+                is GalleryIntent.DismissPicker -> handelPickerVisible(PickerVisible.INVISIBLE)
             }
         }
     }
@@ -129,7 +126,18 @@ class GalleryFlowViewModel @Inject constructor(
     }
 
     private suspend fun onMediaPicked(images: List<PickedImage>) {
-        _pickerVisible.value = false
+        _pickerVisible.value = PickerVisible.INVISIBLE
+        if (images.isEmpty()) return
+        _galleyState.value = GalleryState.Loading
+        val mediaImages = images.map { it.toMarkerImage() }
+        withContext(Dispatchers.IO) { savePickedImagesUseCase(mediaImages) }
+            .onSuccess { refreshGallery() }
+            .onFailure { handleError(it, GalleryFlowMsgEvent.MEDIA_SAVE_FAIL) }
+
+    }
+
+    private suspend fun onCameraPicked(images: List<PickedImage>) {
+        _pickerVisible.value = PickerVisible.INVISIBLE
         if (images.isEmpty()) return
         _galleyState.value = GalleryState.Loading
         val mediaImages = images.map { it.toMarkerImage() }
@@ -159,8 +167,6 @@ class GalleryFlowViewModel @Inject constructor(
         _galleyState.value.onSuccessAwait {
             if (it.isSelectionMode) {
                 it.toggleSelection(photoId)
-            } else {
-                _effect.emit(GalleryUiEffect.NavigateToDetail(photoId))
             }
         }
     }
@@ -194,14 +200,19 @@ class GalleryFlowViewModel @Inject constructor(
         }
     }
 
-    private fun handelPickerVisible(isShow: Boolean) {
-        _pickerVisible.value = isShow
+    private suspend fun handelPickerVisible(pickerVisible: PickerVisible) {
+        if(pickerVisible == PickerVisible.GALLERY){
+            val profile= getUserProfileStreamUseCase().first().getOrNull()
+            if(profile?.isAdmin != true)
+                return
+        }
+        _pickerVisible.value = pickerVisible
     }
 
     private fun initialize(openPicker: Boolean) {
         handleIntent(GalleryIntent.Refresh)
         if(_pickerVisible.value == null && openPicker)
-            _pickerVisible.value = true
+            _pickerVisible.value = PickerVisible.CAMERA
     }
 
     // 상세화면

@@ -4,23 +4,16 @@ import android.net.Uri
 import androidx.core.net.toUri
 import com.wheretogo.domain.model.util.MediaImage
 
-data class PickerImage(
+data class MediaPickerItem(
     val id: Long,
-    val uri: Uri,
+    val uri: Uri
 ) {
     companion object {
-        fun MediaImage.toPickerImage(): PickerImage {
-            return PickerImage(
+        fun MediaImage.toPickerImage(): MediaPickerItem {
+            return MediaPickerItem(
                 id = id,
                 uri = uriString.toUri()
             )
         }
-    }
-
-    fun toMarkerImage(): MediaImage {
-        return MediaImage(
-            id = id,
-            uri.toString()
-        )
     }
 }

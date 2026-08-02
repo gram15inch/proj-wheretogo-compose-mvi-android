@@ -73,15 +73,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.dhkim139.core.ui.screen.clickWithLongClick
+import com.dhkim139.feature.camerapicker.CameraPicker
 import com.wheretogo.domain.model.gallery.GalleryPhoto
 import com.wheretogo.presentation.R
 import com.dhkim139.feature.providerpicker.ProviderPicker
 import com.wheretogo.presentation.feature.GroupingStrategy
 import com.wheretogo.presentation.intent.GalleryIntent
 import com.wheretogo.presentation.model.PhotoSection
-import com.wheretogo.presentation.model.PickedImage
 import com.wheretogo.presentation.state.GalleryState
+import com.wheretogo.presentation.toPickedImageGroup
 import com.wheretogo.presentation.viewmodel.GalleryFlowViewModel
+import com.wheretogo.presentation.viewmodel.PickerVisible
 import kotlinx.coroutines.delay
 
 
@@ -96,7 +99,7 @@ fun GalleryScreen(
     viewModel: GalleryFlowViewModel,
 ) {
     val uiState by viewModel.galleryState.collectAsStateWithLifecycle()
-    val showPicker by viewModel.pickerVisible.collectAsStateWithLifecycle()
+    val picker by viewModel.pickerVisible.collectAsStateWithLifecycle()
     var showGroupingSheet by rememberSaveable { mutableStateOf(false) }
 
 
@@ -136,6 +139,9 @@ fun GalleryScreen(
                         allSelected = state.allPhotos.isNotEmpty() &&
                                 state.selectedIds.size == state.allPhotos.size,
                         onGroupingButtonClick = { showGroupingSheet = true },
+                        onGroupingButtonLongClick = {
+                            viewModel.handleIntent(GalleryIntent.GroupingButtonLongClick)
+                        },
                         onToggleSelectAll = {
                             if (state.selectedIds.size == state.allPhotos.size)
                                 viewModel.handleIntent(GalleryIntent.ClearSelection)
@@ -204,15 +210,28 @@ fun GalleryScreen(
     }
 
     AnimatedVisibility(
-        visible = showPicker == true,
+        visible = picker == PickerVisible.GALLERY,
         enter = slideInVertically { it } + fadeIn(),
         exit = slideOutVertically { it } + fadeOut(),
     ) {
         ProviderPicker(
-            onPicked = { picked ->
-                viewModel.handleIntent(GalleryIntent.MediaPicked(PickedImage.fromPicker(picked)))
+            onPicked = { items ->
+                viewModel.handleIntent(GalleryIntent.MediaPicked(items.map { it.toPickedImageGroup() }))
             },
             onNavigateBack = { viewModel.handleIntent(GalleryIntent.DismissPicker) },
+        )
+    }
+
+    AnimatedVisibility(
+        visible = picker == PickerVisible.CAMERA,
+        enter = slideInVertically { it } + fadeIn(),
+        exit = slideOutVertically { it } + fadeOut(),
+    ) {
+        CameraPicker(
+            onPicked = { items->
+                viewModel.handleIntent(GalleryIntent.MediaPicked(items.toPickedImageGroup()))
+            },
+            onNavigateBack = { viewModel.handleIntent(GalleryIntent.DismissPicker) }
         )
     }
 
@@ -236,6 +255,7 @@ private fun GalleryTopArea(
     sheetExpanded: Boolean,
     allSelected: Boolean,
     onGroupingButtonClick: () -> Unit,
+    onGroupingButtonLongClick : () -> Unit,
     onToggleSelectAll: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -253,7 +273,8 @@ private fun GalleryTopArea(
             groupingLabel = groupingLabel,
             selectionMode = selectionMode,
             sheetExpanded = sheetExpanded,
-            onGroupingButtonClick = onGroupingButtonClick
+            onGroupingButtonClick = onGroupingButtonClick,
+            onGroupingButtonLongClick = onGroupingButtonLongClick
         )
         SelectHeader(
             modifier = Modifier.graphicsLayer { alpha = fadeAlpha },
@@ -271,11 +292,21 @@ private fun GroupHeader(
     selectionMode: Boolean,
     sheetExpanded: Boolean,
     onGroupingButtonClick: () -> Unit,
+    onGroupingButtonLongClick: () -> Unit,
 ) {
     Row(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
-            .then(if (!selectionMode) Modifier.clickable(onClick = onGroupingButtonClick) else Modifier)
+            .then(
+                if (!selectionMode) {
+                    Modifier.clickWithLongClick(
+                        onClick = onGroupingButtonClick,
+                        onLongClick = onGroupingButtonLongClick
+                    )
+                } else {
+                    Modifier
+                }
+            )
             .padding(horizontal = 4.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

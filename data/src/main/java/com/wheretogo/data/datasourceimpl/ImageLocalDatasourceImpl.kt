@@ -1,20 +1,13 @@
 package com.wheretogo.data.datasourceimpl
 
 import android.content.ContentResolver
-import android.content.ContentUris
 import android.content.Context
 import android.database.Cursor
 import android.graphics.Bitmap
 import android.location.Geocoder
-import android.net.Uri
-import android.os.Build
-import android.os.Bundle
-import android.provider.MediaStore
 import android.provider.OpenableColumns
 import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
-import androidx.core.os.bundleOf
-import com.wheretogo.data.DataBuildConfig
 import com.wheretogo.data.ImageFormat
 import com.wheretogo.data.datasource.ImageLocalDatasource
 import com.wheretogo.data.datasourceimpl.database.GalleryDatabase
@@ -184,14 +177,14 @@ class ImageLocalDatasourceImpl @Inject constructor(
         }
     }
 
-    override suspend fun saveGalleryPhotos(uriStrings: List<String>): Result<List<Long>> = runCatching {
-        val keyed = uriStrings.associateBy { buildExistingKey(it) }
+    override suspend fun saveGalleryPhotos(images: List<MediaImage>): Result<List<Long>> = runCatching {
+        val keyed = images.associateBy { buildExistingKey(it.uriString) }
         val existingKeys = photoDao.findExistingKeys(keyed.keys.toList()).toSet()
         val targets = keyed.filterKeys { it !in existingKeys }
         if (targets.isEmpty()) return@runCatching emptyList()
 
         val entities = createEntity(targets)
-        val rowIds = upsertPhotos(entities).getOrThrow()
+        val rowIds = upsertPhotos( entities).getOrThrow()
 
         entities.filterIndexed { i, entity ->
             val inserted = rowIds.getOrNull(i) != -1L
@@ -295,26 +288,36 @@ class ImageLocalDatasourceImpl @Inject constructor(
         }
     }
 
-    private suspend fun createEntity(targets: Map<String, String>): List<PhotoEntity> {
+    private suspend fun createEntity(targets: Map<String, MediaImage>): List<PhotoEntity> {
         val semaphore = Semaphore(10)
         return coroutineScope {
             val geocoder = Geocoder(context, Locale.KOREA)
-            targets.map { (sourceKey, uriString) ->
+            targets.map { (sourceKey, image) ->
                 async {
                     semaphore.withPermit {
                         runCatching {
-                            val exif = context.contentResolver.createExifData(uriString)
-                            val (lat, lng) = exif?.latitude to exif?.longitude
+                            val exif =
+                                context.contentResolver.createExifData(image.uriString)?.let {
+                                    if (image.latLng != null) {
+                                        it.copy(
+                                            latitude = image.latLng?.latitude,
+                                            longitude = image.latLng?.longitude,
+                                        )
+                                    } else {
+                                        it
+                                    }
+                                }
+
 
                             val imageId = generateImageId()
                             val encodeDeferred = async {
-                                encodeImage(uriString, ImageSize.entries)
+                                encodeImage(image.uriString, ImageSize.entries)
                                     .getOrThrow()
                             }
 
                             val addressDeferred = async {
-                                if (lat != null && lng != null) {
-                                    geocoder.getFromLocation(lat, lng, 1)?.firstOrNull()
+                                if (exif?.latitude != null && exif.longitude!=null) {
+                                    geocoder.getFromLocation(exif.latitude, exif.longitude, 1)?.firstOrNull()
                                 } else null
                             }
 

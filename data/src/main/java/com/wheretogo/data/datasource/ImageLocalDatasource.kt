@@ -40,7 +40,7 @@ interface ImageLocalDatasource {
 
     suspend fun getPhotosByImageId(imageIds: List<String>): Result<List<PhotoEntity>>
 
-    suspend fun saveGalleryPhotos(uriStrings: List<String>): Result<List<Long>>
+    suspend fun saveGalleryPhotos(images: List<MediaImage>): Result<List<Long>>
 
     suspend fun upsertPhotos(photos: List<PhotoEntity>): Result<List<Long>>
 

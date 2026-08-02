@@ -62,6 +62,7 @@ coroutines-play-services = "1.9.0"
 coroutines-test = "1.10.2"
 turbine = "1.2.1"
 splashscreen = "1.2.0"
+play-services-location-version = "21.4.0"
 
 [plugins]
 wheretogo-android-application = { id = "wheretogo.android.application", version = "unspecified" }
@@ -203,6 +204,7 @@ cash-turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 google-truth = { module = "com.google.truth:truth", version.ref = "truth" }
 androidx-paging-common = { group = "androidx.paging", name = "paging-common", version.ref = "paging-common" }
 androidx-paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging-compose" }
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "play-services-location-version" }
 
 [bundles]
 androidx-lifecycle = ["androidx-lifecycle-runtime-ktx", "androidx-lifecycle-viewmodel-compose"]
