@@ -7,10 +7,12 @@ sealed interface GalleryIntent {
     data class Initialize(val openPicker: Boolean) : GalleryIntent
     data object Refresh : GalleryIntent
     data class MediaPicked(val images: List<PickedImage>) : GalleryIntent
+    data class CameraPicked(val images: List<PickedImage>) : GalleryIntent
     data class ChangeGrouping(val strategy: GroupingStrategy) : GalleryIntent
     data class OpenDetail(val id: Long) : GalleryIntent
     data object CloseDetail : GalleryIntent
     data object PhotoAddClick : GalleryIntent
+    data object GroupingButtonLongClick : GalleryIntent
     data class PhotoClick(val pickerId: Long) : GalleryIntent
     data class PhotoLongClick(val pickerId: Long) : GalleryIntent
     data object ClearSelection : GalleryIntent
