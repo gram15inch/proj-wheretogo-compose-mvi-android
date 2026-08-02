@@ -1,6 +1,7 @@
 package com.wheretogo.presentation
 
 
+import com.dhkim139.feature.camerapicker.model.VerifiedImageGroup
 import com.dhkim139.feature.providerpicker.model.ProviderPickerItem
 import com.wheretogo.domain.AuthCompany
 import com.wheretogo.domain.MarkerType
@@ -186,5 +187,24 @@ fun GalleryPhoto.toMiniPhoto(): MiniPhoto {
 
 fun ProviderPickerItem.toPickedImageGroup() = PickedImage(
     id = id,
-    uri = uri
+    uri = uri,
+    latLng = null
 )
+
+fun VerifiedImageGroup.toPickedImageGroup() =
+    images.map { image ->
+        PickedImage(
+            id = image.id,
+            uri = image.uri,
+            latLng = LatLng().let {
+                val latLng = image.location
+                if (latLng != null)
+                    it.copy(
+                        latLng.lat,
+                        latLng.lng
+                    )
+                else
+                    null
+            }
+        )
+    }

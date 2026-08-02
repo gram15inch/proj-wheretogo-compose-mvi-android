@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="camerapicker_title">Add photos</string>
+    <string name="camerapicker_subtitle">You can add several from right here</string>
+
+    <string name="camerapicker_tap_to_capture">Tap to capture</string>
+    <string name="camerapicker_capture_again">Retake</string>
+    <string name="camerapicker_permission_needed">Location access needed</string>
+    <string name="camerapicker_permission_rationale">Location is needed to sort your photos by course</string>
+
+    <string name="camerapicker_finding_location">Finding your location</string>
+    <string name="camerapicker_finding_location_sub">Just a moment</string>
+
+    <string name="camerapicker_unverified_banner">Location not recorded — too much time since capture</string>
+
+    <string name="camerapicker_picked_count">Added %1$d</string>
+    <string name="camerapicker_edit">Edit</string>
+    <string name="camerapicker_done">Done</string>
+
+    <string name="camerapicker_location_confirmed">Location confirmed</string>
+    <string name="camerapicker_location_accuracy">High accuracy · ±%1$dm</string>
+    <string name="camerapicker_location_locating">Getting location…</string>
+    <string name="camerapicker_location_unavailable">Can\'t get your location</string>
+    <string name="camerapicker_permission_off">Location off</string>
+    <string name="camerapicker_allow">Allow</string>
+    <string name="camerapicker_open_settings">Open settings</string>
+
+    <string name="camerapicker_exit_without_saving">Exit without saving</string>
+    <string name="camerapicker_complete_add">Done · add %1$d</string>
+
+    <string name="camerapicker_exit_dialog_title">Exit without saving?</string>
+    <string name="camerapicker_exit_dialog_message">%1$d photo(s) won\'t be saved.</string>
+    <string name="camerapicker_exit_confirm">Exit</string>
+    <string name="camerapicker_exit_dismiss">Keep capturing</string>
+</resources>
