@@ -212,9 +212,9 @@
     <string name="cancel">취소</string>
     <string name="how_show">어떻게 볼까요?</string>
     <string name="detail_info">상세 정보</string>
-    <string name="empty_gallery_question_title">혹시 코스에서 찍은 사진, 있지 않나요?</string>
-    <string name="empty_gallery_question_description">폰에 잠들어 있는 그 사진이면 충분해요.\n올리는 순간 코스를 알아서 찾아드려요.</string>
-    <string name="empty_gallery_find_in_gallery_button">갤러리에서 찾아보기</string>
+    <string name="empty_gallery_question_title">기억에 남는 곳이었나요?</string>
+    <string name="empty_gallery_question_description">올리는 순간 코스를 알아서 찾아드려요.</string>
+    <string name="empty_gallery_find_in_gallery_button">사진 추가하기</string>
     <string name="empty_gallery_location_hint">위치 정보가 담긴 사진이면 바로 인식돼요</string>
 
     <!-- 포토 뷰어 -->

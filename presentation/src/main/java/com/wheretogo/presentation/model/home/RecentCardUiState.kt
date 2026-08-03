@@ -7,11 +7,12 @@ import com.wheretogo.domain.RecentCardSituation
 data class RecentCardUiState(
     val imageModel: String?,
     val stampAt: Long?,
-    val situation: RecentCardSituation = RecentCardSituation.RECENT,
+    val situation: RecentCardSituation = RecentCardSituation.LOADING,
 ) {
     val isEmpty: Boolean get() = imageModel == null && stampAt == null
 
     companion object {
         val Empty = RecentCardUiState(imageModel = null, stampAt = null, situation = RecentCardSituation.EMPTY)
+        val Loading = RecentCardUiState(imageModel = null, stampAt = null, situation = RecentCardSituation.LOADING)
     }
 }
