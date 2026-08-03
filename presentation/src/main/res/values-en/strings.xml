@@ -207,9 +207,9 @@
     <string name="cancel">Cancel</string>
     <string name="how_show">How would you like to view them?</string>
     <string name="detail_info">Details</string>
-    <string name="empty_gallery_question_title">Got any photos taken on a course?</string>
-    <string name="empty_gallery_question_description">That photo sitting in your phone is all you need.\nUpload it and we\'ll find the course for you.</string>
-    <string name="empty_gallery_find_in_gallery_button">Browse my gallery</string>
+    <string name="empty_gallery_question_title">Somewhere memorable?</string>
+    <string name="empty_gallery_question_description">Upload a photo and we\'ll find the course for you.</string>
+    <string name="empty_gallery_find_in_gallery_button">Add Photo</string>
     <string name="empty_gallery_location_hint">Photos with location info are recognized instantly</string>
 
     <!-- Photo viewer -->
