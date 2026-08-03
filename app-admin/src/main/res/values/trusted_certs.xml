@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="trusted_certs">
+        <item>7e75ce04bafe255b1bd94676f8d5d516c1432e6a2423d8a1e7f9f43ad4535388</item>
+    </string-array>
+</resources>
