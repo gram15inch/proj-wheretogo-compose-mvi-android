@@ -21,6 +21,7 @@ fun ReportReason.toDisplayName(): String = when (this) {
 
 @ArrayRes
 fun RecentCardSituation.headlineArrayRes(): Int = when (this) {
+    RecentCardSituation.LOADING,
     RecentCardSituation.EMPTY -> R.array.recent_card_headline_empty
     RecentCardSituation.TODAY -> R.array.recent_card_headline_today
     RecentCardSituation.RECENT -> R.array.recent_card_headline_recent
@@ -30,6 +31,7 @@ fun RecentCardSituation.headlineArrayRes(): Int = when (this) {
 
 @ArrayRes
 fun RecentCardSituation.kaomojiArrayRes(): Int = when (this) {
+    RecentCardSituation.LOADING,
     RecentCardSituation.EMPTY -> R.array.recent_card_kaomoji_empty
     RecentCardSituation.TODAY -> R.array.recent_card_kaomoji_today
     RecentCardSituation.RECENT -> R.array.recent_card_kaomoji_recent

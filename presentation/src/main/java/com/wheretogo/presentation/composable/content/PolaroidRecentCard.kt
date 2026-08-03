@@ -60,48 +60,52 @@ fun PolaroidRecentCard(
 
 
     Surface(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().height(90.dp),
         shape = RoundedCornerShape(16.dp),
         color = cs.surface,
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .pressHighlightEffect(interactionSource)
-                .clickable(
-                    interactionSource = interactionSource,
-                    indication = null,
-                    onClick = onCardClick,
-                )
-                .padding(horizontal = 6.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            PolaroidFrame(imageModel = state.imageModel)
+        if(state.situation == RecentCardSituation.LOADING){
+            RowAdPlaceholder()
+        }else{
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .pressHighlightEffect(interactionSource)
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null,
+                        onClick = onCardClick,
+                    )
+                    .padding(horizontal = 6.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                PolaroidFrame(imageModel = state.imageModel)
 
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = headline,
-                    style = MaterialTheme.typography.titleSmall,
-                    lineHeight = 22.sp,
-                    color = cs.onSurface,
-                )
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    text = if (lastStampLabel == null) {
-                        "$kaomoji · ${stringResource(R.string.recent_card_total_empty)}"
-                    } else {
-                        "$kaomoji · $lastStampLabel"
-                    },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = cs.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = headline,
+                        style = MaterialTheme.typography.titleSmall,
+                        lineHeight = 22.sp,
+                        color = cs.onSurface,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = if (lastStampLabel == null) {
+                            "$kaomoji · ${stringResource(R.string.recent_card_total_empty)}"
+                        } else {
+                            "$kaomoji · $lastStampLabel"
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = cs.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+
+
+                AddButton(highlighted = state.isEmpty, onClick = onAddClick)
             }
-
-
-            AddButton(highlighted = state.isEmpty, onClick = onAddClick)
         }
     }
 }
@@ -197,6 +201,7 @@ private fun PolaroidRecentCardPreview() {
                 ),
             )
             PolaroidRecentCard(state = RecentCardUiState.Empty)
+            PolaroidRecentCard(state = RecentCardUiState.Loading)
         }
     }
 }

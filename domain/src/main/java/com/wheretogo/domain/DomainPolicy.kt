@@ -267,5 +267,5 @@ enum class PathType {
 }
 
 enum class RecentCardSituation {
-    EMPTY, TODAY, RECENT, PAUSED, DORMANT
+    LOADING, EMPTY, TODAY, RECENT, PAUSED, DORMANT
 }
