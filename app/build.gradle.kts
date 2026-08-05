@@ -83,9 +83,10 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
-    junitPlatform {
-        instrumentationTests.includeExtensions.set(true)
-    }
+}
+
+junitPlatform {
+    instrumentationTests.includeExtensions.set(true)
 }
 
 dependencies {
@@ -124,7 +125,6 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.datastore.preferences.core.jvm)
 
     // Hilt compiler (AndroidX)
     ksp(libs.androidx.hilt.compiler)

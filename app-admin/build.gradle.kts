@@ -95,7 +95,6 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.datastore.preferences.core.jvm)
 
     // Hilt compiler (AndroidX)
     ksp(libs.androidx.hilt.compiler)
