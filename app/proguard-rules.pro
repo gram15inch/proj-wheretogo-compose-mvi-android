@@ -32,3 +32,6 @@
 
 
 -keep class kr.co.shineware.** { *; }
+
+-keep class * implements com.google.firebase.components.ComponentRegistrar { *; }
+-keep class com.google.firebase.components.** { *; }
