@@ -83,7 +83,7 @@ dependencies {
 
     // Firebase (BOM)
     implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.firestore.ktx)
+    implementation(libs.firebase.firestore)
     implementation(libs.firebase.messaging)
 
     // AndroidX
