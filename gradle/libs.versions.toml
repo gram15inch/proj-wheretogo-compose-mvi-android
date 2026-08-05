@@ -1,8 +1,8 @@
 
 [versions]
-agp = "8.13.2"
-kotlin = "2.2.20"
-ksp = "2.2.20-2.0.3"
+agp = "9.0.1"
+kotlin = "2.3.0"
+ksp = "2.3.4"
 
 compose-bom = "2024.09.02"
 
@@ -23,7 +23,7 @@ paging-compose = "3.5.0"
 
 # DI
 androidx-hilt = "1.2.0"
-dagger = "2.57.1"
+dagger = "2.60.1"
 
 # Network / Serialization
 retrofit = "2.9.0"
@@ -71,7 +71,6 @@ wheretogo-android-library = { id = "wheretogo.android.library", version = "unspe
 
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library     = { id = "com.android.library", version.ref = "agp" }
-kotlin-android      = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-plugin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 dagger-hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "dagger" }
 devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

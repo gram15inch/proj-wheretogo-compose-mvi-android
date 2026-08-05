@@ -1,6 +1,5 @@
 plugins {
     id("com.android.library")
-    id("org.jetbrains.kotlin.android")
 }
 
 android {
@@ -8,6 +7,10 @@ android {
 
     defaultConfig {
         minSdk = 24
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 }
 
