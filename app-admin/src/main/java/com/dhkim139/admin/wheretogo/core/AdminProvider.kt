@@ -49,7 +49,7 @@ class AdminProvider : ContentProvider() {
             val dateCol = c.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_TAKEN)
             while (c.moveToNext()) {
                 val id = c.getLong(idCol)
-                out.addRow(arrayOf(id, "content://${authority}/original/$id", c.getLong(dateCol)))
+                out.addRow(listOf(id, "content://$authority/original/$id", c.getLong(dateCol)))
             }
         }
         return out
