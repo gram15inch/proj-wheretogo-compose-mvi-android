@@ -43,7 +43,7 @@ espresso = "3.7.0"
 # Google / Play services
 googleid = "1.2.0"
 play-services-location = "21.4.0"
-play-services-ads = "24.4.0"  # 메이저
+play-services-ads = "25.4.0"
 material = "1.14.0"
 
 # Other libs
