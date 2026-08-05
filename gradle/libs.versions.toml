@@ -1,6 +1,6 @@
 
 [versions]
-agp = "9.0.1"
+agp = "9.3.1"
 kotlin = "2.3.0"
 ksp = "2.3.4"
 
@@ -26,29 +26,29 @@ androidx-hilt = "1.2.0"
 dagger = "2.60.1"
 
 # Network / Serialization
-retrofit = "2.9.0"
+retrofit = "2.9.0" # 메이저
 moshi = "1.13.0"
 serialization = "1.8.0"
 
 # Firebase
-firebase-bom = "33.3.0"
+firebase-bom = "33.3.0"  # 메이저
 geofire = "3.2.0"
 
 # Test
-jupiter = "5.11.4"
-junit5-android = "1.4.0"
+jupiter = "5.11.4"  # 메이저
+junit5-android = "1.4.0"  # 메이저
 androidx-test-ext-junit = "1.1.5"
 espresso = "3.6.1"
 
 # Google / Play services
 googleid = "1.1.1"
 play-services-location = "21.3.0"
-play-services-ads = "24.4.0"
+play-services-ads = "24.4.0"  # 메이저
 material = "1.12.0"
 
 # Other libs
-mockk = "1.13.13"
-mockito-junit-jupiter = "3.9.0"
+mockk = "1.13.13"  # 메이저
+mockito-junit-jupiter = "3.9.0"  # 메이저
 lottie-compose = "6.5.2"
 coil-compose = "2.7.0"
 sulky-ulid = "8.2.0"
