@@ -4,7 +4,7 @@ agp = "9.0.1"
 kotlin = "2.3.0"
 ksp = "2.3.4"
 
-compose-bom = "2024.09.02"
+compose-bom = "2026.06.01"
 
 # AndroidX
 androidx-core = "1.13.1"

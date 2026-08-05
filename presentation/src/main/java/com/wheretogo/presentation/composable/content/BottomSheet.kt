@@ -27,8 +27,8 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.wheretogo.presentation.SheetVisibleMode
 import com.dhkim139.core.ui.theme.Palette
+import com.wheretogo.presentation.SheetVisibleMode
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -108,6 +108,7 @@ fun BottomSheet(
         BottomSheetScaffold(
             scaffoldState = scaffoldState,
             sheetContainerColor = Palette.White,
+            containerColor = Color.Transparent,
             sheetContent = {
                 Column(
                     modifier = Modifier
