@@ -99,7 +99,7 @@ obj/
 .idea/inspectionProfiles/Project_default.xml
 .idea/libraries/
 .idea/androidTestResultsUserPreferences.xml
-
+.idea/misc.xml
 
 # Legacy Eclipse project files
 .classpath
@@ -140,3 +140,9 @@ fabric.properties
 
 #Module
 **/*UseCaseImpl.kt
+
+#Release
+/app/release/
+
+#Debug
+/crash.txt
