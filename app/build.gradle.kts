@@ -83,9 +83,10 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
-    junitPlatform {
-        instrumentationTests.includeExtensions.set(true)
-    }
+}
+
+junitPlatform {
+    instrumentationTests.includeExtensions.set(true)
 }
 
 dependencies {
@@ -110,8 +111,8 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.crashlytics)
     implementation(libs.firebase.analytics)
-    implementation(libs.firebase.firestore.ktx)
-    implementation(libs.firebase.storage.ktx)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.storage)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.messaging)
 
@@ -124,7 +125,6 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.datastore.preferences.core.jvm)
 
     // Hilt compiler (AndroidX)
     ksp(libs.androidx.hilt.compiler)

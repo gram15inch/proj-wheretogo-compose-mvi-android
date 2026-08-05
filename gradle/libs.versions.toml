@@ -1,66 +1,66 @@
 
 [versions]
 agp = "9.3.1"
-kotlin = "2.3.0"
-ksp = "2.3.4"
+kotlin = "2.4.10"
+ksp = "2.3.10"
 
 compose-bom = "2026.06.01"
 
 # AndroidX
-androidx-core = "1.13.1"
-lifecycle = "2.8.5"
-navigation = "2.8.8"
-activity = "1.9.3"
-datastore = "1.1.3"
-credentials = "1.3.0"
+androidx-core = "1.19.0"
+lifecycle = "2.11.0"
+navigation = "2.9.8"
+activity = "1.13.0"
+datastore = "1.2.1"
+credentials = "1.6.0"
 r8 = "9.1.31"
-room = "2.7.0"
-truth = "1.4.2"
-work = "2.9.1"
-androidx-test = "1.6.1"
+room = "2.8.4"
+truth = "1.4.5"
+work = "2.11.2"
+androidx-test = "1.7.0"
 paging-common = "3.5.0"
 paging-compose = "3.5.0"
 
 # DI
-androidx-hilt = "1.2.0"
+androidx-hilt = "1.4.0"
 dagger = "2.60.1"
 
 # Network / Serialization
-retrofit = "2.9.0" # 메이저
-moshi = "1.13.0"
-serialization = "1.8.0"
+retrofit = "3.0.0"
+moshi = "1.15.2"
+serialization = "1.11.0"
 
 # Firebase
-firebase-bom = "33.3.0"  # 메이저
+firebase-bom = "34.17.0"
 geofire = "3.2.0"
 
 # Test
-jupiter = "5.11.4"  # 메이저
-junit5-android = "1.4.0"  # 메이저
-androidx-test-ext-junit = "1.1.5"
-espresso = "3.6.1"
+jupiter = "6.1.2"
+junit5-android = "2.0.1"
+androidx-test-ext-junit = "1.3.0"
+espresso = "3.7.0"
 
 # Google / Play services
-googleid = "1.1.1"
-play-services-location = "21.3.0"
-play-services-ads = "24.4.0"  # 메이저
-material = "1.12.0"
+googleid = "1.2.0"
+play-services-location = "21.4.0"
+play-services-ads = "25.4.0"
+material = "1.14.0"
 
 # Other libs
-mockk = "1.13.13"  # 메이저
-mockito-junit-jupiter = "3.9.0"  # 메이저
-lottie-compose = "6.5.2"
+mockk = "1.14.11"
+mockito-junit-jupiter = "5.23.0"
+lottie-compose = "6.7.1"
 coil-compose = "2.7.0"
-sulky-ulid = "8.2.0"
+sulky-ulid = "8.3.0"
 kakao-maps = "2.11.9"
 naver-maps = "3.22.1"
 komoran = "3.3.9"
 timber = "5.0.1"
-compose-shimmer = "1.3.3"
-landscapist-glide = "2.4.0"
-ui-automator = "2.3.0"
-coroutines-play-services = "1.9.0"
-coroutines-test = "1.10.2"
+compose-shimmer = "1.5.0"
+landscapist-glide = "2.11.0"
+ui-automator = "2.4.0"
+coroutines-play-services = "1.11.0"
+coroutines-test = "1.11.0"
 turbine = "1.2.1"
 splashscreen = "1.2.0"
 play-services-location-version = "21.4.0"
@@ -99,14 +99,13 @@ androidx-activity-compose = { module = "androidx.activity:activity-compose", ver
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation" }
 
 # DataStore / Credentials
-androidx-datastore-preferences-core-jvm = { module = "androidx.datastore:datastore-preferences-core-jvm", version.ref = "datastore" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
 androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentials" }
 
 # Misc AndroidX
-androidx-exifinterface = { module = "androidx.exifinterface:exifinterface", version = "1.3.7" }
-androidx-browser = { module = "androidx.browser:browser", version = "1.8.0" }
+androidx-exifinterface = { module = "androidx.exifinterface:exifinterface", version = "1.4.2" }
+androidx-browser = { module = "androidx.browser:browser", version = "1.10.0" }
 androidx-security-crypto = { module = "androidx.security:security-crypto", version = "1.1.0" }
 
 # Hilt (AndroidX integration)
@@ -159,8 +158,8 @@ firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "fir
 firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-database = { module = "com.google.firebase:firebase-database" }
-firebase-firestore-ktx = { module = "com.google.firebase:firebase-firestore-ktx" }
-firebase-storage-ktx = { module = "com.google.firebase:firebase-storage-ktx" }
+firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
+firebase-storage = { module = "com.google.firebase:firebase-storage" }
 firebase-auth = { module = "com.google.firebase:firebase-auth" }
 firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
 
