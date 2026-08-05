@@ -26,8 +26,8 @@ androidx-hilt = "1.2.0"
 dagger = "2.60.1"
 
 # Network / Serialization
-retrofit = "2.9.0" # 메이저
-moshi = "1.13.0"
+retrofit = "3.0.0"
+moshi = "1.15.2"
 serialization = "1.8.0"
 
 # Firebase
