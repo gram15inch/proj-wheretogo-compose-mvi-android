@@ -100,6 +100,7 @@ obj/
 .idea/libraries/
 .idea/androidTestResultsUserPreferences.xml
 .idea/misc.xml
+.idea/vcs.xml
 
 # Legacy Eclipse project files
 .classpath
