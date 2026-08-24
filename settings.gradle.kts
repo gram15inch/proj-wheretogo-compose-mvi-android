@@ -11,28 +11,30 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     includeBuild("build-logic")
     repositories {
         google()
         mavenCentral()
-        maven { url = 'https://devrepo.kakao.com/nexus/repository/kakaomap-releases/' }
-        maven { url = 'https://repository.map.naver.com/archive/maven' }
-        maven { url = 'https://jitpack.io' }
+        maven { url = uri("https://devrepo.kakao.com/nexus/repository/kakaomap-releases/") }
+        maven { url = uri("https://repository.map.naver.com/archive/maven") }
+        maven { url = uri("https://jitpack.io") }
     }
 }
 
 rootProject.name = "WhereTogo"
 include(":app")
-include ':data'
-include ':domain'
-include ':presentation'
-include ':app-admin'
-include ':core:ui'
-include ':feature:media-picker'
-include ':feature:provider-picker'
-include ':feature:camera-picker'
+include(":data")
+include(":domain")
+include(":presentation")
+include(":app-admin")
+include(":core:ui")
+include(":feature:media-picker")
+include(":feature:provider-picker")
+include(":feature:camera-picker")
