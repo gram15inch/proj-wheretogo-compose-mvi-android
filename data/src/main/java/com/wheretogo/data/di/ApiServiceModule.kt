@@ -2,10 +2,12 @@ package com.wheretogo.data.di
 
 import com.wheretogo.data.datasourceimpl.service.AppApiService
 import com.wheretogo.data.datasourceimpl.service.ContentApiService
+import com.wheretogo.data.datasourceimpl.service.CourseManageApi
+import com.wheretogo.data.datasourceimpl.service.CourseSyncApi
 import com.wheretogo.data.datasourceimpl.service.GuestApiService
 import com.wheretogo.data.datasourceimpl.service.NaverFreeApiService
-import com.wheretogo.data.datasourceimpl.service.NaverMapApiService
 import com.wheretogo.data.datasourceimpl.service.ReportApiService
+import com.wheretogo.data.datasourceimpl.service.RouteApi
 import com.wheretogo.data.datasourceimpl.service.UserApiService
 import dagger.Module
 import dagger.Provides
@@ -18,12 +20,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object ApiServiceModule {
-
-    @Singleton
-    @Provides
-    fun provideNaverMapApiService(@Named("apigw") retrofit: Retrofit): NaverMapApiService {
-        return retrofit.create(NaverMapApiService::class.java)
-    }
 
     @Singleton
     @Provides
@@ -61,4 +57,21 @@ object ApiServiceModule {
         return retrofit.create(ReportApiService::class.java)
     }
 
+    @Singleton
+    @Provides
+    fun provideCourseSyncApiService(@Named("publicRetrofit") retrofit: Retrofit): CourseSyncApi {
+        return retrofit.create(CourseSyncApi::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun provideCourseManageApiService(@Named("privateRetrofit") retrofit: Retrofit): CourseManageApi {
+        return retrofit.create(CourseManageApi::class.java)
+    }
+
+    @Singleton
+    @Provides
+    internal fun provideCourseRouteApiService(@Named("publicRetrofit") retrofit: Retrofit): RouteApi {
+        return retrofit.create(RouteApi::class.java)
+    }
 }

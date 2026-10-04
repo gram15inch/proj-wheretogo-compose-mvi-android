@@ -37,26 +37,6 @@ fun  DriveScreenState.createCommentStateWithCommentItem(item: List<CommentState.
         )
     }
 
-fun DriveScreenState.createShowCheckPointAddBottomSheetState(
-    sliderPercent: Float = 0f,
-    description: String = "",
-    imgUriString: String = "",
-    isSubmitActive: Boolean = false
-) = run {
-        copy(
-            stateMode = DriveVisibleMode.BottomSheetExpand,
-            bottomSheetState = bottomSheetState.copy(
-                content = DriveBottomSheetContent.CHECKPOINT_ADD,
-                checkPointAddState = bottomSheetState.checkPointAddState.copy(
-                    sliderPercent = sliderPercent,
-                    imgUriString = imgUriString,
-                    description = description,
-                    isSubmitActive = isSubmitActive
-                )
-            )
-        )
-    }
-
 fun DriveScreenState.createShowCheckPointInfoInfoBottomSheet() =
     run {
         copy(

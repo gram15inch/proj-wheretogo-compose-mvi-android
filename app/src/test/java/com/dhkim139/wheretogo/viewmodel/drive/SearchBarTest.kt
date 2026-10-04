@@ -66,7 +66,6 @@ class SearchBarTest {
             observeSettingsUseCase = observeSettingsUseCase,
             getCommentForCheckPointUseCase = mockk(),
             getImageUseCase = mockk(),
-            addCheckpointToCourseUseCase = mockk(),
             addCommentToCheckPointUseCase = mockk(),
             removeCourseUseCase = mockk(),
             removeCheckPointUseCase = mockk(),

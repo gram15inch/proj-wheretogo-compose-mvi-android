@@ -8,9 +8,11 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Shader
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.scale
+import com.dhkim139.core.ui.theme.Palette
 import com.naver.maps.map.clustering.ClusterMarkerInfo
 import com.naver.maps.map.clustering.Clusterer
 import com.naver.maps.map.clustering.DefaultClusterMarkerUpdater
@@ -19,10 +21,11 @@ import com.naver.maps.map.clustering.LeafMarkerInfo
 import com.naver.maps.map.overlay.Align
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.OverlayImage
-import com.naver.maps.map.overlay.PathOverlay
+import com.naver.maps.map.overlay.PolylineOverlay
 import com.naver.maps.map.util.MarkerIcons
 import com.wheretogo.domain.MarkerType
 import com.wheretogo.domain.model.map.MarkerInfo
+import com.wheretogo.domain.model.route.Direction
 import com.wheretogo.presentation.CHECKPOINT_ADD_MARKER
 import com.wheretogo.presentation.MarkerZIndex
 import com.wheretogo.presentation.OverlayType
@@ -32,8 +35,7 @@ import com.wheretogo.presentation.model.AppLeaf
 import com.wheretogo.presentation.model.ClusterHolder
 import com.wheretogo.presentation.model.ClusterInfo
 import com.wheretogo.presentation.model.LeafInfo
-import com.wheretogo.presentation.model.PathInfo
-import com.dhkim139.core.ui.theme.Palette
+import com.wheretogo.presentation.model.PolylineInfo
 import com.wheretogo.presentation.toNaver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -55,14 +57,19 @@ class NaverMapOverlayModifier @Inject constructor(
         }
     }
 
-    fun createPath(pathInfo: PathInfo): Result<PathOverlay> {
+    fun createPolyline(pathInfo: PolylineInfo): Result<PolylineOverlay> {
         return runCatching {
-            val path = (if (isGenerate) pathInfo.toNaverPath() else null)?.apply {
+            val path = (if (isGenerate) pathInfo.toNaverPolyline() else null)?.apply {
                 coords = pathInfo.points.toNaver()
+                color = pathInfo.direction.accent.toArgb()
             }
             path!!
         }
     }
+
+    private val Direction.accent: Color
+        get() = if (this == Direction.FORWARD) Palette.ForwardBlue else Palette.BackwardOrange
+
 
     fun createCluster(
         clusterInfo: ClusterInfo,
@@ -229,10 +236,10 @@ class NaverMapOverlayModifier @Inject constructor(
         }
     }
 
-    private fun PathInfo.toNaverPath(): PathOverlay {
-        return PathOverlay().apply {
-            tag = this@toNaverPath.contentId
-            minZoom = OverlayType.FULL_PATH.minZoomLevel()
+    private fun PolylineInfo.toNaverPolyline(): PolylineOverlay {
+        return PolylineOverlay().apply {
+            tag = this@toNaverPolyline.contentId
+            minZoom = OverlayType.FORWARD_POLYLINE.minZoomLevel()
         }
     }
 

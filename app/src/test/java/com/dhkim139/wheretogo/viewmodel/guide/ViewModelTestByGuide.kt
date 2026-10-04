@@ -15,9 +15,8 @@ import com.wheretogo.domain.usecase.checkpoint.RemoveCheckPointUseCase
 import com.wheretogo.domain.usecase.comment.AddCommentToCheckPointUseCase
 import com.wheretogo.domain.usecase.comment.GetCommentForCheckPointUseCase
 import com.wheretogo.domain.usecase.comment.RemoveCommentToCheckPointUseCase
-import com.wheretogo.domain.usecase.course.FilterListCourseUseCase
-import com.wheretogo.domain.usecase.course.GetNearByCourseUseCase
 import com.wheretogo.domain.usecase.course.RemoveCourseUseCase
+import com.wheretogo.domain.usecase.home.GetRecentCardUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
 import com.wheretogo.domain.usecase.util.GetImageUseCase
 import com.wheretogo.domain.usecase.util.SearchKeywordUseCase
@@ -110,16 +109,17 @@ class ViewModelTestByGuide {
             stateInit = state,
             handler = homeHandler,
             dispatcher = dispatcher,
-            observeSettingsUseCase,
-            driveTutorialUseCase
+            observeSettingsUseCase = observeSettingsUseCase,
+            getRecentCardSituationUseCase = getRecentCardSituationUseCase,
+            driveTutorialUseCase = driveTutorialUseCase
         )
     }
     private val homeHandler = mockk<HomeHandler>()
     private val driveHandler = mockk<DriveHandler>()
 
     private val observeSettingsUseCase = mockk<ObserveSettingsUseCase>()
-    private val getNearByCourseUseCase = mockk<GetNearByCourseUseCase>()
     private val getCommentForCheckPointUseCase = mockk<GetCommentForCheckPointUseCase>()
+    private val getRecentCardSituationUseCase = mockk<GetRecentCardUseCase>()
     private val getCheckPointForMarkerUseCase = mockk<GetCheckpointForMarkerUseCase>()
     private val getImageUseCase = mockk<GetImageUseCase>()
     private val addCheckpointToCourseUseCase = mockk<AddCheckpointToCourseUseCase>()
@@ -131,7 +131,6 @@ class ViewModelTestByGuide {
     private val searchKeywordUseCase = mockk<SearchKeywordUseCase>()
     private val signOutUseCase = mockk<UserSignOutUseCase>()
     private val driveTutorialUseCase = mockk<DriveTutorialUseCase>()
-    private val filterListCourseUseCase = mockk<FilterListCourseUseCase>()
     private val mapOverlayService = mockk<MapOverlayService>()
     private val nativeAdServiceOld = mockk<AdService>()
 

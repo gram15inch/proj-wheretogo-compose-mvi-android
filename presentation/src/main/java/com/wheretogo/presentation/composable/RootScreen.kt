@@ -22,7 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.zIndex
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -44,8 +44,10 @@ import com.wheretogo.presentation.feature.openUri
 import com.dhkim139.core.ui.event.show
 import com.dhkim139.core.ui.theme.Palette
 import com.dhkim139.core.ui.theme.WhereTogoTheme
+import com.macbook14inch.feature.courseadd.CourseAddScreen
 import com.wheretogo.presentation.viewmodel.RootViewModel
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @Composable
 fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
@@ -160,7 +162,12 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                         enterTransition = { slideInVertically(initialOffsetY = { it }) },
                         exitTransition = { slideOutVertically(targetOffsetY = { it }) }
                     ) {
-                         CourseAddScreen()
+                         CourseAddScreen(
+                             onAuthFailed = {
+                                 viewModel.setSignInScreenVisible(true)
+                             },
+                             onBack =  { navController.popBackStack() }
+                         )
                      }
                     composable(
                         AppScreen.Gallery.route,

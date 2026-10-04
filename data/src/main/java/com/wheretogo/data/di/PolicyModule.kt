@@ -2,9 +2,7 @@ package com.wheretogo.data.di
 
 import com.wheretogo.data.CachePolicy
 import com.wheretogo.data.CheckpointPolicy
-import com.wheretogo.data.ClearPolicy
 import com.wheretogo.data.CommentPolicy
-import com.wheretogo.data.CoursePolicy
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -16,13 +14,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 class PolicyModule {
-
-    @Singleton
-    @CourseCache
-    @Provides
-    fun provideCoursePolicy(): CachePolicy {
-        return CoursePolicy
-    }
 
     @Singleton
     @CheckpointCache
@@ -38,13 +29,6 @@ class PolicyModule {
     fun provideCommentPolicy(): CachePolicy {
         return CommentPolicy
     }
-
-    @Singleton
-    @ClearCache
-    @Provides
-    fun provideClearPolicy(): CachePolicy {
-        return ClearPolicy
-    }
 }
 
 
@@ -55,11 +39,3 @@ annotation class CheckpointCache
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class CommentCache
-
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class CourseCache
-
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class ClearCache

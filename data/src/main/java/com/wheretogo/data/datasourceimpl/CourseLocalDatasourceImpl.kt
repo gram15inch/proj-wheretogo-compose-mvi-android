@@ -1,70 +1,78 @@
 package com.wheretogo.data.datasourceimpl
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.room.withTransaction
+import com.wheretogo.data.model.course.CourseEntity
 import com.wheretogo.data.datasource.CourseLocalDatasource
 import com.wheretogo.data.datasourceimpl.database.CourseDatabase
-import com.wheretogo.data.feature.dataErrorCatching
-import com.wheretogo.data.model.course.LocalCourse
-import kotlinx.coroutines.flow.first
+import com.wheretogo.domain.model.course.GeoBounds
+import com.wheretogo.domain.model.course.SyncState
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
-import javax.inject.Named
 
 class CourseLocalDatasourceImpl @Inject constructor(
     private val courseDatabase: CourseDatabase,
-    @Named("contentDataStore") private val contentDataStore: DataStore<Preferences>
 ) : CourseLocalDatasource {
     private val courseDao by lazy { courseDatabase.courseDao() }
-    private val courseCacheKey = longPreferencesKey("courseCache")
-    override suspend fun getCourse(courseId: String): Result<LocalCourse?> {
-        return runCatching {
-            courseDao.select(courseId)
+    private val syncDao by lazy { courseDatabase.syncStateDao() }
+
+    override suspend fun upsert(courseGroup: List<CourseEntity>) {
+        return courseDao.upsert(courseGroup)
+    }
+
+
+    override suspend fun selectById(id: String?): List<CourseEntity> {
+        return if(id==null)
+            courseDao.selectAll()
+        else
+            courseDao.select(id)?.let { listOf(it) }?:emptyList()
+    }
+
+    override suspend fun selectByTitle(title: String): List<CourseEntity> {
+        return courseDao.selectByTitle(title)
+    }
+
+    override fun observeInBounds(bounds: GeoBounds): Flow<List<CourseEntity>> =
+        courseDao.observeInBounds(
+            swLat = bounds.swLat,
+            swLng = bounds.swLng,
+            neLat = bounds.neLat,
+            neLng = bounds.neLng
+        )
+
+
+    override suspend fun applyDelta(upserts: List<CourseEntity>, deletedIds: List<String>, cursor: Long) {
+        courseDatabase.withTransaction {
+            if (upserts.isNotEmpty()) courseDao.upsert(upserts)
+            if (deletedIds.isNotEmpty()) courseDao.deleteByIds(deletedIds)
+            syncDao.setCursor(cursor)
         }
     }
 
-    override suspend fun setCourse(courseGroup: List<LocalCourse>): Result<Unit> {
-        return runCatching { courseDao.insert(courseGroup) }
-    }
-
-    override suspend fun removeCourse(courseId: String): Result<Unit> {
-        return runCatching { courseDao.delete(courseId) }
-    }
-
-    override suspend fun getCourseGroupByGeoHash(geoHash: String): Result<List<LocalCourse>> {
-        return runCatching { courseDao.selectByGeoHash(geoHash) }
-    }
-
-    override suspend fun clear(): Result<Unit> {
-        return dataErrorCatching {
-            setLatestUpdate(0)
-            courseDatabase.clearAllTables()
-        }
-    }
-
-    override suspend fun getCourseByIsHide(isHide: Boolean): Result<List<LocalCourse>> {
-        return dataErrorCatching {
-            courseDao.selectByIsHide(isHide)
+    override suspend fun replaceAll(courses: List<CourseEntity>, cursor: Long, syncedAt: Long) {
+        courseDatabase.withTransaction {
+            courseDao.deleteAll()
+            courseDao.upsert(courses)
+            syncDao.setSynced(cursor, syncedAt)
         }
     }
 
 
-    override suspend fun getLatestUpdate(): Result<Long> {
-        return dataErrorCatching {
-            contentDataStore.data.map { preferences ->
-                preferences[courseCacheKey] ?: 0
-            }.first()
-        }
+    override suspend fun delete(courseId: String) {
+        return courseDao.deleteByIds(listOf(courseId))
     }
 
-    override suspend fun setLatestUpdate(updateAt: Long): Result<Unit> {
-        return dataErrorCatching {
-            contentDataStore.edit { preferences ->
-                preferences[courseCacheKey] = updateAt
-            }
-            Unit
-        }
+    override suspend fun clear() {
+        courseDatabase.clearAllTables()
     }
+
+
+    override suspend fun syncState(): SyncState =
+        syncDao.get()?.let { SyncState(it.cursor, it.lastSyncedAt) } ?: SyncState.EMPTY
+
+
+    override fun observeSyncState(): Flow<SyncState> =
+        syncDao.observe().map { it?.let { row -> SyncState(row.cursor, row.lastSyncedAt) } ?: SyncState.EMPTY }
+
+    override suspend fun markSynced(cursor: Long, at: Long) = syncDao.setSynced(cursor, at)
 }

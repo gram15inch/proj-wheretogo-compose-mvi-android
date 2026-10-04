@@ -1,24 +1,34 @@
 package com.wheretogo.data.datasourceimpl
 
+import androidx.collection.LruCache
 import com.wheretogo.data.datasource.RouteLocalDatasource
-import com.wheretogo.data.datasourceimpl.database.RouteDatabase
-import com.wheretogo.data.feature.dataErrorCatching
-import com.wheretogo.data.model.route.LocalRoute
+import com.wheretogo.data.datasourceimpl.database.CourseDatabase
+import com.wheretogo.data.model.route.RoutePathEntity
+import com.wheretogo.data.model.route.toDomain
+import com.wheretogo.domain.model.course.LoadingConfig.DECODED_CACHE_ENTRIES
+import com.wheretogo.domain.model.course.RoutePath
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class RouteLocalDatasourceImpl @Inject constructor(
-    private val routeDatabase: RouteDatabase
+    database: CourseDatabase
 ) : RouteLocalDatasource {
-    private val routeDao by lazy { routeDatabase.routeDao() }
-    override suspend fun getRouteInCourse(courseId: String): Result<LocalRoute> {
-        return dataErrorCatching { routeDao.select(courseId) }
+    private val routeDao by lazy { database.routePathDao() }
+
+    private val decoded = LruCache<String, RoutePath>(DECODED_CACHE_ENTRIES)
+
+    override suspend fun getRoute(routeId:String): RoutePath?{
+        return withContext(Dispatchers.Default){
+            val path = decoded[routeId]
+                ?: routeDao.select(routeId)
+                    ?.toDomain()?.also { decoded.put(routeId, it) }
+            path
+        }
     }
 
-    override suspend fun setRouteInCourse(route: LocalRoute): Result<Unit> {
-        return dataErrorCatching { routeDao.insert(route) }
+    override suspend fun setRoute(entity: RoutePathEntity){
+        routeDao.upsert(entity)
     }
 
-    override suspend fun removeRouteInCourse(courseId: String): Result<Unit> {
-        return dataErrorCatching { routeDao.delete(courseId) }
-    }
 }

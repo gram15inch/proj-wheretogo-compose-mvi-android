@@ -49,6 +49,8 @@ val CourseCooldown = DefaultCoolDownPolicy(600)
 val CheckpointCooldown = DefaultCoolDownPolicy(15)
 val CommentCooldown = DefaultCoolDownPolicy(1)
 
+enum class SyncFailureKind { TEMPORARY, PERMANENT }
+
 sealed class DomainError : Exception() {
     data class NetworkError(val msg: String = "") : DomainError()
     data class UserExpired(val msg: String = "") : DomainError() // 상태 없음

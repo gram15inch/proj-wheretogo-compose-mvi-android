@@ -2,79 +2,152 @@ package com.wheretogo.data.datasourceimpl.database
 
 import androidx.room.Dao
 import androidx.room.Database
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.RoomDatabase
-import androidx.room.TypeConverter
+import androidx.room.Transaction
 import androidx.room.TypeConverters
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.Types
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import com.wheretogo.data.model.course.LocalCourse
-import com.wheretogo.data.model.map.DataLatLng
-import java.lang.reflect.Type
+import androidx.room.Upsert
+import com.wheretogo.data.model.course.CourseConverters
+import com.wheretogo.data.model.course.CourseEntity
+import com.wheretogo.data.model.course.SyncStateEntity
+import com.wheretogo.data.model.route.RoutePathEntity
+import kotlinx.coroutines.flow.Flow
 
-@TypeConverters(CourseJsonConverters::class)
+@TypeConverters(CourseConverters::class)
 @Database(
-    entities = [LocalCourse::class],
-    version = 3,
+    entities = [
+        CourseEntity::class,
+        RoutePathEntity::class,
+        SyncStateEntity::class,
+    ],
+    version = 4,
     exportSchema = false
 )
+
 abstract class CourseDatabase : RoomDatabase() {
     abstract fun courseDao(): CourseDao
+    abstract fun routePathDao(): RoutePathDao
+    abstract fun syncStateDao(): SyncStateDao
 }
+
 
 @Dao
 interface CourseDao {
 
-    @Query("SELECT * FROM LocalCourse LIMIT :size")
-    suspend fun selectAll(size: Int): List<LocalCourse>
+    @Query("SELECT * FROM courses WHERE id ==:courseId")
+    fun select(courseId:String): CourseEntity?
 
-    @Query("SELECT * FROM LocalCourse WHERE courseId = :courseId")
-    suspend fun select(courseId: String): LocalCourse?
+    @Query("SELECT * FROM courses WHERE title LIKE '%' || :title || '%' ESCAPE '\\'")
+    fun selectByTitle(title:String): List<CourseEntity>
 
-    @Query("SELECT * FROM LocalCourse WHERE geoHash LIKE :geoHash || '%' COLLATE NOCASE")
-    suspend fun selectByGeoHash(geoHash: String): List<LocalCourse>
+    @Query("SELECT * FROM courses ORDER BY updateAt DESC")
+    suspend fun selectAll(): List<CourseEntity>
 
-    @Query("SELECT * FROM LocalCourse WHERE isHide = :isHide")
-    suspend fun selectByIsHide(isHide: Boolean): List<LocalCourse>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(entity: List<LocalCourse>)
+    @Query("SELECT * FROM courses ORDER BY updateAt DESC")
+    fun observeAll(): Flow<List<CourseEntity>>
 
-    @Query("DELETE FROM LocalCourse WHERE courseId = :courseId")
-    suspend fun delete(courseId: String)
+    @Query(
+        """
+        SELECT * FROM courses
+        WHERE bounds_swLat <= :neLat AND bounds_neLat >= :swLat
+          AND bounds_swLng <= :neLng AND bounds_neLng >= :swLng
+        """,
+    )
+    suspend fun inBounds(swLat: Double, swLng: Double, neLat: Double, neLng: Double): List<CourseEntity>
+
+    @Query(
+        """
+        SELECT * FROM courses
+        WHERE bounds_swLat <= :neLat AND bounds_neLat >= :swLat
+          AND bounds_swLng <= :neLng AND bounds_neLng >= :swLng
+        """,
+    )
+    fun observeInBounds(swLat: Double, swLng: Double, neLat: Double, neLng: Double): Flow<List<CourseEntity>>
+
+    @Upsert
+    suspend fun upsert(courses: List<CourseEntity>)
+
+    @Query("DELETE FROM courses WHERE id IN (:ids)")
+    suspend fun deleteByIds(ids: List<String>)
+
+    @Query("DELETE FROM courses")
+    suspend fun deleteAll()
 }
 
-class CourseJsonConverters {
+@Dao
+interface RoutePathDao {
 
-    private val moshi: Moshi = Moshi.Builder()
-        .add(KotlinJsonAdapterFactory())
-        .build()
+    @Query("SELECT * FROM route_paths WHERE routeId == :routeId")
+    fun select(routeId: String): RoutePathEntity?
 
-    private val latLngListType: Type =
-        Types.newParameterizedType(List::class.java, DataLatLng::class.java)
-    private val latLngGroupAdapter = moshi.adapter<List<DataLatLng>>(latLngListType)
-    private val latLngAdapter = moshi.adapter(DataLatLng::class.java)
+    @Query("SELECT * FROM route_paths WHERE routeId IN (:routeIds)")
+    fun observe(routeIds: List<String>): Flow<List<RoutePathEntity>>
 
-    @TypeConverter
-    fun fromLatLngList(latLngList: List<DataLatLng>?): String? {
-        return latLngList?.let { latLngGroupAdapter.toJson(it) }
+    @Query("SELECT routeId FROM route_paths WHERE routeId IN (:routeIds)")
+    suspend fun existing(routeIds: List<String>): List<String>
+
+    @Upsert
+    suspend fun upsert(path: RoutePathEntity)
+
+    @Query("UPDATE route_paths SET lastUsedAt = :now WHERE routeId IN (:routeIds)")
+    suspend fun touch(routeIds: List<String>, now: Long)
+
+    @Query(
+        """
+        DELETE FROM route_paths WHERE routeId IN (
+            SELECT routeId FROM route_paths ORDER BY lastUsedAt DESC LIMIT -1 OFFSET :keep
+        )
+        """,
+    )
+    suspend fun trimTo(keep: Int)
+}
+
+
+@Dao
+interface SyncStateDao {
+
+    @Query("SELECT * FROM sync_state WHERE id = ${SyncStateEntity.SINGLETON_ID}")
+    suspend fun get(): SyncStateEntity?
+
+    @Query("SELECT * FROM sync_state WHERE id = ${SyncStateEntity.SINGLETON_ID}")
+    fun observe(): Flow<SyncStateEntity?>
+
+
+    // 행이 없을 때만 생성 (있으면 무시)
+    @Query(
+        """
+        INSERT OR IGNORE INTO sync_state(id, cursor, lastSyncedAt)
+        VALUES(${SyncStateEntity.SINGLETON_ID}, :cursor, :at)
+        """,
+    )
+    suspend fun insertIfAbsent(cursor: Long, at: Long?)
+
+    @Query(
+        """
+        UPDATE sync_state SET cursor = :cursor
+        WHERE id = ${SyncStateEntity.SINGLETON_ID}
+        """,
+    )
+    suspend fun updateCursor(cursor: Long)
+
+    @Query(
+        """
+        UPDATE sync_state SET cursor = :cursor, lastSyncedAt = :at
+        WHERE id = ${SyncStateEntity.SINGLETON_ID}
+        """,
+    )
+    suspend fun updateCursorAndSyncedAt(cursor: Long, at: Long)
+
+    @Transaction
+    suspend fun setCursor(cursor: Long) {
+        insertIfAbsent(cursor, null)
+        updateCursor(cursor)
     }
 
-    @TypeConverter
-    fun toLatLngList(jsonString: String?): List<DataLatLng>? {
-        return jsonString?.let { latLngGroupAdapter.fromJson(it) }
-    }
-
-    @TypeConverter
-    fun toLatLng(jsonString: String?): DataLatLng? {
-        return jsonString?.let { latLngAdapter.fromJson(it) }
-    }
-
-    @TypeConverter
-    fun fromLatLng(latlng: DataLatLng?): String? {
-        return latlng?.let { latLngAdapter.toJson(it) }
+    @Transaction
+    suspend fun setSynced(cursor: Long, at: Long) {
+        insertIfAbsent(cursor, at)
+        updateCursorAndSyncedAt(cursor, at)
     }
 }

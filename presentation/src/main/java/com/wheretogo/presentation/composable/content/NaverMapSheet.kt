@@ -22,10 +22,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.dhkim139.core.ui.theme.Palette
 import com.naver.maps.map.CameraAnimation
 import com.naver.maps.map.CameraPosition
 import com.naver.maps.map.CameraUpdate
@@ -36,18 +39,20 @@ import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.map.CameraState
 import com.wheretogo.domain.model.map.MarkerInfo
 import com.wheretogo.domain.model.map.MoveAnimation
+import com.wheretogo.domain.model.route.Direction
 import com.wheretogo.presentation.NamSan
 import com.wheretogo.presentation.feature.geo.FollowLocationSource
+import com.wheretogo.presentation.feature.naver.applyFocus
 import com.wheretogo.presentation.feature.naver.getLastLatLng
 import com.wheretogo.presentation.model.AppCluster
 import com.wheretogo.presentation.model.AppMarker
 import com.wheretogo.presentation.model.AppPath
+import com.wheretogo.presentation.model.AppPolyline
 import com.wheretogo.presentation.model.CameraOption
 import com.wheretogo.presentation.model.ContentPadding
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.NaverMapStyle
 import com.wheretogo.presentation.state.NaverMapState
-import com.dhkim139.core.ui.theme.Palette
 import com.wheretogo.presentation.toCameraState
 import com.wheretogo.presentation.toDomainLatLng
 import com.wheretogo.presentation.toNaver
@@ -166,11 +171,12 @@ fun NaverMapSheet(
         }
 
         // 오버레이 업데이트
-        LaunchedEffect(fingerPrint) {
+        LaunchedEffect(fingerPrint, density) {
             if(fingerPrint!=null){
                 mapView.getMapAsync { naverMap ->
                     naverMap.overlayUpdate(
                         overlayGroup = overlayGroup,
+                        density = density,
                         onMarkerClick = onMarkerClick,
                         onOverlayRenderComplete = onOverlayRenderComplete
                     )
@@ -215,6 +221,10 @@ fun NaverMapSheet(
                                 camera.isMyLocation -> coroutineScope.launch {
                                     val latlng = getLastLatLng(context) ?: NamSan
                                     naverMap.cameraUpdate(camera.copy(latlng.toDomainLatLng()))
+                                }
+
+                                camera.focus !=null ->{
+                                    naverMap.applyFocus(camera.focus, density, IntSize(naverMap.width, naverMap.height))
                                 }
 
                                 camera.moveAnimation == MoveAnimation.APP_JUMP -> {
@@ -276,6 +286,7 @@ private fun NaverMap.contentPaddingUpdate(density: Density, contentPadding: Cont
 
 private fun NaverMap.overlayUpdate(
     overlayGroup: List<MapOverlay>,
+    density: Density,
     onMarkerClick: (MarkerInfo) -> Unit = {},
     onOverlayRenderComplete: (Boolean) -> Unit = {}
 ) {
@@ -299,6 +310,16 @@ private fun NaverMap.overlayUpdate(
 
             is AppPath -> {
                 overlay.corePathOverlay?.map = naverMap
+            }
+
+            is AppPolyline -> {
+                overlay.corePathOverlay?.apply {
+                    width = with(density) { 4.dp.roundToPx() }
+                    if (overlay.pathInfo.direction == Direction.BACKWARD) with(density) {
+                        setPattern(8.dp.roundToPx(), 5.dp.roundToPx())
+                    }
+                    map = naverMap
+                }
             }
 
             is AppCluster -> {

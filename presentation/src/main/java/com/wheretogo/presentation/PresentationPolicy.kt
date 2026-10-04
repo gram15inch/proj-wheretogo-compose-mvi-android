@@ -11,7 +11,6 @@ import com.naver.maps.map.app.OpenSourceLicenseActivity
 import com.wheretogo.domain.DomainError
 import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.MarkerType
-import com.wheretogo.domain.PathType
 import com.wheretogo.domain.RouteAttrItem
 import com.wheretogo.domain.SignErrorReason
 import com.wheretogo.domain.WarningReason
@@ -28,7 +27,6 @@ data class PresentationBuildConfig(
 )
 
 
-const val COURSE_NAME_MAX_LENGTH = 17
 const val WIDE_WIDTH = 600
 
 const val CHECKPOINT_ADD_MARKER = "CHECKPOINT_ADD_MARKER_ID"
@@ -42,7 +40,7 @@ val NamSan = LatLng(37.55211251549546, 126.98787585585995)
 
 enum class OverlayType {
     DEFAULT_MARKER, COURSE_MARKER, ONE_TIME_MARKER, CLUSTER, LEAF_MARKER,
-    SCAFFOLD_PATH, FULL_PATH
+    FORWARD_POLYLINE, BACKWORD_POLYLINE
 }
 
 enum class CommentType(@StringRes val typeRes: Int) {
@@ -62,13 +60,11 @@ enum class SettingInfoType(val url: String) {
 }
 
 sealed class AppError : Exception() {
-    data class ImgEmpty(val msg: String = "") : AppError()
     data class NeedSignIn(val msg: String = "") : AppError()
     data class SessionOut(val msg: String = "") : AppError()
     data class InvalidState(val msg: String = "") : AppError()
     data class Unavailable(val msg: String = "") : AppError()
     data class NetworkError(val msg: String = "") : AppError()
-    data class DescriptionEmpty(val msg: String = "") : AppError()
     data class LocationPermissionRequire(val msg: String = "") : AppError()
     data class MapNotSupportExcludeLocation(val msg: String = "") : AppError()
     data class CredentialError(val msg: String = "") : AppError()
@@ -91,7 +87,7 @@ enum class ExportMap {
 }
 
 enum class DriveFloatHighlight {
-    NONE, CHECKPOINT, COMMENT, INFO, EXPORT, FOLD
+    NONE, COMMENT, INFO, EXPORT, FOLD
 }
 
 enum class HomeBodyBtnHighlight {
@@ -104,8 +100,6 @@ enum class HomeBodyBtn {
 
 enum class DriveBottomSheetContent(val minHeight: Int) {
     EMPTY(0),
-    COURSE_ADD(80),
-    CHECKPOINT_ADD(0),
     COURSE_INFO(0),
     CHECKPOINT_INFO(0),
     PREVIEW(400)
@@ -134,7 +128,8 @@ enum class MarkerZIndex{
 fun OverlayType.minZoomLevel(): Double {
     return when (this) {
         OverlayType.COURSE_MARKER -> ZOOM.COUNTRY.level
-        OverlayType.FULL_PATH -> ZOOM.PROVINCE.level
+        OverlayType.FORWARD_POLYLINE -> ZOOM.PROVINCE.level
+        OverlayType.BACKWORD_POLYLINE -> ZOOM.PROVINCE.level
         OverlayType.CLUSTER -> ZOOM.PROVINCE.level
         OverlayType.ONE_TIME_MARKER -> ZOOM.COUNTRY.level
         else -> 0.0
@@ -146,20 +141,6 @@ fun MarkerType.toOverlayType(): OverlayType{
         MarkerType.COURSE -> OverlayType.COURSE_MARKER
         MarkerType.CHECKPOINT -> OverlayType.LEAF_MARKER
         MarkerType.DEFAULT -> OverlayType.DEFAULT_MARKER
-    }
-}
-
-fun PathType.toOverlayType(): OverlayType{
-    return when(this){
-        PathType.SCAFFOLD -> OverlayType.SCAFFOLD_PATH
-        PathType.FULL -> OverlayType.FULL_PATH
-    }
-}
-
-fun OverlayType.toPathType(): PathType{
-    return when(this){
-        OverlayType.SCAFFOLD_PATH -> PathType.SCAFFOLD
-        else -> PathType.FULL
     }
 }
 

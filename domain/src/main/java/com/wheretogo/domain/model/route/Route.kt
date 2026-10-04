@@ -10,3 +10,8 @@ data class Route(
     val distance: Int = 0,
     val points: List<LatLng> = emptyList()
 )
+
+enum class Direction {
+    FORWARD,
+    BACKWARD,
+}

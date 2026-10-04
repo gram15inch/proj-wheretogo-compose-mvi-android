@@ -2,6 +2,7 @@ package com.wheretogo.presentation.model
 
 import com.wheretogo.domain.ZOOM
 import com.wheretogo.domain.model.address.LatLng
+import com.wheretogo.domain.model.course.CameraFocus
 import com.wheretogo.domain.model.course.Course
 import com.wheretogo.domain.model.gallery.GalleryPhoto
 import com.wheretogo.domain.model.map.CameraMoveTrigger
@@ -12,13 +13,14 @@ data class CameraOption(
     val zoom: Double,
     val updateSource: CameraMoveTrigger,
     val moveAnimation: MoveAnimation,
-    val isMyLocation: Boolean = false
+    val isMyLocation: Boolean = false,
+    val focus: CameraFocus? = null
 ) {
 
     companion object {
         fun fromCourse(course: Course): CameraOption {
             return CameraOption(
-                latLng = course.cameraLatLng,
+                latLng = course.center,
                 zoom = ZOOM.Place.level,
                 updateSource = CameraMoveTrigger.DEFAULT,
                 moveAnimation = MoveAnimation.APP_JUMP,

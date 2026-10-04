@@ -4,6 +4,7 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.wheretogo.data.DataBuildConfig
 import com.wheretogo.data.network.PrivateInterceptor
+import com.wheretogo.data.network.PrivateModuleInterceptor
 import com.wheretogo.data.network.PublicInterceptor
 import dagger.Module
 import dagger.Provides
@@ -19,23 +20,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object RetrofitClientModule {
-
-    @Singleton
-    @Provides
-    @Named("apigw")
-    fun provideNaverRetrofit(
-        moshi: Moshi,
-        client: OkHttpClient,
-        buildConfig: DataBuildConfig
-    ): Retrofit {
-        return Retrofit.Builder()
-            .addConverterFactory(
-                MoshiConverterFactory.create(moshi)
-            )
-            .client(client)
-            .baseUrl(buildConfig.naverMapsNtrussApigwUrl)
-            .build()
-    }
 
     @Singleton
     @Provides
@@ -60,6 +44,21 @@ object RetrofitClientModule {
     fun providePrivateFirebaseApiRetrofit(
         moshi: Moshi,
         @Named("privateHttp") client: OkHttpClient,
+        buildConfig: DataBuildConfig
+    ): Retrofit {
+        return Retrofit.Builder()
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .client(client)
+            .baseUrl(buildConfig.firebaseCloudApiUrl)
+            .build()
+    }
+
+    @Singleton
+    @Provides
+    @Named("privateModuleRetrofit")
+    fun providePrivateModuleFirebaseApiRetrofit(
+        moshi: Moshi,
+        @Named("privateModuleHttp") client: OkHttpClient,
         buildConfig: DataBuildConfig
     ): Retrofit {
         return Retrofit.Builder()
@@ -113,6 +112,20 @@ object RetrofitClientModule {
             .addInterceptor(privateInterceptor)
             .build()
     }
+
+    @Singleton
+    @Provides
+    @Named("privateModuleHttp")
+    fun providePrivateModuleHttpClient(privateModuleInterceptor: PrivateModuleInterceptor): OkHttpClient {
+        return OkHttpClient.Builder()
+            .connectTimeout(5, TimeUnit.SECONDS)
+            .readTimeout(10, TimeUnit.SECONDS)
+            .writeTimeout(10, TimeUnit.SECONDS)
+            .callTimeout(30, TimeUnit.SECONDS)
+            .addInterceptor(privateModuleInterceptor)
+            .build()
+    }
+
 
     @Singleton
     @Provides

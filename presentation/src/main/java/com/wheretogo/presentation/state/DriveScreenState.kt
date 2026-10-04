@@ -1,8 +1,7 @@
 package com.wheretogo.presentation.state
 
-import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.checkpoint.CheckPoint
-import com.wheretogo.domain.model.course.Course
+import com.wheretogo.domain.model.course.CourseRenderItem
 import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.DriveVisibleMode
 import com.wheretogo.presentation.state.CommentState.CommentAddState
@@ -40,8 +39,6 @@ data class DriveScreenState(
         val itemListVisible: EnumSet<DriveVisibleMode> = EnumSet.of(DriveVisibleMode.Explorer)
         val popUpVisible: EnumSet<DriveVisibleMode> =
             EnumSet.of(DriveVisibleMode.BlurCheckpointDetail, DriveVisibleMode.BlurCheckpointBottomSheetExpand)
-        val imeBoxVisible: EnumSet<DriveVisibleMode> =
-            EnumSet.of(DriveVisibleMode.BottomSheetExpand)
         val blurVisible: EnumSet<DriveVisibleMode> = EnumSet.of(
             DriveVisibleMode.BlurCourseDetail,
             DriveVisibleMode.BlurCheckpointDetail,
@@ -76,25 +73,11 @@ data class DriveScreenState(
         )
     }
 
-    fun initCheckPointAddState(latLng: LatLng): DriveScreenState {
-        val newCheckPointAddState = bottomSheetState.checkPointAddState.run {
-            copy(
-                latLng = latLng,
-                sliderPercent = 0.0f,
-            )
-        }
-        return copy(
-            bottomSheetState = bottomSheetState.copy(
-                checkPointAddState = newCheckPointAddState,
-            )
-        )
-    }
-
-    fun initInfoState(course: Course?=null, checkPoint: CheckPoint? =null): DriveScreenState {
+    fun initInfoState(course: CourseRenderItem?=null, checkPoint: CheckPoint? =null): DriveScreenState {
         val infoState = when  {
             course!=null -> {
                 bottomSheetState.infoState.copy(
-                    isRemoveButton = course.isUserCreated,
+                    isRemoveButton = course.isUserCreate,
                     isReportButton = true,
                     createdBy = course.userName
                 )
@@ -207,28 +190,6 @@ data class DriveScreenState(
             }
         }
 
-    }
-
-    fun replaceCheckpointAddLoading(
-        isLoading: Boolean
-    ): DriveScreenState {
-        return run {
-            copy(
-                bottomSheetState = bottomSheetState.copy(
-                    checkPointAddState = bottomSheetState.checkPointAddState.copy(
-                        isLoading = isLoading
-                    )
-                )
-            )
-        }
-    }
-
-    fun replaceScreenLoading(
-        isLoading: Boolean
-    ): DriveScreenState {
-        return run {
-            copy(isLoading = isLoading)
-        }
     }
 
     fun replaceInfoLoading(

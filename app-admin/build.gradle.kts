@@ -29,8 +29,6 @@ android {
 
         buildConfigField("String",  "API_ACCESS_KEY", getLocalProperties("apiAccessKey"))
 
-        buildConfigField("String", "NAVER_MAPS_APIGW_CLIENT_ID_KEY", getLocalProperties("naverMapsApigwClientId"))
-        buildConfigField("String", "NAVER_MAPS_APIGW_CLIENT_SECRET_KEY", getLocalProperties("naverMapsApigwClientSecret"))
         buildConfigField("String", "NAVER_CLIENT_ID_KEY", getLocalProperties("naverClientId"))
         buildConfigField("String", "NAVER_CLIENT_SECRET_KEY", getLocalProperties("naverClientSecret"))
 
@@ -38,7 +36,6 @@ android {
 
         buildConfigField( "String", "NATIVE_AD_ID", getLocalProperties("nativeAdId"))
 
-        buildConfigField("String", "NAVER_MAPS_NTRUSS_APIGW_URL", getLocalProperties("NAVER_MAPS_NTRUSS_APIGW_URL"))
         buildConfigField("String", "NAVER_OPEN_API_URL", getLocalProperties("NAVER_OPEN_API_URL"))
         buildConfigField("String", "FIREBASE_CLOUD_API_URL", getLocalProperties("FIREBASE_CLOUD_API_URL"))
         buildConfigField("String", "FIREBASE_CLOUD_STAGING_API_URL", getLocalProperties("FIREBASE_CLOUD_STAGING_API_URL"))

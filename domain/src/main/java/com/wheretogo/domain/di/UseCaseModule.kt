@@ -10,10 +10,7 @@ import com.wheretogo.domain.usecase.checkpoint.RemoveCheckPointUseCase
 import com.wheretogo.domain.usecase.comment.AddCommentToCheckPointUseCase
 import com.wheretogo.domain.usecase.comment.GetCommentForCheckPointUseCase
 import com.wheretogo.domain.usecase.comment.RemoveCommentToCheckPointUseCase
-import com.wheretogo.domain.usecase.course.AddCourseUseCase
-import com.wheretogo.domain.usecase.course.FilterListCourseUseCase
 import com.wheretogo.domain.usecase.course.GetCourseUseCase
-import com.wheretogo.domain.usecase.course.GetNearByCourseUseCase
 import com.wheretogo.domain.usecase.course.RemoveCourseUseCase
 import com.wheretogo.domain.usecase.gallery.DeleteGalleryPhotosUseCase
 import com.wheretogo.domain.usecase.gallery.GetStampUseCase
@@ -27,11 +24,8 @@ import com.wheretogo.domain.usecase.user.UserCheckUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
 import com.wheretogo.domain.usecase.user.UserSignUpAndSignInUseCase
 import com.wheretogo.domain.usecase.util.ClearCacheUseCase
-import com.wheretogo.domain.usecase.util.ClearExpireCacheUseCase
 import com.wheretogo.domain.usecase.util.CourseAddValidUseCase
-import com.wheretogo.domain.usecase.util.CreateRouteUseCase
 import com.wheretogo.domain.usecase.util.GetImageUseCase
-import com.wheretogo.domain.usecase.util.GetLatLngFromAddressUseCase
 import com.wheretogo.domain.usecase.util.SearchKeywordUseCase
 import com.wheretogo.domain.usecase.util.UpdateLikeUseCase
 import com.wheretogo.domain.usecaseimpl.app.AppCheckBySignatureUseCaseImpl
@@ -44,11 +38,10 @@ import com.wheretogo.domain.usecaseimpl.checkpoint.RemoveCheckPointUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.comment.AddCommentToCheckPointUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.comment.GetCommentForCheckPointUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.comment.RemoveCommentToCheckPointUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.course.AddCourseUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.course.FilterListCourseUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.course.SyncCoursesUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.course.GetCourseUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.course.GetNearByCourseUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.course.RemoveCourseUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.course.SyncCoursesUseCase
 import com.wheretogo.domain.usecaseimpl.gallery.DeleteGalleryPhotosUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.gallery.GetStampUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.gallery.LoadGalleryPhotosUseCaseImpl
@@ -61,11 +54,8 @@ import com.wheretogo.domain.usecaseimpl.user.UserCheckUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.UserSignOutUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.UserSignUpAndSignInUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.util.ClearCacheUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.util.ClearExpireCacheUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.util.CourseAddValidUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.util.CreateRouteUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.util.GetImageUseCaseImpl
-import com.wheretogo.domain.usecaseimpl.util.GetLatLngFromAddressUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.util.SearchKeywordUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.util.UpdateLikeUseCaseImpl
 import dagger.Binds
@@ -94,12 +84,11 @@ abstract class UseCaseModule {
     @Binds
     abstract fun bindObserveMsgUseCase(useCaseImpl: ObserveMsgUseCaseImpl): ObserveMsgUseCase
 
-
-    @Binds
-    abstract fun bindGetNearByCourseUseCase(useCaseImpl: GetNearByCourseUseCaseImpl): GetNearByCourseUseCase
-
     @Binds
     abstract fun bindGetCourseUseCase(useCaseImpl: GetCourseUseCaseImpl): GetCourseUseCase
+
+    @Binds
+    abstract fun bindSyncCoursesUseCase(useCaseImpl: SyncCoursesUseCaseImpl): SyncCoursesUseCase
 
     @Binds
     abstract fun bindUserSignOutUseCase(useCaseImpl: UserSignOutUseCaseImpl): UserSignOutUseCase
@@ -132,12 +121,6 @@ abstract class UseCaseModule {
     abstract fun bindGetImageUseCase(useCaseImpl: GetImageUseCaseImpl): GetImageUseCase
 
     @Binds
-    abstract fun bindCreateRouteUseCase(useCaseImpl: CreateRouteUseCaseImpl): CreateRouteUseCase
-
-    @Binds
-    abstract fun bindAddCourseUseCase(useCaseImpl: AddCourseUseCaseImpl): AddCourseUseCase
-
-    @Binds
     abstract fun bindAddCheckpointUseCase(useCaseImpl: AddCheckpointToCourseUseCaseImpl): AddCheckpointToCourseUseCase
 
     @Binds
@@ -153,19 +136,10 @@ abstract class UseCaseModule {
     abstract fun bindSearchAddressUseCase(useCaseImpl: SearchKeywordUseCaseImpl): SearchKeywordUseCase
 
     @Binds
-    abstract fun bindGetLatLngFromAddressUseCase(useCaseImpl: GetLatLngFromAddressUseCaseImpl): GetLatLngFromAddressUseCase
-
-    @Binds
     abstract fun bindCourseAddValidUseCase(useCaseImpl: CourseAddValidUseCaseImpl): CourseAddValidUseCase
 
     @Binds
-    abstract fun bindFilterListCourseUseCase(useCaseImpl: FilterListCourseUseCaseImpl): FilterListCourseUseCase
-
-    @Binds
     abstract fun bindClearCacheUseCase(useCaseImpl: ClearCacheUseCaseImpl): ClearCacheUseCase
-
-    @Binds
-    abstract fun bindClearExpireCacheUseCase(useCaseImpl: ClearExpireCacheUseCaseImpl): ClearExpireCacheUseCase
 
     @Binds
     abstract fun bindSavePickedImagesUseCase(useCaseImpl: SavePickedImagesUseCaseImpl): SavePickedImagesUseCase

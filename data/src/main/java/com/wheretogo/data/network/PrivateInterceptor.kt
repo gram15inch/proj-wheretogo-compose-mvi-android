@@ -12,6 +12,7 @@ import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
+import okio.Buffer
 
 
 class PrivateInterceptor @Inject constructor(
@@ -71,7 +72,7 @@ class PrivateInterceptor @Inject constructor(
 }
 
 // 디버깅용
-fun Request.log(tag: String = "tst_"): Request {
+private fun Request.log(tag: String = "tst_"): Request {
     println("$tag ┌──────────────── REQUEST ────────────────")
     try { println("$tag │ ${method} ${url}") } catch (e: Exception) { println("$tag │ method/url 오류: ${e.message}") }
     try {
@@ -80,7 +81,7 @@ fun Request.log(tag: String = "tst_"): Request {
         for (i in 0 until h.size) println("$tag │   ${h.name(i)}: ${h.value(i)}")
     } catch (e: Exception) { println("$tag │ Headers 오류: ${e.message}") }
     try {
-        val buf = okio.Buffer()
+        val buf = Buffer()
         body?.writeTo(buf)
         println("$tag │ Body: ${buf.readUtf8().ifBlank { "<empty>" }}")
     } catch (e: Exception) { println("$tag │ Body 오류: ${e.message}") }

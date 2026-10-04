@@ -6,7 +6,7 @@ import com.wheretogo.domain.model.report.ReportReason
 import com.dhkim139.core.ui.model.AppLifecycle
 import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.SheetVisibleMode
-import com.wheretogo.domain.model.course.CourseDirectionItem
+import com.wheretogo.domain.model.course.CourseRenderItem
 import com.dhkim139.core.ui.event.EventResult
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.model.TypeEditText
@@ -23,7 +23,7 @@ sealed class DriveScreenIntent {
     data class SearchSubmit(val submit:String) : DriveScreenIntent()
 
     //목록
-    data class DriveListItemClick(val item: CourseDirectionItem) : DriveScreenIntent()
+    data class DriveListItemClick(val item: CourseRenderItem) : DriveScreenIntent()
 
     //팝업
     data object DismissPopupComment :DriveScreenIntent()
@@ -40,7 +40,6 @@ sealed class DriveScreenIntent {
 
     // 플로팅 버튼
     data object CommentFloatingButtonClick : DriveScreenIntent()
-    data object CheckpointAddFloatingButtonClick : DriveScreenIntent()
     data class InfoFloatingButtonClick(val content: DriveBottomSheetContent) : DriveScreenIntent()
     data object ExportMapFloatingButtonClick : DriveScreenIntent()
     data class ExportMapAppButtonClick(val result:Result<Unit>) : DriveScreenIntent()
@@ -49,10 +48,6 @@ sealed class DriveScreenIntent {
 
     // 바텀시트
     data class BottomSheetChange(val state:SheetVisibleMode) : DriveScreenIntent()
-    data class CheckpointLocationSliderChange(val percent: Float) : DriveScreenIntent()
-    data class CheckpointDescriptionEnterClick(val text : String) : DriveScreenIntent()
-    data class CheckpointImageChange(val uriString: String?) : DriveScreenIntent()
-    data object CheckpointSubmitClick : DriveScreenIntent()
     data class InfoReportClick(val reason: ReportReason) : DriveScreenIntent()
     data object InfoRemoveClick : DriveScreenIntent()
 

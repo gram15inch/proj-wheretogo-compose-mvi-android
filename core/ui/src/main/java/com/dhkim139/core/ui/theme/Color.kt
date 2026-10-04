@@ -77,4 +77,8 @@ object Palette {
     val TierBlue   = Color(0xFF5A8FBF) // 방랑자
     val TierPurple = Color(0xFF8A6FBE) // 지도제작자
     val TierGold   = Color(0xFFC29429) // 개척자
+
+    //Route
+    val ForwardBlue = Color(0xFF3B82F6)
+    val BackwardOrange = Color(0xFFF59E0B)
 }

@@ -38,8 +38,6 @@ android {
 
         buildConfigField("String",  "API_ACCESS_KEY", getLocalProperties("apiAccessKey"))
 
-        buildConfigField("String", "NAVER_MAPS_APIGW_CLIENT_ID_KEY", getLocalProperties("naverMapsApigwClientId"))
-        buildConfigField("String", "NAVER_MAPS_APIGW_CLIENT_SECRET_KEY", getLocalProperties("naverMapsApigwClientSecret"))
         buildConfigField("String", "NAVER_CLIENT_ID_KEY", getLocalProperties("naverClientId"))
         buildConfigField("String", "NAVER_CLIENT_SECRET_KEY", getLocalProperties("naverClientSecret"))
 
@@ -153,6 +151,7 @@ dependencies {
     androidTestImplementation(platform(libs.androidx.compose.bom))
 
     // Unit Test
+    testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter.api)
     testImplementation(libs.junit.jupiter.params)
     testImplementation(libs.junit.jupiter.engine)
@@ -162,6 +161,7 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.cash.turbine)
     testImplementation(libs.google.truth)
+    testRuntimeOnly(libs.junit.platform.launcher)
 }
 
 tasks.withType(Test::class) {

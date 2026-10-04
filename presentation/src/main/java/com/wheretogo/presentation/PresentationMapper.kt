@@ -5,28 +5,27 @@ import com.dhkim139.feature.camerapicker.model.VerifiedImageGroup
 import com.dhkim139.feature.providerpicker.model.ProviderPickerItem
 import com.wheretogo.domain.AuthCompany
 import com.wheretogo.domain.MarkerType
-import com.wheretogo.domain.PathType
 import com.wheretogo.domain.RouteAttr
 import com.wheretogo.domain.SearchType
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.address.SimpleAddress
 import com.wheretogo.domain.model.checkpoint.CheckPoint
-import com.wheretogo.domain.model.checkpoint.CheckPointContent
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.comment.CommentContent
 import com.wheretogo.domain.model.course.Course
 import com.wheretogo.domain.model.course.CourseContent
-import com.wheretogo.domain.model.course.CourseDirectionItem
+import com.wheretogo.domain.model.course.CourseRenderItem
+import com.wheretogo.domain.model.course.StartDirection
 import com.wheretogo.domain.model.gallery.GalleryPhoto
 import com.wheretogo.domain.model.map.MarkerInfo
+import com.wheretogo.domain.model.route.Direction
 import com.wheretogo.domain.model.route.RouteCategory
 import com.wheretogo.domain.model.util.Navigation
 import com.wheretogo.presentation.model.LeafInfo
 import com.wheretogo.presentation.model.MiniPhoto
-import com.wheretogo.presentation.model.PathInfo
 import com.wheretogo.presentation.model.PickedImage
+import com.wheretogo.presentation.model.PolylineInfo
 import com.wheretogo.presentation.model.SearchBarItem
-import com.wheretogo.presentation.state.CheckPointAddState
 import com.wheretogo.presentation.state.CommentState
 import com.wheretogo.presentation.state.CommentState.CommentAddState
 import com.wheretogo.presentation.state.CourseAddScreenState
@@ -53,51 +52,12 @@ fun SimpleAddress.toSearchBarItem(): SearchBarItem {
     )
 }
 
-fun RouteAttr.toStrRes(): Int {
-    return when (this) {
-        RouteAttr.TYPE -> R.string.category
-        RouteAttr.LEVEL -> R.string.level
-        RouteAttr.RELATION -> R.string.recommend
-    }
-}
-
-fun CourseDirectionItem.toNavigation(): Navigation {
+fun CourseRenderItem.toNavigation(): Navigation {
+    val waypoints = if(direction == StartDirection.FORWARD) fWaypoint else bWaypoint
     return Navigation(
-        courseName = course.courseName,
-        waypoints = course.waypoints,
+        courseName = title,
+        waypoints = waypoints,
         direction = direction
-    )
-}
-
-fun CourseAddScreenState.CourseAddSheetState.toCourseContent(
-    cameraLatLng: LatLng? = null,
-    zoom: String = ""
-): CourseContent {
-    val waypoint = routeState.waypointItemStateGroup.map { it.data.latlng }
-    val points = routeState.points
-    val duration = (routeState.duration / 60000).toString()
-    val type = selectedCategoryCodeGroup.get(RouteAttr.TYPE).toString()
-    val level = selectedCategoryCodeGroup.get(RouteAttr.LEVEL).toString()
-    val relation = selectedCategoryCodeGroup.get(RouteAttr.RELATION).toString()
-    return CourseContent(
-        courseName = courseName,
-        waypoints = waypoint,
-        points = points,
-        duration = duration,
-        type = type,
-        level = level,
-        relation = relation,
-        cameraLatLng = cameraLatLng ?: waypoint.firstOrNull() ?: LatLng(),
-        zoom = zoom
-    )
-}
-
-fun CheckPointAddState.toContent(courseId:String): CheckPointContent {
-    return CheckPointContent(
-        groupId = courseId,
-        latLng = latLng,
-        imgUriString = imgInfo?.uriString!!,
-        description = description
     )
 }
 
@@ -135,20 +95,30 @@ fun parseLogoImgRes(company: String): Int {
     }
 }
 
-fun Course.toMarkerInfo(): MarkerInfo {
+fun Course.toMarkerInfo(): MarkerInfo? {
+    val pos = fWaypoints.firstOrNull()
+    pos?:return null
     return MarkerInfo(
-        contentId = courseId,
-        position = waypoints.first(),
+        contentId = id,
+        position = pos,
         type = MarkerType.COURSE,
         iconRes = RouteCategory.fromCode(type)?.item.toIcRes()
     )
 }
 
-fun Course.toPathInfo(): PathInfo {
-    return PathInfo(
-        contentId = courseId,
-        type = PathType.FULL,
-        points = points
+fun Course.toForwardLine(): PolylineInfo {
+    return PolylineInfo(
+        contentId = id,
+        direction = Direction.FORWARD,
+        points = forward
+    )
+}
+
+fun Course.toBackwardLine(): PolylineInfo {
+    return PolylineInfo(
+        contentId = id,
+        direction = Direction.BACKWARD,
+        points = backward
     )
 }
 
@@ -158,22 +128,6 @@ fun CheckPoint.toLeafInfo(): LeafInfo {
         latLng = latLng,
         caption = caption,
         thumbnail = thumbnail
-    )
-}
-
-fun CheckPoint.toMarkerInfo(): MarkerInfo {
-    val icon = when (checkPointId) {
-        CHECKPOINT_ADD_MARKER -> R.drawable.ic_mk_cm
-        SEARCH_MARKER -> R.drawable.ic_mk_df
-        else -> null
-    }
-    return MarkerInfo(
-        contentId = checkPointId,
-        position = latLng,
-        caption = caption,
-        type = MarkerType.CHECKPOINT,
-        iconPath = thumbnail.ifEmpty { null },
-        iconRes = icon
     )
 }
 

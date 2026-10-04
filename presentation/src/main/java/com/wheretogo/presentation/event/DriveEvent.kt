@@ -1,9 +1,8 @@
 package com.wheretogo.presentation.event
 
 import com.wheretogo.domain.model.checkpoint.CheckPoint
-import com.wheretogo.domain.model.course.CourseDirectionItem
+import com.wheretogo.domain.model.course.CourseRenderItem
 import com.wheretogo.domain.model.map.CameraMoveTrigger
-import com.wheretogo.domain.model.map.CameraState
 import com.wheretogo.domain.model.map.ContentOperation
 import com.wheretogo.domain.model.map.MarkerInfo
 import com.wheretogo.domain.model.map.MoveCameraOption
@@ -17,21 +16,11 @@ sealed class DriveEvent {
     data class MoveCamera(val option: MoveCameraOption): DriveEvent()
     data class RefreshContent(val option: RefreshContentOption) : DriveEvent()
     data class RefreshOverlay(val option: RefreshOverlayOption) : DriveEvent()
-    data class Focus(val item: CourseDirectionItem) : DriveEvent()
+    data class Focus(val item: CourseRenderItem) : DriveEvent()
     data object Release : DriveEvent()
     data object ClearMap : DriveEvent()
 
     companion object {
-        suspend fun MutableSharedFlow<DriveEvent>.refreshCourses(cameraState: CameraState? = null) {
-            emit(
-                RefreshContent(
-                    RefreshContentOption(
-                        ContentOperation.REFRESH_COURSES,
-                        cameraState = cameraState // null 일경우 최근 위치
-                    )
-                )
-            )
-        }
 
         suspend fun MutableSharedFlow<DriveEvent>.refreshCluster(clusterId: String) {
             emit(
