@@ -139,7 +139,7 @@ fun DriveScreenState.toStepState(step: DriveTutorialStep): DriveScreenState {
 private fun DriveScreenState.setHighlightItemWithGuide(isHighlight: Boolean): DriveScreenState {
     val highlightItemGroup = if (isHighlight) {
         listState.listItemGroup.map { item ->
-            if (item.course.courseId == guideCourse.courseId)
+            if (item.courseRenderItem.title == guideCourse.title)
                 item.copy(isHighlight = true)
             else
                 item.copy(isHighlight = false)

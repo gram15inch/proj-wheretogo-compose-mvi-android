@@ -1,102 +1,43 @@
 package com.wheretogo.data.datasourceimpl
 
-import com.google.firebase.firestore.FirebaseFirestore
-import com.wheretogo.data.DataBuildConfig
-import com.wheretogo.data.FireStoreCollections
+import com.wheretogo.data.ApiResult
+import com.wheretogo.data.apiCall
+import com.wheretogo.data.model.course.CourseDto
+import com.wheretogo.data.datasourceimpl.service.CourseManageApi
+import com.wheretogo.data.datasourceimpl.service.CourseSyncApi
 import com.wheretogo.data.datasource.CourseRemoteDatasource
-import com.wheretogo.data.datasourceimpl.service.GuestApiService
-import com.wheretogo.data.feature.mapDataError
-import com.wheretogo.data.feature.safeApiCall
-import com.wheretogo.data.model.content.ContentFilterRequest
-import com.wheretogo.data.model.content.Filter
-import com.wheretogo.data.model.content.Operator
-import com.wheretogo.data.model.course.CourseCreateContent
-import com.wheretogo.data.model.course.RemoteCourse
-import kotlinx.coroutines.suspendCancellableCoroutine
+import com.wheretogo.data.map
+import com.wheretogo.data.model.course.Page
+import com.wheretogo.domain.model.course.LoadingConfig.SYNC_PAGE_LIMIT
 import javax.inject.Inject
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 
 class CourseRemoteDatasourceImpl @Inject constructor(
-    buildConfig: DataBuildConfig,
-    private val guestApiService: GuestApiService
+    private val syncApi: CourseSyncApi,
+    private val manageApi: CourseManageApi,
 ) : CourseRemoteDatasource {
-    private val firestore by lazy { FirebaseFirestore.getInstance() }
-    private val courseRootCollection = buildConfig.dbPrefix + FireStoreCollections.COURSE.name
-    private val keywordAttr = RemoteCourse::keyword.name
-    private val updateAtAttr = RemoteCourse::updateAt.name
 
-    override suspend fun getCourse(courseId: String): Result<RemoteCourse> {
-        return runCatching {
-            val snapshot = suspendCancellableCoroutine { continuation ->
-                firestore.collection(courseRootCollection).document(courseId).get()
-                    .addOnSuccessListener {
-                        continuation.resume(it)
-                    }.addOnFailureListener {
-                        continuation.resumeWithException(it)
-                    }
+    override suspend fun fetchPage(updateAt: Long): ApiResult<Page> =
+        apiCall {
+            syncApi.sync(cursor = updateAt, limit = SYNC_PAGE_LIMIT)
+        }.map {
+            val upserts = mutableListOf<CourseDto>()
+            val deletedIds = mutableListOf<String>()
+            it.courses.orEmpty().forEach { dto ->
+                when {
+                    dto.deleted == true -> dto.id?.let(deletedIds::add)
+                    else -> dto.let(upserts::add)
+                }
             }
-            snapshot.toObject(RemoteCourse::class.java)
-        }.mapDataError()
-    }
-
-    override suspend fun getCourseGroupByKeyword(keyword: String): Result<List<RemoteCourse>> {
-        return runCatching {
-            val snapshot = suspendCancellableCoroutine { continuation ->
-                firestore.collection(courseRootCollection)
-                    .whereArrayContains(keywordAttr, keyword)
-                    .limit(5)
-                    .get()
-                    .addOnSuccessListener {
-                        continuation.resume(it)
-                    }.addOnFailureListener {
-                        continuation.resumeWithException(it)
-                    }
-            }
-            snapshot.toObjects(RemoteCourse::class.java)
-        }
-    }
-
-    override suspend fun getCourseGroupByUpdateAt(updateAt: Long): Result<List<RemoteCourse>> {
-        return safeApiCall {
-            guestApiService.getCourseByFilter(
-                ContentFilterRequest(
-                    filters = listOf(
-                        Filter(
-                            field = updateAtAttr,
-                            operator = Operator.GREATER_THAN,
-                            value = updateAt
-                        )
-                    )
-                )
+            Page(
+                upserts = upserts,
+                deletedIds = deletedIds,
+                cursor = it.cursor,
+                hasMore = it.hasMore == true,
+                resync = it.resync == true,
             )
-        }.mapDataError()
-    }
-
-    override suspend fun setCourse(content: CourseCreateContent): Result<Unit> {
-        return runCatching {
-            suspendCancellableCoroutine { continuation ->
-                firestore.collection(courseRootCollection).document(content.courseId)
-                    .set(content)
-                    .addOnSuccessListener {
-                        continuation.resume(Unit)
-                    }.addOnFailureListener {
-                        continuation.resumeWithException(it)
-                    }
-            }
         }
-    }
 
-    override suspend fun removeCourse(courseId: String): Result<Unit> {
-        return runCatching {
-            suspendCancellableCoroutine { continuation ->
-                firestore.collection(courseRootCollection).document(courseId).delete()
-                    .addOnSuccessListener {
-                        continuation.resume(Unit)
-                    }.addOnFailureListener {
-                        continuation.resumeWithException(it)
-                    }
-            }
-        }
-    }
+
+    override suspend fun removeCourse(courseId: String): ApiResult<Unit> =
+        apiCall { manageApi.delete(courseId) }
 }

@@ -10,7 +10,6 @@ import com.wheretogo.domain.usecase.app.AppCheckBySignatureUseCase
 import com.wheretogo.domain.usecase.app.ObserveMsgUseCase
 import com.wheretogo.domain.usecase.user.UserCheckUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
-import com.wheretogo.domain.usecase.util.ClearExpireCacheUseCase
 import com.dhkim139.core.ui.event.AppEvent
 import com.dhkim139.core.ui.event.EventResult
 import com.wheretogo.presentation.state.RootScreenState
@@ -29,7 +28,6 @@ class RootViewModel @Inject constructor(
     private val handler: RootHandler,
     private val appCheckBySignatureUseCase: AppCheckBySignatureUseCase,
     private val userCheckUseCase: UserCheckUseCase,
-    private val clearExpireCacheUseCase: ClearExpireCacheUseCase,
     private val userSignOutUseCase: UserSignOutUseCase,
     private val observeMsgUseCase: ObserveMsgUseCase,
 ) :
@@ -65,10 +63,6 @@ class RootViewModel @Inject constructor(
                         }
                     }
                 }
-            }
-
-            launch(Dispatchers.IO) {
-                clearExpireCacheUseCase()
             }
         }
     }

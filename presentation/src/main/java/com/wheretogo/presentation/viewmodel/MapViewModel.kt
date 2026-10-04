@@ -7,8 +7,7 @@ import com.wheretogo.domain.MarkerType
 import com.wheretogo.domain.ZOOM
 import com.wheretogo.domain.feature.LocationService
 import com.wheretogo.domain.model.address.LatLng
-import com.wheretogo.domain.model.course.Course
-import com.wheretogo.domain.model.course.CourseDirectionItem
+import com.wheretogo.domain.model.course.CourseRenderItem
 import com.wheretogo.domain.model.map.CameraMoveTrigger
 import com.wheretogo.domain.model.map.CameraState
 import com.wheretogo.domain.model.map.ContentOperation
@@ -20,11 +19,16 @@ import com.wheretogo.domain.model.map.RefreshContentOption
 import com.wheretogo.domain.model.map.RefreshOverlayOption
 import com.wheretogo.domain.repository.MapContentRepository
 import com.wheretogo.domain.usecase.app.DriveTutorialUseCase
-import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
 import com.wheretogo.domain.usecase.checkpoint.GetCheckpointForMarkerUseCase
-import com.wheretogo.domain.usecase.course.FilterListCourseUseCase
-import com.wheretogo.domain.usecase.course.GetNearByCourseUseCase
 import com.dhkim139.core.ui.model.AppLifecycle
+import com.wheretogo.domain.model.course.BoundingBox
+import com.wheretogo.domain.model.course.CameraFocus
+import com.wheretogo.domain.model.course.Course
+import com.wheretogo.domain.model.course.GeoBounds
+import com.wheretogo.domain.model.course.MapCamera
+import com.wheretogo.domain.model.course.StartDirection
+import com.wheretogo.domain.usecaseimpl.course.ObserveCourseInBoundsUseCase
+import com.wheretogo.domain.usecaseimpl.course.SyncCoursesUseCase
 import com.wheretogo.presentation.CHECKPOINT_ADD_MARKER
 import com.wheretogo.presentation.MainDispatcher
 import com.wheretogo.presentation.feature.map.MapOverlayService
@@ -34,15 +38,18 @@ import com.wheretogo.presentation.state.MapState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import javax.inject.Inject
 
 
@@ -54,10 +61,9 @@ sealed class MapEvent{
 class MapViewModel @Inject constructor(
     @MainDispatcher private val dispatcher: CoroutineDispatcher,
     private val initState: MapState,
-    private val observeSettingsUseCase: ObserveSettingsUseCase,
+    private val observeCourseInBoundsUseCase: ObserveCourseInBoundsUseCase,
+    private val syncCoursesUseCase: SyncCoursesUseCase,
     private val driveTutorialUseCase: DriveTutorialUseCase,
-    private val getNearByCourseUseCase: GetNearByCourseUseCase,
-    private val filterListCourseUseCase: FilterListCourseUseCase,
     private val getCheckPointForMarkerUseCase: GetCheckpointForMarkerUseCase,
     private val mapContentRepository: MapContentRepository,
     private val mapOverlayService: MapOverlayService,
@@ -79,7 +85,10 @@ class MapViewModel @Inject constructor(
 
     private val _intentJobs = mutableMapOf<MapIntent,Job>()
 
-    init { observe() }
+    init {
+        handleIntent(MapIntent.FetchCourse)
+        observe()
+    }
 
     fun handleIntent(intent: MapIntent) {
         _intentJobs[intent] = viewModelScope.launch(dispatcher) {
@@ -87,6 +96,7 @@ class MapViewModel @Inject constructor(
                 //지도
                 is MapIntent.MapAsync -> mapAsync()
                 is MapIntent.CameraUpdated -> cameraUpdated(intent.cameraState)
+                is MapIntent.FetchCourse -> fetchCourse()
                 is MapIntent.MarkerClick -> markerClick(intent.markerInfo)
                 is MapIntent.MoveCamera -> moveCamera(intent.option)
                 is MapIntent.Focus -> focus(intent.item)
@@ -132,7 +142,7 @@ class MapViewModel @Inject constructor(
             else -> {
                 when{
                     _isContentUpdate -> {
-                        refreshCourseByCameraState(cameraState, latestMoveTrigger)
+                       
                     }
                     _isLeafScale -> {
                         leafScaleInCluster(cameraState.latLng)
@@ -152,6 +162,13 @@ class MapViewModel @Inject constructor(
             else ->  {}
         }
     }
+
+    private suspend fun fetchCourse() {
+        _state.update { it.copy(isOverlayLoading = true) }
+        syncCoursesUseCase()
+        _state.update { it.copy(isOverlayLoading = false) }
+    }
+
 
     private suspend fun markerClick(markerInfo: MarkerInfo) {
         when (markerInfo.type) {
@@ -174,35 +191,43 @@ class MapViewModel @Inject constructor(
                 option.trigger == CameraMoveTrigger.LIST_ITEM -> calculateListItemCameraPosition(latestCamera, initLatlng, initZoom)
                 else -> initLatlng to initZoom
             }
-            moveToTaget(finalLatlng, finalZoom,option.trigger, option.animation)
+            moveToTaget(finalLatlng, option.focus, finalZoom, option.trigger, option.animation)
         }
     }
 
-    private suspend fun focus(item: CourseDirectionItem){
-        val course = item.course.cameraUpdateByDirection(item.direction)
+    private suspend fun focus(item: CourseRenderItem){
+        val marker = item.let {
+            if(it.direction == StartDirection.FORWARD) item.fWaypoint.firstOrNull()?:return else item.bWaypoint.firstOrNull()?:return
+        }
         // 주변 코스 숨기기
-        mapOverlayService.focusAndHideOthers(course.courseId)
-        mapOverlayService.updateCourseMarkerPosition(course.courseId, course.cameraLatLng)
+        mapOverlayService.focusAndHideOthers(item.courseId, item.direction)
+        mapOverlayService.updateCourseMarkerPosition(item.courseId, marker)
         mapContentRepository.selectCourse(item)
 
         moveCamera(
             MoveCameraOption(
-                latlng = course.cameraLatLng,
+                latlng = marker,
                 trigger = CameraMoveTrigger.LIST_ITEM,
                 zoom = ZOOM.DISTRICT.level,
-                animation = MoveAnimation.APP_LINEAR
+                animation = MoveAnimation.APP_LINEAR,
+                focus = CameraFocus(
+                    target = marker,
+                    bounds = BoundingBox.of(item.fWaypoint),
+                    bottomPaddingPx = 0,
+                    zoom = 11.0
+                )
             )
         )
 
         // 체크포인트 클러스터 가져오기
-        refreshCheckpointCluster(course.courseId)
+        refreshCheckpointCluster(item.courseId)
     }
 
     private fun release(){
         // 클러스터 삭제
         mapContentRepository.apply {
-            selectedCourseState.value?.course?.let {
-                mapOverlayService.removeCheckPointCluster(it.courseId)
+            selectedCourseState.value?.courseId?.let {
+                mapOverlayService.removeCheckPointCluster(it)
             }
             clearCourse()
             clearCheckPoint()
@@ -216,7 +241,6 @@ class MapViewModel @Inject constructor(
     private suspend fun refreshContent(option: RefreshContentOption){
         runCatching {
             when(option.operation){
-                ContentOperation.REFRESH_COURSES -> refreshCourseByCameraState(option.cameraState)
                 ContentOperation.REFRESH_CLUSTER -> refreshCheckpointCluster(option.id)
                 ContentOperation.DELETE_COURSE -> deleteCourse(option.id)
                 ContentOperation.DELETE_CHECKPOINT -> deleteCheckPoint(option.id,option.groupId)
@@ -305,6 +329,7 @@ class MapViewModel @Inject constructor(
     // 공통
     //=========================================
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private fun observe(){
         viewModelScope.launch(dispatcher){
             launch {
@@ -312,9 +337,6 @@ class MapViewModel @Inject constructor(
                     if(it == null) {
                         _isContentUpdate = true
                         _isLeafScale = false
-                        cancelIntent()
-                        if(_state.value.isOverlayLoading)
-                            _state.update { it.copy(isOverlayLoading = false) }
                     }
                 }
             }
@@ -323,10 +345,19 @@ class MapViewModel @Inject constructor(
                     if(it == null) {
                         if(!_isContentUpdate)
                             _isLeafScale = true
-                        cancelIntent()
                     }else{
                         _isLeafScale = false
                     }
+                }
+            }
+
+            launch {
+                observeCourseInBoundsUseCase(
+                    camera = state.mapLatest { it.naverMapState.latestCameraState.toMapCamera() }
+                        .distinctUntilChanged()
+                ).distinctUntilChanged().collect {
+                    it.refreshOverlay()
+                        .refreshList()
                 }
             }
         }
@@ -377,27 +408,6 @@ class MapViewModel @Inject constructor(
 
     }
 
-    private suspend fun refreshCourseByCameraState(cameraState: CameraState? = null, latestMoveTrigger : CameraMoveTrigger? =null) {
-        val cameraState = cameraState ?: _state.value.naverMapState.latestCameraState
-        if (!_state.value.isOverlayLoading ||
-            latestMoveTrigger == CameraMoveTrigger.GUIDE // 가이드가 변경한 경우 강제 리프레시
-        ) {
-            _state.update { it.copy(isOverlayLoading = true) }
-            val courseGroup= withContext(Dispatchers.IO) {
-                getNearByCourseUseCase(
-                    cameraState.latLng,
-                    cameraState.zoom,
-                    cameraState.viewport
-                )
-            }.getOrDefault(emptyList())
-            courseGroup
-                .refreshCourse()
-                .refreshList(cameraState)
-
-            _state.update { it.copy(isOverlayLoading = false) }
-        }
-    }
-
     private suspend fun refreshCheckpointCluster(courseId: String?) {
         val courseIdNotNull = courseId?.let { mapContentRepository.getIdWhenSelected(courseId) }?:courseId
         check(!courseIdNotNull.isNullOrEmpty()){ "empty courseId $courseIdNotNull"}
@@ -440,11 +450,9 @@ class MapViewModel @Inject constructor(
 
     private suspend fun leafScaleInCluster(latLng: LatLng){
         val item = mapContentRepository.selectedCourseState.value
-        val step = observeSettingsUseCase().firstOrNull()?.getOrNull()?.tutorialStep
-            ?: DriveTutorialStep.SKIP
         if (item != null) {
             mapOverlayService.scaleToPointLeafInCluster(
-                item.course.courseId,
+                item.courseId,
                 latLng,
             ).onSuccess { checkPointId->
                 driveTutorialUseCase(DriveTutorialStep.MOVE_TO_LEAF, checkPointId)
@@ -481,6 +489,7 @@ class MapViewModel @Inject constructor(
 
     private suspend fun moveToTaget(
         latLng: LatLng? = null,
+        focus: CameraFocus? = null,
         zoom: Double,
         trigger: CameraMoveTrigger = CameraMoveTrigger.DEFAULT,
         animation: MoveAnimation = MoveAnimation.APP_LINEAR
@@ -494,7 +503,8 @@ class MapViewModel @Inject constructor(
                         zoom = zoom,
                         updateSource = trigger,
                         moveAnimation = animation,
-                        isMyLocation = false
+                        isMyLocation = false,
+                        focus = focus
                     )
                 )
             )
@@ -527,7 +537,7 @@ class MapViewModel @Inject constructor(
                     ?: return@runCatching Exception("empty selectedCourseState")
 
                 val checkpoints = withContext(Dispatchers.IO) {
-                    getCheckPointForMarkerUseCase(courseItem.course.courseId).getOrThrow()
+                    getCheckPointForMarkerUseCase(courseItem.courseId).getOrThrow()
                 }
                 mapContentRepository.refreshCheckPointList(checkpoints)
 
@@ -541,24 +551,16 @@ class MapViewModel @Inject constructor(
         }
     }
 
-    private fun List<Course>.refreshCourse(): List<Course> {
+    private fun List<Course>.refreshOverlay(): List<Course> {
         return runCatching {
-            val (hideGroup, showGroup) = partition { it.isHide }
-            mapOverlayService.addCourseMarkerAndPath(showGroup)
-            mapOverlayService.removeCourseMarkerAndPath(hideGroup.map { it.courseId })
+            mapOverlayService.addCourseMarkerAndPath(this)
             mapOverlayService.showAllOverlays()
-            showGroup
-        }.onFailure { handleError(it) }.getOrDefault(emptyList())
-    }
-
-    private fun List<Course>.refreshList(cameraState: CameraState): List<Course> {
-        return filterListCourseUseCase(
-            cameraState.viewport,
-            cameraState.zoom,
             this
-        ).onSuccess { courseGroup ->
-            mapContentRepository.refreshCourseList(courseGroup)
         }.onFailure { handleError(it) }.getOrDefault(emptyList())
     }
 
+    private fun List<Course>.refreshList() {
+        Timber.d("tst_ refreshList")
+        return mapContentRepository.refreshCourseList(map { it.toDirectionItem() })
+    }
 }

@@ -21,6 +21,7 @@ dependencies {
     androidTestImplementation(project(mapOf("path" to ":core:ui")))
     implementation(project(mapOf("path" to ":feature:provider-picker")))
     implementation(project(mapOf("path" to ":feature:camera-picker")))
+    implementation(project(mapOf("path" to ":feature:course-add")))
 
     // AndroidX
     implementation(libs.androidx.core.ktx)

@@ -6,9 +6,6 @@ import com.wheretogo.data.model.checkpoint.LocalCheckPoint
 import com.wheretogo.data.model.checkpoint.RemoteCheckPoint
 import com.wheretogo.data.model.comment.CommentCreateContent
 import com.wheretogo.data.model.comment.RemoteComment
-import com.wheretogo.data.model.course.CourseCreateContent
-import com.wheretogo.data.model.course.LocalCourse
-import com.wheretogo.data.model.course.RemoteCourse
 import com.wheretogo.data.model.gallery.ExifEntity
 import com.wheretogo.data.model.gallery.ExifResponse
 import com.wheretogo.data.model.gallery.ImageMetaCreateContent
@@ -21,8 +18,6 @@ import com.wheretogo.data.model.history.RemoteHistoryGroupWrapper
 import com.wheretogo.data.model.map.DataLatLng
 import com.wheretogo.data.model.report.ReportCreateContent
 import com.wheretogo.data.model.report.ReportResponse
-import com.wheretogo.data.model.route.LocalRoute
-import com.wheretogo.data.model.route.RemoteRoute
 import com.wheretogo.data.model.user.LocalProfile
 import com.wheretogo.data.model.user.LocalProfilePrivate
 import com.wheretogo.data.model.user.RemoteProfilePrivate
@@ -36,8 +31,6 @@ import com.wheretogo.domain.model.checkpoint.CheckPoint
 import com.wheretogo.domain.model.checkpoint.CheckPointAddRequest
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.comment.CommentAddRequest
-import com.wheretogo.domain.model.course.Course
-import com.wheretogo.domain.model.course.CourseAddRequest
 import com.wheretogo.domain.model.gallery.GalleryPhoto
 import com.wheretogo.domain.model.gallery.PhotoExif
 import com.wheretogo.domain.model.history.HistoryGroupWrapper
@@ -47,12 +40,10 @@ import com.wheretogo.domain.model.report.ReportAddRequest
 import com.wheretogo.domain.model.report.ReportReason
 import com.wheretogo.domain.model.report.ReportStatus
 import com.wheretogo.domain.model.report.ReportType
-import com.wheretogo.domain.model.route.Route
 import com.wheretogo.domain.model.user.History
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePrivate
 import com.wheretogo.domain.model.util.ExifData
-import com.wheretogo.domain.toGeoHash
 import timber.log.Timber
 
 fun RemoteSyncUser.toProfileHistoryPair(): Pair<Profile, History> {
@@ -161,43 +152,6 @@ fun ReportAddRequest.toCreateContent(): ReportCreateContent {
         targetUserName = targetUserName,
         type = type.name,
         reason = reason.name,
-    )
-}
-
-fun RemoteRoute.toLocalRoute(): LocalRoute {
-    return LocalRoute(
-        courseId = courseId,
-        points = points,
-        duration = duration,
-        distance = distance
-    )
-}
-
-fun LocalRoute.toRoute(): Route {
-    return Route(
-        courseId = courseId,
-        points = points.toLatLngGroup(),
-        duration = duration,
-        distance = distance
-    )
-}
-
-fun Route.toRemoteRoute(): RemoteRoute {
-    return RemoteRoute(
-        courseId = courseId,
-        userId = userId,
-        points = points.toDataLatLngGroup(),
-        duration = duration,
-        distance = distance
-    )
-}
-
-fun RemoteRoute.toRoute(): Route {
-    return Route(
-        courseId = courseId,
-        points = points.toLatLngGroup(),
-        duration = duration,
-        distance = distance
     )
 }
 
@@ -328,137 +282,12 @@ fun List<RemoteCheckPoint>.toLocal() = map { it.toLocalCheckPoint() }
 @JvmName("fromLocalCheckPointToDomain")
 fun List<LocalCheckPoint>.toDomain() = map { it.toCheckPoint() }
 
-fun CourseAddRequest.toCreateContent(
-    courseId: String,
-): CourseCreateContent {
-    val current = System.currentTimeMillis()
-    return CourseCreateContent(
-        courseId = courseId,
-        courseName = content.courseName,
-        userId = userId,
-        userName = userName,
-        latitude = content.cameraLatLng.latitude,
-        longitude = content.cameraLatLng.longitude,
-        geoHash = content.cameraLatLng.toGeoHash(6),
-        waypoints = content.waypoints.toDataLatLngGroup(),
-        keyword = keyword,
-        duration = content.duration,
-        type = content.type,
-        level = content.level,
-        relation = content.relation,
-        cameraLatLng = content.cameraLatLng.toDataLatLng(),
-        zoom = content.zoom,
-        updateAt = current,
-        createAt = current
-    )
-}
-
-fun LocalCourse.toCourse(): Course {
-    return Course(
-        courseId = courseId,
-        courseName = courseName,
-        userId = userId,
-        userName = userName,
-        waypoints = waypoints.toLatLngGroup(),
-        points = emptyList(),
-        duration = duration,
-        type = type,
-        level = level,
-        relation = relation,
-        cameraLatLng = cameraLatLng.toLatLng(),
-        zoom = zoom,
-        like = like,
-        reportedCount = reportedCount,
-        isHide = isHide,
-        updateAt = updateAt,
-        createAt = createAt,
-    )
-}
-
-fun RemoteCourse.toLocalCourse(): LocalCourse {
-    return LocalCourse(
-        courseId = courseId,
-        courseName = courseName,
-        userId = userId,
-        userName = userName,
-        latitude = cameraLatLng.latitude,
-        longitude = cameraLatLng.longitude,
-        geoHash = cameraLatLng.toLatLng().toGeoHash(6),
-        waypoints = waypoints,
-        duration = duration,
-        type = type,
-        level = level,
-        relation = relation,
-        cameraLatLng = cameraLatLng,
-        zoom = zoom,
-        like = 0,
-        reportedCount = reportedCount,
-        isHide = hide,
-        updateAt = updateAt,
-        createAt = createAt
-    )
-}
-
-fun CourseCreateContent.toLocalCourse(): LocalCourse {
-    return LocalCourse(
-        courseId = courseId,
-        courseName = courseName,
-        userId = userId,
-        userName = userName,
-        latitude = cameraLatLng.latitude,
-        longitude = cameraLatLng.longitude,
-        geoHash = cameraLatLng.toLatLng().toGeoHash(6),
-        waypoints = waypoints,
-        duration = duration,
-        type = type,
-        level = level,
-        relation = relation,
-        cameraLatLng = cameraLatLng,
-        zoom = zoom,
-        like = 0,
-        reportedCount = reportedCount,
-        isHide = hide,
-        updateAt = updateAt,
-        createAt = createAt
-    )
-}
-
-fun RemoteCourse.toCourse(): Course {
-    return Course(
-        courseId = courseId,
-        courseName = courseName,
-        userId = userId,
-        userName = userName,
-        waypoints = waypoints.toLatLngGroup(),
-        checkpointIdGroup = emptyList(),
-        points = emptyList(),
-        duration = duration,
-        type = type,
-        level = level,
-        relation = relation,
-        cameraLatLng = cameraLatLng.toLatLng(),
-        zoom = zoom,
-        like = 0,
-        isHide = hide,
-        updateAt = updateAt,
-        createAt = createAt
-    )
-}
-
 fun DataLatLng.toLatLng(): LatLng {
     return LatLng(this.latitude, this.longitude)
 }
 
 fun LatLng.toDataLatLng(): DataLatLng {
     return DataLatLng(this.latitude, this.longitude)
-}
-
-fun List<DataLatLng>.toLatLngGroup(): List<LatLng> {
-    return map { it.toLatLng() }
-}
-
-fun List<LatLng>.toDataLatLngGroup(): List<DataLatLng> {
-    return map { it.toDataLatLng() }
 }
 
 fun LocalHistoryGroupWrapper.toHistoryGroupWrapper(): HistoryGroupWrapper {

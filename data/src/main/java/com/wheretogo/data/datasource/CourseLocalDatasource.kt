@@ -1,23 +1,40 @@
 package com.wheretogo.data.datasource
 
-import com.wheretogo.data.model.course.LocalCourse
+import com.wheretogo.data.model.course.CourseEntity
+import com.wheretogo.domain.model.course.GeoBounds
+import com.wheretogo.domain.model.course.SyncState
+import kotlinx.coroutines.flow.Flow
 
 
 interface CourseLocalDatasource {
 
-    suspend fun getCourse(courseId: String): Result<LocalCourse?>
+    suspend fun upsert(courseGroup: List<CourseEntity>)
 
-    suspend fun setCourse(courseGroup: List<LocalCourse>): Result<Unit>
 
-    suspend fun removeCourse(courseId: String): Result<Unit>
+    suspend fun selectById(id: String? = null): List<CourseEntity>
 
-    suspend fun getCourseGroupByGeoHash(geoHash: String): Result<List<LocalCourse>>
+    suspend fun selectByTitle(title: String): List<CourseEntity>
 
-    suspend fun clear(): Result<Unit>
+    fun observeInBounds(bounds: GeoBounds): Flow<List<CourseEntity>>
 
-    suspend fun getLatestUpdate(): Result<Long>
 
-    suspend fun setLatestUpdate(updateAt: Long): Result<Unit>
+    suspend fun applyDelta(upserts: List<CourseEntity>, deletedIds: List<String>, cursor: Long)
 
-    suspend fun getCourseByIsHide(isHide: Boolean): Result<List<LocalCourse>>
+    suspend fun replaceAll(courses: List<CourseEntity>, cursor: Long, syncedAt: Long)
+
+
+    suspend fun delete(courseId: String)
+
+    suspend fun clear()
+
+
+    //=========================================
+    // sync
+    //=========================================
+    suspend fun syncState(): SyncState
+
+    fun observeSyncState(): Flow<SyncState>
+
+    suspend fun markSynced(cursor: Long, at: Long)
+
 }

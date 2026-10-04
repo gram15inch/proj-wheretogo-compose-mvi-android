@@ -77,7 +77,7 @@ class ReportDetailViewModel @Inject constructor(
         viewModelScope.launch {
             when (type) {
                 ContentType.COURSE.name -> {
-                    courseRepository.getCourse(contentId)
+                    Result.success(courseRepository.getById(contentId))
                 }
 
                 ContentType.CHECKPOINT.name -> {

@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 pluginManagement {
     repositories {
         google {
@@ -28,6 +31,19 @@ dependencyResolutionManagement {
     }
 }
 
+private val localProperties = Properties().apply {
+    val file = File(rootDir, "local.properties")
+    if (file.exists()) {
+        load(FileInputStream(file))
+    }
+}
+
+private  val modulesDir = localProperties.getProperty("modules.dir")
+    ?: throw GradleException(
+        "local.properties에 modules.dir 경로를 추가하세요. 예: modules.dir=/Users/Shared/modules"
+    )
+
+
 rootProject.name = "WhereTogo"
 include(":app")
 include(":data")
@@ -38,3 +54,5 @@ include(":core:ui")
 include(":feature:media-picker")
 include(":feature:provider-picker")
 include(":feature:camera-picker")
+include(":feature:course-add")
+project(":feature:course-add").projectDir = File(modulesDir, "course-add")

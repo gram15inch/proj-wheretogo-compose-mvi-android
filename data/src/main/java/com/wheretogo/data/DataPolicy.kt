@@ -3,28 +3,25 @@ package com.wheretogo.data
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.storage.StorageException
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
 import com.wheretogo.data.feature.safeErrorBody
 import com.wheretogo.domain.BanReason
 import com.wheretogo.domain.DomainError
 import com.wheretogo.domain.SignErrorReason
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import okio.IOException
 import retrofit2.Response
 import timber.log.Timber
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
-import kotlin.stackTraceToString
+import kotlin.coroutines.cancellation.CancellationException
 
 data class DataBuildConfig(
     val firebaseCloudApiUrl: String,
-    val naverMapsNtrussApigwUrl: String,
     val naverOpenApiUrl: String,
     val googleWebClientId: String,
     val tokenRequestKey: String,
-    val naverMapsApigwClientIdKey: String,
-    val naverMapsApigwClientSecretkey: String,
     val naverClientIdKey: String,
     val naverClientSecretKey: String,
     val isTokenLog: Boolean,
@@ -36,57 +33,121 @@ const val DATA_NULL = ""
 // 전체 갱신용
 val CheckpointPolicy = DefaultPolicy(60, 15)
 val CommentPolicy = DefaultPolicy(20, 5)
-val CoursePolicy = DefaultPolicy(60*24, 60*6)
-val ClearPolicy = DefaultPolicy(60*24*7, 60*24*7)
 
-@JsonClass(generateAdapter = false)
+@Serializable
 enum class DataAuthCompany {
-    @Json(name = "GOOGLE") GOOGLE,
-    @Json(name = "PROFILE") PROFILE
+    GOOGLE,
+    PROFILE
 }
 
-@JsonClass(generateAdapter = false)
+@Serializable
 enum class DataHistoryType {
-    @Json(name = "COMMENT") COMMENT,
-    @Json(name = "COURSE") COURSE,
-    @Json(name = "CHECKPOINT") CHECKPOINT,
-    @Json(name = "LIKE") LIKE,
-    @Json(name = "REPORT") REPORT
+    COMMENT,
+    COURSE,
+    CHECKPOINT,
+    LIKE,
+    REPORT
 }
 
-@JsonClass(generateAdapter = false)
+@Serializable
 enum class DataReportType {
-    @Json(name = "USER") USER,
-    @Json(name = "COURSE") COURSE,
-    @Json(name = "COMMENT") COMMENT,
-    @Json(name = "CHECKPOINT") CHECKPOINT
+    USER,
+    COURSE,
+    COMMENT,
+    CHECKPOINT
 }
 
 enum class ImageFormat(val ext: String) {
     JPEG("jpg"), WEBP("webp")
 }
 
-@JsonClass(generateAdapter = false)
+@Serializable
 enum class DataSettingAttr {
-    @Json(name = "TUTORIAL") TUTORIAL
+   TUTORIAL
 }
+
+
+class HttpCodeException(code: Int, errorCode: String?) : Exception()
+class ResponseException(msg: String) : IllegalStateException(msg)
+
+sealed interface ApiResult<out T> {
+    data class Success<T>(val data: T) : ApiResult<T>
+    data class HttpError(val code: Int, val message: String?) : ApiResult<Nothing>
+    data class NetworkError(val exception: IOException) : ApiResult<Nothing>
+    data class UnknownError(val throwable: Throwable) : ApiResult<Nothing>
+}
+
+inline fun <T, R> ApiResult<T>.map(transform: (T) -> R): ApiResult<R> = when (this) {
+    is ApiResult.Success -> ApiResult.Success(transform(data))
+    is ApiResult.HttpError -> this
+    is ApiResult.NetworkError -> this
+    is ApiResult.UnknownError -> this
+}
+
+suspend fun<T> nullableApiCall(block: suspend () -> Response<T>): ApiResult<T?> = try {
+    val response= block()
+
+    if(!response.isSuccessful)
+        throw HttpCodeException(response.code(), parseResponseCode(response))
+
+    val body = response.body()
+
+    ApiResult.Success(body)
+}  catch (e: CancellationException) {
+    throw e // 코루틴 취소는 삼키면 안 됨
+} catch (e: IOException) {
+    ApiResult.NetworkError(e)
+} catch (e: Exception) {
+    ApiResult.UnknownError(e)
+}
+
+suspend fun<T> apiCall(block: suspend () -> Response<T>): ApiResult<T> = try {
+    val response= block()
+
+    if(!response.isSuccessful)
+        throw HttpCodeException(response.code(), parseResponseCode(response))
+
+    val body = response.body() ?: run {
+        throw ResponseException("200 인데 body 없음")
+    }
+
+    ApiResult.Success(body)
+}  catch (e: CancellationException) {
+    throw e // 코루틴 취소는 삼키면 안 됨
+} catch (e: IOException) {
+    ApiResult.NetworkError(e)
+} catch (e: Exception) {
+    ApiResult.UnknownError(e)
+}
+
+private fun parseResponseCode(e: Response<*>): String? =
+    runCatching {
+        e.errorBody()?.string()?.let { Json.decodeFromString<ErrorBody>(it).code }
+    }.getOrNull()
+
+
+@Serializable
+private data class ErrorBody(
+    val code: String? = null,
+    val message: String? = null)
 
 sealed class DataError: IOException(){
     data class NetworkError(val msg:String = ""): DataError()
+    data class Unauthorized(val msg:String = ""): DataError()
+    data class TooManyRequests(val msg:String = ""): DataError()
+    data class ServerError(val msg:String = ""): DataError()
+    data class UnexpectedException(val msg:String): DataError()
     data class UserNotFound(val msg:String = ""): DataError()
+
     data class UserUnavailable(val msg:String = ""): DataError()
+    data class Forbidden(val msg:String = ""): DataError()
     data class AuthInvalid(val msg:String = ""): DataError()
     data class PublicTokenInvalid(val msg:String = ""): DataError()
-    data class Unauthorized(val msg:String = ""): DataError()
     data class ArgumentInvalid(val msg:String = ""): DataError()
-    data class Forbidden(val msg:String = ""): DataError()
     data class NotFound(val msg:String = ""): DataError()
     data class Conflict(val msg:String = ""): DataError()
-    data class TooManyRequests(val msg:String = ""): DataError()
     data class RiskContent(val msg:String = ""): DataError()
-    data class ServerError(val msg:String = ""): DataError()
     data class InternalError(val msg:String = ""): DataError()
-    data class UnexpectedException(val msg:String): DataError()
 }
 
 fun Response<*>.toDataError(): DataError {
@@ -203,6 +264,7 @@ enum class FireStoreCollections {
     COURSE,
     CHECKPOINT,
     ROUTE,
+    ROUTE_PATH,
     LIKE,
     IMAGE,
 

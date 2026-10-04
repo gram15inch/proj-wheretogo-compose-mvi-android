@@ -38,8 +38,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import com.wheretogo.domain.model.course.Course
-import com.wheretogo.domain.model.course.CourseDirectionItem
+import com.wheretogo.domain.model.course.CourseRenderItem
 import com.wheretogo.domain.model.course.StartDirection
 import com.wheretogo.domain.model.route.RouteCategory
 import com.wheretogo.presentation.R
@@ -47,6 +46,7 @@ import com.wheretogo.presentation.composable.animation.highlightRoundedCorner
 import com.wheretogo.presentation.state.ListState
 import com.dhkim139.core.ui.theme.Palette
 import com.dhkim139.core.ui.theme.hancomSansFontFamily
+import com.wheretogo.domain.model.course.Course
 import com.wheretogo.presentation.toStrRes
 
 
@@ -58,8 +58,8 @@ fun DriveListSinglePreview() {
         state = ListState(
             listItemGroup = listOf(
                 ListState.ListItemState(
-                    course = Course(
-                        courseName = "노르테유 스카이웨이"
+                    courseRenderItem = Course.dummy.toDirectionItem().copy(
+                        title = "노르테유 스카이웨이"
                     )
                 )
             )
@@ -78,13 +78,13 @@ fun DriveListMultiPreview() {
         state = ListState(
             listItemGroup = listOf(
                 ListState.ListItemState(
-                    course = Course(
-                        courseName = "노르테유 스카이웨이"
+                    courseRenderItem = Course.dummy.toDirectionItem().copy(
+                        title = "노르테유 스카이웨이"
                     )
                 ),
                 ListState.ListItemState(
-                    course = Course(
-                        courseName = "빌리지 손가락"
+                    courseRenderItem = Course.dummy.toDirectionItem().copy(
+                        title = "빌리지 손가락"
                     )
                 )
             )
@@ -99,7 +99,7 @@ fun DriveListMultiPreview() {
 fun DriveListContent(
     modifier: Modifier,
     state: ListState = ListState(),
-    onItemClick: (CourseDirectionItem) -> Unit,
+    onItemClick: (CourseRenderItem) -> Unit,
     onHeightChange: (Dp) -> Unit = {},
     onBookmarkClick: (ListState.ListItemState) -> Unit = {}
 ) {
@@ -129,7 +129,7 @@ fun DriveListContent(
 fun DriveListItem(
     modifier: Modifier,
     listItem: ListState.ListItemState,
-    onItemClick: (CourseDirectionItem) -> Unit
+    onItemClick: (CourseRenderItem) -> Unit
 ) {
     AnimatedVisibility(
         visible = true,
@@ -146,7 +146,8 @@ fun DriveListItem(
                     elevation = 1.dp,
                     shape = RoundedCornerShape(16.dp),
                     clip = false
-                ).background(Palette.White100.copy(alpha = 0.95f))
+                )
+                .background(Palette.White100.copy(alpha = 0.95f))
         ) {
             // 방향 구분 버튼
             Row(
@@ -163,10 +164,7 @@ fun DriveListItem(
                         .weight(1f)
                         .clickable {
                             onItemClick(
-                                CourseDirectionItem(
-                                    course = listItem.course,
-                                    direction = StartDirection.REVERSE
-                                )
+                                listItem.courseRenderItem.copy(direction = StartDirection.REVERSE)
                             )
                         },
                     contentAlignment = Alignment.TopStart
@@ -179,9 +177,7 @@ fun DriveListItem(
                         .weight(1f)
                         .clickable {
                             onItemClick(
-                                CourseDirectionItem(
-                                    course = listItem.course
-                                )
+                                listItem.courseRenderItem.copy(direction = StartDirection.FORWARD)
                             )
                         },
                     contentAlignment = Alignment.TopEnd
@@ -196,7 +192,7 @@ fun DriveListItem(
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         modifier = Modifier.weight(1f),
-                        text = listItem.course.courseName,
+                        text = listItem.courseRenderItem.title,
                         textAlign = TextAlign.Center,
                         overflow = TextOverflow.Ellipsis,
                         fontFamily = hancomSansFontFamily,
@@ -209,7 +205,7 @@ fun DriveListItem(
                     DriveItemAttribute(
                         modifier = Modifier.weight(1f),
                         content = stringResource(
-                            RouteCategory.fromCode(listItem.course.type)?.item.toStrRes().second
+                            RouteCategory.fromCode(listItem.courseRenderItem.type)?.item.toStrRes().second
                         ),
                         type = stringResource(R.string.category)
                     )
@@ -217,28 +213,21 @@ fun DriveListItem(
                     if (false) // todo 평점 추가
                         DriveItemAttribute(
                             modifier = Modifier.weight(1f),
-                            content = listItem.course.like.toString(),
+                            content = "0",
                             type = "평점"
                         )
-                    if (listItem.course.level == "")
-                        DriveItemAttribute(
-                            modifier = Modifier.weight(1f),
-                            content = stringResource(
-                                RouteCategory.fromCode(listItem.course.relation)?.item.toStrRes().second
-                            ),
-                            type = stringResource(R.string.recommend)
-                        )
-                    else
-                        DriveItemAttribute(
-                            modifier = Modifier.weight(1f),
-                            content = stringResource(
-                                RouteCategory.fromCode(listItem.course.level)?.item.toStrRes().second
-                            ),
-                            type = stringResource(R.string.level)
-                        )
+
                     DriveItemAttribute(
                         modifier = Modifier.weight(1f),
-                        content = listItem.course.duration + "분",
+                        content = stringResource(
+                            RouteCategory.fromCode(listItem.courseRenderItem.level)?.item.toStrRes().second
+                        ),
+                        type = stringResource(R.string.level)
+                    )
+
+                    DriveItemAttribute(
+                        modifier = Modifier.weight(1f),
+                        content =  "${listItem.courseRenderItem.duration.forward/60000} 분",
                         type = stringResource(R.string.duration)
                     )
                 }

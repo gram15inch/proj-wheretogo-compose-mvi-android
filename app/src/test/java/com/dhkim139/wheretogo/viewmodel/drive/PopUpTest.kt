@@ -68,7 +68,6 @@ class PopUpTest {
             observeSettingsUseCase = observeSettingsUseCase,
             getCommentForCheckPointUseCase = getCommentForCheckPointUseCase,
             getImageUseCase = getImageUseCase,
-            addCheckpointToCourseUseCase = mockk(),
             addCommentToCheckPointUseCase = mockk(),
             removeCourseUseCase = mockk(),
             removeCheckPointUseCase = mockk(),
@@ -109,7 +108,7 @@ class PopUpTest {
     fun `팝업 이미지 슬라이드시 이미지 및 댓글 갱신`() = runTest {
         // Arrange
         val slideItem0 = SlideItem("CP000", imageId = "IM000", url = "https://CP000.jpg")
-        val slideItem1 = SlideItem("CP001", imageId = "IM001")
+        val slideItem1 = SlideItem("CP001", imageId = "IM001", url = "https://CP001.jpg")
         val item1Url = "https://CP001.jpg"
 
         val showPopupImageAndCommentState = initState.run {

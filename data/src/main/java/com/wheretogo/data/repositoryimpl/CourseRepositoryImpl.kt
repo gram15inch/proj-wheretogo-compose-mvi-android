@@ -1,120 +1,134 @@
 package com.wheretogo.data.repositoryimpl
 
-import com.wheretogo.data.CachePolicy
-import com.wheretogo.data.CoursePolicy
+import com.wheretogo.data.ApiResult
+import com.wheretogo.data.model.course.CourseDto
+import com.wheretogo.data.course.toDomain
+import com.wheretogo.data.course.toEntities
 import com.wheretogo.data.datasource.CourseLocalDatasource
 import com.wheretogo.data.datasource.CourseRemoteDatasource
-import com.wheretogo.data.di.ClearCache
-import com.wheretogo.data.di.CourseCache
-import com.wheretogo.data.feature.mapDataError
-import com.wheretogo.data.feature.mapDomainError
-import com.wheretogo.data.feature.mapSuccess
-import com.wheretogo.data.toCourse
-import com.wheretogo.data.toCreateContent
-import com.wheretogo.data.toLocalCourse
+import com.wheretogo.domain.SyncFailureKind
 import com.wheretogo.domain.model.course.Course
-import com.wheretogo.domain.model.course.CourseAddRequest
+import com.wheretogo.domain.model.course.GeoBounds
+import com.wheretogo.domain.model.course.LoadingConfig.SYNC_INTERVAL_MS
+import com.wheretogo.domain.model.course.LoadingConfig.SYNC_MAX_PAGES
 import com.wheretogo.domain.repository.CourseRepository
-import de.huxhorn.sulky.ulid.ULID
+import com.wheretogo.domain.usecaseimpl.course.SyncResult
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import timber.log.Timber
 import javax.inject.Inject
 
 class CourseRepositoryImpl @Inject constructor(
     private val courseRemoteDatasource: CourseRemoteDatasource,
-    private val courseLocalDatasource: CourseLocalDatasource,
-    @CourseCache private val coursePolicy: CachePolicy,
-    @ClearCache private val clearPolicy: CachePolicy
+    private val courseLocalDatasource: CourseLocalDatasource
 ) : CourseRepository {
-    private val cacheCourseGroupByKeyword = mutableMapOf<String, List<Course>>()
 
-    override suspend fun getCourse(courseId: String): Result<Course> {
-        return courseLocalDatasource.getCourse(courseId)
-            .mapSuccess { old ->
-                if (old != null)
-                    return@mapSuccess Result.success(old)
-
-                courseRemoteDatasource.getCourse(courseId)
-                    .mapSuccess { courseLocalDatasource.setCourse(listOf(it.toLocalCourse())) }
-                    .mapSuccess { courseLocalDatasource.getCourse(courseId) }
-            }.mapDataError().mapCatching { it.toCourse() }.mapDomainError()
+    override suspend fun getById(courseId: String): Course? {
+        return courseLocalDatasource.selectById(courseId).firstOrNull()?.toDomain()
     }
 
-    override suspend fun getCourseGroupByGeoHash(geoHash: String): Result<List<Course>> {
-        return courseLocalDatasource.getLatestUpdate().mapSuccess { old ->
-            val now = System.currentTimeMillis()
-            val num = (now - old).toFloat() / (1000 * 60 * if(old == 0L) CoursePolicy.minuteWhenEmpty else CoursePolicy.minuteWhenNotEmpty)
-            val formatStr = String.format("%.1f%%", num * 100)
-            Timber.d("course expire: $formatStr")
-
-            // 전체 코스 업데이트 확인
-            val isExpire = coursePolicy.isExpired(old, old==0L)
-
-            if (isExpire) {
-                courseLocalDatasource.setLatestUpdate(now)
-                // 변경 or 추가된 코스 가져오기
-                courseRemoteDatasource.getCourseGroupByUpdateAt(old).mapSuccess { remote->
-                    remote.map { it.toLocalCourse() }.run {
-                        courseLocalDatasource.setCourse(this)
-                    }
-                }
-            }
-            courseLocalDatasource.getCourseGroupByGeoHash(geoHash)
-                .map { local-> local.map { it.toCourse() }}
-        }.mapDomainError()
+    override suspend fun getByTitle(title: String): List<Course> {
+        return courseLocalDatasource.selectByTitle(title).map { it.toDomain() }
     }
 
-    override suspend fun getCourseGroupByKeyword(keyword: String): Result<List<Course>> {
-        return runCatching { cacheCourseGroupByKeyword.getOrDefault(keyword, null) }
-            .mapSuccess {
-                if (it != null)
-                    return@mapSuccess Result.success(it)
-
-                courseRemoteDatasource.getCourseGroupByKeyword(keyword)
-                    .mapCatching { it.map { it.toCourse() } }
-                    .onSuccess { cacheCourseGroupByKeyword.put(keyword, it) }
-            }.mapDataError().mapDomainError()
+    override suspend fun getAll(): List<Course> {
+        return courseLocalDatasource.selectById().map { it.toDomain() }
     }
 
-    override suspend fun addCourse(
-        request: CourseAddRequest
-    ): Result<Course> {
-        val courseId = "CS${ULID().nextULID()}"
-        val content = request.toCreateContent(courseId)
-        val local = content.toLocalCourse()
-        return courseRemoteDatasource.setCourse(content)
-            .mapSuccess {
-                courseLocalDatasource.setCourse(listOf(local))
-            }.mapSuccess {
-                courseLocalDatasource.getCourse(courseId)
-            }.mapDataError().mapCatching { it.toCourse() }.mapDomainError()
+    override fun observeInbounds(geoBounds: GeoBounds): Flow<List<Course>> {
+        return courseLocalDatasource.observeInBounds(geoBounds).map { it.map { it.toDomain() } }
     }
 
-    override suspend fun removeCourse(courseId: String): Result<Unit> {
-        return courseRemoteDatasource.removeCourse(courseId).mapSuccess {
-            courseLocalDatasource.removeCourse(courseId)
-        }.mapDataError().mapDomainError()
+    override suspend fun removeCourse(courseId: String) {
+        courseRemoteDatasource.removeCourse(courseId)
+        courseLocalDatasource.delete(courseId)
     }
 
+    override suspend fun fetchPage(force: Boolean): SyncResult {
+        val state = courseLocalDatasource.syncState()
+        val startedAt = now()
 
-    override suspend fun clearExpired(): Result<Int> {
+        if (!force && !isDue(state.lastSyncedAt, startedAt)) {
+            return SyncResult.Skipped(nextDueAt = state.lastSyncedAt!! + SYNC_INTERVAL_MS)
+        }
+
+        var cursor = state.cursor
+        var upserted = 0
         var removed = 0
 
-        return courseLocalDatasource.getCourseByIsHide(true).mapCatching {
-            it.filter { course->
-                clearPolicy.isExpired( course.updateAt ,false)
+        repeat(SYNC_MAX_PAGES) {
+            val page = courseRemoteDatasource.fetchPage(cursor).getOrElse {
+                return SyncResult.Failed(it)
             }
-        }.mapSuccess { filtered->
-            runCatching {
-                filtered.forEach {
-                    courseLocalDatasource.removeCourse(it.courseId)
-                    removed++
-                }
+            if (page.resync) return replaceAll()
+
+            val next = page.cursor ?: cursor
+            val entities =
+                page.upserts.mapNotNull { it.toEntities(Timber::w) }
+            courseLocalDatasource.applyDelta(entities, page.deletedIds, next)
+            upserted += page.upserts.size
+            removed += page.deletedIds.size
+
+            if (!page.hasMore) return finish(next, upserted, removed)
+
+            // hasMore 인데 커서가 안 늘면 서버 쪽 이상
+            if (next <= cursor) {
+                Timber.w("hasMore 인데 커서동일 cursor: $cursor")
+                return finish(next, upserted, removed)
             }
-        }.mapCatching { removed }
+            cursor = next
+        }
+        return finish(cursor, upserted, removed)
     }
 
+    private fun isDue(last: Long?, now: Long): Boolean = when {
+        last == null -> true
+        now < last -> true
+        else -> now - last >= SYNC_INTERVAL_MS
+    }
+
+    private suspend fun finish(cursor: Long, upserted: Int, removed: Int): SyncResult {
+        courseLocalDatasource.markSynced(cursor, now())
+        return SyncResult.Synced(upserted, removed)
+    }
+
+    private suspend fun replaceAll(): SyncResult {
+        val all = mutableListOf<CourseDto>()
+        var cursor = 0L
+
+        repeat(SYNC_MAX_PAGES) {
+            val page = courseRemoteDatasource.fetchPage(cursor).getOrElse {
+                return SyncResult.Failed(it)
+            }
+            all += page.upserts
+            val entities = all.mapNotNull { it.toEntities(Timber::w) }
+            val next = page.cursor ?: cursor
+            if (!page.hasMore || next <= cursor) {
+                courseLocalDatasource.replaceAll(entities, next, now())
+                return SyncResult.Synced(upserted = all.size, removed = 0, isRepalceAll = true)
+            }
+            cursor = next
+        }
+
+        return SyncResult.Failed(SyncFailureKind.PERMANENT)
+    }
+
+    private fun now(): Long {
+        return System.currentTimeMillis()
+    }
+
+    private inline fun <T> ApiResult<T>.getOrElse(onFailure: (SyncFailureKind) -> Nothing): T =
+        when (this) {
+            is ApiResult.Success -> data
+            is ApiResult.HttpError -> onFailure(SyncFailureKind.TEMPORARY)
+            is ApiResult.NetworkError -> onFailure(SyncFailureKind.TEMPORARY)
+            is ApiResult.UnknownError -> onFailure(SyncFailureKind.PERMANENT)
+        }
+
     override suspend fun clearCache(): Result<Unit> {
-        return courseLocalDatasource.clear().mapDataError().mapDomainError()
+        return runCatching {
+            courseLocalDatasource.clear()
+        }
     }
 }
 

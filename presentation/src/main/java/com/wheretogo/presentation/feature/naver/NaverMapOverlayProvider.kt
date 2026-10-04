@@ -2,16 +2,18 @@ package com.wheretogo.presentation.feature.naver
 
 import com.wheretogo.domain.DomainError
 import com.wheretogo.domain.model.address.LatLng
+import com.wheretogo.domain.model.map.MarkerInfo
+import com.wheretogo.domain.model.route.Direction
 import com.wheretogo.presentation.OverlayType
 import com.wheretogo.presentation.feature.model.StringKey
 import com.wheretogo.presentation.model.AppCluster
 import com.wheretogo.presentation.model.AppMarker
 import com.wheretogo.presentation.model.AppPath
+import com.wheretogo.presentation.model.AppPolyline
 import com.wheretogo.presentation.model.ClusterInfo
 import com.wheretogo.presentation.model.LeafInfo
 import com.wheretogo.presentation.model.MapOverlay
-import com.wheretogo.domain.model.map.MarkerInfo
-import com.wheretogo.presentation.model.PathInfo
+import com.wheretogo.presentation.model.PolylineInfo
 import com.wheretogo.presentation.model.TraceList
 import com.wheretogo.presentation.toOverlayType
 import javax.inject.Inject
@@ -92,16 +94,6 @@ class NaverMapOverlayProvider @Inject constructor(
         }
     }
 
-    fun getPath(key: StringKey): Result<AppPath> {
-        return runCatching {
-            val path = _overlays.getOrNull(key.value)
-            if (path != null && path is AppPath)
-                path
-            else
-                return Result.failure(DomainError.InternalError())
-        }
-    }
-
     fun getCluster(key: StringKey): Result<AppCluster> {
         return runCatching {
             val cluster = _overlays.getOrNull(key.value)
@@ -119,10 +111,10 @@ class NaverMapOverlayProvider @Inject constructor(
         return _overlays.addOrReplace(item)
     }
 
-    fun addPath(key: StringKey, info: PathInfo): Boolean {
-        val path = modifier.createPath(info).getOrNull()
-        val type = info.type.toOverlayType()
-        val item = AppPath(key.value, type, info, path)
+    fun addPolyline(key: StringKey, info: PolylineInfo): Boolean {
+        val path = modifier.createPolyline(info).getOrNull()
+        val type = if(info.direction == Direction.FORWARD) OverlayType.FORWARD_POLYLINE else OverlayType.BACKWORD_POLYLINE
+        val item = AppPolyline(key.value, type,info, path)
         return _overlays.addOrReplace(item)
     }
 
@@ -155,20 +147,6 @@ class NaverMapOverlayProvider @Inject constructor(
     fun removeLeaf(key: StringKey, leafId: String) {
         getCluster(key).onSuccess {
             it.removeLeaf(leafId)
-        }
-    }
-
-    fun updatePath(key: StringKey, pathInfo: PathInfo): Result<Unit> {
-        return runCatching {
-            if (pathInfo.points.size < 2)
-                return Result.failure(DomainError.InternalError("points.size < 2"))
-            val oldPath = getPath(key).getOrNull()
-
-            if (oldPath == null)
-                return Result.failure(DomainError.NotFound("path empty"))
-            val new = oldPath.replacePoints(pathInfo.points)
-                .replaceType(pathInfo.type)
-            _overlays.addOrReplace(new)
         }
     }
 

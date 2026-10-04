@@ -3,8 +3,9 @@ package com.wheretogo.presentation.feature.map
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.checkpoint.CheckPoint
 import com.wheretogo.domain.model.course.Course
-import com.wheretogo.presentation.model.MapOverlay
+import com.wheretogo.domain.model.course.StartDirection
 import com.wheretogo.domain.model.map.MarkerInfo
+import com.wheretogo.presentation.model.MapOverlay
 import kotlinx.coroutines.flow.StateFlow
 
 interface MapOverlayService {
@@ -42,7 +43,7 @@ interface MapOverlayService {
 
     fun removeCheckPointLeaf(courseId: String, checkPointId: String)
 
-    fun focusAndHideOthers(courseId: String)
+    fun focusAndHideOthers(courseId: String, direction: StartDirection)
 
     fun showAllOverlays()
 
@@ -54,22 +55,6 @@ interface MapOverlayService {
     fun clear()
 
     //===============================
-
-    fun addWaypoint(latlng: LatLng): Boolean
-
-    fun removeWaypoint(id: String)
-
-    fun moveWaypoint(id: String, latlng: LatLng)
-
-
-    fun hideWaypoint(id: String)
-
-    fun createScaffoldPath(): Result<Unit>
-
-    fun createFullPath(points: List<LatLng> = emptyList()): Result<Unit>
-
-
-    //================================
 
     fun refreshSpot(latLng: LatLng)
 

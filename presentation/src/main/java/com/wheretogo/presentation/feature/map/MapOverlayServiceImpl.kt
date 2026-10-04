@@ -3,30 +3,26 @@ package com.wheretogo.presentation.feature.map
 import com.naver.maps.map.overlay.Align
 import com.naver.maps.map.overlay.OverlayImage
 import com.wheretogo.domain.DomainError
-import com.wheretogo.domain.FieldInvalidReason
-import com.wheretogo.domain.PathType
-import com.wheretogo.domain.RouteFieldType
 import com.wheretogo.domain.feature.LocationService
 import com.wheretogo.domain.feature.successMap
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.checkpoint.CheckPoint
 import com.wheretogo.domain.model.course.Course
+import com.wheretogo.domain.model.course.StartDirection
 import com.wheretogo.domain.model.map.MarkerInfo
-import com.wheretogo.presentation.AppError
 import com.wheretogo.presentation.MarkerZIndex
 import com.wheretogo.presentation.OverlayType
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.feature.model.StringKey
 import com.wheretogo.presentation.feature.naver.NaverMapOverlayProvider
 import com.wheretogo.presentation.model.AppLeaf
-import com.wheretogo.presentation.model.AppMarker
 import com.wheretogo.presentation.model.ClusterInfo
 import com.wheretogo.presentation.model.MapOverlay
-import com.wheretogo.presentation.model.PathInfo
+import com.wheretogo.presentation.toBackwardLine
 import com.wheretogo.presentation.toDomainLatLng
+import com.wheretogo.presentation.toForwardLine
 import com.wheretogo.presentation.toLeafInfo
 import com.wheretogo.presentation.toMarkerInfo
-import com.wheretogo.presentation.toPathInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -48,7 +44,10 @@ class MapOverlayServiceImpl @Inject constructor(
 
     private fun courseMarkerKey(id: String) = StringKey("${OverlayType.COURSE_MARKER}/${id}")
     private fun oneTimeMarkerKey(id: String) = StringKey("${OverlayType.ONE_TIME_MARKER}/${id}")
-    private fun coursePathKey(id: String) = StringKey("${OverlayType.FULL_PATH}/${id}")
+    private fun forwardPolylineKey(id: String) = StringKey("${OverlayType.FORWARD_POLYLINE}/${id}")
+    private fun backwardPolylineKey(id: String) =
+        StringKey("${OverlayType.BACKWORD_POLYLINE}/${id}")
+
     private fun clusterKey(id: String) = StringKey("${OverlayType.CLUSTER}/${id}")
 
     private fun <T> updateScope(callback: () -> T): T {
@@ -59,15 +58,16 @@ class MapOverlayServiceImpl @Inject constructor(
         return r
     }
 
-    override fun addCourseMarkerAndPath(courseGroup: List<Course>) = updateScope {
+    override fun addCourseMarkerAndPath(courseGroup: List<Course>) {
         courseGroup.forEach { course ->
-            overlayProvider.addMarker(courseMarkerKey(course.courseId), course.toMarkerInfo())
-            overlayProvider.addPath(coursePathKey(course.courseId), course.toPathInfo())
+            course.toMarkerInfo()?.let { overlayProvider.addMarker(courseMarkerKey(course.id), it) }
+            overlayProvider.addPolyline(forwardPolylineKey(course.id), course.toForwardLine())
+            overlayProvider.addPolyline(backwardPolylineKey(course.id), course.toBackwardLine())
         }
     }
 
-    override fun updateCourseMarkerPosition (courseId: String, position: LatLng) {
-        overlayProvider.updateMarkerPosition(courseMarkerKey(courseId),position)
+    override fun updateCourseMarkerPosition(courseId: String, position: LatLng) {
+        overlayProvider.updateMarkerPosition(courseMarkerKey(courseId), position)
     }
 
     override fun addOneTimeMarker(
@@ -114,10 +114,10 @@ class MapOverlayServiceImpl @Inject constructor(
         val key = oneTimeMarkerKey(markerInfo.contentId)
         overlayProvider.getMarker(key).onSuccess {
             if (markerInfo.caption != null && markerInfo.caption != it.markerInfo.caption)
-                overlayProvider.updateMarkerCaption(key, markerInfo.caption?:"")
+                overlayProvider.updateMarkerCaption(key, markerInfo.caption ?: "")
 
             if (markerInfo.position != null && markerInfo.position != it.markerInfo.position)
-                markerInfo.position?.let { latlng->
+                markerInfo.position?.let { latlng ->
                     overlayProvider.updateMarkerPosition(key, latlng)
                 }
         }
@@ -133,10 +133,11 @@ class MapOverlayServiceImpl @Inject constructor(
         }
     }
 
-    override fun removeCourseMarkerAndPath(courseIdGroup: List<String>){
+    override fun removeCourseMarkerAndPath(courseIdGroup: List<String>) {
         courseIdGroup.forEach { courseId ->
             overlayProvider.removeOverlay(listOf(courseMarkerKey(courseId)))
-            overlayProvider.removeOverlay(listOf(coursePathKey(courseId)))
+            overlayProvider.removeOverlay(listOf(forwardPolylineKey(courseId)))
+            overlayProvider.removeOverlay(listOf(backwardPolylineKey(courseId)))
         }
     }
 
@@ -158,28 +159,36 @@ class MapOverlayServiceImpl @Inject constructor(
         latestScaleId = ""
     }
 
-    override fun focusAndHideOthers(courseId: String): Unit = updateScope {
-        //주위 스팟 숨기기
-        overlays.forEach {
-            when (it.type) {
-                OverlayType.COURSE_MARKER -> {
-                    overlayProvider.updateVisible(
-                        StringKey(it.key),
-                        courseMarkerKey(courseId).value == it.key
-                    )
-                }
+    override fun focusAndHideOthers(courseId: String, direction: StartDirection): Unit =
+        updateScope {
+            //주위 스팟 숨기기
+            overlays.forEach {
+                when (it.type) {
+                    OverlayType.COURSE_MARKER -> {
+                        overlayProvider.updateVisible(
+                            StringKey(it.key),
+                            courseMarkerKey(courseId).value == it.key
+                        )
+                    }
 
-                OverlayType.FULL_PATH -> {
-                    overlayProvider.updateVisible(
-                        StringKey(it.key),
-                        coursePathKey(courseId).value == it.key
-                    )
-                }
+                    OverlayType.FORWARD_POLYLINE -> {
+                        overlayProvider.updateVisible(
+                            StringKey(it.key),
+                            direction == StartDirection.FORWARD && forwardPolylineKey(courseId).value == it.key
+                        )
+                    }
 
-                else -> {}
+                    OverlayType.BACKWORD_POLYLINE -> {
+                        overlayProvider.updateVisible(
+                            StringKey(it.key),
+                            direction == StartDirection.REVERSE && backwardPolylineKey(courseId).value == it.key
+                        )
+                    }
+
+                    else -> {}
+                }
             }
         }
-    }
 
     override fun showAllOverlays(): Unit = updateScope {
         overlays.forEach {
@@ -191,7 +200,8 @@ class MapOverlayServiceImpl @Inject constructor(
                     )
                 }
 
-                OverlayType.FULL_PATH -> {
+                OverlayType.FORWARD_POLYLINE,
+                OverlayType.BACKWORD_POLYLINE -> {
                     overlayProvider.updateVisible(
                         StringKey(it.key),
                         true
@@ -266,105 +276,6 @@ class MapOverlayServiceImpl @Inject constructor(
         }
     }
 
-
-    //=============================== CourseAdd
-
-    private val WAYPOINT_PATH_ID = "WAYPOINT_PATH"
-
-    override fun addWaypoint(latlng: LatLng): Boolean = updateScope {
-        val markerGroup = overlays.filter { it is AppMarker }
-        if (markerGroup.size < 5) {
-            val id = latlng.hashCode().toString()
-            overlayProvider.addMarker(
-                oneTimeMarkerKey(id), MarkerInfo(
-                    id,
-                    latlng,
-                    iconRes = R.drawable.ic_mk_df
-                )
-            )
-            return@updateScope true
-        }
-        return@updateScope false
-    }
-
-    override fun removeWaypoint(id: String) = updateScope {
-        overlayProvider.removeOverlay(listOf(oneTimeMarkerKey(id)))
-        val markerGroup = overlays.filter { it is AppMarker }
-        if (markerGroup.size < 2) {
-            overlayProvider.removeOverlay(listOf(coursePathKey(WAYPOINT_PATH_ID)))
-        }
-    }
-
-    override fun moveWaypoint(id: String, latlng: LatLng): Unit = updateScope {
-        val key = oneTimeMarkerKey(id)
-        overlayProvider.getMarker(key).onSuccess {
-            overlayProvider.updateMarkerPosition(key, latlng)
-        }
-    }
-
-    override fun hideWaypoint(id: String) = updateScope {
-        val key = oneTimeMarkerKey(id)
-        overlayProvider.getMarker(key).onSuccess {
-            it.replaceVisible(false)
-        }
-        overlayProvider.removeOverlay(listOf(coursePathKey(WAYPOINT_PATH_ID)))
-    }
-
-    override fun createScaffoldPath(): Result<Unit> = updateScope {
-        return@updateScope runCatching {
-            val waypoints =
-                overlays.mapNotNull { if (it is AppMarker) it.markerInfo.position else null }
-
-            if (waypoints.isEmpty()) {
-                return@updateScope Result.failure(AppError.Ignore())
-            }
-            val id = WAYPOINT_PATH_ID
-            PathInfo(
-                contentId = id,
-                points = waypoints,
-                type = PathType.SCAFFOLD,
-            )
-        }.successMap { pathInfo ->
-            overlayProvider.updatePath(coursePathKey(WAYPOINT_PATH_ID), pathInfo).run {
-                if (this.exceptionOrNull() is DomainError.NotFound) {
-                    overlayProvider.addPath(coursePathKey(WAYPOINT_PATH_ID), pathInfo)
-                    Result.success(Unit)
-                } else
-                    this
-            }
-        }
-    }
-
-    override fun createFullPath(points: List<LatLng>): Result<Unit> = updateScope {
-        return@updateScope runCatching {
-            if (points.size < 2) {
-                return@updateScope Result.failure(
-                    DomainError.RouteFieldInvalid(
-                        RouteFieldType.POINT,
-                        FieldInvalidReason.MIN
-                    )
-                )
-            }
-
-            val id = WAYPOINT_PATH_ID
-            val pathInfo = PathInfo(
-                contentId = id,
-                points = points,
-                type = PathType.FULL
-            )
-            pathInfo
-        }.successMap { pathInfo ->
-            overlayProvider.updatePath(coursePathKey(WAYPOINT_PATH_ID), pathInfo).run {
-                if (this.exceptionOrNull() is DomainError.NotFound) {
-                    overlayProvider.addPath(coursePathKey(WAYPOINT_PATH_ID), pathInfo)
-                    Result.success(Unit)
-                } else
-                    this
-            }
-        }.map { }
-    }
-
-
     //======================================
 
     override fun refreshSpot(latLng: LatLng) {
@@ -387,20 +298,32 @@ class MapOverlayServiceImpl @Inject constructor(
     override fun refreshPath(
         course: Course,
     ) = updateScope {
-        val pathKey = coursePathKey(course.courseId)
-        var path: MapOverlay? = null
+        val fKey = forwardPolylineKey(course.id)
+        val bKey = backwardPolylineKey(course.id)
+        var fpath: MapOverlay? = null
+        var bpath: MapOverlay? = null
         val remove = buildList {
             overlayProvider.overlays.forEach {
-                if (it.type == OverlayType.FULL_PATH)
-                    when (it.key) {
-                        pathKey.value -> path = it
-                        else -> add(StringKey(it.key))
+                when (it.type) {
+                    OverlayType.FORWARD_POLYLINE,
+                    OverlayType.BACKWORD_POLYLINE -> {
+                        when (it.key) {
+                            fKey.value -> fpath = it
+                            bKey.value -> bpath = it
+                            else -> add(StringKey(it.key))
+                        }
                     }
+
+                    else -> {}
+                }
             }
         }
 
-        if (path == null)
-            overlayProvider.addPath(pathKey, course.toPathInfo())
+        if (fpath == null)
+            overlayProvider.addPolyline(fKey, course.toForwardLine())
+
+        if (bpath == null)
+            overlayProvider.addPolyline(bKey, course.toBackwardLine())
 
         overlayProvider.removeOverlay(remove)
     }

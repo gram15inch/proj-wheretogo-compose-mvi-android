@@ -49,8 +49,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wheretogo.domain.DriveTutorialStep
-import com.wheretogo.domain.model.course.Course
-import com.wheretogo.domain.model.course.CourseDirectionItem
 import com.wheretogo.presentation.DriveFloatHighlight
 import com.wheretogo.presentation.DriveFloatingVisibleMode
 import com.wheretogo.presentation.ExportMap
@@ -61,6 +59,7 @@ import com.wheretogo.presentation.feature.callMap
 import com.wheretogo.presentation.state.FloatingButtonState
 import com.dhkim139.core.ui.theme.Palette
 import com.dhkim139.core.ui.theme.hancomSansFontFamily
+import com.wheretogo.domain.model.course.Course
 import com.wheretogo.presentation.toNavigation
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -73,7 +72,6 @@ fun FloatingButtons(
     guideStep: DriveTutorialStep,
     isVisible: Boolean,
     onCommentClick: () -> Unit,
-    onCheckpointAddClick: () -> Unit,
     onInfoClick: () -> Unit,
     onExportMapClick: () -> Unit,
     onMapAppClick: (Result<Unit>) -> Unit,
@@ -82,7 +80,6 @@ fun FloatingButtons(
 ) {
     val scope = rememberCoroutineScope()
     val isCommentVisible = isVisible && FloatingButtonState.commentVisible.contains(state.stateMode)
-    val isCheckpointAddVisible = false
     val isInfoVisible: Boolean =
         isVisible && FloatingButtonState.infoVisible.contains(state.stateMode)
     val isExportVisible: Boolean =
@@ -143,24 +140,6 @@ fun FloatingButtons(
                         isActive = active.comment
                     ) {
                         onCommentClick()
-                    }
-                }
-
-                SlideAnimation(
-                    modifier = Modifier,
-                    visible = isCheckpointAddVisible,
-                    direction = AnimationDirection.RightCenter
-                ) {
-                    CircleButton(
-                        modifier = Modifier.padding(
-                            top = if (isBackPlateVisible) 10.dp else 0.dp,
-                            end = buttonEndPadding
-                        ),
-                        icon = R.drawable.ic_location,
-                        isHighLight = state.highlight == DriveFloatHighlight.CHECKPOINT,
-                        isActive = active.checkpoint
-                    ) {
-                        onCheckpointAddClick()
                     }
                 }
 
@@ -511,13 +490,12 @@ fun FloatingLandscapeButtonPreview() {
         modifier = Modifier.background(Palette.Gray100),
         state = FloatingButtonState(
             adItemGroup = emptyList(),
-            navigation = CourseDirectionItem(Course()).toNavigation(),
+            navigation = Course.dummy.toDirectionItem().toNavigation(),
             stateMode = DriveFloatingVisibleMode.Default
         ),
         guideStep = DriveTutorialStep.SKIP,
         isVisible = true,
         onCommentClick = {},
-        onCheckpointAddClick = {},
         onInfoClick = {},
         onExportMapClick = {},
         onMapAppClick = {},

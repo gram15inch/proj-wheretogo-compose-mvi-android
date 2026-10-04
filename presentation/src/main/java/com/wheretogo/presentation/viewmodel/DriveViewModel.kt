@@ -2,28 +2,23 @@ package com.wheretogo.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dhkim139.core.ui.event.AppEvent
 import com.dhkim139.core.ui.event.EventResult
 import com.dhkim139.core.ui.model.AppLifecycle
 import com.wheretogo.domain.DriveTutorialStep
-import com.wheretogo.domain.MarkerType
 import com.wheretogo.domain.ZOOM
 import com.wheretogo.domain.handler.DriveHandler
 import com.wheretogo.domain.handler.DriveMsgEvent
-import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.checkpoint.CheckPoint
 import com.wheretogo.domain.model.comment.Comment
-import com.wheretogo.domain.model.course.Course
-import com.wheretogo.domain.model.course.CourseDirectionItem
+import com.wheretogo.domain.model.course.CourseRenderItem
 import com.wheretogo.domain.model.dummy.guideCourse
 import com.wheretogo.domain.model.map.CameraMoveTrigger
-import com.wheretogo.domain.model.map.MarkerInfo
-import com.wheretogo.domain.model.map.MoveAnimation
 import com.wheretogo.domain.model.map.MoveCameraOption
 import com.wheretogo.domain.model.map.SlideItem
 import com.wheretogo.domain.model.report.ReportReason
 import com.wheretogo.domain.model.report.ReportType
 import com.wheretogo.domain.model.util.AppCache
-import com.wheretogo.domain.model.util.ImageInfo
 import com.wheretogo.domain.repository.DefaultMapId
 import com.wheretogo.domain.repository.MapContentRepository
 import com.wheretogo.domain.usecase.app.DriveTutorialUseCase
@@ -41,8 +36,6 @@ import com.wheretogo.domain.usecase.util.GetImageUseCase
 import com.wheretogo.domain.usecase.util.SearchKeywordUseCase
 import com.wheretogo.domain.usecase.util.UpdateLikeUseCase
 import com.wheretogo.presentation.AppError
-import com.dhkim139.core.ui.event.AppEvent
-import com.wheretogo.presentation.CHECKPOINT_ADD_MARKER
 import com.wheretogo.presentation.CLEAR_ADDRESS
 import com.wheretogo.presentation.CommentType
 import com.wheretogo.presentation.DriveBottomSheetContent
@@ -52,15 +45,12 @@ import com.wheretogo.presentation.MainDispatcher
 import com.wheretogo.presentation.SEARCH_MARKER
 import com.wheretogo.presentation.SheetVisibleMode
 import com.wheretogo.presentation.event.DriveEvent
-import com.wheretogo.presentation.event.DriveEvent.Companion.addLeaf
 import com.wheretogo.presentation.event.DriveEvent.Companion.addMarker
 import com.wheretogo.presentation.event.DriveEvent.Companion.deleteMarker
 import com.wheretogo.presentation.event.DriveEvent.Companion.deleteSelectCheckPoint
 import com.wheretogo.presentation.event.DriveEvent.Companion.deleteSelectCourse
 import com.wheretogo.presentation.event.DriveEvent.Companion.refreshCluster
-import com.wheretogo.presentation.event.DriveEvent.Companion.refreshCourses
 import com.wheretogo.presentation.event.DriveEvent.Companion.stopCameraWhenSheetChange
-import com.wheretogo.presentation.event.DriveEvent.Companion.updateMarker
 import com.wheretogo.presentation.feature.ads.AdService
 import com.wheretogo.presentation.feature.executeAction
 import com.wheretogo.presentation.feature.executeActionWithUpdateUi
@@ -69,7 +59,6 @@ import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.model.TypeEditText
 import com.wheretogo.presentation.state.BottomSheetState
-import com.wheretogo.presentation.state.CheckPointAddState
 import com.wheretogo.presentation.state.CommentState
 import com.wheretogo.presentation.state.DriveScreenState
 import com.wheretogo.presentation.state.FloatingButtonState
@@ -78,7 +67,6 @@ import com.wheretogo.presentation.state.PopUpState
 import com.wheretogo.presentation.state.SearchBarState
 import com.wheretogo.presentation.toAppError
 import com.wheretogo.presentation.toCommentContent
-import com.wheretogo.presentation.toContent
 import com.wheretogo.presentation.toItemState
 import com.wheretogo.presentation.toNavigation
 import com.wheretogo.presentation.toSearchBarItem
@@ -93,12 +81,13 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
-import kotlin.math.round
 
 @HiltViewModel
 class DriveViewModel @Inject constructor(
@@ -108,7 +97,6 @@ class DriveViewModel @Inject constructor(
     private val observeSettingsUseCase: ObserveSettingsUseCase,
     private val getCommentForCheckPointUseCase: GetCommentForCheckPointUseCase,
     private val getImageUseCase: GetImageUseCase,
-    private val addCheckpointToCourseUseCase: AddCheckpointToCourseUseCase,
     private val addCommentToCheckPointUseCase: AddCommentToCheckPointUseCase,
     private val removeCourseUseCase: RemoveCourseUseCase,
     private val removeCheckPointUseCase: RemoveCheckPointUseCase,
@@ -153,7 +141,6 @@ class DriveViewModel @Inject constructor(
 
                 //플로팅
                 is DriveScreenIntent.CommentFloatingButtonClick -> commentFloatingButtonClick()
-                is DriveScreenIntent.CheckpointAddFloatingButtonClick -> checkpointAddFloatingButtonClick()
                 is DriveScreenIntent.InfoFloatingButtonClick -> infoFloatingButtonClick(intent.content)
                 is DriveScreenIntent.ExportMapFloatingButtonClick -> exportMapFloatingButtonClick()
                 is DriveScreenIntent.ExportMapAppButtonClick -> exportMapAppButtonClick(intent.result)
@@ -161,10 +148,6 @@ class DriveViewModel @Inject constructor(
 
                 //바텀시트
                 is DriveScreenIntent.BottomSheetChange -> bottomSheetChange(intent.state)
-                is DriveScreenIntent.CheckpointLocationSliderChange -> checkpointLocationSliderChange(intent.percent)
-                is DriveScreenIntent.CheckpointDescriptionEnterClick -> checkpointDescriptionEnterClick(intent.text)
-                is DriveScreenIntent.CheckpointImageChange -> checkpointImageChange(intent.uriString)
-                is DriveScreenIntent.CheckpointSubmitClick -> checkpointSubmitClick()
                 is DriveScreenIntent.InfoReportClick -> infoReportClick(intent.reason)
                 is DriveScreenIntent.InfoRemoveClick -> infoRemoveClick()
 
@@ -202,13 +185,13 @@ class DriveViewModel @Inject constructor(
                         }
                 }
             launch {
-                mapContentRepository.courseList.drop(1)
-                    .collect { courses ->
+                mapContentRepository.courseList.mapLatest { it }.distinctUntilChanged().drop(1)
+                    .collect { items ->
                         _driveScreenState.update {
-                            it.updateListItem(courses)
+                            it.updateListItem(items)
                         }
 
-                        driveTutorialUseCase(DriveTutorialStep.MOVE_TO_COURSE, courses)
+                        driveTutorialUseCase(DriveTutorialStep.MOVE_TO_COURSE, items)
                     }
             }
             launch {
@@ -367,7 +350,7 @@ class DriveViewModel @Inject constructor(
 
 
     //목록
-    private suspend fun driveListItemClick(item: CourseDirectionItem) {
+    private suspend fun driveListItemClick(item: CourseRenderItem) {
         driveTutorialUseCase(DriveTutorialStep.DRIVE_LIST_ITEM_CLICK)
 
         // 코스 포커스
@@ -676,27 +659,6 @@ class DriveViewModel @Inject constructor(
         }
     }
 
-    private suspend fun checkpointAddFloatingButtonClick() {
-        runCatching {
-            val courseItem = mapContentRepository.selectedCourseState.value
-            val initLatlng = courseItem?.course?.waypoints?.firstOrNull()?: throw Exception("missing initLatlng")
-            _driveEvent.addMarker(
-                markerInfo = MarkerInfo(
-                    contentId = CHECKPOINT_ADD_MARKER,
-                    position = initLatlng
-                )
-            )
-            _driveScreenState.update {
-                it.copy(
-                    bottomSheetState = it.bottomSheetState.copy(
-                        content = DriveBottomSheetContent.CHECKPOINT_ADD
-                    ),
-                    stateMode = DriveVisibleMode.BottomSheetExpand
-                ).initCheckPointAddState(initLatlng)
-            }
-        }.onFailure { handleError(it) }
-    }
-
     private suspend fun infoFloatingButtonClick(content: DriveBottomSheetContent) {
         _driveScreenState.update {
             val mode = when (content) {
@@ -721,7 +683,7 @@ class DriveViewModel @Inject constructor(
                     when (bottomSheetState.content) {
                         DriveBottomSheetContent.COURSE_INFO -> {
                             val courseItem= mapContentRepository.selectedCourseState.value
-                            initInfoState(course = courseItem?.course)
+                            initInfoState(course = courseItem)
                         }
                         DriveBottomSheetContent.CHECKPOINT_INFO -> {
                             val checkPoint= mapContentRepository.selectedCheckPointState.value
@@ -800,17 +762,6 @@ class DriveViewModel @Inject constructor(
         content: DriveBottomSheetContent
     ) {
         when (content) {
-            DriveBottomSheetContent.CHECKPOINT_ADD -> {
-                _driveEvent.emit(
-                    DriveEvent.MoveCamera(
-                        MoveCameraOption(
-                            trigger = CameraMoveTrigger.BOTTOM_SHEET_UP,
-                            targetId = DefaultMapId.SELECT_COURSE_ID.name
-                        )
-                    )
-                )
-            }
-
             else -> {}
         }
     }
@@ -858,23 +809,6 @@ class DriveViewModel @Inject constructor(
         val isCommentContentVisible = driveState.popUpState.commentState.isContentVisible
 
         val newClosedState = when (content) {
-            DriveBottomSheetContent.CHECKPOINT_ADD -> {
-                if (isSheetVisible) {
-                    _driveEvent.deleteMarker(CHECKPOINT_ADD_MARKER)
-                    _driveEvent.emit(
-                        DriveEvent.MoveCamera(
-                            MoveCameraOption(
-                                targetId = DefaultMapId.SELECT_COURSE_ID.name,
-                                trigger = CameraMoveTrigger.BOTTOM_SHEET_DOWN,
-                                animation = MoveAnimation.APP_EASING
-                            )
-                        )
-                    )
-
-                    driveState.backToCourseDetail()
-                } else null
-            }
-
             else -> {
                 if (isCommentContentVisible) {
                     driveState.backToCheckPointPopUp()
@@ -886,102 +820,6 @@ class DriveViewModel @Inject constructor(
         _driveScreenState.update { newClosedState }
 
         driveTutorialUseCase(DriveTutorialStep.COMMENT_SHEET_DRAG)
-    }
-
-    private suspend fun checkpointLocationSliderChange(percent: Float) {
-        runCatching {
-            val points = mapContentRepository.selectedCourseState.value?.course?.points?:emptyList()
-            points.getByPercent(percent)
-        }.onSuccess { newLatlng ->
-            _driveEvent.updateMarker(
-                MarkerInfo(
-                    contentId = CHECKPOINT_ADD_MARKER,
-                    type = MarkerType.DEFAULT,
-                    position = newLatlng
-                )
-            )
-            _driveScreenState.update {
-                it.copy(
-                    bottomSheetState = it.bottomSheetState.copy(
-                        checkPointAddState = it.bottomSheetState.checkPointAddState.copy(
-                            latLng = newLatlng,
-                            sliderPercent = percent
-                        )
-                    )
-                )
-            }
-        }.onFailure {
-            handleError(it)
-        }
-    }
-
-    private fun List<LatLng>.getByPercent(percent: Float): LatLng {
-        val points = this
-        val index = when (percent) {
-            100.0f -> points.size - 1
-            0.0f -> 0
-            else -> round((points.size - 1) * percent).toInt()
-        }
-        return points[index]
-    }
-
-    private fun checkpointDescriptionEnterClick(text: String) {
-        _driveScreenState.update {
-            val newCheckPointAddState = it.bottomSheetState
-                .checkPointAddState.copy(description = text)
-            val isValidateAddCheckPoint = newCheckPointAddState
-                    .isValidateAddCheckPoint().isSuccess
-
-            it.copy(
-                bottomSheetState = it.bottomSheetState.copy(
-                    checkPointAddState = newCheckPointAddState.copy(
-                        isSubmitActive = isValidateAddCheckPoint
-                    )
-                )
-            )
-        }
-    }
-
-    private suspend fun checkpointImageChange(uriString: String?) {
-        val imageInfo = if (uriString == null) null else {
-            val preview = withContext(Dispatchers.IO) {
-                getImageUseCase.getPreview(uriString)
-            }.getOrNull()
-            ImageInfo(uriString, preview?.name ?: "unknown", preview?.size ?: 0)
-        }
-        _driveScreenState.update {
-            val newCheckPointAddState = it.bottomSheetState.checkPointAddState.copy(
-                imgInfo = imageInfo
-            )
-            val isValidateAddCheckPoint = newCheckPointAddState
-                .isValidateAddCheckPoint().isSuccess
-
-            it.copy(
-                bottomSheetState = it.bottomSheetState.copy(
-                    checkPointAddState = newCheckPointAddState.copy(
-                        isSubmitActive = isValidateAddCheckPoint
-                    )
-                )
-            )
-        }
-    }
-
-    private suspend fun checkpointSubmitClick() {
-        if (!_driveScreenState.value.bottomSheetState.checkPointAddState.isSubmitActive)
-            return
-        val content = _driveScreenState.value.bottomSheetState.checkPointAddState
-            .toContent(DefaultMapId.SELECT_COURSE_ID.name)
-        _driveScreenState.executeActionWithUpdateUi(
-            loading = { state, isLoading -> state.replaceCheckpointAddLoading(isLoading) },
-            action = { addCheckpointToCourseUseCase(content) },
-            onSuccess = { newCheckPoint ->
-                handler.handle(DriveMsgEvent.ADD_DONE)
-                _driveEvent.addLeaf(newCheckPoint)
-            },
-            onSuccessUi = { it.backToCourseDetail() },
-            onFailure = { handler.handle(it) },
-            isSuccessUiUpdateFirst = false
-        )
     }
 
     private suspend fun infoReportClick(reason: ReportReason) =
@@ -1022,7 +860,6 @@ class DriveViewModel @Inject constructor(
                 DriveBottomSheetContent.COURSE_INFO -> {
                     courseOnSuccess()
                     _driveEvent.deleteSelectCourse()
-                    _driveEvent.refreshCourses()
                 }
                 DriveBottomSheetContent.CHECKPOINT_INFO -> {
                     checkpointOnSuccess()
@@ -1048,22 +885,15 @@ class DriveViewModel @Inject constructor(
         else this
     }
 
-    private fun DriveScreenState.updateListItem(courseGroup: List<Course>): DriveScreenState {
+    private fun DriveScreenState.updateListItem(courseGroup: List<CourseRenderItem>): DriveScreenState {
         val new = if (courseGroup.isEmpty()) emptyList() else courseGroup.map {
-            ListState.ListItemState(course = it)
+            ListState.ListItemState(courseRenderItem = it)
         }
         return copy(
             listState = listState.copy(
                 listItemGroup = new
             )
         )
-    }
-
-    private fun CheckPointAddState.isValidateAddCheckPoint(): Result<Unit> {
-        return runCatching {
-            require(imgInfo!= null && imgInfo.isValid()) { AppError.ImgEmpty() }
-            require(this.description.isNotEmpty()) { AppError.DescriptionEmpty() }
-        }
     }
 
     //가이드
@@ -1079,7 +909,7 @@ class DriveViewModel @Inject constructor(
                     _driveEvent.emit(
                         DriveEvent.MoveCamera(
                             MoveCameraOption(
-                                latlng = guideCourse.cameraLatLng,
+                                latlng = guideCourse.center,
                                 zoom = ZOOM.DISTRICT.level,
                                 trigger = CameraMoveTrigger.GUIDE
                             )

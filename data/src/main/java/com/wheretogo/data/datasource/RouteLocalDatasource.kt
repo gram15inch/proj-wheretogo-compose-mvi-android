@@ -1,13 +1,12 @@
 package com.wheretogo.data.datasource
 
-import com.wheretogo.data.model.route.LocalRoute
+import com.wheretogo.data.model.route.RoutePathEntity
+import com.wheretogo.domain.model.course.RoutePath
 
 interface RouteLocalDatasource {
 
-    suspend fun getRouteInCourse(courseId: String): Result<LocalRoute>
+    suspend fun getRoute(routeId: String): RoutePath?
 
-    suspend fun setRouteInCourse(route: LocalRoute): Result<Unit>
-
-    suspend fun removeRouteInCourse(courseId: String): Result<Unit>
+    suspend fun setRoute(entity: RoutePathEntity)
 
 }

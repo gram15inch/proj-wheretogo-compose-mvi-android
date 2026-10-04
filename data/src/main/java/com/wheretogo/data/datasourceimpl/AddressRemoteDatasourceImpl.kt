@@ -5,59 +5,15 @@ import android.text.Html
 import com.wheretogo.data.DataBuildConfig
 import com.wheretogo.data.datasource.AddressRemoteDatasource
 import com.wheretogo.data.datasourceimpl.service.NaverFreeApiService
-import com.wheretogo.data.datasourceimpl.service.NaverMapApiService
 import com.wheretogo.data.toDataError
-import com.wheretogo.domain.model.address.Address
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.address.SimpleAddress
 import javax.inject.Inject
 
 class AddressRemoteDatasourceImpl @Inject constructor(
-    private val naverApiService: NaverMapApiService,
     private val naverFreeApiService: NaverFreeApiService,
     private val buildConfig: DataBuildConfig
 ) : AddressRemoteDatasource {
-
-    private fun convertLatLng(latlng: LatLng): String = "${latlng.longitude}, ${latlng.latitude}"
-
-    override suspend fun geocode(address: String): Result<List<Address>> {
-        val response = naverApiService.geocode(
-            clientId = buildConfig.naverMapsApigwClientIdKey,
-            clientSecret = buildConfig.naverMapsApigwClientSecretkey,
-            accept = "application/json",
-            query = address,
-            count = "1"
-        )
-        if (!response.isSuccessful)
-            return Result.failure(response.toDataError())
-
-        val addGroup = response.body()?.addresses?.map {
-            Address(
-                jibun = it.jibunAddress,
-                road = it.roadAddress,
-                eng = it.englishAddress,
-                latLng = LatLng(it.y.toDouble(), it.x.toDouble())
-            )
-        } ?: emptyList()
-        return Result.success(addGroup)
-    }
-
-    override suspend fun reverseGeocode(latlng: LatLng): Result<String> {
-        val response = naverApiService.reverseGeocode(
-            clientId = buildConfig.naverMapsApigwClientIdKey,
-            clientSecret = buildConfig.naverMapsApigwClientSecretkey,
-            coords = convertLatLng(latlng),
-            output = "json"
-        )
-
-        if (!response.isSuccessful)
-            return Result.failure(response.toDataError())
-
-
-        val region = response.body()?.results?.firstOrNull()?.region
-        val addr = region?.run { "${area1.name} ${area2.name} ${area3.name} ${area4.name}" } ?: ""
-        return Result.success(addr)
-    }
 
     override suspend fun getSimpleAddressFromKeyword(keyword: String): Result<List<SimpleAddress>> {
         val response = naverFreeApiService.getAddressFromKeyword(

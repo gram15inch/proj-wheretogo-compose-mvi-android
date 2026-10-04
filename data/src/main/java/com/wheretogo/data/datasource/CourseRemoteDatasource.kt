@@ -1,17 +1,11 @@
 package com.wheretogo.data.datasource
 
-import com.wheretogo.data.model.course.CourseCreateContent
-import com.wheretogo.data.model.course.RemoteCourse
+import com.wheretogo.data.ApiResult
+import com.wheretogo.data.model.course.Page
 
 interface CourseRemoteDatasource {
 
-    suspend fun getCourse(courseId: String): Result<RemoteCourse>
+    suspend fun fetchPage(updateAt: Long): ApiResult<Page>
 
-    suspend fun getCourseGroupByKeyword(keyword: String): Result<List<RemoteCourse>>
-
-    suspend fun getCourseGroupByUpdateAt(updateAt: Long): Result<List<RemoteCourse>>
-
-    suspend fun setCourse(content: CourseCreateContent): Result<Unit>
-
-    suspend fun removeCourse(courseId: String): Result<Unit>
+    suspend fun removeCourse(courseId: String): ApiResult<Unit>
 }
