@@ -115,7 +115,6 @@ fun SearchBar(
                 AdaptiveAd(
                     contentPadding = ContentPadding(top = 50.dp, bottom = bottom.dp, start = horizontal, end = horizontal),
                     adItem = state.adItemGroup.firstOrNull(),
-                    cardFirst = false
                 )
             }
         }

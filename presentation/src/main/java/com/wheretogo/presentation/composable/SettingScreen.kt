@@ -275,7 +275,7 @@ fun AdSection(adItemGroup: List<AdItem> = emptyList()) {
         modifier = Modifier
             .padding(12.dp)
             .fillMaxWidth()) {
-        AdaptiveAd(elevation = 4.dp, adItem = adItemGroup.firstOrNull(), cardFirst = false)
+        AdaptiveAd(elevation = 4.dp, adItem = adItemGroup.firstOrNull())
     }
 
 }
