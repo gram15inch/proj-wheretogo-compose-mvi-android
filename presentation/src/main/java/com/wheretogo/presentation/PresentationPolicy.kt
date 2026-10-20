@@ -23,7 +23,7 @@ import javax.inject.Qualifier
 data class PresentationBuildConfig(
     val nativeAdId: String,
     val isTestUi: Boolean,
-    val isAdPreLoad: Boolean
+    val isAdLoad: Boolean
 )
 
 

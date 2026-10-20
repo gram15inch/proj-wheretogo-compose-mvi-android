@@ -24,6 +24,7 @@ private val LightColorScheme = lightColorScheme(
     surfaceContainerHigh = Palette.Gray50,
     onSurface = Palette.Black100,
     onSurfaceVariant = Palette.Gray300,
+    surfaceVariant = Palette.Blue30,
     background = Palette.White100
 )
 

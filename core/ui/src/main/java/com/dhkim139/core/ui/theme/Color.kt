@@ -54,6 +54,7 @@ object Palette {
     val Gray150 = Color(0xFFB9B9B9)
     val Gray200 = Color(0xFF999999)
     val Gray250 = Color(0xFF848484)
+    val Gray260 = Color(0xFF808080)
     val Gray280 = Color(0xFF6F6F6F)
     val Gray300 = Color(0xFF525252)
     val Gray320 = Color(0xFF474747)

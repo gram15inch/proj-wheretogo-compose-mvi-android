@@ -47,7 +47,7 @@ object AppConfigModule {
                 PresentationBuildConfig(
                     nativeAdId = BuildConfig.NATIVE_AD_ID,
                     isTestUi = false,
-                    isAdPreLoad = true
+                    isAdLoad = true
                 )
             }
 
@@ -55,7 +55,7 @@ object AppConfigModule {
                 PresentationBuildConfig(
                     nativeAdId = testAdId,
                     isTestUi = true,
-                    isAdPreLoad = false
+                    isAdLoad = false
                 )
             }
         }

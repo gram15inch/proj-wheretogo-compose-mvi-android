@@ -19,10 +19,18 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -46,11 +54,14 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
+import com.dhkim139.core.ui.model.ContentPadding
 import com.dhkim139.core.ui.theme.Palette
 import kotlin.math.max
 
@@ -243,4 +254,64 @@ fun Modifier.clickWithLongClick(
             onLongClick()
         },
     )
+}
+
+inline fun Modifier.thenIf(
+    condition: Boolean,
+    success: Modifier.() -> Modifier,
+    fail: Modifier.() -> Modifier = { this },
+): Modifier = if (condition) success() else fail()
+
+@Composable
+fun Modifier.navigationBarsBottomPadding(): Modifier =
+    this.windowInsetsPadding(
+        WindowInsets.navigationBars.only(WindowInsetsSides.Bottom)
+    )
+
+@Composable
+fun Modifier.navigationBarsRightPadding(): Modifier =
+    this.windowInsetsPadding(
+        WindowInsets.navigationBars.only(WindowInsetsSides.Right)
+    )
+
+@Composable
+fun systemBarPadding(
+    padding: Dp = 0.dp,
+    includeIme: Boolean = true
+): ContentPadding {
+    val layoutDirection = LocalLayoutDirection.current
+    val insets = if (includeIme) {
+        WindowInsets.systemBars.union(WindowInsets.ime)
+    } else {
+        WindowInsets.systemBars
+    }
+    val bars = insets.asPaddingValues()
+
+    return ContentPadding(
+        start = padding + bars.calculateStartPadding(layoutDirection),
+        end = padding + bars.calculateEndPadding(layoutDirection),
+        top = bars.calculateTopPadding(),
+        bottom = padding + bars.calculateBottomPadding()
+    )
+}
+
+data class ContentSize(val width: Dp, val height: Dp)
+
+@Composable
+fun rememberContentSize(
+    padding: Dp = 0.dp,
+    includeIme: Boolean = true
+): ContentSize {
+    val p = systemBarPadding(padding, includeIme)
+    val density = LocalDensity.current
+    val windowSize = LocalWindowInfo.current.containerSize // px 단위
+
+    return with(density) {
+        val windowWidth = windowSize.width.toDp()
+        val windowHeight = windowSize.height.toDp()
+        ContentSize(
+            width = (windowWidth - p.start - p.end).coerceAtLeast(0.dp),
+            height = (windowHeight - p.top - p.bottom).coerceAtLeast(0.dp)
+        )
+    }
 }

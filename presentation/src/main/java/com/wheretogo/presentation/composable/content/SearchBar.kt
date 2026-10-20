@@ -51,19 +51,23 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wheretogo.presentation.AdMinSize
+import com.dhkim139.core.ui.model.ContentPadding
+import com.dhkim139.core.ui.screen.MapLayoutType
+import com.dhkim139.core.ui.screen.intervalTab
+import com.dhkim139.core.ui.screen.rememberContentSize
+import com.dhkim139.core.ui.screen.rememberMapLayoutType
+import com.dhkim139.core.ui.theme.Palette
+import com.dhkim139.core.ui.theme.hancomSansFontFamily
 import com.wheretogo.presentation.CLEAR_ADDRESS
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.animation.highlightRoundedCorner
-import com.dhkim139.core.ui.screen.intervalTab
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.SearchBarState
-import com.dhkim139.core.ui.theme.Palette
-import com.dhkim139.core.ui.theme.hancomSansFontFamily
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun SearchBar(
@@ -75,14 +79,79 @@ fun SearchBar(
     onSearchBarClose: () -> Unit = {}
 ) {
     val isPreview = LocalInspectionMode.current
+
+    val isAd = if (isPreview) {
+        state.isAdVisible
+    } else {
+        state.isAdVisible &&
+                state.isActive &&
+                state.searchBarItemGroup.isEmpty() &&
+                !state.isEmptyVisible &&
+                !state.isTextGuide
+    }
+
+    Box(modifier = modifier.fillMaxWidth(), contentAlignment = Alignment.TopEnd){
+        val bottom = (rememberContentSize(includeIme = false).height.value * 0.6)
+        val display = rememberMapLayoutType()
+        val align = if(display == MapLayoutType.VERTICAL) Alignment.Center else Alignment.TopEnd
+        var delayedVisible by remember { mutableStateOf(false) }
+
+        LaunchedEffect(isAd) {
+            if (isAd) {
+                delay(100.milliseconds)
+                delayedVisible = true
+            } else {
+                delayedVisible = false
+            }
+        }
+
+        val show = isAd && delayedVisible
+        val horizontal = if(display == MapLayoutType.HORIZONTAL) 10.dp else 0.dp
+        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = align){
+            SlideAnimation(
+                visible = show,
+                direction = AnimationDirection.CenterRight
+            ) {
+                AdaptiveAd(
+                    contentPadding = ContentPadding(top = 50.dp, bottom = bottom.dp, start = horizontal, end = horizontal),
+                    adItem = state.adItemGroup.firstOrNull(),
+                    cardFirst = false
+                )
+            }
+        }
+
+        Bar(
+            state = state,
+            showDropList = !isAd,
+            isAd = isAd,
+            onSearchBarItemClick = onSearchBarItemClick,
+            onSearchBarClick = onSearchBarClick,
+            onSearchSubmit = onSearchSubmit,
+            onSearchBarClose = onSearchBarClose
+        )
+    }
+
+}
+
+@Composable
+private fun Bar(
+    state: SearchBarState,
+    showDropList: Boolean,
+    isAd: Boolean,
+    onSearchBarItemClick: (SearchBarItem) -> Unit = {},
+    onSearchBarClick: (Boolean) -> Unit = {},
+    onSearchSubmit: (String) -> Unit = {},
+    onSearchBarClose: () -> Unit = {}
+){
+    var alpha by remember { mutableFloatStateOf(0.75f) }
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
     var isFocused by remember { mutableStateOf(false) }
     var editText by remember { mutableStateOf(TextFieldValue("")) }
-    var alpha by remember { mutableFloatStateOf(0.75f) }
-    var isAdSkip by remember { mutableStateOf(false) }
-    val adSize = adSize(true)
     val outDp = 12.dp
+    fun clearFocus() {
+        focusManager.clearFocus()
+    }
     val guideText = stringResource(R.string.searchbar_guide_text)
     LaunchedEffect(state.isActive) {
         if (state.isActive) {
@@ -94,26 +163,7 @@ fun SearchBar(
             editText = editText.copy(text = "")
         }
     }
-    LaunchedEffect(adSize) {
-        if(adSize == AdMinSize.INVISIBLE)
-            isAdSkip = true
-        else
-            isAdSkip = false
-    }
-    LaunchedEffect(state.isTextGuide) {
-        if(state.isTextGuide) {
-            isAdSkip = true
-        } else {
-            isAdSkip = adSize == AdMinSize.INVISIBLE
-        }
-    }
-
-    fun clearFocus() {
-        focusManager.clearFocus()
-    }
-
     Column(
-        modifier = modifier,
         horizontalAlignment = Alignment.End,
         verticalArrangement = Arrangement.spacedBy(5.dp)
     ) {
@@ -135,7 +185,8 @@ fun SearchBar(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 FocusTextField(
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
                         .padding(start = 16.dp, end = 5.dp),
                     textValue = editText,
                     readOnly = !state.isActive,
@@ -160,7 +211,7 @@ fun SearchBar(
                         isFocused = it.isFocused
                         when {
                             it.isFocused && editText.text.isBlank() && !state.isEditBlock -> {
-                                onSearchBarClick(isAdSkip)
+                                onSearchBarClick(isAd)
                             }
 
                             !it.isFocused && editText.text.isBlank() -> {
@@ -200,43 +251,20 @@ fun SearchBar(
                     clearFocus()
                 }
             })
-
-        Box {
-            val isAd = if (isPreview) {
-                state.isAdVisible
-            } else {
-                state.isAdVisible &&
-                state.isActive &&
-                state.searchBarItemGroup.isEmpty() &&
-                !state.isEmptyVisible &&
-                !isAdSkip
-            }
-            if (!isAd)
-                BarDropList(
-                    modifier = Modifier.padding(horizontal = outDp),
-                    isEmptyVisible = state.isEmptyVisible,
-                    searchBarItemGroup = state.searchBarItemGroup,
-                    onSearchBarItemClick = {
-                        if (it.label == CLEAR_ADDRESS) {
-                            onSearchBarClose()
-                            clearFocus()
-                        } else {
-                            clearFocus()
-                        }
-                        onSearchBarItemClick(it)
-                    })
-
-            SlideAnimation(
-                visible = isAd,
-                direction = AnimationDirection.CenterRight
-            ) {
-                AdaptiveAd(
-                    modifier = Modifier.padding(bottom = outDp, start = outDp, end = outDp),
-                    isCompact = true,
-                    adItem = state.adItemGroup.firstOrNull()
-                )
-            }
-        }
+        if (showDropList)
+            BarDropList(
+                modifier = Modifier.padding(horizontal = outDp),
+                isEmptyVisible = state.isEmptyVisible,
+                searchBarItemGroup = state.searchBarItemGroup,
+                onSearchBarItemClick = {
+                    if (it.label == CLEAR_ADDRESS) {
+                        onSearchBarClose()
+                        clearFocus()
+                    } else {
+                        clearFocus()
+                    }
+                    onSearchBarItemClick(it)
+                })
     }
 }
 

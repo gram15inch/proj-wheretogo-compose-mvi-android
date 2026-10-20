@@ -999,7 +999,7 @@ class DriveViewModel @Inject constructor(
     private fun loadAdOnSearchBarExpand() {
         val state = _driveScreenState.value
         viewModelScope.launch(Dispatchers.IO) {
-            nativeAdService.getAd()
+            nativeAdService.getAd("DRIVE")
                 .onSuccess { newAdItemGroup ->
                     if (state.stateMode == DriveVisibleMode.SearchBarExpand)
                         _driveScreenState.update {
@@ -1014,7 +1014,7 @@ class DriveViewModel @Inject constructor(
     private fun loadAdOnExportMapAppFloatExpand(){
         val state = _driveScreenState.value
         viewModelScope.launch(Dispatchers.IO) {
-            nativeAdService.getAd()
+            nativeAdService.getAd("DRIVE")
                 .onSuccess { newAdItemGroup ->
                     if(state.floatingButtonState.stateMode == DriveFloatingVisibleMode.ExportExpand)
                         _driveScreenState.update {

@@ -40,25 +40,25 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.dhkim139.core.ui.event.AppEventReceiveEffect
+import com.dhkim139.core.ui.screen.LifecycleDisposer
+import com.dhkim139.core.ui.theme.Palette
+import com.dhkim139.core.ui.theme.hancomMalangFontFamily
+import com.dhkim139.core.ui.theme.hancomSansFontFamily
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.model.user.ProfilePrivate
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.SettingInfoType
 import com.wheretogo.presentation.composable.content.AdaptiveAd
 import com.wheretogo.presentation.composable.content.DelayLottieAnimation
-import com.dhkim139.core.ui.event.AppEventReceiveEffect
-import com.dhkim139.core.ui.screen.LifecycleDisposer
 import com.wheretogo.presentation.feature.openActivity
 import com.wheretogo.presentation.feature.openWeb
 import com.wheretogo.presentation.intent.SettingIntent
 import com.wheretogo.presentation.model.AdItem
 import com.wheretogo.presentation.parseLogoImgRes
 import com.wheretogo.presentation.state.SettingScreenState
-import com.dhkim139.core.ui.theme.Palette
-import com.dhkim139.core.ui.theme.hancomMalangFontFamily
-import com.dhkim139.core.ui.theme.hancomSansFontFamily
 import com.wheretogo.presentation.viewmodel.SettingViewModel
 
 @Composable
@@ -275,7 +275,7 @@ fun AdSection(adItemGroup: List<AdItem> = emptyList()) {
         modifier = Modifier
             .padding(12.dp)
             .fillMaxWidth()) {
-        AdaptiveAd(elevation = 4.dp, adItem = adItemGroup.firstOrNull())
+        AdaptiveAd(elevation = 4.dp, adItem = adItemGroup.firstOrNull(), cardFirst = false)
     }
 
 }

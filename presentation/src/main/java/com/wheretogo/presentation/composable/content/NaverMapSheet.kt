@@ -49,7 +49,7 @@ import com.wheretogo.presentation.model.AppMarker
 import com.wheretogo.presentation.model.AppPath
 import com.wheretogo.presentation.model.AppPolyline
 import com.wheretogo.presentation.model.CameraOption
-import com.wheretogo.presentation.model.ContentPadding
+import com.dhkim139.core.ui.model.ContentPadding
 import com.wheretogo.presentation.model.MapOverlay
 import com.wheretogo.presentation.model.NaverMapStyle
 import com.wheretogo.presentation.state.NaverMapState
