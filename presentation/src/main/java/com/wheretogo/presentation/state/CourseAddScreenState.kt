@@ -7,7 +7,7 @@ import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.map.MarkerInfo
 import com.wheretogo.domain.model.route.RouteWaypointItem
 import com.wheretogo.presentation.CourseAddVisibleMode
-import com.wheretogo.presentation.model.ContentPadding
+import com.dhkim139.core.ui.model.ContentPadding
 import java.util.EnumSet
 
 data class CourseAddScreenState(

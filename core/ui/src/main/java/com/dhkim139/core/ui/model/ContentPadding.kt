@@ -1,4 +1,4 @@
-package com.wheretogo.presentation.model
+package com.dhkim139.core.ui.model
 
 
 import androidx.compose.ui.unit.Dp

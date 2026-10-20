@@ -7,36 +7,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalDensity
 import com.google.android.gms.ads.nativead.NativeAd
 import com.wheretogo.presentation.composable.content.ad.LocalNativeAdView
 
 
 @Composable
 fun CardAdEffect(
-    nativeAd: NativeAd?,
-    isCompact: Boolean,
-    tiltLines: Int,
-    onMaxLineUpdate: (Int) -> Unit
+    nativeAd: NativeAd?
 ) {
-    val density = LocalDensity.current
-    val fontScale = density.fontScale
     val nav = LocalNativeAdView.current
     var isComposition by remember { mutableStateOf(false) }
-    if (isCompact) {
-        LaunchedEffect(tiltLines, fontScale) {
-            if (tiltLines != -1) {
-                val maxLine = when {
-                    fontScale >= 1.1f && tiltLines >= 2 -> 0
-                    tiltLines > 1 -> 1
-                    else -> {
-                        2
-                    }
-                }
-                onMaxLineUpdate(maxLine)
-            }
-        }
-    }
 
     LaunchedEffect(nativeAd) {
         if (nativeAd != null)
@@ -50,7 +30,6 @@ fun CardAdEffect(
                 nav?.setNativeAd(nativeAd)
             }
             onDispose {
-                nativeAd?.destroy()
                 isComposition = false
             }
         }
@@ -75,7 +54,6 @@ fun RowAdEffect(nativeAd: NativeAd?) {
                 nav?.setNativeAd(nativeAd)
             }
             onDispose {
-                nativeAd?.destroy()
                 isComposition = false
             }
         }

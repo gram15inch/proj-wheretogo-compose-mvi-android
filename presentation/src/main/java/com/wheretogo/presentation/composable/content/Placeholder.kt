@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -83,6 +84,42 @@ fun OneTimeLottieAnimation(modifier: Modifier = Modifier, ltRes: Int){
     )
 }
 
+
+@Composable
+fun MiniAdPlaceholder(modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(Palette.White50)
+            .shimmer()
+            .width(260.dp)
+            .height(140.dp)
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .size(120.dp)
+                .background(Color.LightGray),
+        )
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(24.dp)
+                    .background(Color.LightGray),
+            )
+            Box(
+                modifier = Modifier
+                    .size(30.dp, 20.dp)
+                    .background(Color.LightGray),
+            )
+        }
+    }
+}
+
 @Composable
 fun RowAdPlaceholder(modifier: Modifier = Modifier) {
     Row(
@@ -125,7 +162,7 @@ fun CardAdPlaceholder() {
             .clip(RoundedCornerShape(8.dp))
             .background(Palette.White50)
             .shimmer()
-            .widthIn(max = 500.dp)
+            .widthIn(max = AdMinSize.Card.widthDp.dp)
             .height(330.dp)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -168,5 +205,13 @@ fun CardAdPlaceHolderPreview() {
 fun RowAdPlaceHolderPreview() {
     Box(modifier = Modifier.padding(12.dp)) {
         RowAdPlaceholder()
+    }
+}
+
+@Preview(widthDp = 600, heightDp = 350)
+@Composable
+fun MiniAdPlaceHolderPreview() {
+    Box(modifier = Modifier.padding(12.dp)) {
+        MiniAdPlaceholder()
     }
 }

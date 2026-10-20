@@ -4,8 +4,9 @@ import com.wheretogo.presentation.model.AdItem
 
 interface AdService {
 
-    suspend fun getAd(): Result<List<AdItem>>
+    suspend fun getAd(slotId: String): Result<List<AdItem>>
 
-    fun refreshAd(count: Int)
+    fun clearSlot(slotId: String)
 
+    fun disable()
 }

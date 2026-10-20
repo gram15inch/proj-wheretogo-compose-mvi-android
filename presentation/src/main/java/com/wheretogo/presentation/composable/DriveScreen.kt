@@ -43,6 +43,7 @@ import androidx.compose.ui.zIndex
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.dhkim139.core.ui.event.AppEventReceiveEffect
+import com.dhkim139.core.ui.model.ContentPadding
 import com.dhkim139.core.ui.screen.ImeStickyBox
 import com.dhkim139.core.ui.screen.LifecycleDisposer
 import com.dhkim139.core.ui.screen.consumptionEvent
@@ -80,7 +81,7 @@ import com.wheretogo.presentation.defaultCommentEmogiGroup
 import com.wheretogo.presentation.event.DriveEvent
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.intent.MapIntent
-import com.wheretogo.presentation.model.ContentPadding
+
 import com.wheretogo.presentation.model.NaverMapStyle
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.model.TypeEditText

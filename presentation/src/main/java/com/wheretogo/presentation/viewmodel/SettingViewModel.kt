@@ -2,17 +2,17 @@ package com.wheretogo.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dhkim139.core.ui.event.AppEvent
+import com.dhkim139.core.ui.event.EventResult
+import com.dhkim139.core.ui.model.AppLifecycle
 import com.wheretogo.domain.handler.ErrorHandler
 import com.wheretogo.domain.model.user.Profile
 import com.wheretogo.domain.usecase.user.DeleteUserUseCase
 import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
 import com.wheretogo.domain.usecase.user.UserSignOutUseCase
 import com.wheretogo.presentation.AppError
-import com.dhkim139.core.ui.event.AppEvent
-import com.dhkim139.core.ui.model.AppLifecycle
 import com.wheretogo.presentation.MainDispatcher
 import com.wheretogo.presentation.SettingInfoType
-import com.dhkim139.core.ui.event.EventResult
 import com.wheretogo.presentation.feature.ads.AdService
 import com.wheretogo.presentation.intent.SettingIntent
 import com.wheretogo.presentation.state.SettingScreenState
@@ -128,12 +128,6 @@ class SettingViewModel @Inject constructor(
                     _loadAdSkipOnResume = false
                     return
                 }
-
-                if (_settingScreenState.value.adItemGroup.isEmpty()) {
-                    viewModelScope.launch(Dispatchers.IO) {
-                        loadAd()
-                    }
-                }
             }
 
             AppLifecycle.onPause -> {
@@ -148,7 +142,7 @@ class SettingViewModel @Inject constructor(
         when (result.event) {
             AppEvent.SignInScreen -> {
                 _isCoverScreen = false
-                viewModelScope.launch(Dispatchers.IO){ loadAd() }
+                loadAd()
             }
             else -> {}
         }
@@ -174,49 +168,39 @@ class SettingViewModel @Inject constructor(
                         )
                     }
                 }
-
-
             }
         }
     }
 
     // 초기화
     private fun adInit() {
-        viewModelScope.launch(Dispatchers.IO) {
-            launch {
-                loadAd()
-                _loadAdSkipOnResume = true
-            }
-        }
+        loadAd()
     }
 
     // 유틸
-    private suspend fun loadAd() {
-        if(_loadAdSkipOnResume || _isCoverScreen)
+    private fun loadAd() {
+        if (_loadAdSkipOnResume || _isCoverScreen)
             return
-        adServiceOld.getAd()
-            .onSuccess { newAdGroup ->
+        _loadAdSkipOnResume = true
+        viewModelScope.launch(dispatcher) {
+            withContext(Dispatchers.IO) {
+                adServiceOld.getAd("SETTING")
+            }.onSuccess { newAdGroup ->
                 _settingScreenState.update {
                     it.copy(adItemGroup = newAdGroup)
                 }
             }.onFailure {
-                if(it !is AppError.NeedSignIn)
+                if (it !is AppError.NeedSignIn)
                     handleError(it)
-            }
-    }
-
-    private fun clearAd() {
-        viewModelScope.launch(Dispatchers.IO) {
-            _settingScreenState.value.destroyAd()
-            _settingScreenState.update {
-                it.copy(adItemGroup = emptyList())
+            }.also {
+                _loadAdSkipOnResume = false
             }
         }
     }
 
-    private fun SettingScreenState.destroyAd() {
-        adItemGroup.forEach {
-            it.destroy()
+    private fun clearAd() {
+        _settingScreenState.update {
+            it.copy(adItemGroup = emptyList())
         }
     }
 

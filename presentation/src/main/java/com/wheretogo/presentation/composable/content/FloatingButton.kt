@@ -100,24 +100,6 @@ fun FloatingButtons(
         val context = LocalContext.current
         val buttonEndPadding = 12.dp
 
-        Box(modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.TopEnd){
-            SlideAnimation(
-                visible = isBackPlateVisible,
-                direction = AnimationDirection.CenterRight
-            ) {
-                AdaptiveAd(
-                    modifier = Modifier.padding(
-                        start = buttonEndPadding,
-                        end = buttonEndPadding,
-                        top = 10.dp,
-                        bottom = buttonEndPadding + 10.dp
-                    ),
-                    adItem = state.adItemGroup.firstOrNull()
-                )
-            }
-        }
-
         ActiveOfFloatBtnArea(
             guideStep
         ) { active ->

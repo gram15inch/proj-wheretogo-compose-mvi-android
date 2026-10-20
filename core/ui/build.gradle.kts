@@ -38,6 +38,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.compose.adaptive)
     implementation(libs.androidx.exifinterface)
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
@@ -48,5 +49,8 @@ dependencies {
     implementation(libs.dagger.hilt.android)
     ksp(libs.dagger.hilt.compiler)
     ksp(libs.dagger.hilt.android.compiler)
+
+    // Libraries
+    implementation(libs.compose.shimmer)
 
 }
