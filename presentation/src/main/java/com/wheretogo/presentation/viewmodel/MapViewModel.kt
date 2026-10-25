@@ -2,12 +2,17 @@ package com.wheretogo.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dhkim139.core.ui.model.AppLifecycle
 import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.MarkerType
 import com.wheretogo.domain.ZOOM
 import com.wheretogo.domain.feature.LocationService
 import com.wheretogo.domain.model.address.LatLng
+import com.wheretogo.domain.model.course.BoundingBox
+import com.wheretogo.domain.model.course.CameraFocus
+import com.wheretogo.domain.model.course.Course
 import com.wheretogo.domain.model.course.CourseRenderItem
+import com.wheretogo.domain.model.course.StartDirection
 import com.wheretogo.domain.model.map.CameraMoveTrigger
 import com.wheretogo.domain.model.map.CameraState
 import com.wheretogo.domain.model.map.ContentOperation
@@ -20,20 +25,15 @@ import com.wheretogo.domain.model.map.RefreshOverlayOption
 import com.wheretogo.domain.repository.MapContentRepository
 import com.wheretogo.domain.usecase.app.DriveTutorialUseCase
 import com.wheretogo.domain.usecase.checkpoint.GetCheckpointForMarkerUseCase
-import com.dhkim139.core.ui.model.AppLifecycle
-import com.wheretogo.domain.model.course.BoundingBox
-import com.wheretogo.domain.model.course.CameraFocus
-import com.wheretogo.domain.model.course.Course
-import com.wheretogo.domain.model.course.GeoBounds
-import com.wheretogo.domain.model.course.MapCamera
-import com.wheretogo.domain.model.course.StartDirection
 import com.wheretogo.domain.usecaseimpl.course.ObserveCourseInBoundsUseCase
 import com.wheretogo.domain.usecaseimpl.course.SyncCoursesUseCase
 import com.wheretogo.presentation.CHECKPOINT_ADD_MARKER
 import com.wheretogo.presentation.MainDispatcher
+import com.wheretogo.presentation.PARKING_MARKER
 import com.wheretogo.presentation.feature.map.MapOverlayService
 import com.wheretogo.presentation.intent.MapIntent
 import com.wheretogo.presentation.model.CameraOption
+import com.wheretogo.presentation.model.ParkingItem
 import com.wheretogo.presentation.state.MapState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -49,7 +49,6 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 import javax.inject.Inject
 
 
@@ -100,6 +99,7 @@ class MapViewModel @Inject constructor(
                 is MapIntent.MarkerClick -> markerClick(intent.markerInfo)
                 is MapIntent.MoveCamera -> moveCamera(intent.option)
                 is MapIntent.Focus -> focus(intent.item)
+                is MapIntent.ParkingFocus -> parkingFocus(intent.item)
                 is MapIntent.RELEASE -> release()
                 is MapIntent.RefreshContent -> refreshContent(intent.option)
                 is MapIntent.RefreshOverlay -> refreshOverlay(intent.option)
@@ -223,6 +223,7 @@ class MapViewModel @Inject constructor(
         refreshCheckpointCluster(item.courseId)
     }
 
+
     private fun release(){
         // 클러스터 삭제
         mapContentRepository.apply {
@@ -244,6 +245,7 @@ class MapViewModel @Inject constructor(
                 ContentOperation.REFRESH_CLUSTER -> refreshCheckpointCluster(option.id)
                 ContentOperation.DELETE_COURSE -> deleteCourse(option.id)
                 ContentOperation.DELETE_CHECKPOINT -> deleteCheckPoint(option.id,option.groupId)
+                ContentOperation.DELETE_PARKING -> deleteParking()
             }
         }
     }
@@ -323,6 +325,19 @@ class MapViewModel @Inject constructor(
             }
             else -> {}
         }
+    }
+
+    private suspend fun parkingFocus(item: ParkingItem){
+        mapOverlayService.addOneTimeMarker(listOf(item.toMarkerInfo()))
+        mapOverlayService.updateOneTimeMarker(item.toMarkerInfo())
+        moveCamera(
+            MoveCameraOption(
+                latlng = item.latLng,
+                trigger = CameraMoveTrigger.PARKING,
+                zoom = ZOOM.SPOT.level,
+                animation = MoveAnimation.APP_LINEAR,
+            )
+        )
     }
 
     //=========================================
@@ -448,6 +463,10 @@ class MapViewModel @Inject constructor(
         mapContentRepository.clearCheckPoint()
     }
 
+    private fun deleteParking(){
+        mapOverlayService.removeOneTimeMarker(listOf(PARKING_MARKER))
+    }
+
     private suspend fun leafScaleInCluster(latLng: LatLng){
         val item = mapContentRepository.selectedCourseState.value
         if (item != null) {
@@ -560,7 +579,6 @@ class MapViewModel @Inject constructor(
     }
 
     private fun List<Course>.refreshList() {
-        Timber.d("tst_ refreshList")
         return mapContentRepository.refreshCourseList(map { it.toDirectionItem() })
     }
 }

@@ -7,6 +7,7 @@ import com.wheretogo.domain.model.map.MarkerInfo
 import com.wheretogo.domain.model.map.MoveCameraOption
 import com.wheretogo.domain.model.map.RefreshContentOption
 import com.wheretogo.domain.model.map.RefreshOverlayOption
+import com.wheretogo.presentation.model.ParkingItem
 
 sealed class MapIntent {
     object MapAsync : MapIntent()
@@ -17,6 +18,7 @@ sealed class MapIntent {
     data class RefreshContent(val option: RefreshContentOption) : MapIntent()
     data class RefreshOverlay(val option: RefreshOverlayOption) : MapIntent()
     data class Focus(val item: CourseRenderItem) : MapIntent()
+    data class ParkingFocus(val item: ParkingItem) : MapIntent()
     data object RELEASE : MapIntent()
     data object ClearMap : MapIntent()
     data class LifeCycleChange(val lifecycle: AppLifecycle) : MapIntent()

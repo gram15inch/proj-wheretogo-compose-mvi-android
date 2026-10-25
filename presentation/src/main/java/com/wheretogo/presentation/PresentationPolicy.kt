@@ -31,9 +31,8 @@ const val WIDE_WIDTH = 600
 
 const val CHECKPOINT_ADD_MARKER = "CHECKPOINT_ADD_MARKER_ID"
 const val SEARCH_MARKER = "SEARCH_MARKER_ID"
+const val PARKING_MARKER = "PARKING_MARKER_ID"
 const val CLEAR_ADDRESS = "CLEAR_ADDRESS"
-const val DEBUG_AD_REFRESH_SIZE = 1
-const val AD_REFRESH_SIZE = 1
 const val AD_MAX_FONT_SCALE = 1.2f
 
 val NamSan = LatLng(37.55211251549546, 126.98787585585995)
@@ -81,7 +80,6 @@ enum class AdMinSize(val widthDp: Int, val heightDp: Int) {
     Card(300, 600)
 }
 
-
 enum class ExportMap {
     NAVER, KAKAO, SKT
 }
@@ -106,15 +104,12 @@ enum class DriveBottomSheetContent(val minHeight: Int) {
 }
 
 enum class DriveVisibleMode {
-    Explorer, CourseDetail, BlurCourseDetail, BlurCheckpointDetail, SearchBarExpand, BottomSheetExpand, BlurBottomSheetExpand, BlurCheckpointBottomSheetExpand,
-}
-
-enum class CourseAddVisibleMode {
-    BottomSheetExpand, BottomSheetCollapse
+    Explorer, CourseDetail, BlurCourseDetail, BlurCheckpointDetail,
+    SearchBarExpand, BottomSheetExpand, BlurBottomSheetExpand, BlurCheckpointBottomSheetExpand,
 }
 
 enum class DriveFloatingVisibleMode {
-    Default, Hide, Popup, ExportExpand
+    Default, Hide, Popup
 }
 
 enum class SheetVisibleMode {
@@ -195,7 +190,8 @@ fun DriveTutorialStep.toStrRes(): Int? {
         DriveTutorialStep.LEAF_CLICK -> R.string.spot_click
         DriveTutorialStep.COMMENT_FLOAT_CLICK -> R.string.comment_guide
         DriveTutorialStep.EXPORT_FLOAT_CLICK -> R.string.export_guide
-        DriveTutorialStep.FOLD_FLOAT_CLICK -> R.string.map_export_click
+        DriveTutorialStep.EXPORT_SHEET_CLOSED -> R.string.map_export_click
+        DriveTutorialStep.FOLD_FLOAT_CLICK -> R.string.fold_click
         DriveTutorialStep.SEARCHBAR_CLICK -> R.string.use_search
         DriveTutorialStep.SEARCHBAR_EDIT -> R.string.display_course_and_place
         DriveTutorialStep.ADDRESS_CLICK -> R.string.blue_course_white_normal

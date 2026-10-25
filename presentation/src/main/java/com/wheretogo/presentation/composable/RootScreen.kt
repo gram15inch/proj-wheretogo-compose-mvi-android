@@ -30,24 +30,23 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.dhkim139.core.ui.event.AppEvent
-import com.dhkim139.core.ui.permission.AppPermission
-import com.dhkim139.core.ui.screen.AppScreen
-import com.wheretogo.presentation.composable.checkin.CheckinScreen
-import com.wheretogo.presentation.composable.content.AnimationDirection
-import com.wheretogo.presentation.composable.content.SlideAnimation
 import com.dhkim139.core.ui.event.AppEventReceiveEffect
 import com.dhkim139.core.ui.event.AppEventSendEffect
-import com.wheretogo.presentation.composable.gallery.GalleryFlow
 import com.dhkim139.core.ui.event.EventBus
-import com.dhkim139.core.ui.permission.checkFalseOrData
-import com.wheretogo.presentation.feature.openUri
 import com.dhkim139.core.ui.event.show
+import com.dhkim139.core.ui.permission.AppPermission
+import com.dhkim139.core.ui.permission.checkFalseOrData
+import com.dhkim139.core.ui.screen.AppScreen
 import com.dhkim139.core.ui.theme.Palette
 import com.dhkim139.core.ui.theme.WhereTogoTheme
 import com.macbook14inch.feature.courseadd.CourseAddScreen
+import com.wheretogo.presentation.composable.checkin.CheckinScreen
+import com.wheretogo.presentation.composable.content.AnimationDirection
+import com.wheretogo.presentation.composable.content.SlideAnimation
+import com.wheretogo.presentation.composable.gallery.GalleryFlow
+import com.wheretogo.presentation.feature.openUri
 import com.wheretogo.presentation.viewmodel.RootViewModel
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 @Composable
 fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
@@ -156,7 +155,9 @@ fun RootScreen(viewModel: RootViewModel = hiltViewModel()) {
                         enterTransition = { slideInHorizontally(initialOffsetX = { it }) },
                         exitTransition = { slideOutHorizontally(targetOffsetX = { it }) }
                     ) {
-                        DriveScreen(navController)
+                        DriveScreen(onBackPressed = {
+                            navController.popBackStack()
+                        })
                     }
                      composable(courseAdd,
                         enterTransition = { slideInVertically(initialOffsetY = { it }) },

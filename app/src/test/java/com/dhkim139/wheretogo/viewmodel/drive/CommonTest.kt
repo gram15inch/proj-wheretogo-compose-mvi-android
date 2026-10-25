@@ -30,7 +30,6 @@ import org.junit.Rule
 import org.junit.Test
 
 @Suppress("NonAsciiCharacters")
-@OptIn(ExperimentalCoroutinesApi::class)
 class CommonTest {
 
     @get:Rule
@@ -92,69 +91,6 @@ class CommonTest {
             }
         }
     }
-
-    // ==================== lifecycleChange 테스트 ====================
-    @Test
-    fun `광고 갱신후 화면 생명주기 OnPause 진입시 광고 제거`() = runTest {
-        // Arrange
-        val adItem = AdItem(createAt = 1)
-        val initState = initState
-            .createShowSearchBarExpandState(listOf(adItem))
-            .createExportMapAppFloatExpandState(listOf(adItem))
-        val viewModel = createViewModel(StandardTestDispatcher(testScheduler), initState)
-        assertFlows(viewModel.driveScreenState, viewModel.driveEvent) {
-            // Act: 화면 생명주기 OnPause 진입
-            viewModel.handleIntent(DriveScreenIntent.LifecycleChange(AppLifecycle.onPause))
-
-            // Assert: 광고 제거
-            state.awaitItem().run {
-                assertThat(searchBarState.adItemGroup.size).isEqualTo(0)
-                assertThat(floatingButtonState.adItemGroup.size).isEqualTo(0)
-            }
-        }
-    }
-
-    @Test
-    fun `서치바 확장후 화면 생명주기 OnResume 진입시 광고 갱신`() = runTest {
-        // Arrange: 서치바 확장
-        val adItem =  AdItem(createAt = 1)
-        val initState = initState.createShowSearchBarExpandState()
-        val viewModel = createViewModel(StandardTestDispatcher(testScheduler), initState)
-
-        coEvery { nativeAdService.getAd() } returns Result.success(listOf(adItem))
-
-        assertFlows(viewModel.driveScreenState, viewModel.driveEvent) {
-            // Act: 화면 생명주기 OnResume 진입
-            viewModel.handleIntent(DriveScreenIntent.LifecycleChange(AppLifecycle.onResume))
-
-            // Assert: 광고 갱신
-            state.awaitItem().run {
-                assertThat(searchBarState.adItemGroup.firstOrNull()?.createAt).isEqualTo(1)
-            }
-        }
-    }
-
-    @Test
-    fun `외부지도 플로팅 확장후 생명주기 OnResume 진입시 광고 갱신`() = runTest {
-        // Arrange: 외부지도 플로팅 확장
-        val adItem =  AdItem(createAt = 1)
-        val initState = initState.createExportMapAppFloatExpandState()
-        val viewModel = createViewModel(StandardTestDispatcher(testScheduler), initState)
-
-        coEvery { nativeAdService.getAd() } returns Result.success(listOf(adItem))
-
-        assertFlows(viewModel.driveScreenState, viewModel.driveEvent) {
-            // Act: 화면 생명주기 OnResume 진입
-            viewModel.handleIntent(DriveScreenIntent.LifecycleChange(AppLifecycle.onResume))
-
-            // Assert: 광고 갱신
-            state.awaitItem().run {
-                assertThat(floatingButtonState.adItemGroup.firstOrNull()?.createAt).isEqualTo(1)
-            }
-        }
-    }
-
-
 
     // ==================== blurClick 테스트 ====================
 

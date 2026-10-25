@@ -1,13 +1,13 @@
 package com.wheretogo.presentation.intent
 
+import com.dhkim139.core.ui.event.EventResult
+import com.dhkim139.core.ui.model.AppLifecycle
 import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.model.comment.Comment
+import com.wheretogo.domain.model.course.CourseRenderItem
 import com.wheretogo.domain.model.report.ReportReason
-import com.dhkim139.core.ui.model.AppLifecycle
 import com.wheretogo.presentation.DriveBottomSheetContent
 import com.wheretogo.presentation.SheetVisibleMode
-import com.wheretogo.domain.model.course.CourseRenderItem
-import com.dhkim139.core.ui.event.EventResult
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.model.TypeEditText
 import com.wheretogo.presentation.state.CommentState.CommentItemState
@@ -42,7 +42,6 @@ sealed class DriveScreenIntent {
     data object CommentFloatingButtonClick : DriveScreenIntent()
     data class InfoFloatingButtonClick(val content: DriveBottomSheetContent) : DriveScreenIntent()
     data object ExportMapFloatingButtonClick : DriveScreenIntent()
-    data class ExportMapAppButtonClick(val result:Result<Unit>) : DriveScreenIntent()
     data object FoldFloatingButtonClick : DriveScreenIntent()
 
 
@@ -55,6 +54,9 @@ sealed class DriveScreenIntent {
     data class LifecycleChange(val event: AppLifecycle) : DriveScreenIntent()
     data class EventReceive(val result: EventResult) : DriveScreenIntent()
     data object BlurClick : DriveScreenIntent()
+
+    // 외부기능
+    data object NavOptionSheetClose : DriveScreenIntent()
 
     // 디버그
     data object DebugOverlayClick : DriveScreenIntent()

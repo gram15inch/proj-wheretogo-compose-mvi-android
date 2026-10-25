@@ -37,7 +37,7 @@ fun adSize(contentPadding: ContentPadding = ContentPadding(), cardFirst: Boolean
             - contentPadding.start - contentPadding.end).coerceAtLeast(0.dp)
     val availableHeight = (configuration.screenHeightDp.dp
             - contentPadding.top - contentPadding.bottom).coerceAtLeast(0.dp)
-    println("ad_ width: $availableWidth height: $availableHeight")
+    Timber.d("ad_ width: $availableWidth height: $availableHeight")
 
     return resolveAdSize(availableWidth, availableHeight, cardFirst)
 }

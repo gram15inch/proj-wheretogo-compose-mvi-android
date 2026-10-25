@@ -15,7 +15,6 @@ import com.wheretogo.domain.repository.DefaultMapId
 import com.wheretogo.domain.repository.MapContentRepository
 import com.wheretogo.domain.usecase.app.DriveTutorialUseCase
 import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
-import com.wheretogo.domain.usecase.checkpoint.AddCheckpointToCourseUseCase
 import com.wheretogo.domain.usecase.checkpoint.RemoveCheckPointUseCase
 import com.wheretogo.domain.usecase.course.RemoveCourseUseCase
 import com.wheretogo.domain.usecase.report.ReportContentUseCase
@@ -143,7 +142,7 @@ class BottomSheetTest {
         val initState = initState.createShowPopupCommentState()
         val viewModel = createViewModel(StandardTestDispatcher(testScheduler), initState)
         val sheet = SheetVisibleMode.Closed
-        coEvery { driveTutorialUseCase(DriveTutorialStep.COMMENT_SHEET_DRAG) } returns Result.success(Unit)
+        coEvery { driveTutorialUseCase(DriveTutorialStep.COMMENT_SHEET_CLOSED) } returns Result.success(Unit)
         assertFlows(viewModel.driveScreenState, viewModel.driveEvent) {
             // Act: 바텀시트 변경(닫힌후)
             viewModel.handleIntent(DriveScreenIntent.BottomSheetChange(sheet))

@@ -19,5 +19,5 @@ class DispatcherModule {
 
     @Provides
     @MainDispatcher
-    fun provideMain(): CoroutineDispatcher = Dispatchers.Main
+    fun provideMain(): CoroutineDispatcher = Dispatchers.Main.immediate
 }

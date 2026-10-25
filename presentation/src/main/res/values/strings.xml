@@ -145,7 +145,8 @@
     <string name="spot_click">원하는 스팟을 찾았다면 클릭해 확대해 보세요.</string>
     <string name="comment_guide">스팟은 코스중 특별한 순간으로 간단한 한줄평을 남길 수 있어요!</string>
     <string name="export_guide">코스 둘러보기중 지도앱으로 바로 출발이 가능해요.</string>
-    <string name="map_export_click">내가 사용 하는 앱을 선택해보세요.</string>
+    <string name="map_export_click">가는길에 근처 주차장을 추가 할 수 있어요.</string>
+    <string name="fold_click">다른 코스를 둘러 볼까요?</string>
     <string name="use_search">지도로 매번 찾기 힘들다면 \n검색을 사용해 보세요!</string>
     <string name="display_course_and_place">검색어는 키워드로 사용해요, 대표 키워드인 와인딩을 한번 검색해 볼까요?</string>
     <string name="blue_course_white_normal">파란 배경은 코스를 하얀배경은\n일반 장소를 나타내요.\n아이템을 클릭하면 위치로 이동 할 수 있어요.</string>

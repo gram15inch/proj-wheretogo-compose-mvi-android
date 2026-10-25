@@ -19,7 +19,8 @@ enum class ZOOM(val level: Double) {
     PROVINCE(9.5),
     CITY(10.5),
     DISTRICT(12.0),
-    Place(13.0);
+    Place(13.0),
+    SPOT(14.0);
 
     companion object {
         fun getZoomCategory(zoom: Double): ZOOM {
@@ -28,7 +29,8 @@ enum class ZOOM(val level: Double) {
                 COUNTRY.level< zoom && zoom <= PROVINCE.level -> PROVINCE
                 PROVINCE.level< zoom && zoom <= CITY.level -> CITY
                 CITY.level< zoom && zoom <= DISTRICT.level -> DISTRICT
-                else-> Place
+                DISTRICT.level< zoom && zoom <= Place.level -> Place
+                else-> SPOT
             }
         }
     }
@@ -95,7 +97,9 @@ enum class DriveTutorialStep(val tag: String?=null) {
     LEAF_CLICK("info"),
     COMMENT_FLOAT_CLICK("info"),
     COMMENT_SHEET_DRAG,
+    COMMENT_SHEET_CLOSED,
     EXPORT_FLOAT_CLICK("info"),
+    EXPORT_SHEET_CLOSED("info"),
     FOLD_FLOAT_CLICK("info"),
     SEARCHBAR_CLICK("info"),
     SEARCHBAR_EDIT("info"),

@@ -183,89 +183,6 @@ class FloatingButtonTest {
         }
     }
 
-    // ==================== exportMapFloatingButtonClick 테스트 ====================
-    @Test
-    fun `확장전 외부 지도 플로팅 버튼 클릭시 플로팅 버튼 확장 및 광고 표시`() = runTest {
-        // Arrange: 확장전
-        val adItem = AdItem(createAt = 1)
-        val initState = initState.run {
-            copy(
-                floatingButtonState = floatingButtonState.copy(
-                    stateMode = DriveFloatingVisibleMode.Default
-                ),
-                stateMode = DriveVisibleMode.CourseDetail
-            )
-        }
-        val viewModel = createViewModel(StandardTestDispatcher(testScheduler), initState)
-
-        coEvery { nativeAdService.getAd() } returns Result.success(listOf(adItem))
-        coEvery { driveTutorialUseCase(DriveTutorialStep.EXPORT_FLOAT_CLICK) } returns Result.success(Unit)
-        assertFlows(viewModel.driveScreenState, viewModel.driveEvent) {
-            // Act: 외부 지도 플로팅 버튼 클릭
-            viewModel.handleIntent(DriveScreenIntent.ExportMapFloatingButtonClick)
-
-            // Assert: 플로팅 버튼 확장
-            state.awaitItem().run {
-                assertThat(floatingButtonState.stateMode)
-                    .isEqualTo(DriveFloatingVisibleMode.ExportExpand)
-                assertThat(stateMode)
-                    .isEqualTo(DriveVisibleMode.BlurCourseDetail)
-            }
-
-            // Assert: 광고 갱신
-            state.awaitItem().run {
-                assertThat(floatingButtonState.adItemGroup.firstOrNull()?.createAt)
-                    .isEqualTo(adItem.createAt)
-            }
-        }
-    }
-
-    @Test
-    fun `확장후 외부지도 플로팅 버튼 클릭시 플로팅 버튼 축소 및 광고 숨기기`() = runTest {
-        // Arrange: 확장후
-        val adItem = AdItem(createAt = 1)
-        val initState = initState.run {
-            copy(
-                floatingButtonState = floatingButtonState.copy(
-                    stateMode = DriveFloatingVisibleMode.ExportExpand,
-                    adItemGroup = listOf(adItem)
-                )
-            )
-        }
-        val viewModel = createViewModel(StandardTestDispatcher(testScheduler), initState)
-        assertFlows(viewModel.driveScreenState, viewModel.driveEvent) {
-            // Act: 외부 지도 플로팅 버튼 클릭
-            viewModel.handleIntent(DriveScreenIntent.ExportMapFloatingButtonClick)
-
-            // Assert: 플로팅 버튼 축소
-            state.awaitItem().run {
-                floatingButtonState.let {
-                    assertThat(it.stateMode)
-                        .isEqualTo(DriveFloatingVisibleMode.Default)
-                    assertThat(it.adItemGroup.size).isEqualTo(0)
-                }
-
-                assertThat(stateMode)
-                    .isEqualTo(DriveVisibleMode.CourseDetail)
-            }
-        }
-    }
-
-    // ==================== exportMapAppButtonClick 테스트 ====================
-    @Test
-    fun `외부지도 앱 버튼 클릭시 아무것도 안함`() = runTest {
-        // Arrange
-        val result = Result.success(Unit)
-        val viewModel =
-            createViewModel(StandardTestDispatcher(testScheduler), initState)
-        assertFlows(viewModel.driveScreenState, viewModel.driveEvent) {
-            // Act: 외부지도 앱 버튼 클릭
-            viewModel.handleIntent(DriveScreenIntent.ExportMapAppButtonClick(result))
-
-            // Assert: 아무것도 안함
-        }
-    }
-
     // ==================== foldFloatingButtonClick 테스트 ====================
     @Test
     fun `접기 플로팅 버튼 클릭시 코스 포커스 해제`() = runTest {
@@ -276,6 +193,8 @@ class FloatingButtonTest {
             )
         }
         val viewModel = createViewModel(StandardTestDispatcher(testScheduler), initState)
+        coEvery { driveTutorialUseCase(DriveTutorialStep.FOLD_FLOAT_CLICK) } returns Result.success(Unit)
+
         assertFlows(viewModel.driveScreenState, viewModel.driveEvent) {
             // Act: 접기 플로팅 버튼 클릭
             viewModel.handleIntent(DriveScreenIntent.FoldFloatingButtonClick)

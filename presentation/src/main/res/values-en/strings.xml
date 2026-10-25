@@ -140,7 +140,8 @@
     <string name="spot_click">Found a spot you like? Tap it to zoom in.</string>
     <string name="comment_guide">Spots are special moments along a course — leave a quick review!</string>
     <string name="export_guide">While browsing a course, you can head out right away with your map app.</string>
-    <string name="map_export_click">Pick the map app you use.</string>
+    <string name="map_export_click">You can add nearby parking to your route.</string>
+    <string name="fold_click">Want to explore other routes?</string>
     <string name="use_search">Tired of hunting on the map?\nTry search!</string>
     <string name="display_course_and_place">Search works with keywords. Let\'s try our signature keyword: 와인딩.</string>
     <string name="blue_course_white_normal">Blue means a course,\nwhite means a regular place.\nTap an item to jump to its location.</string>

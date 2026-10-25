@@ -18,6 +18,8 @@ import com.wheretogo.domain.usecase.gallery.LoadGalleryPhotosUseCase
 import com.wheretogo.domain.usecase.gallery.SavePickedImagesUseCase
 import com.wheretogo.domain.usecase.home.GetRecentCardUseCase
 import com.wheretogo.domain.usecase.report.ReportContentUseCase
+import com.wheretogo.domain.usecase.setting.GetMapAppIdUseCase
+import com.wheretogo.domain.usecase.setting.SaveMapAppIdUseCase
 import com.wheretogo.domain.usecase.user.DeleteUserUseCase
 import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
 import com.wheretogo.domain.usecase.user.UserCheckUseCase
@@ -48,6 +50,8 @@ import com.wheretogo.domain.usecaseimpl.gallery.LoadGalleryPhotosUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.gallery.SavePickedImagesUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.home.GetRecentCardUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.report.ReportContentUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.setting.GetMapAppIdUseCaseImpl
+import com.wheretogo.domain.usecaseimpl.setting.SaveMapAppIdUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.DeleteUserUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.GetUserProfileStreamUseCaseImpl
 import com.wheretogo.domain.usecaseimpl.user.UserCheckUseCaseImpl
@@ -155,6 +159,13 @@ abstract class UseCaseModule {
 
     @Binds
     abstract fun bindGetRecentCardSituationUseCase(useCaseImpl: GetRecentCardUseCaseImpl): GetRecentCardUseCase
+
+
+    @Binds
+    abstract fun bindGetMapAppIdUseCase(impl: GetMapAppIdUseCaseImpl): GetMapAppIdUseCase
+
+    @Binds
+    abstract fun bindSaveMapAppIdIdUseCase(impl: SaveMapAppIdUseCaseImpl): SaveMapAppIdUseCase
 
 }
 

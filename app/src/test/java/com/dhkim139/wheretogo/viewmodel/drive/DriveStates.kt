@@ -74,14 +74,3 @@ fun DriveScreenState.createShowSearchBarExpandState(adItems: List<AdItem> = empt
             )
         )
     }
-
-fun DriveScreenState.createExportMapAppFloatExpandState(adItems: List<AdItem> = emptyList()) =
-    run {
-        copy(
-            stateMode = DriveVisibleMode.BlurCheckpointDetail,
-            floatingButtonState = floatingButtonState.copy(
-                stateMode = DriveFloatingVisibleMode.ExportExpand,
-                adItemGroup = adItems
-            )
-        )
-    }
