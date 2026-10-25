@@ -9,7 +9,9 @@ data class GuideState(
 ) {
     companion object {
         enum class Align {
-            TOP_START, BOTTOM_START
+            TOP_START, CENTER_START
         }
     }
+
+    fun isTutorial(): Boolean = tutorialStep != DriveTutorialStep.SKIP
 }

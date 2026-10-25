@@ -22,6 +22,7 @@ dependencies {
     implementation(project(mapOf("path" to ":feature:provider-picker")))
     implementation(project(mapOf("path" to ":feature:camera-picker")))
     implementation(project(mapOf("path" to ":feature:course-add")))
+    implementation(project(mapOf("path" to ":feature:navigation-option")))
 
     // AndroidX
     implementation(libs.androidx.core.ktx)

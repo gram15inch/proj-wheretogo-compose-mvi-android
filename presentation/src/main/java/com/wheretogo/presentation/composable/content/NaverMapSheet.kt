@@ -207,6 +207,12 @@ fun NaverMapSheet(
             }
         }
 
+        LaunchedEffect(contentPadding.end) {
+            mapView.getMapAsync { naverMap ->
+                naverMap.contentPaddingUpdate(density, contentPadding)
+            }
+        }
+
 
         // 맵 이벤트
         LaunchedEffect(Unit) {

@@ -1,11 +1,9 @@
 package com.wheretogo.presentation.di
 
 import com.wheretogo.presentation.PresentationBuildConfig
-import com.wheretogo.presentation.state.CourseAddScreenState
 import com.wheretogo.presentation.state.DriveScreenState
 import com.wheretogo.presentation.state.HomeScreenState
 import com.wheretogo.presentation.state.MapState
-import com.wheretogo.presentation.state.NaverMapState
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,16 +26,6 @@ class StateModule {
         buildConfig: PresentationBuildConfig
     ): DriveScreenState {
         return DriveScreenState(
-            isTestUi = buildConfig.isTestUi
-        )
-    }
-
-    @Singleton
-    @Provides
-    fun provideCourseAddState(
-        buildConfig: PresentationBuildConfig
-    ): CourseAddScreenState {
-        return CourseAddScreenState(
             isTestUi = buildConfig.isTestUi
         )
     }

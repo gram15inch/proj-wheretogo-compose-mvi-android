@@ -11,6 +11,7 @@ import com.wheretogo.data.repositoryimpl.ImageRepositoryImpl
 import com.wheretogo.data.repositoryimpl.MapContentRepositoryImpl
 import com.wheretogo.data.repositoryimpl.ReportRepositoryImpl
 import com.wheretogo.data.repositoryimpl.RouteRepositoryImpl
+import com.wheretogo.data.repositoryimpl.SettingsRepositoryImpl
 import com.wheretogo.data.repositoryimpl.UserRepositoryImpl
 import com.wheretogo.domain.repository.AddressRepository
 import com.wheretogo.domain.repository.AppRepository
@@ -23,6 +24,7 @@ import com.wheretogo.domain.repository.ImageRepository
 import com.wheretogo.domain.repository.MapContentRepository
 import com.wheretogo.domain.repository.ReportRepository
 import com.wheretogo.domain.repository.RouteRepository
+import com.wheretogo.domain.repository.SettingsRepository
 import com.wheretogo.domain.repository.UserRepository
 import dagger.Binds
 import dagger.Module
@@ -80,6 +82,9 @@ abstract class RepositoryModule {
     @Binds
     abstract fun bindAddressRepository(repositoryImpl: AddressRepositoryImpl): AddressRepository
 
+    @Singleton
+    @Binds
+    abstract fun bindSettingsRepository(impl: SettingsRepositoryImpl): SettingsRepository
 }
 
 @Module

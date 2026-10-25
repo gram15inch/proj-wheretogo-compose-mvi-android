@@ -169,7 +169,7 @@ class SearchBarTest {
         // Arrange
         val loadAd = AdItem(createAt = 1)
 
-        coEvery { nativeAdService.getAd() } returns Result.success(listOf(loadAd))
+        coEvery { nativeAdService.getAd("DRIVE") } returns Result.success(listOf(loadAd))
         coEvery { driveTutorialUseCase(DriveTutorialStep.SEARCHBAR_CLICK) } returns Result.success(Unit)
         val viewModel= createViewModel(StandardTestDispatcher(testScheduler), initState)
         assertFlows(viewModel.driveScreenState, viewModel.driveEvent) {

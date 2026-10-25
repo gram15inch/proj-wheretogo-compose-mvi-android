@@ -3,17 +3,21 @@ package com.wheretogo.presentation.feature.guide
 import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.domain.model.dummy.guideCourse
 import com.wheretogo.presentation.DriveFloatHighlight
+import com.wheretogo.presentation.DriveFloatingVisibleMode
+import com.wheretogo.presentation.DriveVisibleMode
+import com.wheretogo.presentation.state.BottomSheetState
 import com.wheretogo.presentation.state.DriveScreenState
 import com.wheretogo.presentation.state.GuideState
+import com.wheretogo.presentation.state.PopUpState
 
-
-fun DriveScreenState.toStepState(step: DriveTutorialStep): DriveScreenState {
+// 가이드 시작
+fun DriveScreenState.toNextState(next: DriveTutorialStep): DriveScreenState {
     return copy(
         guideState = guideState.copy(
-            tutorialStep = step
+            tutorialStep = next
         )
     ).run {
-        when (step) {
+        when (next) {
             DriveTutorialStep.DRIVE_LIST_ITEM_CLICK -> {
                 setHighlightItemWithGuide(true)
             }
@@ -30,39 +34,34 @@ fun DriveScreenState.toStepState(step: DriveTutorialStep): DriveScreenState {
                 )
             }
 
-            DriveTutorialStep.COMMENT_SHEET_DRAG -> {
+            DriveTutorialStep.COMMENT_SHEET_DRAG ->{
                 copy(
                     popUpState = popUpState.copy(
                         commentState = popUpState.commentState.copy(
                             isDragGuide = true
                         )
-                    ),
-                    floatingButtonState = floatingButtonState.copy(
-                        highlight = DriveFloatHighlight.NONE
                     )
                 )
             }
 
+            DriveTutorialStep.COMMENT_SHEET_CLOSED -> { copy() }
+
             DriveTutorialStep.EXPORT_FLOAT_CLICK -> {
                 copy(
-                    popUpState = popUpState.copy(
-                        commentState = popUpState.commentState.copy(
-                            isDragGuide = false
-                        )
-                    ),
+                    popUpState = PopUpState(),
                     floatingButtonState = floatingButtonState.copy(
-                        highlight = DriveFloatHighlight.EXPORT
+                        highlight = DriveFloatHighlight.EXPORT,
+                        stateMode = DriveFloatingVisibleMode.Default
                     ),
+                    bottomSheetState = BottomSheetState(),
+                    stateMode = DriveVisibleMode.BlurCourseDetail
                 )
             }
 
-            DriveTutorialStep.FOLD_FLOAT_CLICK -> {
+            DriveTutorialStep.EXPORT_SHEET_CLOSED -> {
                 copy(
-                    guideState = guideState.copy(
-                        alignment = GuideState.Companion.Align.BOTTOM_START
-                    ),
                     floatingButtonState = floatingButtonState.copy(
-                        highlight = DriveFloatHighlight.FOLD
+                        highlight = DriveFloatHighlight.FOLD,
                     )
                 )
             }

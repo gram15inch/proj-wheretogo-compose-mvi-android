@@ -5,6 +5,7 @@ enum class CameraMoveTrigger {
     MARKER,
     LIST_ITEM,
     SEARCH_BAR,
+    PARKING,
     BOTTOM_SHEET_UP,
     BOTTOM_SHEET_DOWN,
     RESTART,

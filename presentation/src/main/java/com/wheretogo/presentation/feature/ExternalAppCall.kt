@@ -11,6 +11,7 @@ import com.dhkim139.core.ui.permission.AppPermission
 import com.dhkim139.core.ui.permission.requestPermission
 import com.skt.Tmap.TMapTapi
 import com.wheretogo.domain.model.address.LatLng
+import com.wheretogo.domain.model.util.LatLngLabel
 import com.wheretogo.domain.model.util.Navigation
 import com.wheretogo.presentation.AppError
 import com.wheretogo.presentation.ExportMap
@@ -75,24 +76,22 @@ private fun getKakaoMapUrl(navigation: Navigation, myLatlng: LatLng? = null): St
     val callRoute = navigation.createCallRoute(myLatlng)
     //카카오는 경유지 호출을 지원하지 않음
     val url = if (navigation.waypoints.size > 2)
-        "kakaomap://route?&ep=${callRoute.goal.latitude},${callRoute.goal.longitude}&by=CAR"
+        "kakaomap://route?&ep=${callRoute.goal.latLng.latitude},${callRoute.goal.latLng.longitude}&by=CAR"
     else
-        "kakaomap://route?sp=${callRoute.start.latitude},${callRoute.start.longitude}&ep=${callRoute.goal.latitude},${callRoute.goal.longitude}&by=CAR"
+        "kakaomap://route?sp=${callRoute.start.latLng.latitude},${callRoute.start.latLng.longitude}&ep=${callRoute.goal.latLng.latitude},${callRoute.goal.latLng.longitude}&by=CAR"
 
     return url
 }
 
 private fun getNaverMapUrl(navigation: Navigation, myLatlng: LatLng? = null): String {
     val callRoute = navigation.createCallRoute(myLatlng)
-    val startName = if (callRoute.isMyLocaltionStart) "내위치" else "출발지"
-    val goalName = navigation.courseName.ifEmpty { "목적지" }
     val url =
-        "nmap://route/car?slat=${callRoute.start.latitude}&slng=${callRoute.start.longitude}&sname=$startName" +
-                "&dlat=${callRoute.goal.latitude}&dlng=${callRoute.goal.longitude}&dname=$goalName" +
+        "nmap://route/car?slat=${callRoute.start.latLng.latitude}&slng=${callRoute.start.latLng.longitude}&sname=${callRoute.start.label}" +
+                "&dlat=${callRoute.goal.latLng.latitude}&dlng=${callRoute.goal.latLng.longitude}&dname=${callRoute.goal.label}" +
                 callRoute.mid.run {
                     var str = ""
-                    this.forEachIndexed { idx, latlng ->
-                        str += "&v${idx + 1}lat=${latlng.latitude}&v${idx + 1}lng=${latlng.longitude}&v${idx + 1}name=v${idx + 1}"
+                    this.forEachIndexed { idx, latlngLabel ->
+                        str += "&v${idx + 1}lat=${latlngLabel.latLng.latitude}&v${idx + 1}lng=${latlngLabel.latLng.longitude}&v${idx + 1}name=${latlngLabel.label}"
                     }
                     str
                 } +
@@ -131,21 +130,21 @@ private fun TMapTapi.openMap(context: Context, navigation: Navigation, myLatlng:
     val routeMap = callRoute.run {
         val routeMap = HashMap<String, String>()
         start.apply {
-            routeMap["rStName"] = if (callRoute.isMyLocaltionStart) "내위치" else "출발지"
-            routeMap["rStX"] = longitude.toString()
-            routeMap["rStY"] = latitude.toString()
+            routeMap["rStName"] = label
+            routeMap["rStX"] = latLng.longitude.toString()
+            routeMap["rStY"] = latLng.latitude.toString()
         }
 
         goal.apply {
-            routeMap["rGoName"] = navigation.courseName.ifEmpty { "목적지" }
-            routeMap["rGoX"] = longitude.toString()
-            routeMap["rGoY"] = latitude.toString()
+            routeMap["rGoName"] = label
+            routeMap["rGoX"] = latLng.longitude.toString()
+            routeMap["rGoY"] = latLng.latitude.toString()
         }
 
-        mid.forEachIndexed { idx, latlng ->
-            routeMap["rV${idx + 1}Name"] = "경로 ${idx + 1}"
-            routeMap["rV${idx + 1}X"] = latlng.longitude.toString()
-            routeMap["rV${idx + 1}Y"] = latlng.latitude.toString()
+        mid.forEachIndexed { idx, latlngLabel ->
+            routeMap["rV${idx + 1}Name"] = latlngLabel.label
+            routeMap["rV${idx + 1}X"] = latlngLabel.latLng.longitude.toString()
+            routeMap["rV${idx + 1}Y"] = latlngLabel.latLng.toString()
         }
         routeMap
     }
@@ -186,7 +185,7 @@ private fun Context.openPlayStore(packageName: String) {
 private fun Navigation.createCallRoute(myLatlng: LatLng?): CallRoute {
     val isMyLocationStart = myLatlng != null
     val callRoute = if (isMyLocationStart) {
-        val start = myLatlng
+        val start = LatLngLabel(myLatlng,"내위치")
         val goal = waypoints.last()
         val mid = waypoints.dropLast(1)
         CallRoute(start, mid, goal, true)

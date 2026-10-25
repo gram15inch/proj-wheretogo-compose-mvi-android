@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+
+    <string name="course_start">Course start</string>
+    <string name="course_end">Course end</string>
+    <string name="my_location">My location</string>
+    <string name="separator" translatable="false"> · </string>
+    <string name="parking_badge" translatable="false">P</string>
+
+    <string name="app_naver_map">Naver Map</string>
+    <string name="app_tmap">TMAP</string>
+    <string name="app_kakao_map">KakaoMap</string>
+
+    <string name="link_minutes">%1$d min away</string>
+    <string name="link_close">Right there</string>
+    <string name="link_estimated">About %1$s</string>
+
+    <string name="tag_free">Free</string>
+    <string name="tag_night_ok">Open at night</string>
+    <string name="tag_restroom">Restroom</string>
+    <string name="tag_scenic">Great view</string>
+    <string name="tag_ev_charger">EV charging</string>
+    <string name="tag_large_vehicle">Large vehicles OK</string>
+    <string name="tag_crowded">Crowded</string>
+    <string name="tag_seasonal">Seasonal</string>
+    <string name="tag_needs_permission">Permit required</string>
+    <string name="tag_accessible">Accessible parking</string>
+
+    <string name="capacity_few">1–3 cars</string>
+    <string name="capacity_some">4–10 cars</string>
+    <string name="capacity_many">10+ cars</string>
+
+    <string name="overview_my_location_row">Start from my location</string>
+
+    <string name="overview_subtitle_parked">%2$s from %1$s</string>
+    <string name="overview_subtitle_parked_close">Right by %1$s</string>
+
+    <string name="overview_status_none">Not parked ›</string>
+    <string name="overview_status_locked">Not parked</string>
+    <string name="overview_status_parked">P Parked</string>
+
+    <string name="overview_navigate_with">Navigate with %1$s</string>
+
+    <string name="overview_notice_one_of_two">%1$s can only navigate to a single starting point</string>
+    <string name="overview_notice_two_stops">%1$s can only navigate up to two stops</string>
+
+    <string name="picker_title">Parking near %1$s</string>
+    <string name="picker_show_all">Show all</string>
+    <string name="picker_confirm">Select</string>
+    <string name="picker_clear">Skip parking</string>
+
+    <string name="picker_empty_title">No parking within %1$d km</string>
+    <string name="picker_empty_body">This is a roadside point, so there are no parking facilities nearby</string>
+
+    <string name="picker_radius">%1$d km</string>
+
+    <string name="picker_other_parked">%1$s: parked</string>
+    <string name="picker_other_not_parked">%1$s: not parked</string>
+
+    <string name="app_picker_title">Which app should guide you?</string>
+    <string name="app_picker_close">Close</string>
+    <string name="app_picker_group_full">Via parking, all the way</string>
+    <string name="app_picker_group_limited">Apps that can\'t include waypoints</string>
+
+    <string name="app_picker_limit">One destination at a time</string>
+
+    <string name="error_date_load">Couldn’t load the data</string>
+    <string name="error_parking_pending">We\'re preparing parking info\nPlease try again in a moment</string>
+    <string name="error_parking_failed">Couldn\'t build parking info for this course</string>
+    <string name="error_retry">Retry</string>
+
+    <string name="remove_my_location">Remove my location</string>
+    <string name="change_map_app">Choose a different map app</string>
+    <string name="nav_option_selected">Selected</string>
+
+</resources>

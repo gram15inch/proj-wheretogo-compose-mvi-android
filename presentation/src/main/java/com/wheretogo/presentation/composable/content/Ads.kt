@@ -103,23 +103,29 @@ fun AdaptiveAd(
     elevation: Dp = 8.dp,
     adItem: AdItem?,
     contentPadding: ContentPadding = ContentPadding(),
-    cardFirst: Boolean = true
+    sizeMeasurePadding: ContentPadding? = null,
+    cardFirst: Boolean = false,
 ) {
-    val adSize = adSize(contentPadding, cardFirst)
+    val adSize = adSize(sizeMeasurePadding ?: contentPadding, cardFirst)
     val nativeAd = adItem?.nativeAd as? NativeAd
-    Box(modifier = Modifier.padding(
-        start = contentPadding.start,
-        top = contentPadding.top,
-        end = contentPadding.end,
-        bottom = contentPadding.bottom,
-    )){
-        when(adSize)  {
+    Box(
+        modifier = Modifier.padding(
+            start = contentPadding.start,
+            top = contentPadding.top,
+            end = contentPadding.end,
+            bottom = contentPadding.bottom,
+        )
+    ) {
+        when (adSize) {
             AdMinSize.Card ->
                 CardContainer(elevation, nativeAd)
+
             AdMinSize.Row ->
                 RowContainer(elevation, nativeAd)
+
             AdMinSize.Mini ->
                 MiniContainer(elevation, nativeAd)
+
             else -> {}
         }
     }
@@ -286,7 +292,7 @@ private fun RowAd(modifier: Modifier = Modifier, elevation: Dp = 8.dp, nativeAd:
             RowAdEffect(nativeAd)
             Row(
                 modifier = Modifier
-                    .heightIn(max= 160.dp)
+                    .heightIn(max = 160.dp)
                     .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -374,7 +380,9 @@ private fun MiniAd(modifier: Modifier = Modifier, elevation: Dp = 8.dp, nativeAd
                         }
 
                         // 광고 헤드라인
-                        AdHeadLine(Modifier.fillMaxWidth().heightIn(min= 48.dp), headline)
+                        AdHeadLine(Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 48.dp), headline)
                     }
 
                     // 광고 CTA

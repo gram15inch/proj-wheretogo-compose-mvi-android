@@ -62,7 +62,6 @@ fun ZIndexOfDriveContentArea(
                 DriveTutorialStep.COMMENT_FLOAT_CLICK,
                 DriveTutorialStep.FOLD_FLOAT_CLICK -> {
                     isBlock = true
-                    isCover = true
                     drivelistZIndex = 0f
                     searchbarZIndex = 0f
                     floatingZIndex = 2f
@@ -70,11 +69,11 @@ fun ZIndexOfDriveContentArea(
                     bottomSheetZIndex = 0f
                 }
 
-                DriveTutorialStep.COMMENT_SHEET_DRAG -> {
+                DriveTutorialStep.COMMENT_SHEET_CLOSED -> {
                     drivelistZIndex = 0f
                     searchbarZIndex = 0f
                     floatingZIndex = 0f
-                    popupZIndex = 2f
+                    popupZIndex = 0f
                     bottomSheetZIndex = 0f
                 }
 
@@ -134,7 +133,7 @@ data class DriveContentZIndex(
 
 @Composable
 fun ActiveOfFloatBtnArea(
-    tutorialStep: DriveTutorialStep,
+    current: DriveTutorialStep,
     content: @Composable (FloatBtnActive) -> Unit
 ) {
     var checkpointActive by remember { mutableStateOf(true) }
@@ -143,10 +142,34 @@ fun ActiveOfFloatBtnArea(
     var exportActive by remember { mutableStateOf(true) }
     var foldZActive by remember { mutableStateOf(true) }
 
-    LaunchedEffect(tutorialStep) {
-        when (tutorialStep) {
+    LaunchedEffect(current) {
+        when (current) {
             DriveTutorialStep.MOVE_TO_LEAF,
             DriveTutorialStep.LEAF_CLICK -> {
+                checkpointActive = false
+                commentActive = false
+                infoZActive = false
+                exportActive = false
+                foldZActive = false
+            }
+
+            DriveTutorialStep.COMMENT_FLOAT_CLICK -> {
+                checkpointActive = false
+                commentActive = true
+                infoZActive = false
+                exportActive = false
+                foldZActive = false
+            }
+
+            DriveTutorialStep.COMMENT_SHEET_DRAG -> {
+                checkpointActive = false
+                commentActive = false
+                infoZActive = false
+                exportActive = true
+                foldZActive = false
+            }
+
+            DriveTutorialStep.COMMENT_SHEET_CLOSED -> {
                 checkpointActive = false
                 commentActive = false
                 infoZActive = false
@@ -162,13 +185,14 @@ fun ActiveOfFloatBtnArea(
                 foldZActive = false
             }
 
-            DriveTutorialStep.COMMENT_FLOAT_CLICK -> {
+            DriveTutorialStep.EXPORT_SHEET_CLOSED -> {
                 checkpointActive = false
-                commentActive = true
+                commentActive = false
                 infoZActive = false
                 exportActive = false
-                foldZActive = false
+                foldZActive = true
             }
+
 
             DriveTutorialStep.FOLD_FLOAT_CLICK -> {
                 checkpointActive = false

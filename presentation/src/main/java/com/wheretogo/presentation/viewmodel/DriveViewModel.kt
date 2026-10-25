@@ -23,7 +23,6 @@ import com.wheretogo.domain.repository.DefaultMapId
 import com.wheretogo.domain.repository.MapContentRepository
 import com.wheretogo.domain.usecase.app.DriveTutorialUseCase
 import com.wheretogo.domain.usecase.app.ObserveSettingsUseCase
-import com.wheretogo.domain.usecase.checkpoint.AddCheckpointToCourseUseCase
 import com.wheretogo.domain.usecase.checkpoint.RemoveCheckPointUseCase
 import com.wheretogo.domain.usecase.comment.AddCommentToCheckPointUseCase
 import com.wheretogo.domain.usecase.comment.GetCommentForCheckPointUseCase
@@ -44,6 +43,7 @@ import com.wheretogo.presentation.DriveVisibleMode
 import com.wheretogo.presentation.MainDispatcher
 import com.wheretogo.presentation.SEARCH_MARKER
 import com.wheretogo.presentation.SheetVisibleMode
+import com.wheretogo.presentation.composable.content.NavOptionArg
 import com.wheretogo.presentation.event.DriveEvent
 import com.wheretogo.presentation.event.DriveEvent.Companion.addMarker
 import com.wheretogo.presentation.event.DriveEvent.Companion.deleteMarker
@@ -54,7 +54,7 @@ import com.wheretogo.presentation.event.DriveEvent.Companion.stopCameraWhenSheet
 import com.wheretogo.presentation.feature.ads.AdService
 import com.wheretogo.presentation.feature.executeAction
 import com.wheretogo.presentation.feature.executeActionWithUpdateUi
-import com.wheretogo.presentation.feature.guide.toStepState
+import com.wheretogo.presentation.feature.guide.toNextState
 import com.wheretogo.presentation.intent.DriveScreenIntent
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.model.TypeEditText
@@ -68,7 +68,6 @@ import com.wheretogo.presentation.state.SearchBarState
 import com.wheretogo.presentation.toAppError
 import com.wheretogo.presentation.toCommentContent
 import com.wheretogo.presentation.toItemState
-import com.wheretogo.presentation.toNavigation
 import com.wheretogo.presentation.toSearchBarItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -81,10 +80,13 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.withIndex
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -115,6 +117,9 @@ class DriveViewModel @Inject constructor(
     private val _driveEvent = MutableSharedFlow<DriveEvent>()
     val driveEvent: SharedFlow<DriveEvent> = _driveEvent
 
+    private val _navOptionArg = MutableStateFlow<NavOptionArg?>(null)
+    val navOptionArg = _navOptionArg.asStateFlow()
+
     fun handleIntent(intent: DriveScreenIntent) {
         viewModelScope.launch(dispatcher) {
             when (intent) {
@@ -143,7 +148,6 @@ class DriveViewModel @Inject constructor(
                 is DriveScreenIntent.CommentFloatingButtonClick -> commentFloatingButtonClick()
                 is DriveScreenIntent.InfoFloatingButtonClick -> infoFloatingButtonClick(intent.content)
                 is DriveScreenIntent.ExportMapFloatingButtonClick -> exportMapFloatingButtonClick()
-                is DriveScreenIntent.ExportMapAppButtonClick -> exportMapAppButtonClick(intent.result)
                 is DriveScreenIntent.FoldFloatingButtonClick -> foldFloatingButtonClick()
 
                 //바텀시트
@@ -158,6 +162,9 @@ class DriveViewModel @Inject constructor(
 
                 //가이드
                 is DriveScreenIntent.GuidePopupClick -> guidePopupClick(intent.step)
+
+                // 외부 기능
+                is DriveScreenIntent.NavOptionSheetClose -> closeNavOptionSheet()
 
                 //디버그
                 is DriveScreenIntent.DebugOverlayClick -> debugOverlayClick()
@@ -186,12 +193,13 @@ class DriveViewModel @Inject constructor(
                 }
             launch {
                 mapContentRepository.courseList.mapLatest { it }.distinctUntilChanged().drop(1)
-                    .collect { items ->
+                    .collectIndexed { idx, items ->
                         _driveScreenState.update {
                             it.updateListItem(items)
                         }
 
-                        driveTutorialUseCase(DriveTutorialStep.MOVE_TO_COURSE, items)
+                        if(idx == 0)
+                            driveTutorialUseCase(DriveTutorialStep.MOVE_TO_COURSE, items)
                     }
             }
             launch {
@@ -199,16 +207,8 @@ class DriveViewModel @Inject constructor(
                     _driveScreenState.update {
                         if (item == null) {
                             it.backToExplorer()
-                        } else {
-                            it.copy(
-                                floatingButtonState = it.floatingButtonState.copy(
-                                    navigation = item.toNavigation()
-                                )
-                            )
-                        }
+                        }else it
                     }
-
-                    driveTutorialUseCase(DriveTutorialStep.FOLD_FLOAT_CLICK)
                 }
             }
             launch {
@@ -309,7 +309,7 @@ class DriveViewModel @Inject constructor(
 
 
         if (!isSkipAd && _driveScreenState.value.searchBarState.adItemGroup.isEmpty()) {
-            loadAdOnSearchBarExpand()
+            loadAd()
         }
 
         driveTutorialUseCase(DriveTutorialStep.SEARCHBAR_CLICK)
@@ -627,9 +627,6 @@ class DriveViewModel @Inject constructor(
         if (checkpoint?.checkPointId.isNullOrEmpty())
             return clearScreen()
 
-        // 가이드
-        driveTutorialUseCase(DriveTutorialStep.COMMENT_FLOAT_CLICK)
-
         // 코멘트 관련 Ui 표시
         _driveScreenState.update {
             it.run {
@@ -647,6 +644,8 @@ class DriveViewModel @Inject constructor(
             }
         }
 
+        // 가이드
+        driveTutorialUseCase(DriveTutorialStep.COMMENT_FLOAT_CLICK)
 
         // 코멘트 가져오기
         withContext(Dispatchers.IO) {
@@ -657,6 +656,7 @@ class DriveViewModel @Inject constructor(
                 it.updateCommentList(comments)
             }
         }
+
     }
 
     private suspend fun infoFloatingButtonClick(content: DriveBottomSheetContent) {
@@ -698,46 +698,16 @@ class DriveViewModel @Inject constructor(
     }
 
     private suspend fun exportMapFloatingButtonClick() {
-        val floatingMode = _driveScreenState.value.floatingButtonState.stateMode
-        if (floatingMode == DriveFloatingVisibleMode.ExportExpand) {
-            _driveScreenState.update {
-                it.copy(
-                    floatingButtonState = it.floatingButtonState.copy(
-                        stateMode = DriveFloatingVisibleMode.Default,
-                        adItemGroup = emptyList()
-                    ),
-                    stateMode = DriveVisibleMode.CourseDetail
-                )
-            }
-        } else {
-            _driveScreenState.update {
-                it.run {
-                    copy(
-                        floatingButtonState = floatingButtonState.copy(
-                            stateMode = DriveFloatingVisibleMode.ExportExpand
-                        ),
-                        stateMode = DriveVisibleMode.BlurCourseDetail
-                    )
-                }
-            }
+        val item = mapContentRepository.selectedCourseState.value?:return
+        _navOptionArg.value = NavOptionArg(item.courseId, item.direction)
 
-            viewModelScope.launch(Dispatchers.IO) {
-                delay(50)
-                loadAdOnExportMapAppFloatExpand()
-            }
-
-            driveTutorialUseCase(DriveTutorialStep.EXPORT_FLOAT_CLICK)
-        }
-    }
-
-    private suspend fun exportMapAppButtonClick(result: Result<Unit>) {
-        result.onFailure {
-            handleError(it)
-        }
+        loadAd()
+        driveTutorialUseCase(DriveTutorialStep.EXPORT_FLOAT_CLICK)
     }
 
     private suspend fun foldFloatingButtonClick() {
         _driveEvent.emit(DriveEvent.Release)
+        driveTutorialUseCase(DriveTutorialStep.FOLD_FLOAT_CLICK)
     }
 
 
@@ -762,7 +732,9 @@ class DriveViewModel @Inject constructor(
         content: DriveBottomSheetContent
     ) {
         when (content) {
-            else -> {}
+            else -> {
+                driveTutorialUseCase(DriveTutorialStep.COMMENT_SHEET_DRAG)
+            }
         }
     }
 
@@ -804,7 +776,7 @@ class DriveViewModel @Inject constructor(
         content: DriveBottomSheetContent,
         driveState: DriveScreenState
     ) {
-
+        println("tst_ handleBottomSheetClosed")
         val isSheetVisible = DriveScreenState.bottomSheetVisible.contains(driveState.stateMode)
         val isCommentContentVisible = driveState.popUpState.commentState.isContentVisible
 
@@ -819,7 +791,7 @@ class DriveViewModel @Inject constructor(
 
         _driveScreenState.update { newClosedState }
 
-        driveTutorialUseCase(DriveTutorialStep.COMMENT_SHEET_DRAG)
+        driveTutorialUseCase(DriveTutorialStep.COMMENT_SHEET_CLOSED)
     }
 
     private suspend fun infoReportClick(reason: ReportReason) =
@@ -934,25 +906,12 @@ class DriveViewModel @Inject constructor(
             }
         }
 
-        _driveScreenState.update { it.toStepState(step) }
+        _driveScreenState.update { it.toNextState(step) }
     }
 
 
     //공통
-    private fun lifecycleChange(event: AppLifecycle) {
-        when (event) {
-
-            AppLifecycle.onResume -> {
-                loadAdWhenVisible()
-            }
-
-            AppLifecycle.onPause -> {
-                clearAd()
-            }
-
-            else -> {}
-        }
-    }
+    private fun lifecycleChange(event: AppLifecycle) {}
 
     private suspend fun eventReceive(result: EventResult) {
         when (result.event) {
@@ -967,6 +926,7 @@ class DriveViewModel @Inject constructor(
     }
 
     private fun blurClick() {
+        if(_driveScreenState.value.guideState.isTutorial()) return
         _driveScreenState.update {
             when (it.stateMode) {
                 DriveVisibleMode.BlurCheckpointBottomSheetExpand -> it.backToCheckPointPopUp()
@@ -982,65 +942,29 @@ class DriveViewModel @Inject constructor(
         }
     }
 
+    // 외부기능
+    private suspend fun closeNavOptionSheet(){
+        _navOptionArg.value = null
+        driveTutorialUseCase(DriveTutorialStep.EXPORT_SHEET_CLOSED)
+    }
 
     //유틸
-    private fun loadAdWhenVisible(){
-        val state = _driveScreenState.value
-        when{
-            state.stateMode == DriveVisibleMode.SearchBarExpand->{
-                loadAdOnSearchBarExpand()
-            }
-            state.floatingButtonState.stateMode == DriveFloatingVisibleMode.ExportExpand ->{
-                loadAdOnExportMapAppFloatExpand()
-            }
-        }
-    }
-
-    private fun loadAdOnSearchBarExpand() {
-        val state = _driveScreenState.value
-        viewModelScope.launch(Dispatchers.IO) {
+    private suspend fun loadAd() {
+        withContext(Dispatchers.IO) {
             nativeAdService.getAd("DRIVE")
-                .onSuccess { newAdItemGroup ->
-                    if (state.stateMode == DriveVisibleMode.SearchBarExpand)
-                        _driveScreenState.update {
-                            it.copy(searchBarState = it.searchBarState.copy(adItemGroup = newAdItemGroup))
-                        }
-                }.onFailure {
-                    handleError(it)
-                }
-        }
-    }
-
-    private fun loadAdOnExportMapAppFloatExpand(){
-        val state = _driveScreenState.value
-        viewModelScope.launch(Dispatchers.IO) {
-            nativeAdService.getAd("DRIVE")
-                .onSuccess { newAdItemGroup ->
-                    if(state.floatingButtonState.stateMode == DriveFloatingVisibleMode.ExportExpand)
-                        _driveScreenState.update {
-                            it.copy(
-                                floatingButtonState = it.floatingButtonState.copy(
-                                    adItemGroup = newAdItemGroup
-                                )
-                            )
-                        }
-                }.onFailure {
-                    handleError(it)
-                }
+        }.onSuccess { newAdItemGroup ->
+            _driveScreenState.update {
+                it.copy(searchBarState = it.searchBarState.copy(adItemGroup = newAdItemGroup))
+            }
+        }.onFailure {
+            handleError(it)
         }
     }
 
     private fun clearAd() {
         _driveScreenState.update {
-            it.searchBarState.adItemGroup.forEach {
-                it.destroy()
-            }
-            it.floatingButtonState.adItemGroup.forEach {
-                it.destroy()
-            }
             it.copy(
-                searchBarState = it.searchBarState.copy(adItemGroup = emptyList()),
-                floatingButtonState = it.floatingButtonState.copy(adItemGroup = emptyList())
+                searchBarState = it.searchBarState.copy(adItemGroup = emptyList())
             )
         }
     }
@@ -1111,6 +1035,7 @@ class DriveViewModel @Inject constructor(
         _driveScreenState.update {
             stateInit
         }
+        _navOptionArg.value = null
     }
 
     // ======================== 디버그

@@ -1,5 +1,6 @@
 package com.wheretogo.presentation.composable.content
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -51,6 +52,9 @@ fun BottomSheet(
     var latestDoneValue by remember { mutableStateOf<SheetValue?>(null) }
     var latestIngValue by remember { mutableStateOf<SheetValue?>(null) }
     var latestVisibleValue by remember { mutableStateOf<SheetVisibleMode?>(null) }
+
+    BackHandler(isOpen) {}
+
     LaunchedEffect(isOpen) {
         if (isOpen) {
             scaffoldState.bottomSheetState.expand()
@@ -135,7 +139,9 @@ fun BottomSheet(
             },
             sheetDragHandle = {
                 DragHandle(
-                    modifier = Modifier.run {
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .run {
                         if (dragHandleColor != null)
                             this.background(dragHandleColor)
                         else
@@ -152,7 +158,7 @@ fun BottomSheet(
 
 @Composable
 fun DragHandle(modifier: Modifier = Modifier) {
-    Box(modifier = modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
         Box(
             modifier = Modifier
                 .padding(top = 15.dp)

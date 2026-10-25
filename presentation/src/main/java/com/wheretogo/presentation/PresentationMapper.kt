@@ -5,7 +5,6 @@ import com.dhkim139.feature.camerapicker.model.VerifiedImageGroup
 import com.dhkim139.feature.providerpicker.model.ProviderPickerItem
 import com.wheretogo.domain.AuthCompany
 import com.wheretogo.domain.MarkerType
-import com.wheretogo.domain.RouteAttr
 import com.wheretogo.domain.SearchType
 import com.wheretogo.domain.model.address.LatLng
 import com.wheretogo.domain.model.address.SimpleAddress
@@ -13,14 +12,10 @@ import com.wheretogo.domain.model.checkpoint.CheckPoint
 import com.wheretogo.domain.model.comment.Comment
 import com.wheretogo.domain.model.comment.CommentContent
 import com.wheretogo.domain.model.course.Course
-import com.wheretogo.domain.model.course.CourseContent
-import com.wheretogo.domain.model.course.CourseRenderItem
-import com.wheretogo.domain.model.course.StartDirection
 import com.wheretogo.domain.model.gallery.GalleryPhoto
 import com.wheretogo.domain.model.map.MarkerInfo
 import com.wheretogo.domain.model.route.Direction
 import com.wheretogo.domain.model.route.RouteCategory
-import com.wheretogo.domain.model.util.Navigation
 import com.wheretogo.presentation.model.LeafInfo
 import com.wheretogo.presentation.model.MiniPhoto
 import com.wheretogo.presentation.model.PickedImage
@@ -28,7 +23,6 @@ import com.wheretogo.presentation.model.PolylineInfo
 import com.wheretogo.presentation.model.SearchBarItem
 import com.wheretogo.presentation.state.CommentState
 import com.wheretogo.presentation.state.CommentState.CommentAddState
-import com.wheretogo.presentation.state.CourseAddScreenState
 import com.naver.maps.geometry.LatLng as NaverLatLng
 
 fun List<LatLng>.toNaver(): List<NaverLatLng> {
@@ -49,15 +43,6 @@ fun SimpleAddress.toSearchBarItem(): SearchBarItem {
         address = address,
         latlng = latlng,
         isCourse = type == SearchType.COURSE
-    )
-}
-
-fun CourseRenderItem.toNavigation(): Navigation {
-    val waypoints = if(direction == StartDirection.FORWARD) fWaypoint else bWaypoint
-    return Navigation(
-        courseName = title,
-        waypoints = waypoints,
-        direction = direction
     )
 }
 

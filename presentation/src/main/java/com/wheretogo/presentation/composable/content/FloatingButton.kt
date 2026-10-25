@@ -1,68 +1,36 @@
 package com.wheretogo.presentation.composable.content
 
-import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DriveEta
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Text
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.dhkim139.core.ui.screen.Transitions
+import com.dhkim139.core.ui.theme.Palette
 import com.wheretogo.domain.DriveTutorialStep
 import com.wheretogo.presentation.DriveFloatHighlight
-import com.wheretogo.presentation.DriveFloatingVisibleMode
-import com.wheretogo.presentation.ExportMap
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.composable.animation.highlightCircle
-import com.dhkim139.core.ui.screen.FontMaxScale
-import com.wheretogo.presentation.feature.callMap
 import com.wheretogo.presentation.state.FloatingButtonState
-import com.dhkim139.core.ui.theme.Palette
-import com.dhkim139.core.ui.theme.hancomSansFontFamily
-import com.wheretogo.domain.model.course.Course
-import com.wheretogo.presentation.toNavigation
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 
 @Composable
@@ -74,30 +42,26 @@ fun FloatingButtons(
     onCommentClick: () -> Unit,
     onInfoClick: () -> Unit,
     onExportMapClick: () -> Unit,
-    onMapAppClick: (Result<Unit>) -> Unit,
     onFoldClick: () -> Unit,
-    onBackPressed: (() -> Unit)? = null
 ) {
-    val scope = rememberCoroutineScope()
     val isCommentVisible = isVisible && FloatingButtonState.commentVisible.contains(state.stateMode)
     val isInfoVisible: Boolean =
         isVisible && FloatingButtonState.infoVisible.contains(state.stateMode)
     val isExportVisible: Boolean =
         isVisible && FloatingButtonState.exportVisible.contains(state.stateMode)
-    val isBackPlateVisible: Boolean =
-        isVisible && FloatingButtonState.backPlateVisible.contains(state.stateMode)
     val isFoldVisible: Boolean =
         isVisible && FloatingButtonState.foldVisible.contains(state.stateMode)
 
-    BackHandler(enabled = onBackPressed != null && isFoldVisible) {
-        onBackPressed?.invoke()
+    val swap = when {
+        isExportVisible -> 1
+        isCommentVisible -> 2
+        else -> 0
     }
 
     Box(
         modifier = modifier,
         contentAlignment = Alignment.BottomEnd
     ) {
-        val context = LocalContext.current
         val buttonEndPadding = 12.dp
 
         ActiveOfFloatBtnArea(
@@ -105,25 +69,37 @@ fun FloatingButtons(
         ) { active ->
             Column(
                 horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.spacedBy(if (isBackPlateVisible) 0.dp else 10.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = buttonEndPadding)
             ) {
-                SlideAnimation(
-                    modifier = Modifier,
-                    visible = isCommentVisible,
-                    direction = AnimationDirection.RightCenter
-                ) {
-                    CircleButton(
-                        modifier = Modifier.padding(end = buttonEndPadding),
-                        icon = R.drawable.ic_message,
-                        isHighLight = state.highlight == DriveFloatHighlight.COMMENT,
-                        isActive = active.comment
-                    ) {
-                        onCommentClick()
+                AnimatedContent(
+                    targetState = swap,
+                    transitionSpec = Transitions.sharedAxisX(),
+                    label = "floatButtonSwap"
+                ) { mode ->
+                    when (mode) {
+                        1 -> CircleButton(
+                            modifier = Modifier.padding(end = buttonEndPadding),
+                            vector = Icons.Default.DriveEta,
+                            isHighLight = state.highlight == DriveFloatHighlight.EXPORT,
+                            isActive = active.export,
+                            onClick = onExportMapClick
+                        )
+
+                        2 -> CircleButton(
+                            modifier = Modifier.padding(end = buttonEndPadding),
+                            icon = R.drawable.ic_message,
+                            isHighLight = state.highlight == DriveFloatHighlight.COMMENT,
+                            isActive = active.comment,
+                            onClick = onCommentClick
+                        )
+
+                        else -> {}
                     }
                 }
+
 
                 SlideAnimation(
                     modifier = Modifier,
@@ -132,7 +108,7 @@ fun FloatingButtons(
                 ) {
                     CircleButton(
                         modifier = Modifier.padding(
-                            top = if (isBackPlateVisible) 10.dp else 0.dp,
+                            top = 0.dp,
                             end = buttonEndPadding
                         ),
                         icon = R.drawable.ic_info,
@@ -140,61 +116,6 @@ fun FloatingButtons(
                         isActive = active.info
                     ) {
                         onInfoClick()
-                    }
-                }
-
-                SlideAnimation(
-                    modifier = Modifier,
-                    visible = isExportVisible,
-                    direction = AnimationDirection.RightCenter
-                ) {
-                    CirclePlateButton(
-                        icon = R.drawable.ic_share,
-                        isHighlight = state.highlight == DriveFloatHighlight.EXPORT,
-                        isActive = active.export,
-                        isBackPlate = isBackPlateVisible,
-                        buttonEndPadding = buttonEndPadding,
-                        onNaverClick = { isLongClick ->
-                            scope.launch {
-                                state.navigation?.let {
-                                    onMapAppClick(
-                                        context.callMap(
-                                            ExportMap.NAVER,
-                                            state.navigation,
-                                            !isLongClick
-                                        )
-                                    )
-                                }
-                            }
-                        },
-                        onKaKaoClick = { isLongClick ->
-                            scope.launch {
-                                state.navigation?.let {
-                                    onMapAppClick(
-                                        context.callMap(
-                                            ExportMap.KAKAO,
-                                            state.navigation,
-                                            !isLongClick
-                                        )
-                                    )
-                                }
-                            }
-                        },
-                        onTClick = { isLongClick ->
-                            scope.launch {
-                                state.navigation?.let {
-                                    onMapAppClick(
-                                        context.callMap(
-                                            ExportMap.SKT,
-                                            state.navigation,
-                                            !isLongClick
-                                        )
-                                    )
-                                }
-                            }
-                        },
-                    ) {
-                        onExportMapClick()
                     }
                 }
 
@@ -225,7 +146,8 @@ fun CircleButton(
     modifier: Modifier = Modifier,
     isHighLight: Boolean = false,
     isActive: Boolean = true,
-    @DrawableRes icon: Int,
+    @DrawableRes icon: Int? = null,
+    vector: ImageVector? = null,
     color: Color = Palette.White100.copy(alpha = 0.85f),
     onClick: () -> Unit
 ) {
@@ -234,253 +156,29 @@ fun CircleButton(
         enabled = isActive,
         modifier = modifier
             .size(60.dp)
-            .highlightCircle(isHighLight)
-        ,
+            .highlightCircle(isHighLight),
         shape = CircleShape,
+        border = BorderStroke(
+            width = 1.dp,
+            color = Color.White.copy(alpha = 0.25f)
+        ),
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
         colors = ButtonDefaults.buttonColors(containerColor = color),
         contentPadding = PaddingValues(0.dp)
     ) {
-        Image(
-            painter = painterResource(id = icon),
-            contentDescription = "Icon Description",
-            modifier = Modifier.size(28.dp)
-        )
-    }
-}
-
-@Composable
-fun CirclePlateButton(
-    modifier: Modifier = Modifier,
-    icon: Int,
-    isHighlight: Boolean = false,
-    isActive: Boolean = true,
-    isBackPlate: Boolean,
-    buttonEndPadding: Dp,
-    onNaverClick: (Boolean) -> Unit,
-    onTClick: (Boolean) -> Unit,
-    onKaKaoClick: (Boolean) -> Unit,
-    onExportClick: () -> Unit,
-) {
-    var targetOffset by remember { mutableStateOf(0.dp) }
-    val circleSize = 60.dp
-    val squareSize = 52.dp
-    val backPlateHeight = 80.dp
-
-    targetOffset = if (isBackPlate) (-13).dp else 0.dp
-
-    var lastClickTime by remember { mutableLongStateOf(0L) }
-    val onIntervalClick: () -> Unit = {
-        val currentTime = System.currentTimeMillis()
-        if (currentTime - lastClickTime >= 300L) {
-            lastClickTime = currentTime
-            onExportClick()
-        }
-    }
-
-    Box(modifier = modifier) {
-        if (isBackPlate) {
-            //백플레이트
-            Backplate(
-                isActive = isActive,
-                backPlateHeight, buttonEndPadding, squareSize, circleSize,
-                onButtonClick = onIntervalClick
+        when {
+            vector != null -> Icon(
+                imageVector = vector,
+                contentDescription = null,
+                tint = Palette.Gray260,
+                modifier = Modifier.size(28.dp)
             )
 
-            Column(modifier = Modifier) {
-                Row( // 사각형
-                    modifier = Modifier
-                        .graphicsLayer(
-                            translationY = with(LocalDensity.current) { (-15).dp.toPx() },
-                            clip = false
-                        )
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .padding(horizontal = 15.dp),
-                        horizontalArrangement = Arrangement.spacedBy(15.dp)
-                    ) {
-                        SquareScaleButton(
-                            modifier = Modifier.size(squareSize),
-                            icon = R.drawable.lg_k,
-                            caption = stringResource(R.string.k_way)
-                        ) {
-                            onKaKaoClick(it)
-                        }
-
-                        SquareScaleButton(
-                            modifier = Modifier.size(squareSize),
-                            icon = R.drawable.lg_n,
-                            caption = stringResource(R.string.n_way)
-                        ) {
-                            onNaverClick(it)
-                        }
-
-                        SquareScaleButton(
-                            modifier = Modifier.size(squareSize),
-                            icon = R.drawable.lg_t,
-                            caption = stringResource(R.string.t_way)
-                        ) {
-                            onTClick(it)
-                        }
-
-                    }
-                    Spacer(modifier = Modifier.size(circleSize))
-                }
-            }
-        } else {
-            CircleButton(
-                modifier = Modifier
-                    .padding(end = buttonEndPadding)
-                    .align(alignment = Alignment.CenterEnd),
-                icon = icon,
-                onClick = onIntervalClick,
-                isHighLight = isHighlight,
-                isActive = isActive
-            )
-        }
-    }
-}
-
-@Composable
-fun InfoText(modifier: Modifier = Modifier, text: String) {
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_info),
-            contentDescription = "Icon Description",
-            modifier = Modifier.size(12.dp),
-            alignment = Alignment.Center
-        )
-        Spacer(modifier = Modifier.width(2.dp))
-        FontMaxScale {
-            Text(
-                text = text,
-                fontSize = 12.sp,
-                color = Color.Gray
-            )
-        }
-    }
-}
-
-@Composable
-fun SquareScaleButton(
-    modifier: Modifier = Modifier,
-    @DrawableRes icon: Int,
-    caption: String,
-    onClick: (Boolean) -> Unit
-) {
-    var pressed by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
-    val scale by animateFloatAsState(
-        targetValue = if (pressed) 1.1f else 1.0f,
-        animationSpec = tween(durationMillis = 500),
-        label = "scaleAnimation"
-    )
-    Column(
-        verticalArrangement = Arrangement.spacedBy(1.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Box(
-            modifier = modifier
-                .scale(scale)
-                .shadow(elevation = 5.dp, shape = RoundedCornerShape(16.dp))
-                .clip(RoundedCornerShape(16.dp))
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onPress = {
-                            pressed = true
-                            scope.launch {
-                                delay(500)
-                                pressed = false
-                            }
-                        },
-                        onTap = {
-                            onClick(false)
-                        },
-                        onLongPress = {
-                            onClick(true)
-                        }
-                    )
-                },
-        ) {
-            Image(
+            icon != null -> Image(
                 painter = painterResource(id = icon),
                 contentDescription = "Icon Description",
-                modifier = Modifier.fillMaxSize()
-            )
-        }
-        FontMaxScale {
-            Text(
-                text = caption,
-                fontFamily = hancomSansFontFamily,
-                fontSize = 10.sp,
-                textAlign = TextAlign.Center
+                modifier = Modifier.size(28.dp)
             )
         }
     }
-}
-
-@Composable
-fun Backplate(
-    isActive: Boolean,
-    backPlateHeight: Dp,
-    buttonEndPadding: Dp,
-    squareSize: Dp,
-    circleSize: Dp,
-    onButtonClick: () -> Unit = {}
-) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(40.dp))
-            .height(backPlateHeight)
-            .background(Palette.White)
-            .padding(end = buttonEndPadding)
-    ) {
-        Row {
-            Row(
-                modifier = Modifier.padding(horizontal = 15.dp),
-                horizontalArrangement = Arrangement.spacedBy(15.dp),
-            ) {
-                Spacer(modifier = Modifier.size(squareSize))
-                Spacer(modifier = Modifier.size(squareSize))
-                Spacer(modifier = Modifier.size(squareSize))
-            }
-            Spacer(modifier = Modifier.size(circleSize))
-        }
-        CircleButton(
-            modifier = Modifier.align(alignment = Alignment.CenterEnd),
-            icon = R.drawable.ic_share,
-            isActive = isActive,
-            onClick = onButtonClick
-        )
-        InfoText(
-            Modifier
-                .padding(start = 30.dp)
-                .align(alignment = Alignment.BottomStart),
-            text = stringResource(R.string.exclude_my_location_on_long_press)
-        )
-    }
-}
-
-@Preview(name = "portrait", widthDp = 400, heightDp = 600)
-@Preview(name = "landscape", widthDp = 700, heightDp = 400)
-@Composable
-fun FloatingLandscapeButtonPreview() {
-    FloatingButtons(
-        modifier = Modifier.background(Palette.Gray100),
-        state = FloatingButtonState(
-            adItemGroup = emptyList(),
-            navigation = Course.dummy.toDirectionItem().toNavigation(),
-            stateMode = DriveFloatingVisibleMode.Default
-        ),
-        guideStep = DriveTutorialStep.SKIP,
-        isVisible = true,
-        onCommentClick = {},
-        onInfoClick = {},
-        onExportMapClick = {},
-        onMapAppClick = {},
-        onFoldClick = {}
-    )
 }

@@ -1,10 +1,10 @@
 package com.wheretogo.presentation.model
 
-import com.wheretogo.domain.model.address.LatLng
+import com.wheretogo.domain.model.util.LatLngLabel
 
 data class CallRoute(
-    val start: LatLng,
-    val mid: List<LatLng>,
-    val goal: LatLng,
+    val start: LatLngLabel,
+    val mid: List<LatLngLabel>,
+    val goal: LatLngLabel,
     val isMyLocaltionStart: Boolean
 )

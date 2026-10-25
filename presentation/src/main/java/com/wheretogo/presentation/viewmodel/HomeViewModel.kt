@@ -22,9 +22,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.withIndex
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -131,10 +133,17 @@ class HomeViewModel @Inject constructor(
     private fun observe() {
         viewModelScope.launch(dispatcher) {
             observeSettingsUseCase()
-                .collect { settings ->
-                    settings.onSuccess { set ->
-                        val step = set.tutorialStep
-                        setTutorialUi(step)
+                .collectIndexed { idx, setting ->
+                    setting.onSuccess { set ->
+                        val cur = set.tutorialStep
+                        if(idx == 0) {
+                            if (cur != DriveTutorialStep.SKIP) {
+                                driveTutorialUseCase.skip()
+                                handler.handle(HomeEvent.GUIDE_STOP)
+                                return@onSuccess
+                            }
+                        }
+                        setTutorialUi(cur)
                     }
                 }
         }
