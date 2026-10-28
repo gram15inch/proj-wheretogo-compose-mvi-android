@@ -82,4 +82,6 @@ object Palette {
     //Route
     val ForwardBlue = Color(0xFF3B82F6)
     val BackwardOrange = Color(0xFFF59E0B)
+
+    val MapAttr = Color(0xFF6B7280)
 }

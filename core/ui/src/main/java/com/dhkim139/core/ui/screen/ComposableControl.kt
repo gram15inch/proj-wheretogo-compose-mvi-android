@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -49,6 +50,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -61,6 +63,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
+import androidx.compose.ui.unit.offset
 import com.dhkim139.core.ui.model.ContentPadding
 import com.dhkim139.core.ui.theme.Palette
 import kotlin.math.max
@@ -315,3 +318,20 @@ fun rememberContentSize(
         )
     }
 }
+
+fun Modifier.expandedClickable(
+    horizontal: Dp,
+    vertical: Dp,
+    role: Role? = null,
+    onClick: () -> Unit,
+): Modifier = this
+    .layout { measurable, constraints ->
+        val h = horizontal.roundToPx()
+        val v = vertical.roundToPx()
+        val placeable = measurable.measure(constraints.offset(h * 2, v * 2))
+        layout(placeable.width - h * 2, placeable.height - v * 2) {
+            placeable.place(-h, -v)
+        }
+    }
+    .clickable(role = role, onClick = onClick)
+    .padding(horizontal = horizontal, vertical = vertical)
