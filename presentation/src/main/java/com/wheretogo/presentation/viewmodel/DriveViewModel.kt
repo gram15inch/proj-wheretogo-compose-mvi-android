@@ -81,12 +81,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectIndexed
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.flow.withIndex
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -120,6 +118,8 @@ class DriveViewModel @Inject constructor(
     private val _navOptionArg = MutableStateFlow<NavOptionArg?>(null)
     val navOptionArg = _navOptionArg.asStateFlow()
 
+    private val _zoom = MutableStateFlow(ZOOM.PROVINCE)
+
     fun handleIntent(intent: DriveScreenIntent) {
         viewModelScope.launch(dispatcher) {
             when (intent) {
@@ -128,6 +128,9 @@ class DriveViewModel @Inject constructor(
                 is DriveScreenIntent.SearchBarClick -> searchBarClick(intent.isSkipAd)
                 is DriveScreenIntent.SearchBarClose -> searchBarClose()
                 is DriveScreenIntent.SearchSubmit -> searchSubmit(intent.submit)
+
+                //조작
+                is DriveScreenIntent.ZoomChange -> zoomChange(intent.level)
 
                 //목록
                 is DriveScreenIntent.DriveListItemClick -> driveListItemClick(intent.item)
@@ -191,17 +194,25 @@ class DriveViewModel @Inject constructor(
                             }
                         }
                 }
-            launch {
-                mapContentRepository.courseList.mapLatest { it }.distinctUntilChanged().drop(1)
-                    .collectIndexed { idx, items ->
-                        _driveScreenState.update {
-                            it.updateListItem(items)
-                        }
 
-                        if(idx == 0)
-                            driveTutorialUseCase(DriveTutorialStep.MOVE_TO_COURSE, items)
+            launch {
+                combine(mapContentRepository.courseList.drop(1), _zoom) { item, zoom ->
+                    if (ZOOM.DISTRICT.areaIn(zoom.level)) {
+                        item
+                    } else {
+                        emptyList()
                     }
+                }.distinctUntilChanged().collect { items ->
+                    _driveScreenState.update {
+                        it.updateListItem(items)
+                    }
+
+                    if(_driveScreenState.value.guideState.isCameraMove()) {
+                        driveTutorialUseCase(DriveTutorialStep.MOVE_TO_COURSE, items)
+                    }
+                }
             }
+
             launch {
                 mapContentRepository.selectedCourseState.drop(1).collect{ item->
                     _driveScreenState.update {
@@ -347,6 +358,10 @@ class DriveViewModel @Inject constructor(
         }
     }
 
+    //조작
+    private fun zoomChange(level: Double) {
+        _zoom.value = ZOOM.getZoomCategory(level)
+    }
 
 
     //목록
@@ -776,7 +791,6 @@ class DriveViewModel @Inject constructor(
         content: DriveBottomSheetContent,
         driveState: DriveScreenState
     ) {
-        println("tst_ handleBottomSheetClosed")
         val isSheetVisible = DriveScreenState.bottomSheetVisible.contains(driveState.stateMode)
         val isCommentContentVisible = driveState.popUpState.commentState.isContentVisible
 

@@ -232,10 +232,10 @@ data class FloatBtnActive(
 )
 
 @Composable
-fun OneHandArea(content: @Composable BoxScope.() -> Unit) {
+fun OneHandArea(modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit) {
     val min = minOf(screenSize(true), 800.dp)
     Box(
-        modifier = Modifier
+        modifier = modifier
             .sizeIn(maxWidth = min)
     ) {
         content()

@@ -59,6 +59,7 @@ import com.wheretogo.presentation.composable.content.FadeAnimation
 import com.wheretogo.presentation.composable.content.FloatingButtons
 import com.wheretogo.presentation.composable.content.GuidePopup
 import com.wheretogo.presentation.composable.content.InfoContent
+import com.wheretogo.presentation.composable.content.MapAttribution
 import com.wheretogo.presentation.composable.content.MapPopup
 import com.wheretogo.presentation.composable.content.NavOptionBottomSheet
 import com.wheretogo.presentation.composable.content.NaverMapSheet
@@ -172,7 +173,10 @@ fun DriveContent(
                         ),
                         onMapAsync = { mapViewModel.handleIntent(MapIntent.MapAsync) },
                         onMarkerClick = { mapViewModel.handleIntent(MapIntent.MarkerClick(it)) },
-                        onCameraUpdate = { mapViewModel.handleIntent(MapIntent.CameraUpdated(it)) },
+                        onCameraUpdate = {
+                            mapViewModel.handleIntent(MapIntent.CameraUpdated(it))
+                            driveViewModel?.handleIntent(DriveScreenIntent.ZoomChange(it.zoom))
+                        },
                     )
 
                     DelayLottieAnimation(
@@ -249,7 +253,7 @@ fun DriveContent(
 
                 GuidePopup(
                     modifier = Modifier
-                        .zIndex(1f)
+                        .zIndex(2f)
                         .run {
                             when (state.guideState.alignment) {
                                 GuideState.Companion.Align.TOP_START -> align(
@@ -270,7 +274,7 @@ fun DriveContent(
                     onClick = { onIntent(DriveScreenIntent.GuidePopupClick(it)) }
                 )
 
-                OneHandArea {
+                OneHandArea(Modifier.zIndex(1f)) {
                     ZIndexOfDriveContentArea(
                         tutorialStep = state.guideState.tutorialStep,
                         visibleMode = state.stateMode
@@ -397,6 +401,14 @@ fun DriveContent(
                             onFoldClick = ::onFoldFloatClick,
                         )
                     }
+                }
+                Box(
+                    Modifier
+                        .zIndex(0f)
+                        .systemBarsPadding()
+                        .padding(horizontal = 2.dp)
+                ){
+                    MapAttribution(Modifier)
                 }
             }
         })

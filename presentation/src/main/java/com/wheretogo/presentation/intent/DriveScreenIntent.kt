@@ -22,6 +22,9 @@ sealed class DriveScreenIntent {
     data object SearchBarClose : DriveScreenIntent()
     data class SearchSubmit(val submit:String) : DriveScreenIntent()
 
+    // 조작
+    data class ZoomChange(val level: Double) : DriveScreenIntent()
+
     //목록
     data class DriveListItemClick(val item: CourseRenderItem) : DriveScreenIntent()
 

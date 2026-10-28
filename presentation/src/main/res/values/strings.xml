@@ -292,5 +292,10 @@
     <string name="recent_card_date_this_year">M월 d일</string>
     <string name="recent_card_date_full">yyyy년 M월 d일</string>
 
+    <!-- 경로 데이터 출처 -->
+    <string name="attribution_geoapify" translatable="false">Powered by Geoapify</string>
+    <string name="attribution_geoapify_url" translatable="false">https://www.geoapify.com/</string>
+    <string name="attribution_osm" translatable="false">© OpenStreetMap</string>
+    <string name="attribution_osm_url" translatable="false">https://www.openstreetmap.org/copyright</string>
 
 </resources>
