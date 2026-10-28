@@ -173,7 +173,10 @@ fun DriveContent(
                         ),
                         onMapAsync = { mapViewModel.handleIntent(MapIntent.MapAsync) },
                         onMarkerClick = { mapViewModel.handleIntent(MapIntent.MarkerClick(it)) },
-                        onCameraUpdate = { mapViewModel.handleIntent(MapIntent.CameraUpdated(it)) },
+                        onCameraUpdate = {
+                            mapViewModel.handleIntent(MapIntent.CameraUpdated(it))
+                            driveViewModel?.handleIntent(DriveScreenIntent.ZoomChange(it.zoom))
+                        },
                     )
 
                     DelayLottieAnimation(

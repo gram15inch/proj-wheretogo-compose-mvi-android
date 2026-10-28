@@ -14,4 +14,6 @@ data class GuideState(
     }
 
     fun isTutorial(): Boolean = tutorialStep != DriveTutorialStep.SKIP
+
+    fun isCameraMove(): Boolean = tutorialStep == DriveTutorialStep.MOVE_TO_COURSE
 }
