@@ -5,10 +5,10 @@ plugins {
     alias(libs.plugins.kotlin.plugin.compose) apply false
     alias(libs.plugins.dagger.hilt.android) apply false
     alias(libs.plugins.devtools.ksp) apply false
-    id("de.mannodermaus.android-junit5") version "1.11.2.0" apply false
-    id("com.google.gms.google-services") version "4.4.2" apply false
-    id("com.google.firebase.crashlytics") version "3.0.2" apply false
-    kotlin("plugin.serialization") version "1.8.0" apply false
+    alias(libs.plugins.android.junit5) apply false
+    alias(libs.plugins.google.services) apply false
+    alias(libs.plugins.firebase.crashlytics) apply false
+    alias(libs.plugins.kotlin.serialization) apply false
 }
 
 val r8 by configurations.creating

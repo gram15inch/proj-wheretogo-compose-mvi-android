@@ -33,6 +33,7 @@ serialization = "1.11.0"
 
 # Firebase
 firebase-bom = "34.17.0"
+firebase-crashlytics = "3.0.2"
 geofire = "3.2.0"
 
 # Test
@@ -46,6 +47,7 @@ espresso = "3.7.0"
 googleid = "1.2.0"
 play-services-location = "21.4.0"
 play-services-ads = "25.4.0"
+google-services = "4.4.2"
 material = "1.14.0"
 
 # Other libs
@@ -76,6 +78,10 @@ android-library     = { id = "com.android.library", version.ref = "agp" }
 kotlin-plugin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 dagger-hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "dagger" }
 devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+android-junit5 = { id = "de.mannodermaus.android-junit5", version.ref = "junit5-android" }
+google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 
 [libraries]
 # Plugin

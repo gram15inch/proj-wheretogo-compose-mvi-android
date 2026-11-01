@@ -1,10 +1,10 @@
 import java.util.Properties
 
 plugins {
-    id("wheretogo.android.library")
-    id("com.google.dagger.hilt.android")
-    id("org.jetbrains.kotlin.plugin.compose")
-    id("com.google.devtools.ksp")
+    alias(libs.plugins.wheretogo.android.library)
+    alias(libs.plugins.dagger.hilt.android)
+    alias(libs.plugins.kotlin.plugin.compose)
+    alias(libs.plugins.devtools.ksp)
 }
 
 android {
