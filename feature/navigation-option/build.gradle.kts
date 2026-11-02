@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.wheretogo.android.library)
     alias(libs.plugins.dagger.hilt.android)
     alias(libs.plugins.kotlin.plugin.compose)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.devtools.ksp)
 }
 
@@ -23,6 +24,7 @@ dependencies {
 
     // Kotlin
     implementation(libs.kotlinx.coroutines.play.services)
+    implementation(libs.kotlinx.serialization.json)
 
     // Compose
     implementation(libs.androidx.compose.ui)
@@ -53,11 +55,8 @@ dependencies {
     ksp(libs.dagger.hilt.compiler)
     ksp(libs.dagger.hilt.android.compiler)
 
-    // Retrofit / Moshi
+    // Retrofit
     implementation(libs.squareup.retrofit)
-    implementation(libs.squareup.retrofit.converter.moshi)
-    implementation(libs.squareup.moshi.kotlin)
-    ksp(libs.squareup.moshi.kotlin.codegen)
 
 
     // Libraries

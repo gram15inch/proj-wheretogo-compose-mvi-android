@@ -1,7 +1,5 @@
 package com.wheretogo.data.di
 
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.wheretogo.data.DataBuildConfig
 import com.wheretogo.data.network.PrivateInterceptor
 import com.wheretogo.data.network.PrivateModuleInterceptor
@@ -10,9 +8,11 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
 import javax.inject.Singleton
@@ -20,19 +20,21 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object RetrofitClientModule {
-
+    val json = Json {
+        ignoreUnknownKeys = true
+        coerceInputValues = true
+    }
+    private val converterFactory = json.asConverterFactory("application/json".toMediaType())
+    
     @Singleton
     @Provides
     @Named("naver")
     fun provideXNaverRetrofit(
-        moshi: Moshi,
-        client: OkHttpClient,
+        @Named("defaultHttp") client: OkHttpClient,
         buildConfig: DataBuildConfig
     ): Retrofit {
         return Retrofit.Builder()
-            .addConverterFactory(
-                MoshiConverterFactory.create(moshi)
-            )
+            .addConverterFactory(converterFactory)
             .client(client)
             .baseUrl(buildConfig.naverOpenApiUrl)
             .build()
@@ -41,28 +43,12 @@ object RetrofitClientModule {
     @Singleton
     @Provides
     @Named("privateRetrofit")
-    fun providePrivateFirebaseApiRetrofit(
-        moshi: Moshi,
+    fun providePrivateKotlinxFirebaseApiRetrofit(
         @Named("privateHttp") client: OkHttpClient,
         buildConfig: DataBuildConfig
     ): Retrofit {
         return Retrofit.Builder()
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
-            .client(client)
-            .baseUrl(buildConfig.firebaseCloudApiUrl)
-            .build()
-    }
-
-    @Singleton
-    @Provides
-    @Named("privateModuleRetrofit")
-    fun providePrivateModuleFirebaseApiRetrofit(
-        moshi: Moshi,
-        @Named("privateModuleHttp") client: OkHttpClient,
-        buildConfig: DataBuildConfig
-    ): Retrofit {
-        return Retrofit.Builder()
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .addConverterFactory(converterFactory)
             .client(client)
             .baseUrl(buildConfig.firebaseCloudApiUrl)
             .build()
@@ -71,13 +57,12 @@ object RetrofitClientModule {
     @Singleton
     @Provides
     @Named("publicRetrofit")
-    fun providePublicFirebaseApiRetrofit(
-        moshi: Moshi,
+    fun providePublicKotlinxFirebaseApiRetrofit(
         @Named("publicHttp") client: OkHttpClient,
         buildConfig: DataBuildConfig
     ): Retrofit {
         return Retrofit.Builder()
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .addConverterFactory(converterFactory)
             .client(client)
             .baseUrl(buildConfig.firebaseCloudApiUrl)
             .build()
@@ -85,18 +70,32 @@ object RetrofitClientModule {
 
     @Singleton
     @Provides
-    fun provideDefaultRetrofit(
-        moshi: Moshi,
-        client: OkHttpClient,
+    @Named("appRetrofit")
+    fun provideAppRetrofit(
+        @Named("defaultHttp") client: OkHttpClient,
         buildConfig: DataBuildConfig
     ): Retrofit {
         return Retrofit.Builder()
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .addConverterFactory(converterFactory)
             .client(client)
             .baseUrl(buildConfig.firebaseCloudApiUrl)
             .build()
     }
 
+    // 모듈용
+    @Singleton
+    @Provides
+    @Named("privateModuleRetrofit")
+    fun providePrivateModuleFirebaseApiRetrofit(
+        @Named("privateModuleHttp") client: OkHttpClient,
+        buildConfig: DataBuildConfig
+    ): Retrofit {
+        return Retrofit.Builder()
+            .addConverterFactory(converterFactory)
+            .client(client)
+            .baseUrl(buildConfig.firebaseCloudApiUrl)
+            .build()
+    }
 
     // 레트로핏 유틸
 
@@ -143,20 +142,13 @@ object RetrofitClientModule {
 
     @Singleton
     @Provides
+    @Named("defaultHttp")
     fun provideHttpClient(): OkHttpClient {
         return OkHttpClient.Builder()
             .connectTimeout(5, TimeUnit.SECONDS)
             .readTimeout(10, TimeUnit.SECONDS)
             .writeTimeout(10, TimeUnit.SECONDS)
             .callTimeout(30, TimeUnit.SECONDS)
-            .build()
-    }
-
-    @Singleton
-    @Provides
-    fun provideMoshi(): Moshi {
-        return Moshi.Builder()
-            .add(KotlinJsonAdapterFactory())
             .build()
     }
 }

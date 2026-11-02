@@ -1,7 +1,9 @@
 package com.wheretogo.data.model.comment
 
 import com.wheretogo.data.DATA_NULL
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class CommentCreateContent(
     val commentId: String = DATA_NULL,
     val commentGroupId: String = DATA_NULL,

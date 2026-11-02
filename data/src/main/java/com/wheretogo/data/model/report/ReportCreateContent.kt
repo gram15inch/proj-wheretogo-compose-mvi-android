@@ -1,5 +1,8 @@
 package com.wheretogo.data.model.report
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class ReportCreateContent(
     val contentId: String = "",
     val contentGroupId: String = "",

@@ -5,10 +5,8 @@ import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.Types
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import java.lang.reflect.Type
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 
 @Entity(
     tableName = "courses",
@@ -35,6 +33,7 @@ data class CourseEntity(
     val createAt: Long,
 )
 
+@Serializable
 data class LatLngColumns(val lat: Double, val lng: Double)
 
 data class BoundsColumns(
@@ -59,13 +58,10 @@ data class SyncStateEntity(
 }
 
 class CourseConverters {
-    private val moshi: Moshi = Moshi.Builder()
-        .add(KotlinJsonAdapterFactory())
-        .build()
-
-    private val latLngListType: Type =
-        Types.newParameterizedType(List::class.java, LatLngColumns::class.java)
-    private val latLngGroupAdapter = moshi.adapter<List<LatLngColumns>>(latLngListType)
+    private val json = Json {
+        ignoreUnknownKeys = true
+        coerceInputValues = true
+    }
 
     @TypeConverter
     fun fromTags(tags: List<String>): String = tags.joinToString(SEP)
@@ -75,12 +71,12 @@ class CourseConverters {
 
     @TypeConverter
     fun fromLatLngList(latLngList: List<LatLngColumns>?): String? {
-        return latLngList?.let { latLngGroupAdapter.toJson(it) }
+        return latLngList?.let { json.encodeToString<List<LatLngColumns>>(latLngList) }
     }
 
     @TypeConverter
     fun toLatLngList(jsonString: String?): List<LatLngColumns>? {
-        return jsonString?.let { latLngGroupAdapter.fromJson(it) }
+        return jsonString?.let { json.decodeFromString<List<LatLngColumns>>(jsonString) }
     }
 
     private companion object {

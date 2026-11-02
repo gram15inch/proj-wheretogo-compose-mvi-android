@@ -1,8 +1,8 @@
 package com.wheretogo.data.model.content
 
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class ContentLikeRequest(
     val groupId: String = "",
     val contentId: String,

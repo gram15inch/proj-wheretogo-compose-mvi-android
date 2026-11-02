@@ -51,8 +51,7 @@ dependencies {
 
     // Retrofit / Moshi
     implementation(libs.squareup.retrofit)
-    implementation(libs.squareup.retrofit.converter.moshi)
-    implementation(libs.squareup.moshi.kotlin)
+    implementation(libs.squareup.retrofit.converter.kotlinx.serialization)
 
     // Firebase (BOM)
     implementation(platform(libs.firebase.bom))

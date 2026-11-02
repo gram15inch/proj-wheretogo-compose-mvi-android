@@ -1,7 +1,9 @@
 package com.wheretogo.data.model.checkpoint
 
 import com.wheretogo.data.model.map.DataLatLng
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class RemoteCheckPoint(
     val id: String = "",
     val courseId: String = "",

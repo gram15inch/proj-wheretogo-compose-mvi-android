@@ -1,6 +1,9 @@
 package com.wheretogo.data.model.user
 
+import kotlinx.serialization.Serializable
 
+
+@Serializable
 data class RemoteProfilePrivate(
     val mail: String = "",
     val authCompany: String = "",

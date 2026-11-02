@@ -1,6 +1,8 @@
 package com.wheretogo.data.model.course
 
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class CourseSyncResponseDto(
     val courses: List<CourseDto>? = null,
     val cursor: Long? = null, //  다음 문서 시간(더이상 가져올 문서가 없을경우 마지막 문서를 반환)
@@ -8,6 +10,7 @@ data class CourseSyncResponseDto(
     val resync: Boolean? = null, // 서버 정책으로 마지막 커서가 오래됐다고 판단하면 on
 )
 
+@Serializable
 data class CourseDto(
     val id: String? = null,
     val uid: String? = null,
@@ -29,22 +32,26 @@ data class CourseDto(
     val createdAt: Long? = null,
 )
 
+@Serializable
 data class PointsDto(
     val forward: DirectionPointsDto? = null,
     val backward: DirectionPointsDto? = null,
 )
 
+@Serializable
 data class DirectionPointsDto(
     val start: LatLngDto? = null,
     val via: LatLngDto? = null,
     val goal: LatLngDto? = null,
 )
 
+@Serializable
 data class LatLngDto(
     val lat: Double? = null,
     val lng: Double? = null,
 )
 
+@Serializable
 data class BoundsDto(
     val swLat: Double? = null,
     val swLng: Double? = null,
@@ -52,16 +59,19 @@ data class BoundsDto(
     val neLng: Double? = null,
 )
 
+@Serializable
 data class DistanceDto(
     val forward: Int? = null,
     val backward: Int? = null,
 )
 
+@Serializable
 data class DurationDto(
     val forward: Long? = null,
     val backward: Long? = null,
 )
 
+@Serializable
 data class CourseEditRequestDto(
     val title: String? = null,
     val hide: Boolean? = null,
@@ -69,6 +79,7 @@ data class CourseEditRequestDto(
     val isEmpty: Boolean get() = title == null && hide == null
 }
 
+@Serializable
 data class Page(
     val upserts: List<CourseDto>,
     val deletedIds: List<String>,

@@ -8,12 +8,11 @@ import androidx.room.Transaction
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import androidx.room.Upsert
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.wheretogo.data.model.checkpoint.CheckPointCluster
 import com.wheretogo.data.model.checkpoint.CheckPointGroupMeta
 import com.wheretogo.data.model.checkpoint.LocalCheckPoint
 import com.wheretogo.data.model.map.DataLatLng
+import kotlinx.serialization.json.Json
 
 
 @TypeConverters(CheckPointJsonConverters::class)
@@ -65,21 +64,19 @@ interface CheckPointDao {
 }
 
 class CheckPointJsonConverters {
-
-    private val moshi: Moshi = Moshi.Builder()
-        .add(KotlinJsonAdapterFactory())
-        .build()
-
-    private val latLngAdapter = moshi.adapter(DataLatLng::class.java)
+    private val json = Json {
+        ignoreUnknownKeys = true
+        coerceInputValues = true
+    }
 
     @TypeConverter
     fun toLatLng(jsonString: String?): DataLatLng? {
-        return jsonString?.let { latLngAdapter.fromJson(it) }
+        return jsonString?.let { json.decodeFromString(jsonString) }
     }
 
     @TypeConverter
     fun fromLatLng(course: DataLatLng?): String? {
-        return course?.let { latLngAdapter.toJson(course) }
+        return course?.let { json.encodeToString(course) }
     }
 
 }

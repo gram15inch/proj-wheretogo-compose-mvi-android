@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.kotlin.plugin.compose)
     alias(libs.plugins.google.services)
     alias(libs.plugins.dagger.hilt.android)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.devtools.ksp)
 }
 
@@ -83,6 +84,9 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.messaging)
 
+    // Kotlin
+    implementation(libs.kotlinx.serialization.json)
+
     // AndroidX
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -100,10 +104,8 @@ dependencies {
     implementation(libs.dagger.hilt.android)
     ksp(libs.dagger.hilt.compiler)
 
-    // Retrofit / Moshi
+    // Retrofit
     implementation(libs.squareup.retrofit)
-    implementation(libs.squareup.retrofit.converter.moshi)
-    implementation(libs.squareup.moshi.kotlin)
 
     // Google
     implementation(libs.google.identity.googleid)
