@@ -1,7 +1,9 @@
 package com.wheretogo.data.model.auth
 
 import com.wheretogo.data.DataAuthCompany
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class DataSyncToken(
     val authCompany: DataAuthCompany = DataAuthCompany.PROFILE,
     val idToken: String = "",

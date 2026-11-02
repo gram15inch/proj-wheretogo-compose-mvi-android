@@ -1,8 +1,8 @@
 package com.dhkim139.admin.wheretogo.feature.report.model
 
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class ReportActionRequest(
     val reportId: String,
     val actions: List<String>,

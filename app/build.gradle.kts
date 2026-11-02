@@ -2,13 +2,13 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 import java.util.Properties
 
 plugins {
-    id("wheretogo.android.application")
-    id("org.jetbrains.kotlin.plugin.compose")
-    id("com.google.gms.google-services")
-    id("com.google.firebase.crashlytics")
-    id("com.google.dagger.hilt.android")
-    id("com.google.devtools.ksp")
-    id("de.mannodermaus.android-junit5")
+    alias(libs.plugins.wheretogo.android.application)
+    alias(libs.plugins.kotlin.plugin.compose)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
+    alias(libs.plugins.dagger.hilt.android)
+    alias(libs.plugins.devtools.ksp)
+    alias(libs.plugins.android.junit5)
 }
 
 android {

@@ -1,6 +1,8 @@
 package com.wheretogo.data.model.route
 
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class RoutePathResponseDto(
     val format: String? = null,
     val forward: String? = null,

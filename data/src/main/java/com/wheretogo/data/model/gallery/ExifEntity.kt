@@ -1,5 +1,8 @@
 package com.wheretogo.data.model.gallery
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class ExifEntity(
     val latitude: Double? = null,
     val longitude: Double? = null,

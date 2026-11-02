@@ -1,5 +1,8 @@
 package com.wheretogo.data.model.naver
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Region(
     val area0: Area0,
     val area1: Area1,

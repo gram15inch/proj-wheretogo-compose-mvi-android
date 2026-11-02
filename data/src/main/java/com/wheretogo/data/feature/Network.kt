@@ -1,11 +1,9 @@
 package com.wheretogo.data.feature
 
-import com.squareup.moshi.JsonAdapter
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.wheretogo.data.model.firebase.DataResponse
 import com.wheretogo.data.model.firebase.MessageResponse
 import com.wheretogo.data.toDataError
+import kotlinx.serialization.json.Json
 import okhttp3.ResponseBody
 import retrofit2.Response
 
@@ -19,12 +17,12 @@ fun Response<*>.safeErrorBody(): MessageResponse? {
 
 private fun parseMessageBody(responseBody: ResponseBody?): MessageResponse? {
     return try {
-        val moshi = Moshi.Builder()
-            .add(KotlinJsonAdapterFactory())
-            .build()
-        val adapter: JsonAdapter<MessageResponse> = moshi.adapter(MessageResponse::class.java)
+        val json = Json {
+            ignoreUnknownKeys = true
+            coerceInputValues = true
+        }
         val errorJson = responseBody?.string()
-        val response = errorJson?.let { adapter.fromJson(it) }
+        val response = errorJson?.let { json.decodeFromString<MessageResponse>(it) }
         return response
     } catch (e: Exception) {
         null

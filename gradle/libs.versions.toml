@@ -28,11 +28,11 @@ dagger = "2.60.1"
 
 # Network / Serialization
 retrofit = "3.0.0"
-moshi = "1.15.2"
-serialization = "1.11.0"
+serialization = "1.12.0"
 
 # Firebase
 firebase-bom = "34.17.0"
+firebase-crashlytics = "3.0.2"
 geofire = "3.2.0"
 
 # Test
@@ -46,6 +46,7 @@ espresso = "3.7.0"
 googleid = "1.2.0"
 play-services-location = "21.4.0"
 play-services-ads = "25.4.0"
+google-services = "4.4.2"
 material = "1.14.0"
 
 # Other libs
@@ -76,6 +77,10 @@ android-library     = { id = "com.android.library", version.ref = "agp" }
 kotlin-plugin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 dagger-hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "dagger" }
 devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+android-junit5 = { id = "de.mannodermaus.android-junit5", version.ref = "junit5-android" }
+google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 
 [libraries]
 # Plugin
@@ -151,12 +156,9 @@ dagger-hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref
 dagger-hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "dagger" }
 dagger-hilt-android-testing = { module = "com.google.dagger:hilt-android-testing", version.ref = "dagger" }
 
-# Retrofit / Moshi
+# Retrofit
 squareup-retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
-squareup-retrofit-converter-moshi = { module = "com.squareup.retrofit2:converter-moshi", version.ref = "retrofit" }
-squareup-moshi-kotlin = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshi" }
-squareup-moshi-kotlin-codegen = { module = "com.squareup.moshi:moshi-kotlin-codegen", version.ref = "moshi" }
-moshi-adapters = { module = "com.squareup.moshi:moshi-adapters", version.ref = "moshi" }
+squareup-retrofit-converter-kotlinx-serialization = { module = "com.squareup.retrofit2:converter-kotlinx-serialization", version.ref = "retrofit" }
 
 # Firebase (BOM)
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
@@ -217,4 +219,3 @@ play-services-location = { group = "com.google.android.gms", name = "play-servic
 [bundles]
 androidx-lifecycle = ["androidx-lifecycle-runtime-ktx", "androidx-lifecycle-viewmodel-compose"]
 room = ["androidx-room-runtime", "androidx-room-ktx"]
-retrofit-moshi = ["squareup-retrofit", "squareup-retrofit-converter-moshi", "squareup-moshi-kotlin"]

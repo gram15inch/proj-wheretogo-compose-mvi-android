@@ -1,5 +1,8 @@
 package com.wheretogo.data.model.gallery
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class ImageMetaResponse(
     val imageId: String = "",
     val userId: String = "",

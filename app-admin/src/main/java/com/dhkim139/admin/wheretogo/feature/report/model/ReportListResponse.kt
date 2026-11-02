@@ -1,8 +1,8 @@
 package com.dhkim139.admin.wheretogo.feature.report.model
 
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class ReportListResponse(
     val reports: List<ReportDto>,
     val total: Int,

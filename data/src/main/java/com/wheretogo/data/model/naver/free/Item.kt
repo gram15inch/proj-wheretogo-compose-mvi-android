@@ -1,5 +1,8 @@
 package com.wheretogo.data.model.naver.free
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Item(
     val address: String,
     val category: String,

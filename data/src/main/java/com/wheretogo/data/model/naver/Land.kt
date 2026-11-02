@@ -1,5 +1,8 @@
 package com.wheretogo.data.model.naver
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Land(
     val addition0: Addition0,
     val addition1: Addition0,

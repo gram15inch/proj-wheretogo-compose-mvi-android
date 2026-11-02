@@ -1,5 +1,8 @@
 package com.wheretogo.data.model.gallery
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class ImageMetaCreateContent(
     val imageId: String,
     val exif: ExifEntity,

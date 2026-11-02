@@ -1,8 +1,8 @@
 package com.dhkim139.feature.navigationoption.data
 
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class CourseParkingOneWayDto(
     val courseId: String,
     val route: CourseRoute = CourseRoute.FORWARD,
@@ -12,14 +12,14 @@ data class CourseParkingOneWayDto(
     val goal: CourseParkingGroup = CourseParkingGroup(),
 )
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class CourseParkingGroup(
     val role: ParkingGroupRole = ParkingGroupRole.START,
     val point: LatLng? = null,
     val lots: List<ParkingOneWayEntry> = emptyList(),
 )
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class ParkingOneWayEntry(
     val lotId: String,
     val name: String,
@@ -45,12 +45,13 @@ data class ParkingOneWayEntry(
         get() = tags.filter { it != ParkingTag.UNKNOWN }
 }
 
+@Serializable
 enum class ParkingGroupRole {
     START,
     GOAL,
 }
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class CourseParkingView(
     val courseId: String,
     val route: CourseRoute = CourseRoute.FORWARD,
@@ -61,7 +62,7 @@ data class CourseParkingView(
     val lots: List<ParkingViewEntry> = emptyList(),
 )
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class ParkingViewEntry(
     val lotId: String,
     val name: String,
@@ -97,17 +98,19 @@ data class ParkingViewEntry(
         }
 }
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class LatLng(
     val lat: Double,
     val lng: Double,
 )
 
+@Serializable
 enum class CourseRoute {
     FORWARD,
     BACKWARD,
 }
 
+@Serializable
 enum class CourseParkingStatus {
     PENDING,
     READY,
@@ -115,6 +118,7 @@ enum class CourseParkingStatus {
     FAILED,
 }
 
+@Serializable
 enum class ParkingCategory {
     ON_STREET,
     OFF_STREET,
@@ -126,12 +130,14 @@ enum class ParkingCategory {
     ETC,
 }
 
+@Serializable
 enum class ParkingUsage {
     PARKING,
     STOPOVER,
     BOTH,
 }
 
+@Serializable
 enum class CapacityLevel {
     FEW, // 1~3대
     SOME, // 4~10대
@@ -139,6 +145,7 @@ enum class CapacityLevel {
     UNKNOWN,
 }
 
+@Serializable
 enum class ParkingTag {
     FREE,
     NIGHT_OK,

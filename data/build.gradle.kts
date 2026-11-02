@@ -1,8 +1,8 @@
 plugins {
-    id("wheretogo.android.library")
-    id("com.google.dagger.hilt.android")
-    kotlin("plugin.serialization")
-    id("com.google.devtools.ksp")
+    alias(libs.plugins.wheretogo.android.library)
+    alias(libs.plugins.dagger.hilt.android)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.devtools.ksp)
 }
 
 android {
@@ -51,8 +51,7 @@ dependencies {
 
     // Retrofit / Moshi
     implementation(libs.squareup.retrofit)
-    implementation(libs.squareup.retrofit.converter.moshi)
-    implementation(libs.squareup.moshi.kotlin)
+    implementation(libs.squareup.retrofit.converter.kotlinx.serialization)
 
     // Firebase (BOM)
     implementation(platform(libs.firebase.bom))
