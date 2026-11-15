@@ -42,7 +42,7 @@ data class ParkingOneWayEntry(
     val thumbnailUrl: String? = null,
 ) {
     val knownTags: List<ParkingTag>
-        get() = tags.filter { it != ParkingTag.UNKNOWN }
+        get() = tags.filter { it != ParkingTag.UNKNOWN }.sortedBy { it.ordinal }
 }
 
 @Serializable
@@ -139,14 +139,14 @@ enum class CapacityLevel {
 @Serializable(with = ParkingTagSerializer::class)
 enum class ParkingTag {
     FREE,
+    NEEDS_PERMISSION,
+    CROWDED,
     NIGHT_OK,
     RESTROOM,
     SCENIC,
     EV_CHARGER,
     LARGE_VEHICLE,
-    CROWDED,
     SEASONAL,
-    NEEDS_PERMISSION,
     ACCESSIBLE,
     UNKNOWN,
 }
