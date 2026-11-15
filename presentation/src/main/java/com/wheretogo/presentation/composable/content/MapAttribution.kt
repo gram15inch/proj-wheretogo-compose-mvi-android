@@ -43,8 +43,8 @@ internal fun MapAttribution(modifier: Modifier = Modifier) {
 private fun AttributionLink(text: String, onClick: () -> Unit) {
     AttributionText(text,
         Modifier.expandedClickable(
-            horizontal = 6.dp,
-            vertical = 10.dp,
+            horizontal = 4.dp,
+            vertical = 4.dp,
             role = Role.Button,
             onClick = onClick,
         ),
