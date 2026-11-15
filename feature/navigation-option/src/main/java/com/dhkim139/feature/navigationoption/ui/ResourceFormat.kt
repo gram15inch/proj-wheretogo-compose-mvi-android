@@ -31,9 +31,7 @@ internal fun linkLabel(sec: Int, isEstimated: Boolean = false): String {
 internal fun candidateMeta(candidate: ParkingCandidate): String {
     val separator = stringResource(R.string.separator)
     val lot = candidate.lot
-
     return buildList {
-        add(linkLabel(candidate.linkSec, candidate.isEstimated))
         lot.feeNote?.let(::add)
         lot.tags.forEach { add(stringResource(it.labelRes)) }
         lot.capacity?.let { add(stringResource(it.labelRes)) }

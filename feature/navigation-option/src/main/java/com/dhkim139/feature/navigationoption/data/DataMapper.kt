@@ -26,7 +26,7 @@ internal fun CourseParkingOneWayDto.toDomain(): CourseParking {
     )
 }
 
-private fun ParkingOneWayEntry.toDomain(): ParkingCandidate? {
+private fun ParkingOneWayEntry.toDomain(): ParkingCandidate {
     return ParkingCandidate(
         lot = ParkingLot(
             id = lotId,
@@ -35,7 +35,7 @@ private fun ParkingOneWayEntry.toDomain(): ParkingCandidate? {
                 location.lat,
                 location.lng
             ),
-            feeNote = feeNote,
+            feeNote = feeNote.let { if(it=="무료") null else it },
             tags = knownTags.mapNotNull { it.toDomain() },
             capacity = capacityLevel.toDomain(),
         ),
