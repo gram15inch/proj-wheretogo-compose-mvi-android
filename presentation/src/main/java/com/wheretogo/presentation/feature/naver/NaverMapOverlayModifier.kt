@@ -29,6 +29,7 @@ import com.wheretogo.domain.model.route.Direction
 import com.wheretogo.presentation.CHECKPOINT_ADD_MARKER
 import com.wheretogo.presentation.MarkerZIndex
 import com.wheretogo.presentation.OverlayType
+import com.wheretogo.presentation.PARKING_MARKER
 import com.wheretogo.presentation.R
 import com.wheretogo.presentation.minZoomLevel
 import com.wheretogo.presentation.model.AppLeaf
@@ -181,6 +182,8 @@ class NaverMapOverlayModifier @Inject constructor(
             markerInfo.position?.let { position = it.toNaver() }
             markerInfo.caption?.let { captionText = it }
             tag = false // 스케일 확대 여부
+            isHideCollidedMarkers = true
+
             when {
                 //마커가 사진
                 markerInfo.iconPath != null -> {
@@ -188,7 +191,6 @@ class NaverMapOverlayModifier @Inject constructor(
                         val overlayImage =
                             createOverlayImage(it, dpPair.first, dpPair.second)
                         icon = overlayImage
-
                         zIndex = MarkerZIndex.PHOTO.ordinal
                     }
                 }
@@ -209,15 +211,15 @@ class NaverMapOverlayModifier @Inject constructor(
                 }
             }
 
-            if (markerInfo.contentId == CHECKPOINT_ADD_MARKER) {
-                zIndex = MarkerZIndex.ADD.ordinal
+            when(markerInfo.contentId){
+                CHECKPOINT_ADD_MARKER,
+                PARKING_MARKER->{
+                    zIndex = MarkerZIndex.ADD.ordinal
+                }
             }
 
             captionOffset = 20
             captionTextSize = 16f
-            if(markerInfo.type != MarkerType.DEFAULT){
-                isHideCollidedMarkers = true
-            }
             setCaptionAligns(Align.Top, Align.Right)
             minZoom = when (markerInfo.type) {
                 MarkerType.COURSE -> {

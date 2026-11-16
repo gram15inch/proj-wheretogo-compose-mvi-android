@@ -42,7 +42,7 @@ data class ParkingOneWayEntry(
     val thumbnailUrl: String? = null,
 ) {
     val knownTags: List<ParkingTag>
-        get() = tags.filter { it != ParkingTag.UNKNOWN }
+        get() = tags.filter { it != ParkingTag.UNKNOWN }.sortedBy { it.ordinal }
 }
 
 @Serializable
@@ -87,15 +87,6 @@ data class ParkingViewEntry(
     val adminNote: String? = null,
     val thumbnailUrl: String? = null,
 ) {
-    val knownTags: List<ParkingTag>
-        get() = tags.filter { it != ParkingTag.UNKNOWN }
-
-    val outInRatio: Float?
-        get() {
-            val out = outSec ?: return null
-            if (inSec <= 0) return null
-            return out.toFloat() / inSec.toFloat()
-        }
 }
 
 @Serializable
@@ -118,7 +109,7 @@ enum class CourseParkingStatus {
     FAILED,
 }
 
-@Serializable
+@Serializable(with = ParkingCategorySerializer::class)
 enum class ParkingCategory {
     ON_STREET,
     OFF_STREET,
@@ -137,7 +128,7 @@ enum class ParkingUsage {
     BOTH,
 }
 
-@Serializable
+@Serializable(with = CapacityLevelSerializer::class)
 enum class CapacityLevel {
     FEW, // 1~3대
     SOME, // 4~10대
@@ -145,17 +136,17 @@ enum class CapacityLevel {
     UNKNOWN,
 }
 
-@Serializable
+@Serializable(with = ParkingTagSerializer::class)
 enum class ParkingTag {
     FREE,
+    NEEDS_PERMISSION,
+    CROWDED,
     NIGHT_OK,
     RESTROOM,
     SCENIC,
     EV_CHARGER,
     LARGE_VEHICLE,
-    CROWDED,
     SEASONAL,
-    NEEDS_PERMISSION,
     ACCESSIBLE,
     UNKNOWN,
 }
