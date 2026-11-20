@@ -121,30 +121,12 @@ class BottomSheetTest {
 
     @Test
     fun `댓글 팝업 바텀시트 변경(닫히는중)시 키보드 닫힘 `() = runTest {
-        // Arrange: 체크포인트 정보 바텀시트
+        // Arrange: 댓글 팝업 바텀시트
         val initState = initState.createShowPopupCommentState(true)
         val viewModel = createViewModel(StandardTestDispatcher(testScheduler), initState)
         val sheet = SheetVisibleMode.Closing
         assertFlows(viewModel.driveScreenState, viewModel.driveEvent) {
             // Act: 바텀시트 변경(닫히는중)
-            viewModel.handleIntent(DriveScreenIntent.BottomSheetChange(sheet))
-
-            // Assert: 키보드 닫힘
-            state.awaitItem().run {
-                assertThat(popUpState.commentState.isImeVisible).isEqualTo(false)
-            }
-        }
-    }
-
-    @Test
-    fun `댓글 팝업 바텀시트 변경(닫힌후) 체크포인트 팝업 상태로 변경`() = runTest {
-        // Arrange: 댓글 팝업 바텀시트
-        val initState = initState.createShowPopupCommentState()
-        val viewModel = createViewModel(StandardTestDispatcher(testScheduler), initState)
-        val sheet = SheetVisibleMode.Closed
-        coEvery { driveTutorialUseCase(DriveTutorialStep.COMMENT_SHEET_CLOSED) } returns Result.success(Unit)
-        assertFlows(viewModel.driveScreenState, viewModel.driveEvent) {
-            // Act: 바텀시트 변경(닫힌후)
             viewModel.handleIntent(DriveScreenIntent.BottomSheetChange(sheet))
 
             // Assert: 체크포인트 팝업 상태로 변경

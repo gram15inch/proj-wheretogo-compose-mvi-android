@@ -13,13 +13,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetValue
+import androidx.compose.material3.SheetValue.Expanded
+import androidx.compose.material3.SheetValue.PartiallyExpanded
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,6 +35,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.dhkim139.core.ui.theme.Palette
 import com.wheretogo.presentation.SheetVisibleMode
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,58 +57,43 @@ fun BottomSheet(
     var latestDp by remember { mutableStateOf(0.dp) }
     val scaffoldState = rememberBottomSheetScaffoldState()
     val sheetState = scaffoldState.bottomSheetState
-    var latestDoneValue by remember { mutableStateOf<SheetValue?>(null) }
-    var latestIngValue by remember { mutableStateOf<SheetValue?>(null) }
-    var latestVisibleValue by remember { mutableStateOf<SheetVisibleMode?>(null) }
-
     BackHandler(isOpen) {}
 
+    val onStateChange by rememberUpdatedState(onSheetStateChange)
+    var latestVisibleValue by remember { mutableStateOf<SheetVisibleMode?>(null) }
+
     LaunchedEffect(isOpen) {
-        if (isOpen) {
-            scaffoldState.bottomSheetState.expand()
-        }else if (latestVisibleValue == SheetVisibleMode.Opened)
-            scaffoldState.bottomSheetState.partialExpand()
+        if (isOpen) sheetState.expand() else sheetState.partialExpand()
     }
 
-    LaunchedEffect(sheetState.targetValue) {
-        if (latestIngValue == sheetState.targetValue) return@LaunchedEffect
-        when (sheetState.targetValue) {
-            SheetValue.Expanded -> {
-                if(latestVisibleValue == SheetVisibleMode.Closing) {
-                    return@LaunchedEffect scaffoldState.bottomSheetState.partialExpand()
+    val scope = rememberCoroutineScope()
+    var skipOpening by remember { mutableStateOf(false) }
+
+    LaunchedEffect(sheetState) {
+        snapshotFlow { sheetState.targetValue to sheetState.currentValue }
+            .distinctUntilChanged()
+            .drop(1)
+            .collect { (target, current) ->
+                val mode = toVisibleMode(target, current) ?: return@collect
+
+                when (mode) {
+                    SheetVisibleMode.Closing -> {
+                        // 닫기도중 열기 방지
+                        if (!skipOpening) {
+                            skipOpening = true
+                            scope.launch { sheetState.partialExpand() }
+                        }
+                    }
+                    SheetVisibleMode.Closed -> skipOpening = false
+                    else -> {}
                 }
-                onSheetStateChange(SheetVisibleMode.Opening)
-                latestVisibleValue = SheetVisibleMode.Opening
+
+                if (skipOpening && mode == SheetVisibleMode.Opening) return@collect
+                if (mode == latestVisibleValue) return@collect
+
+                latestVisibleValue = mode
+                onStateChange(mode)
             }
-
-            SheetValue.PartiallyExpanded -> {
-                if(latestIngValue!=null)
-                    onSheetStateChange(SheetVisibleMode.Closing)
-                latestVisibleValue = SheetVisibleMode.Closing
-            }
-
-            else -> {}
-        }
-        latestIngValue = sheetState.targetValue
-    }
-
-    LaunchedEffect(sheetState.currentValue) {
-        if (latestDoneValue == sheetState.targetValue) return@LaunchedEffect
-        when (sheetState.currentValue) {
-            SheetValue.Expanded -> {
-                onSheetStateChange(SheetVisibleMode.Opened)
-                latestVisibleValue = SheetVisibleMode.Opened
-            }
-
-            SheetValue.PartiallyExpanded -> {
-                if(latestDoneValue!=null) //시트 처음 생성시 호출 방지
-                    onSheetStateChange(SheetVisibleMode.Closed)
-                latestVisibleValue = SheetVisibleMode.Closed
-            }
-
-            else -> {}
-        }
-        latestDoneValue = sheetState.currentValue
     }
 
     val initHeightWithSpace =
@@ -111,6 +104,7 @@ fun BottomSheet(
     ) {
         BottomSheetScaffold(
             scaffoldState = scaffoldState,
+            sheetSwipeEnabled = !skipOpening,
             sheetContainerColor = Palette.White,
             containerColor = Color.Transparent,
             sheetContent = {
@@ -169,6 +163,16 @@ fun DragHandle(modifier: Modifier = Modifier) {
         )
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+private fun toVisibleMode(target: SheetValue, current: SheetValue): SheetVisibleMode? =
+    when {
+        target == Expanded && current == Expanded -> SheetVisibleMode.Opened
+        target == PartiallyExpanded && current == PartiallyExpanded -> SheetVisibleMode.Closed
+        target == Expanded -> SheetVisibleMode.Opening
+        target == PartiallyExpanded -> SheetVisibleMode.Closing
+        else -> null
+    }
 
 
 
