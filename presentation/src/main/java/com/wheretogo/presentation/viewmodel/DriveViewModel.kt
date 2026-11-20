@@ -88,6 +88,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
 class DriveViewModel @Inject constructor(
@@ -664,9 +665,9 @@ class DriveViewModel @Inject constructor(
 
         // 코멘트 가져오기
         withContext(Dispatchers.IO) {
+            delay(200.milliseconds)  // 바텀시트 에니메이션 대기
             getCommentForCheckPointUseCase(checkpoint.checkPointId)
         }.onSuccess { comments ->
-            delay(200)  // 바텀시트 에니메이션 대기
             _driveScreenState.update {
                 it.updateCommentList(comments)
             }
@@ -728,24 +729,16 @@ class DriveViewModel @Inject constructor(
 
     // 바텀 시트
     private suspend fun bottomSheetChange(state: SheetVisibleMode) {
-
-        val driveState = _driveScreenState.value
-        val content = driveState.bottomSheetState.content
-
         when (state) {
             SheetVisibleMode.Opening -> {}
-
-            SheetVisibleMode.Opened -> handleBottomSheetOpened(content)
-
-            SheetVisibleMode.Closing -> handleBottomSheetClosing(content, driveState)
-
-            SheetVisibleMode.Closed -> handleBottomSheetClosed(content, driveState)
+            SheetVisibleMode.Opened -> handleBottomSheetOpened()
+            SheetVisibleMode.Closing -> handleBottomSheetClosing()
+            SheetVisibleMode.Closed -> handleBottomSheetClosed()
         }
     }
 
-    private suspend fun handleBottomSheetOpened(
-        content: DriveBottomSheetContent
-    ) {
+    private suspend fun handleBottomSheetOpened() {
+        val content = _driveScreenState.value.bottomSheetState.content
         when (content) {
             else -> {
                 driveTutorialUseCase(DriveTutorialStep.COMMENT_SHEET_DRAG)
@@ -753,10 +746,9 @@ class DriveViewModel @Inject constructor(
         }
     }
 
-    private fun handleBottomSheetClosing(
-        content: DriveBottomSheetContent,
-        driveState: DriveScreenState
-    ) {
+    private suspend fun handleBottomSheetClosing() {
+        val driveState = _driveScreenState.value
+        val content = driveState.bottomSheetState.content
         val isSheetVisible = DriveScreenState.bottomSheetVisible.contains(driveState.stateMode)
         val newClosingState = when (content) {
             DriveBottomSheetContent.COURSE_INFO -> {
@@ -772,39 +764,15 @@ class DriveViewModel @Inject constructor(
             }
 
             else -> {
-                if (driveState.popUpState.commentState.isImeVisible) {
-                    driveState.copy(
-                        popUpState = driveState.popUpState.copy(
-                            commentState = driveState.popUpState.commentState.copy(
-                                isImeVisible = false
-                            )
-                        )
-                    )
-                } else null
-            }
-        } ?: driveState
-
-        _driveScreenState.update { newClosingState }
-    }
-
-    private suspend fun handleBottomSheetClosed(
-        content: DriveBottomSheetContent,
-        driveState: DriveScreenState
-    ) {
-        val isSheetVisible = DriveScreenState.bottomSheetVisible.contains(driveState.stateMode)
-        val isCommentContentVisible = driveState.popUpState.commentState.isContentVisible
-
-        val newClosedState = when (content) {
-            else -> {
-                if (isCommentContentVisible) {
+                if (driveState.popUpState.commentState.isContentVisible) {
                     driveState.backToCheckPointPopUp()
                 } else null
             }
+        }
+        newClosingState?.let { new-> _driveScreenState.update { new } }
+    }
 
-        } ?: driveState
-
-        _driveScreenState.update { newClosedState }
-
+    private suspend fun handleBottomSheetClosed() {
         driveTutorialUseCase(DriveTutorialStep.COMMENT_SHEET_CLOSED)
     }
 
