@@ -64,6 +64,7 @@ dependencies {
     implementation(project(mapOf("path" to ":data")))
     implementation(project(mapOf("path" to ":domain")))
     implementation(project(mapOf("path" to ":core:ui")))
+    implementation(project(mapOf("path" to ":feature:admin")))
 
     // Kotlin (BOM)
     implementation(platform(libs.kotlin.bom))

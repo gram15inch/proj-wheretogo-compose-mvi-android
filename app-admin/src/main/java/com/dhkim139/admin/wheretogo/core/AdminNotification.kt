@@ -9,7 +9,7 @@ import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.dhkim139.admin.wheretogo.R
-import com.dhkim139.admin.wheretogo.feature.main.MainActivity
+import com.dhkim139.admin.wheretogo.MainActivity
 
 class AdminNotification(private val context: Context) {
 
