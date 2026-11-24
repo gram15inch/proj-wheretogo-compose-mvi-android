@@ -88,8 +88,10 @@ class SettingViewModel @Inject constructor(
         }
     }
 
-    private fun logoutClick() {
-        viewModelScope.launch(dispatcher) { signOutUseCase() }
+    private suspend fun logoutClick() {
+        withContext(Dispatchers.IO){
+            signOutUseCase()
+        }
     }
 
 
