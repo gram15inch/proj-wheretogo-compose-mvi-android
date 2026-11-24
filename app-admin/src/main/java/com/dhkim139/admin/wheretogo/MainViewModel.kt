@@ -1,4 +1,4 @@
-package com.dhkim139.admin.wheretogo.feature.main
+package com.dhkim139.admin.wheretogo
 
 import android.content.Context
 import android.widget.Toast
@@ -18,6 +18,7 @@ import javax.inject.Inject
 data class MainUiState(
     val isReady: Boolean = false,
     val isLoggedIn: Boolean = false,
+    val mail: String? = null,
 )
 
 @HiltViewModel
@@ -45,12 +46,11 @@ class MainViewModel @Inject constructor(
                 .onFailure {
                     Toast.makeText(context, "앱 검증 실패", Toast.LENGTH_SHORT).show()
                 }
-
-            val isLoggedIn =
-                getUserProfileStreamUseCase().first().getOrNull()?.uid?.isNotBlank() ?: false
-
+            val profile =  getUserProfileStreamUseCase().first().getOrNull()
+            val isLoggedIn = profile?.uid?.isNotBlank() ?: false
+            val mail = profile?.private?.mail
             _uiState.update {
-                it.copy(isReady = true, isLoggedIn = isLoggedIn)
+                it.copy(isReady = true, isLoggedIn = isLoggedIn, mail = mail)
             }
         }
     }

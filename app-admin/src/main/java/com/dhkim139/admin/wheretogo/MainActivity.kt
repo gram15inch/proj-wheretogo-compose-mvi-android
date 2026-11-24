@@ -1,4 +1,4 @@
-package com.dhkim139.admin.wheretogo.feature.main
+package com.dhkim139.admin.wheretogo
 
 import android.content.Intent
 import android.os.Bundle
@@ -8,31 +8,21 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.dhkim139.admin.wheretogo.BuildConfig
-import com.dhkim139.admin.wheretogo.core.AdminNavGraph
 import com.dhkim139.admin.wheretogo.core.AdminNotification.Companion.INTENT_REPORT_ID
+import com.dhkim139.admin.wheretogo.core.AppNavGraph
 import com.dhkim139.admin.wheretogo.core.NotificationPermissionHelper
-import com.dhkim139.admin.wheretogo.core.Routes
 import com.dhkim139.admin.wheretogo.core.theme.AdminTheme
 import com.dhkim139.core.ui.event.AppEvent
 import com.dhkim139.core.ui.event.AppEventSendEffect
 import com.dhkim139.core.ui.event.EventBus
-import com.dhkim139.core.ui.model.MediaAccess
 import com.dhkim139.core.ui.permission.AppPermission
 import com.dhkim139.core.ui.permission.checkFalseOrData
-import com.dhkim139.core.ui.permission.requestPermission
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -78,8 +68,6 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                val navController = rememberNavController()
-
                 AppEventSendEffect {
                     coroutine.launch {
                         when (it) {
@@ -91,16 +79,11 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                AdminNavGraph(
-                    navController = navController,
-                    startDestination = if (uiState.isLoggedIn) Routes.DASHBOARD else Routes.LOGIN,
+                AppNavGraph(
+                    isLoggedIn = uiState.isLoggedIn,
+                    reportId = intent?.getStringExtra(INTENT_REPORT_ID),
+                    mail = uiState.mail
                 )
-
-                // 알림에서 접근시 이동
-                LaunchedEffect(intent) {
-                    if (uiState.isLoggedIn)
-                        handleNotificationIntent(intent, navController)
-                }
             }
         }
     }
@@ -110,9 +93,4 @@ class MainActivity : ComponentActivity() {
         setIntent(intent)
     }
 
-    private fun handleNotificationIntent(intent: Intent?, navController: NavController) {
-        intent?.getStringExtra(INTENT_REPORT_ID)?.let { id ->
-            navController.navigate(Routes.reportDetail(id))
-        }
-    }
 }
