@@ -20,6 +20,7 @@ object AppConfigModule {
             tmapAppKey = "",
             isCoolDown = false,
             isCrashlytics = false,
+            isAdminApp = true
         )
     }
 

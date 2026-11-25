@@ -6,8 +6,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wheretogo.domain.usecase.app.AppCheckBySignatureUseCase
 import com.wheretogo.domain.usecase.user.GetUserProfileStreamUseCase
+import com.wheretogo.domain.usecase.user.UserSignOutUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
@@ -26,6 +28,7 @@ class MainViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val appCheckUseCase: AppCheckBySignatureUseCase,
     private val getUserProfileStreamUseCase: GetUserProfileStreamUseCase,
+    private val userSignOutUseCase: UserSignOutUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MainUiState())
@@ -52,6 +55,12 @@ class MainViewModel @Inject constructor(
             _uiState.update {
                 it.copy(isReady = true, isLoggedIn = isLoggedIn, mail = mail)
             }
+        }
+    }
+
+    fun signOut(){
+        viewModelScope.launch(Dispatchers.IO){
+            userSignOutUseCase()
         }
     }
 }

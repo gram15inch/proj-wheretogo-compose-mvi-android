@@ -8,8 +8,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
-import com.dhkim139.admin.wheretogo.R
 import com.dhkim139.admin.wheretogo.MainActivity
+import com.dhkim139.admin.wheretogo.R
 
 class AdminNotification(private val context: Context) {
 
@@ -40,8 +40,12 @@ class AdminNotification(private val context: Context) {
         screen: String? = null,
         targetId: String? = null
     ) {
-        val pendingIntent = createPendingIntent(screen, targetId)
-        val notification = buildNotification(title, body, pendingIntent)
+        val notification = if (targetId != null) {
+            val pendingIntent = createPendingIntent(screen, targetId)
+            buildReportNotification(title, body, pendingIntent)
+        } else {
+            buildNotification(title, body)
+        }
         getManager().notify(System.currentTimeMillis().toInt(), notification)
     }
 
@@ -59,7 +63,7 @@ class AdminNotification(private val context: Context) {
         )
     }
 
-    private fun buildNotification(
+    private fun buildReportNotification(
         title: String,
         body: String,
         pendingIntent: PendingIntent
@@ -73,6 +77,20 @@ class AdminNotification(private val context: Context) {
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .build()
     }
+
+    private fun buildNotification(
+        title: String,
+        body: String
+    ): Notification {
+        return NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_message)
+            .setContentTitle(title)
+            .setContentText(body)
+            .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .build()
+    }
+
 
     private fun getManager(): NotificationManager {
         return context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
