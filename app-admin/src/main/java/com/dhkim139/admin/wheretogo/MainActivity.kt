@@ -81,6 +81,7 @@ class MainActivity : ComponentActivity() {
 
                 AppNavGraph(
                     isLoggedIn = uiState.isLoggedIn,
+                    onSessionExpired = { viewModel.signOut() },
                     reportId = intent?.getStringExtra(INTENT_REPORT_ID),
                     mail = uiState.mail
                 )

@@ -16,6 +16,7 @@ object Routes {
 @Composable
 fun AppNavGraph(
     isLoggedIn: Boolean,
+    onSessionExpired: ()-> Unit,
     reportId: String?,
     mail: String?
 ) {
@@ -35,7 +36,10 @@ fun AppNavGraph(
             AdminNavHost(
                 adminEmail = { mail },
                 initialReportId = reportId,
-                onSessionExpired = { navController.toLogin() },
+                onSessionExpired = {
+                    onSessionExpired()
+                    navController.toLogin()
+                },
                 onRequestSignOut = { navController.toLogin() },
                 onExit = null,
             )
